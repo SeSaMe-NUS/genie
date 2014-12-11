@@ -3,10 +3,10 @@
 
 #include <string>
 
+using namespace std;
+
 namespace GaLG {
   namespace tool {
-    using namespace std;
-    
     int s2i(string&);
     int s2i(string&, void*);
 

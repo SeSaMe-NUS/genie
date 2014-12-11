@@ -78,9 +78,6 @@ int GaLG::tool::csv(string file, raw_data& data)
   csv_fini(&p, cb1, cb2, &info);
   csv_free(&p);
   fclose(fp);
-  
-  data.num_of_instances = info.rows - 1;
-  data.num_of_attributes = data.meta.size();
 
   return info.rows;
 }

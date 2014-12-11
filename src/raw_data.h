@@ -8,12 +8,11 @@ using namespace std;
 
 namespace GaLG {
   struct raw_data {
-    int num_of_instances;
-    int num_of_attributes;
-
     vector<string> meta;
     vector<vector<string> > instance;
 
+    int m_size();
+    int i_size();
     raw_data& select(string, vector<string>&);
     raw_data& select(int, vector<string>&);
   };
