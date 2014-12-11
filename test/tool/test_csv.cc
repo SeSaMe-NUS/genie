@@ -6,7 +6,7 @@ using namespace GaLG;
 
 int main()
 {
-  container::raw_data data;
+  raw_data data;
   int lines = tool::csv("../../static/countrylist.csv", data);
   assert(lines == 273);
 

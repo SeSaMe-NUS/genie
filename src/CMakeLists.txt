@@ -8,8 +8,8 @@ set(LIB_SRC_LIST
   lib/libcsv/csv.h
   lib/libcsv/libcsv.c
 
-  container/raw_data.h
-  container/raw_data.cc
+  raw_data.h
+  raw_data.cc
 
   tool/converter.h
   tool/parser.h

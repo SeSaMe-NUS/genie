@@ -9,7 +9,7 @@ using namespace GaLG;
 
 int main()
 {
-  container::raw_data data;
+  raw_data data;
   tool::csv("../../static/countrylist.csv", data);
 
   vector<string> order;
