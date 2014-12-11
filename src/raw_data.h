@@ -1,5 +1,5 @@
-#ifndef GaLG_container_raw_data_h
-#define GaLG_container_raw_data_h
+#ifndef GaLG_raw_data_h
+#define GaLG_raw_data_h
 
 #include <vector>
 #include <string>

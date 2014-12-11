@@ -1,5 +1,5 @@
-#ifndef GaLG_tool_converter_s2_h
-#define GaLG_tool_converter_s2_h
+#ifndef GaLG_tool_converter_h
+#define GaLG_tool_converter_h
 
 #include <string>
 
