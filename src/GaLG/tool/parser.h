@@ -1,7 +1,7 @@
 #ifndef GaLG_tool_parser_h
 #define GaLG_tool_parser_h
 
-#include "raw_data.h"
+#include "GaLG/raw_data.h"
 
 namespace GaLG {
   namespace tool {

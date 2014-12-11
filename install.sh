@@ -116,6 +116,7 @@ function bootstrap {
   fi
 
   echoinfo "install"
+  make install
 }
 
 bootstrap

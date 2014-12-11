@@ -1,8 +1,8 @@
 #ifndef GaLG_h
 #define GaLG_h
 
-#include "raw_data.h"
-#include "tool/parser.h"
-#include "tool/converter.h"
+#include <GaLG/raw_data.h>
+#include <GaLG/tool/parser.h>
+#include <GaLG/tool/converter.h>
 
 #endif

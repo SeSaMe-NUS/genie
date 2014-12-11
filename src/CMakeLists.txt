@@ -5,16 +5,16 @@ link_directories(${PROJECT_SOURCE_DIR}/src)
 set(LIB_SRC_LIST
   GaLG.h
 
-  lib/libcsv/csv.h
-  lib/libcsv/libcsv.c
+  GaLG/lib/libcsv/csv.h
+  GaLG/lib/libcsv/libcsv.c
 
-  raw_data.h
-  raw_data.cc
+  GaLG/raw_data.h
+  GaLG/raw_data.cc
 
-  tool/converter.h
-  tool/parser.h
-  tool/s2.cc
-  tool/csv.cc)
+  GaLG/tool/converter.h
+  GaLG/tool/parser.h
+  GaLG/tool/s2.cc
+  GaLG/tool/csv.cc)
 
 cuda_add_library(
   ${PROJECT_NAME}
@@ -26,3 +26,14 @@ set_target_properties(
   PROPERTIES
   VERSION ${PROJECT_API_VERSION}.${PROJECT_MINOR_VERSION}
   SOVERSION ${PROJECT_API_VERSION})
+
+
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+install(FILES GaLG.h DESTINATION include)
+
+function(install_header DIR TARGET)
+  install(FILES GaLG/${DIR}/${TARGET} DESTINATION include/GaLG/${DIR})
+endfunction()
+
+install_header(tool parser.h)
+install_header(tool converter.h)
