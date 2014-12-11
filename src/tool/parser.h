@@ -6,9 +6,7 @@
 namespace GaLG {
   namespace tool {
     using namespace container;
-    struct parser {
-      static int csv(string file, raw_data& data);
-    };
+    int csv(string file, raw_data& data);
   }
 }
 

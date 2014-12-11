@@ -10,7 +10,7 @@ using namespace GaLG;
 int main()
 {
   container::raw_data data;
-  tool::parser::csv("../../static/countrylist.csv", data);
+  tool::csv("../../static/countrylist.csv", data);
 
   vector<string> order;
   data.select("Sort Order", order);

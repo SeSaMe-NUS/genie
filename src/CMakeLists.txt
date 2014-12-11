@@ -4,12 +4,17 @@ link_directories(${PROJECT_SOURCE_DIR}/src)
 
 set(LIB_SRC_LIST
   GaLG.h
+
   lib/libcsv/csv.h
   lib/libcsv/libcsv.c
+
   container/raw_data.h
   container/raw_data.cc
-  tool/parser/parser.h
-  tool/parser/csv.cc)
+
+  tool/converter.h
+  tool/parser.h
+  tool/s2.cc
+  tool/csv.cc)
 
 cuda_add_library(
   ${PROJECT_NAME}

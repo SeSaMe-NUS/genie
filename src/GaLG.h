@@ -2,6 +2,7 @@
 #define GaLG_h
 
 #include "container/raw_data.h"
-#include "tool/parser/parser.h"
+#include "tool/parser.h"
+#include "tool/converter.h"
 
 #endif

@@ -39,7 +39,7 @@ static int is_term(unsigned char c)
   return 0;
 }
 
-int GaLG::tool::parser::csv(string file, raw_data& data)
+int GaLG::tool::csv(string file, raw_data& data)
 {
   const char* f = file.c_str();
   vector<string> raw_meta;

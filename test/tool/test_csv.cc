@@ -7,7 +7,7 @@ using namespace GaLG;
 int main()
 {
   container::raw_data data;
-  int lines = tool::parser::csv("../../static/countrylist.csv", data);
+  int lines = tool::csv("../../static/countrylist.csv", data);
   assert(lines == 273);
 
   assert(data.num_of_instances == 272);
