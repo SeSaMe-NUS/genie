@@ -13,6 +13,9 @@ namespace GaLG {
 
       vector<string> meta;
       vector<vector<string> > instance;
+
+      raw_data& select(string, vector<string>&);
+      raw_data& select(int, vector<string>&);
     };
   }
 }
