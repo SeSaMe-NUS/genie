@@ -2,6 +2,9 @@
 #
 # libGaLG
 
+INSTALL_PATH="/usr/local"
+REQUIRE_SUDO=false
+
 CMAKE_VERSION=""
 API_VERSION=""
 MINOR_VERSION=""
@@ -34,6 +37,16 @@ function echoinfo {
 function echolog {
   restore='\033[0m'
   echo -e "${restore}${restore}$@${restore}"
+}
+
+function check_permission {
+  if [ ! -w "$INSTALL_PATH/include/" -o ! -w "$INSTALL_PATH/lib/" ]; then
+    echowarn "$INSTALL_PATH is not writable"
+    REQUIRE_SUDO=true
+  else
+    echolog "$INSTALL_PATH is writable"
+    REQUIRE_SUDO=false
+  fi
 }
 
 function check_version {
@@ -98,6 +111,9 @@ function check_build_tools {
 }
 
 function bootstrap {
+  echoinfo "check permission"
+  check_permission
+
   echoinfo "bootstrapping libGaLG build system"
   check_version
 
@@ -116,7 +132,12 @@ function bootstrap {
   fi
 
   echoinfo "install"
-  make install
+  if [ $REQUIRE_SUDO = false ]; then
+    make install
+  else
+    echowarn "install path is not writable. require sudo."
+    sudo make install
+  fi
 }
 
 bootstrap
