@@ -5,6 +5,53 @@
 
 using namespace std;
 
+void GaLG::raw_data::clear()
+{
+  meta.clear();
+  instance.clear();
+}
+
+int GaLG::raw_data::set_meta(vector<string>& _meta)
+{
+  clear();
+  meta.resize(_meta.size());
+  copy(_meta.begin(), _meta.end(), meta.begin());
+  return 0;
+}
+
+int GaLG::raw_data::set_meta(int index, string new_name)
+{
+  if(index >= m_size() || index < 0)
+    return -1;
+  meta[index] = new_name;
+  return index;
+}
+
+int GaLG::raw_data::set_meta(string old_name, string new_name)
+{
+  int index;
+  for(index = 0; index < m_size(); index++)
+    if(meta[index] == old_name)
+      break;
+  return set_meta(index, new_name);
+}
+
+int GaLG::raw_data::get_meta(int index, string& meta_name)
+{
+  if(index >= m_size() || index < 0)
+    return -1;
+  meta_name = meta[index];
+  return index;
+}
+
+string* GaLG::raw_data::get_meta(int index)
+{
+  if(index >= m_size() || index < 0)
+    return NULL;
+  string* meta_name = &meta[index];
+  return meta_name;
+}
+
 int GaLG::raw_data::m_size()
 {
   return meta.size();
@@ -15,19 +62,42 @@ int GaLG::raw_data::i_size()
   return instance.size();
 }
 
-GaLG::raw_data& GaLG::raw_data::select(string attr, vector<string>& output)
+int GaLG::raw_data::add_row(vector<string>& row)
+{
+  if(row.size() != m_size())
+    return -1;
+  instance.push_back(row);
+  return instance.size();
+}
+
+int GaLG::raw_data::get_row(int index, vector<string>& row)
+{
+  if(index >= i_size() || index < 0)
+    return -1;
+  row.clear(), row.resize(instance[index].size());
+  copy(instance[index].begin(), instance[index].end(), row.begin());
+  return index;
+}
+
+vector<string>* GaLG::raw_data::get_row(int index)
+{
+  if(index >= i_size() || index < 0)
+    return NULL;
+  return &instance[index];
+}
+
+int GaLG::raw_data::select(string attr, vector<string>& output)
 {
   int attr_number;
   for(attr_number = 0; attr_number < m_size(); attr_number++)
     if(meta[attr_number].compare(attr) == 0) break;
-  select(attr_number, output);
-  return *this;
+  return select(attr_number, output);
 }
 
-GaLG::raw_data& GaLG::raw_data::select(int attr_index, vector<string>& output)
+int GaLG::raw_data::select(int attr_index, vector<string>& output)
 {
   if(attr_index >= m_size() || attr_index < 0)
-    throw -1;
+    return -1;
 
   output.clear();
   int i;
@@ -35,5 +105,5 @@ GaLG::raw_data& GaLG::raw_data::select(int attr_index, vector<string>& output)
   {
     output.push_back(instance[i][attr_index]);
   }
-  return *this;
+  return attr_index;
 }

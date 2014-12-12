@@ -66,14 +66,12 @@ int GaLG::tool::csv(string file, raw_data& data)
       return -1;
   }
 
-  data.meta.clear(), data.meta.resize(raw_meta.size());
-  data.instance.clear();
-  copy(raw_meta.begin(), raw_meta.end(), data.meta.begin());
-  for(size_t i=0; i<raw_data.size()/data.meta.size(); i++)
+  data.set_meta(raw_meta);
+  for(size_t i=0; i<raw_data.size()/data.m_size(); i++)
   {
-    vector<string> tmp(data.meta.size());
-    copy(raw_data.begin() + i*data.meta.size(), raw_data.begin() + (i+1)*data.meta.size(), tmp.begin());
-    data.instance.push_back(tmp);
+    vector<string> tmp(data.m_size());
+    copy(raw_data.begin() + i*data.m_size(), raw_data.begin() + (i+1)*data.m_size(), tmp.begin());
+    data.add_row(tmp);
   }
   csv_fini(&p, cb1, cb2, &info);
   csv_free(&p);
