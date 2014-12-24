@@ -96,14 +96,40 @@ int GaLG::raw_data::select(string attr, vector<string>& output)
 
 int GaLG::raw_data::select(int attr_index, vector<string>& output)
 {
-  if(attr_index >= m_size() || attr_index < 0)
+  vector<string>* re = select(attr_index);
+
+  if(re == NULL)
     return -1;
 
-  output.clear();
+  output.clear(), output.resize(re -> size());
+  copy(re -> begin(), re -> end(), output.begin());
+  return attr_index;
+}
+
+vector<string>* GaLG::raw_data::select(string attr)
+{
+  int attr_number;
+  for(attr_number = 0; attr_number < m_size(); attr_number++)
+    if(meta[attr_number].compare(attr) == 0) break;
+  return select(attr_number);
+}
+
+vector<string>* GaLG::raw_data::select(int attr_index)
+{
+  if(attr_index >= m_size() || attr_index < 0)
+    return NULL;
+
+  if(transpose.size() != m_size())
+    transpose.resize(m_size());
+
+  if(!transpose[attr_index].empty())
+    return &transpose[attr_index];
+
+  transpose[attr_index].clear();
   int i;
   for(i = 0; i < i_size(); i++)
   {
-    output.push_back(instance[i][attr_index]);
+    transpose[attr_index].push_back(instance[i][attr_index]);
   }
-  return attr_index;
+  return &transpose[attr_index];
 }

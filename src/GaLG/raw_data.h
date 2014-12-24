@@ -11,6 +11,7 @@ namespace GaLG {
     private:
       vector<string> meta;
       vector<vector<string> > instance;
+      vector<vector<string> > transpose;
 
     public:
       void clear();
@@ -26,6 +27,8 @@ namespace GaLG {
       vector<string>* get_row(int);
       int select(string, vector<string>&);
       int select(int, vector<string>&);
+      vector<string>* select(string);
+      vector<string>* select(int);
   };
 }
 
