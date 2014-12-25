@@ -10,6 +10,8 @@ set(LIB_SRC_LIST
 
   GaLG/raw_data.h
   GaLG/raw_data.cc
+  GaLG/inv_list.h
+  GaLG/inv_list.cc
 
   GaLG/tool/converter.h
   GaLG/tool/parser.h
