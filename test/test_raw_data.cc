@@ -3,14 +3,14 @@
 #include <assert.h>
 #include <vector>
 #include <string>
-using namespace std;
 
+using namespace std;
 using namespace GaLG;
 
 int main()
 {
   raw_data data;
-  tool::csv("../../static/countrylist.csv", data);
+  parser::csv("../../static/countrylist.csv", data);
 
   vector<string>* re;
   re = data.col("Sort Order");

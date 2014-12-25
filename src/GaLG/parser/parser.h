@@ -4,7 +4,7 @@
 #include "GaLG/raw_data.h"
 
 namespace GaLG {
-  namespace tool {
+  namespace parser {
     int csv(string file, raw_data& data);
   }
 }

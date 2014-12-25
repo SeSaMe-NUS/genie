@@ -7,7 +7,7 @@ using namespace GaLG;
 int main()
 {
   raw_data data;
-  int lines = tool::csv("../../static/countrylist.csv", data);
+  int lines = parser::csv("../../static/countrylist.csv", data);
   assert(lines == 273);
 
   assert(data.i_size() == 272);

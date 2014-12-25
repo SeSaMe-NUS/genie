@@ -13,8 +13,8 @@ set(LIB_SRC_LIST
   GaLG/inv_list.h
   GaLG/inv_list.cc
 
-  GaLG/tool/parser.h
-  GaLG/tool/csv.cc)
+  GaLG/parser/parser.h
+  GaLG/parser/csv.cc)
 
 cuda_add_library(
   ${PROJECT_NAME}
@@ -35,5 +35,4 @@ function(install_header DIR TARGET)
   install(FILES GaLG/${DIR}/${TARGET} DESTINATION include/GaLG/${DIR})
 endfunction()
 
-install_header(tool parser.h)
-install_header(tool converter.h)
+install_header(parser parser.h)

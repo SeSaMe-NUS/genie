@@ -3,6 +3,6 @@
 
 #include <GaLG/raw_data.h>
 #include <GaLG/inv_list.h>
-#include <GaLG/tool/parser.h>
+#include <GaLG/parser/parser.h>
 
 #endif
