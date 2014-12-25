@@ -7,28 +7,19 @@
 using namespace std;
 
 namespace GaLG {
-  class raw_data {
-    private:
-      vector<string> meta;
-      vector<vector<string> > instance;
-      vector<vector<string> > transpose;
+  struct raw_data {
+    vector<string> _meta;
+    vector<vector<string> > _instance;
+    vector<vector<string> > _transpose;
 
-    public:
-      void clear();
-      int set_meta(vector<string>&);
-      int set_meta(int, string);
-      int set_meta(string, string);
-      int get_meta(int, string&);
-      string* get_meta(int);
-      int m_size();
-      int i_size();
-      int add_row(vector<string>&);
-      int get_row(int, vector<string>&);
-      vector<string>* get_row(int);
-      int select(string, vector<string>&);
-      int select(int, vector<string>&);
-      vector<string>* select(string);
-      vector<string>* select(int);
+    void clear();
+    int m_size();
+    int i_size();
+    string* meta(int);
+    int meta(string);
+    vector<string>* row(int);
+    vector<string>* col(string);
+    vector<string>* col(int);
   };
 }
 
