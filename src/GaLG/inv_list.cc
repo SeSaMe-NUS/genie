@@ -35,3 +35,17 @@ void GaLG::inv_list::invert(vector<int>& vin)
     _inv[vin[i] - _bound.first].push_back(i);
   return;
 }
+
+bool GaLG::inv_list::contains(int value)
+{
+  if(value > _bound.second || value < _bound.first)
+    return false;
+  return true;
+}
+
+vector<int>* GaLG::inv_list::index(int value)
+{
+  if(!contains(value))
+    return NULL;
+  return &_inv[value - min()];
+}

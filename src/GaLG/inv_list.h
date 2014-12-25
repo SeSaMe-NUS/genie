@@ -16,6 +16,8 @@ namespace GaLG {
     int min();
     int max();
     void invert(vector<int>&);
+    bool contains(int);
+    vector<int>* index(int);
   };
 }
 
