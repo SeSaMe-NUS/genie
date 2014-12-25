@@ -9,11 +9,13 @@ using namespace std;
 namespace GaLG {
   class inv_list {
   private:
-    pair<int, int> bound;
+    pair<int, int> _bound;
+    vector<vector<int> > _inv;
 
   public:
     int min();
     int max();
+    void invert(vector<int>&);
   };
 }
 
