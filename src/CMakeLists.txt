@@ -13,9 +13,7 @@ set(LIB_SRC_LIST
   GaLG/inv_list.h
   GaLG/inv_list.cc
 
-  GaLG/tool/converter.h
   GaLG/tool/parser.h
-  GaLG/tool/s2.cc
   GaLG/tool/csv.cc)
 
 cuda_add_library(

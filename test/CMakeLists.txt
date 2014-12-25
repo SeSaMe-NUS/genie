@@ -9,5 +9,4 @@ function(add_test_case TARGET)
 endfunction()
 
 add_test_case(test_tool_csv tool/test_csv.cc)
-add_test_case(test_tool_s2 tool/test_s2.cc)
 add_test_case(test_raw_data test_raw_data.cc)
