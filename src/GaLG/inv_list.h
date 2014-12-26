@@ -13,6 +13,10 @@ namespace GaLG {
     vector<vector<int> > _inv;
 
   public:
+    inv_list(){}
+    inv_list(vector<int>&);
+    inv_list(vector<string>&);
+
     int min();
     int max();
     void invert(vector<int>&);

@@ -7,6 +7,16 @@ int cv(string& s, void* d)
   return atoi(s.c_str());
 }
 
+GaLG::inv_list::inv_list(vector<int>& vin)
+{
+  invert(vin);
+}
+
+GaLG::inv_list::inv_list(vector<string>& vin)
+{
+  invert(vin);
+}
+
 int GaLG::inv_list::min()
 {
   return _bound.first;
