@@ -31,8 +31,10 @@ set_target_properties(
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 install(FILES GaLG.h DESTINATION include)
 
-function(install_header DIR TARGET)
-  install(FILES GaLG/${DIR}/${TARGET} DESTINATION include/GaLG/${DIR})
+function(install_header TARGET)
+  install(FILES GaLG/${TARGET} DESTINATION include/GaLG)
 endfunction()
 
-install_header(parser parser.h)
+install(FILES GaLG/parser/parser.h DESTINATION include/GaLG/parser)
+install_header(raw_data.h)
+install_header(inv_list.h)
