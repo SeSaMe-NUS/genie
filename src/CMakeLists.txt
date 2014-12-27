@@ -12,6 +12,8 @@ set(LIB_SRC_LIST
   GaLG/raw_data.cc
   GaLG/inv_list.h
   GaLG/inv_list.cc
+  GaLG/inv_table.h
+  GaLG/inv_table.cc
 
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)
@@ -38,3 +40,4 @@ endfunction()
 install(FILES GaLG/parser/parser.h DESTINATION include/GaLG/parser)
 install_header(raw_data.h)
 install_header(inv_list.h)
+install_header(inv_table.h)
