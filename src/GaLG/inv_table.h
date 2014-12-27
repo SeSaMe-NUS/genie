@@ -11,6 +11,10 @@ using namespace std;
 namespace GaLG {
   class inv_table {
   private:
+    enum {
+      not_builded,
+      builded
+    } _build_status;
     int _value_bit;
     int _size;
     vector<inv_list> _inv_lists;

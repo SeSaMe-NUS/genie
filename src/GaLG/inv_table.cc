@@ -6,6 +6,7 @@ using namespace GaLG;
 
 void GaLG::inv_table::clear()
 {
+  _build_status = not_builded;
   _inv_lists.clear();
 }
 
@@ -18,6 +19,7 @@ void GaLG::inv_table::append(inv_list& inv)
 {
   if(_size == -1 || _size == inv.size())
   {
+    _build_status = not_builded;
     _size = inv.size();
     _inv_lists.push_back(inv);
   }
@@ -49,4 +51,5 @@ void GaLG::inv_table::build()
       }
     }
   }
+  _build_status = builded;
 }
