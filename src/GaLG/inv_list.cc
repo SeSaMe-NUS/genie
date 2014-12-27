@@ -12,7 +12,17 @@ GaLG::inv_list::inv_list(vector<int>& vin)
   invert(vin);
 }
 
+GaLG::inv_list::inv_list(vector<int>* vin)
+{
+  invert(vin);
+}
+
 GaLG::inv_list::inv_list(vector<string>& vin)
+{
+  invert(vin);
+}
+
+GaLG::inv_list::inv_list(vector<string>* vin)
 {
   invert(vin);
 }
@@ -27,8 +37,14 @@ int GaLG::inv_list::max()
   return _bound.second;
 }
 
+int GaLG::inv_list::size()
+{
+  return _size;
+}
+
 void GaLG::inv_list::invert(vector<int>& vin)
 {
+  _size = vin.size();
   if(vin.empty())
     return;
 
@@ -53,13 +69,24 @@ void GaLG::inv_list::invert(vector<int>& vin)
   return;
 }
 
+void GaLG::inv_list::invert(vector<int>* vin)
+{
+  invert(*vin);
+}
+
 void GaLG::inv_list::invert(vector<string>& vin)
 {
   invert(vin, &cv, NULL);
 }
 
+void GaLG::inv_list::invert(vector<string>* vin)
+{
+  invert(*vin);
+}
+
 void GaLG::inv_list::invert(vector<string>& vin, int(*stoi)(string&, void*), void* d)
 {
+  _size = vin.size();
   if(vin.empty())
     return;
 
@@ -84,6 +111,11 @@ void GaLG::inv_list::invert(vector<string>& vin, int(*stoi)(string&, void*), voi
   for (i = 0; i < vin.size(); i++)
     _inv[stoi(vin[i], d) - _bound.first].push_back(i);
   return;
+}
+
+void GaLG::inv_list::invert(vector<string>* vin, int(*stoi)(string&, void*), void* d)
+{
+  invert(*vin, stoi, d);
 }
 
 bool GaLG::inv_list::contains(int value)
