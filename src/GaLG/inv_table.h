@@ -24,6 +24,8 @@ namespace GaLG {
     inv_table() : _value_bit(16), _size(-1) {}
     void clear();
     bool empty();
+    int m_size();
+    int i_size();
     void append(inv_list&);
     void build();
   };

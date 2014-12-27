@@ -15,6 +15,16 @@ bool GaLG::inv_table::empty()
   return _size == -1;
 }
 
+int GaLG::inv_table::m_size()
+{
+  return _inv_lists.size();
+}
+
+int GaLG::inv_table::i_size()
+{
+  return _size <= -1 ? 0 : _size;
+}
+
 void GaLG::inv_table::append(inv_list& inv)
 {
   if(_size == -1 || _size == inv.size())
