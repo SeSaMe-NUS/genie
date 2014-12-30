@@ -4,20 +4,30 @@
 #define GaLG_device_THREADS_PER_BLOCK 256
 #endif
 
-void GaLG::match(inv_table& table, vector<query>& queries, vector<float>& agg)
+namespace GaLG
+{
+  namespace device
+  {
+    __global__
+    void
+    match()
+    {
+    }
+  }
+}
+
+void
+GaLG::match(inv_table& table, vector<query>& queries, device_vector<float>& d_agg)
 {
   int total = table.i_size() * queries.size();
-  agg.clear(), agg.resize(total);
+  d_agg.clear(), d_agg.resize(total);
 
   vector<query::dim> dims;
   int i;
-  for(i=0; i<queries.size(); i++)
-  {
-    queries[i].dump(dims);
-  }
+  for (i = 0; i < queries.size(); i++)
+    {
+      queries[i].dump(dims);
+    }
 
   device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>();
 }
-
-__global__
-void GaLG::device::match();
