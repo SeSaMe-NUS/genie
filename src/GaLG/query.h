@@ -10,17 +10,13 @@ using namespace std;
 
 namespace GaLG {
   class query {
-  private:
+  public:
     struct dim {
       int low;
       int up;
       float weight;
     };
-
-    enum {
-      not_builded,
-      builded
-    } _build_status;
+  private:
     inv_table* _ref_table;
     vector<dim> _dims;
 
@@ -28,6 +24,7 @@ namespace GaLG {
     query(inv_table* ref);
     query(inv_table& ref);
     void attr(int index, int low, int up, float weight);
+    void dump(vector<dim>& vout);
   };
 }
 

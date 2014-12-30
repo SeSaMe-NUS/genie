@@ -16,6 +16,8 @@ set(LIB_SRC_LIST
   GaLG/inv_table.cc
   GaLG/query.h
   GaLG/query.cc
+  GaLG/match.h
+  GaLG/match.cu
 
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)

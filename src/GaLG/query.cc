@@ -12,8 +12,6 @@ GaLG::query::query(inv_table* ref)
     _dims[i].up = -1;
     _dims[i].weight = 0;
   }
-
-  _build_status = not_builded;
 }
 
 GaLG::query::query(inv_table& ref)
@@ -28,14 +26,10 @@ GaLG::query::query(inv_table& ref)
     _dims[i].up = -1;
     _dims[i].weight = 0;
   }
-
-  _build_status = not_builded;
 }
 
 void GaLG::query::attr(int index, int low, int up, float weight)
 {
-  _build_status = not_builded;
-
   if(index < 0 || index >= _dims.size())
     return;
 
@@ -78,4 +72,11 @@ void GaLG::query::attr(int index, int low, int up, float weight)
 
   _dims[index].low = d + low - inv.min();
   _dims[index].up = d + up - inv.min();
+}
+
+void GaLG::query::dump(vector<dim>& vout)
+{
+  int i;
+  for(i=0; i<_dims.size(); i++)
+    vout.push_back(_dims[i]);
 }
