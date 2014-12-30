@@ -3,8 +3,10 @@
 
 #include "GaLG/raw_data.h"
 
-namespace GaLG {
-  namespace parser {
+namespace GaLG
+{
+  namespace parser
+  {
     /**
      * @brief Parsing the csv file.
      * @details Reading data from the csv file and
@@ -18,7 +20,8 @@ namespace GaLG {
      * 
      * @return Lines of csv file.
      */
-    int csv(string file, raw_data& data);
+    int
+    csv(string file, raw_data& data);
   }
 }
 
