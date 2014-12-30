@@ -104,6 +104,13 @@ namespace GaLG {
     void append(inv_list& inv);
 
     /**
+     * @brief The _inv_lists vector's pointer.
+     * @details The _inv_lists vector's pointer.
+     * @return The pointer points to _inv_lists vector.
+     */
+    vector<inv_list>* inv_lists();
+
+    /**
      * @brief Build the inv_table.
      * @details This method will merge all inv_lists to
      *          two vector _ck and _inv and set the

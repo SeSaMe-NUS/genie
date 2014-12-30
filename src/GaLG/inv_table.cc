@@ -40,6 +40,11 @@ void GaLG::inv_table::append(inv_list& inv)
   }
 }
 
+vector<inv_list>* GaLG::inv_table::inv_lists()
+{
+  return &_inv_lists;
+}
+
 void GaLG::inv_table::build()
 {
   _ck.clear(), _inv.clear();

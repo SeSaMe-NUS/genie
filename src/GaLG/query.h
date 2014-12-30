@@ -2,6 +2,7 @@
 #define GaLG_query_h
 
 #include "inv_table.h"
+#include "inv_list.h"
 
 #include <vector>
 
@@ -27,7 +28,6 @@ namespace GaLG {
     query(inv_table* ref);
     query(inv_table& ref);
     void attr(int index, int low, int up, float weight);
-    void build();
   };
 }
 
