@@ -4,6 +4,7 @@
 #include <GaLG/raw_data.h>
 #include <GaLG/inv_list.h>
 #include <GaLG/inv_table.h>
+#include <GaLG/query.h>
 #include <GaLG/parser/parser.h>
 
 #endif

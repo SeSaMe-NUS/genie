@@ -85,6 +85,11 @@ namespace GaLG {
      */
     int i_size();
 
+    /**
+     * @brief Get the shifter.
+     * @details Get the shifter.
+     * @return The shifter.
+     */
     int shifter();
 
     /**
