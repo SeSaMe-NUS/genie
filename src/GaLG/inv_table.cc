@@ -25,6 +25,11 @@ int GaLG::inv_table::i_size()
   return _size <= -1 ? 0 : _size;
 }
 
+int GaLG::inv_table::shifter()
+{
+  return _shifter;
+}
+
 void GaLG::inv_table::append(inv_list& inv)
 {
   if(_size == -1 || _size == inv.size())
@@ -41,7 +46,7 @@ void GaLG::inv_table::build()
   int i, j, key, dim, value, last;
   for(i=0; i<_inv_lists.size(); i++)
   {
-    dim = i << _value_bit;
+    dim = i << _shifter;
     for(value=_inv_lists[i].min(); value<=_inv_lists[i].max(); value++)
     {
       key = dim + value - _inv_lists[i].min();

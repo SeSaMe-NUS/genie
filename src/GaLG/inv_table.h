@@ -24,7 +24,7 @@ namespace GaLG {
     /**
      * @brief Bits should be shifted.
      */
-    int _value_bit;
+    int _shifter;
 
     /**
      * @brief The number of instances.
@@ -49,10 +49,10 @@ namespace GaLG {
   public:
     /**
      * @brief Default constructor of the inv_table.
-     * @details It set the _value_bit to 16 and set the
+     * @details It set the _shifter to 16 and set the
      *        _size to -1.
      */
-    inv_table() : _value_bit(16), _size(-1) {}
+    inv_table() : _shifter(16), _size(-1) {}
 
     /**
      * @brief Clear the inv_table
@@ -84,6 +84,8 @@ namespace GaLG {
      * @return The number of instances
      */
     int i_size();
+
+    int shifter();
 
     /**
      * @brief Append an inv_list to the inv_table.
