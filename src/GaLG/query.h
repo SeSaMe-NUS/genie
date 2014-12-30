@@ -8,10 +8,13 @@
 
 using namespace std;
 
-namespace GaLG {
-  class query {
+namespace GaLG
+{
+  class query
+  {
   public:
-    struct dim {
+    struct dim
+    {
       int low;
       int up;
       float weight;
@@ -23,8 +26,10 @@ namespace GaLG {
   public:
     query(inv_table* ref);
     query(inv_table& ref);
-    void attr(int index, int low, int up, float weight);
-    void dump(vector<dim>& vout);
+    void
+    attr(int index, int low, int up, float weight);
+    void
+    dump(vector<dim>& vout);
   };
 }
 

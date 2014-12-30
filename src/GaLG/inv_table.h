@@ -8,17 +8,19 @@
 
 using namespace std;
 
-namespace GaLG {
-  class inv_table {
+namespace GaLG
+{
+  class inv_table
+  {
   private:
     /**
      * @brief Current status of the inv_table.
      *        Any modification will make the 
      *        inv_table not_builded.
      */
-    enum {
-      not_builded,
-      builded
+    enum
+    {
+      not_builded, builded
     } _build_status;
 
     /**
@@ -52,14 +54,18 @@ namespace GaLG {
      * @details It set the _shifter to 16 and set the
      *        _size to -1.
      */
-    inv_table() : _shifter(16), _size(-1) {}
+    inv_table() :
+        _shifter(16), _size(-1), _build_status(not_builded)
+    {
+    }
 
     /**
      * @brief Clear the inv_table
      * @details The method remove all content in _inv_lists, _ck and _inv.
      *          It also sets the _size back to -1.
      */
-    void clear();
+    void
+    clear();
 
     /**
      * @brief Check whether the inv_table is empty.
@@ -69,28 +75,32 @@ namespace GaLG {
      * @return true if _size < 0
      *         false if _size >= 0
      */
-    bool empty();
+    bool
+    empty();
 
     /**
      * @brief Get the number of dimensions.
      * @details Get the number of dimensions or meta datas.
      * @return The number of dimensions.
      */
-    int m_size();
+    int
+    m_size();
 
     /**
      * @brief Get the number of instances.
      * @details Get the number of instances or rows.
      * @return The number of instances
      */
-    int i_size();
+    int
+    i_size();
 
     /**
      * @brief Get the shifter.
      * @details Get the shifter.
      * @return The shifter.
      */
-    int shifter();
+    int
+    shifter();
 
     /**
      * @brief Append an inv_list to the inv_table.
@@ -100,15 +110,17 @@ namespace GaLG {
      *          equal to the size of inv_list or -1. This
      *          method will simply return and do nothing.
      * @param inv: the refrence to the inv_list which will be appended.
-     */ 
-    void append(inv_list& inv);
+     */
+    void
+    append(inv_list& inv);
 
     /**
      * @brief The _inv_lists vector's pointer.
      * @details The _inv_lists vector's pointer.
      * @return The pointer points to _inv_lists vector.
      */
-    vector<inv_list>* inv_lists();
+    vector<inv_list>*
+    inv_lists();
 
     /**
      * @brief Build the inv_table.
@@ -117,7 +129,8 @@ namespace GaLG {
      *          _build_status to builded. Any query should
      *          only be done after the inv_table has been builded.
      */
-    void build();
+    void
+    build();
   };
 }
 

@@ -2,7 +2,8 @@
 
 #include <cstdlib>
 
-int cv(string& s, void* d)
+int
+cv(string& s, void* d)
 {
   return atoi(s.c_str());
 }
@@ -27,37 +28,41 @@ GaLG::inv_list::inv_list(vector<string>* vin)
   invert(vin);
 }
 
-int GaLG::inv_list::min()
+int
+GaLG::inv_list::min()
 {
   return _bound.first;
 }
 
-int GaLG::inv_list::max()
+int
+GaLG::inv_list::max()
 {
   return _bound.second;
 }
 
-int GaLG::inv_list::size()
+int
+GaLG::inv_list::size()
 {
   return _size;
 }
 
-void GaLG::inv_list::invert(vector<int>& vin)
+void
+GaLG::inv_list::invert(vector<int>& vin)
 {
   _size = vin.size();
-  if(vin.empty())
+  if (vin.empty())
     return;
 
   _bound.first = vin[0], _bound.second = vin[0], _inv.clear();
 
   int i;
-  for(i = 0; i < vin.size(); i++)
-  {
-    if(_bound.first > vin[i])
-      _bound.first = vin[i];
-    if(_bound.second < vin[i])
-      _bound.second = vin[i];
-  }
+  for (i = 0; i < vin.size(); i++)
+    {
+      if (_bound.first > vin[i])
+        _bound.first = vin[i];
+      if (_bound.second < vin[i])
+        _bound.second = vin[i];
+    }
 
   int gap = _bound.second - _bound.first + 1;
   _inv.resize(gap);
@@ -69,25 +74,30 @@ void GaLG::inv_list::invert(vector<int>& vin)
   return;
 }
 
-void GaLG::inv_list::invert(vector<int>* vin)
+void
+GaLG::inv_list::invert(vector<int>* vin)
 {
   invert(*vin);
 }
 
-void GaLG::inv_list::invert(vector<string>& vin)
+void
+GaLG::inv_list::invert(vector<string>& vin)
 {
   invert(vin, &cv, NULL);
 }
 
-void GaLG::inv_list::invert(vector<string>* vin)
+void
+GaLG::inv_list::invert(vector<string>* vin)
 {
   invert(*vin);
 }
 
-void GaLG::inv_list::invert(vector<string>& vin, int(*stoi)(string&, void*), void* d)
+void
+GaLG::inv_list::invert(vector<string>& vin, int
+(*stoi)(string&, void*), void* d)
 {
   _size = vin.size();
-  if(vin.empty())
+  if (vin.empty())
     return;
 
   _bound.first = stoi(vin[0], d);
@@ -95,13 +105,13 @@ void GaLG::inv_list::invert(vector<string>& vin, int(*stoi)(string&, void*), voi
   _inv.clear();
 
   int i;
-  for(i = 0; i < vin.size(); i++)
-  {
-    if(_bound.first > stoi(vin[i], d))
-      _bound.first = stoi(vin[i], d);
-    if(_bound.second < stoi(vin[i], d))
-      _bound.second = stoi(vin[i], d);
-  }
+  for (i = 0; i < vin.size(); i++)
+    {
+      if (_bound.first > stoi(vin[i], d))
+        _bound.first = stoi(vin[i], d);
+      if (_bound.second < stoi(vin[i], d))
+        _bound.second = stoi(vin[i], d);
+    }
 
   int gap = _bound.second - _bound.first + 1;
   _inv.resize(gap);
@@ -113,21 +123,25 @@ void GaLG::inv_list::invert(vector<string>& vin, int(*stoi)(string&, void*), voi
   return;
 }
 
-void GaLG::inv_list::invert(vector<string>* vin, int(*stoi)(string&, void*), void* d)
+void
+GaLG::inv_list::invert(vector<string>* vin, int
+(*stoi)(string&, void*), void* d)
 {
   invert(*vin, stoi, d);
 }
 
-bool GaLG::inv_list::contains(int value)
+bool
+GaLG::inv_list::contains(int value)
 {
-  if(value > _bound.second || value < _bound.first)
+  if (value > _bound.second || value < _bound.first)
     return false;
   return true;
 }
 
-vector<int>* GaLG::inv_list::index(int value)
+vector<int>*
+GaLG::inv_list::index(int value)
 {
-  if(!contains(value))
+  if (!contains(value))
     return NULL;
   return &_inv[value - min()];
 }

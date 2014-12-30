@@ -6,8 +6,10 @@
 
 using namespace std;
 
-namespace GaLG {
-  struct raw_data {
+namespace GaLG
+{
+  struct raw_data
+  {
     /**
      * @brief The meta information.
      * @details The meta information which basically
@@ -32,7 +34,8 @@ namespace GaLG {
      * @details This method removes all contents in _meta, _instance
      *          and _transpose.
      */
-    void clear();
+    void
+    clear();
 
     /**
      * @brief The size of meta information.
@@ -40,7 +43,8 @@ namespace GaLG {
      *          _meta vector's size.
      * @return The size of meta information.
      */
-    int m_size();
+    int
+    m_size();
 
     /**
      * @brief The size of instances.
@@ -48,7 +52,8 @@ namespace GaLG {
      *          _instance vector's size.
      * @return The size of instances.
      */
-    int i_size();
+    int
+    i_size();
 
     /**
      * @brief The meta information at specific index.
@@ -59,7 +64,8 @@ namespace GaLG {
      * @return A pointer points to the meta information or a NULL pointer if
      *         the information is not available.
      */
-    string* meta(int attr_index);
+    string*
+    meta(int attr_index);
 
     /**
      * @brief The index of the specific meta information.
@@ -70,7 +76,8 @@ namespace GaLG {
      * @return The index of the given meta information or -1 if it cannot
      *         be found.
      */
-    int meta(string attr);
+    int
+    meta(string attr);
 
     /**
      * @brief The instance which has the given row index.
@@ -80,7 +87,8 @@ namespace GaLG {
      * @param index The row index.
      * @return A pointer points to the specific row.
      */
-    vector<string>* row(int index);
+    vector<string>*
+    row(int index);
 
     /**
      * @brief The column of given attribute.
@@ -93,7 +101,8 @@ namespace GaLG {
      * @param attr The attribute string.
      * @return A pointer points to the column. Return NULL if the attribute does not exist.
      */
-    vector<string>* col(string attr);
+    vector<string>*
+    col(string attr);
 
     /**
      * @brief The column of given attribute index.
@@ -106,7 +115,8 @@ namespace GaLG {
      * @param  The attribute index.
      * @return A pointer points to the column. Return NULL if the attribute does not exist.
      */
-    vector<string>* col(int attr_index);
+    vector<string>*
+    col(int attr_index);
   };
 }
 

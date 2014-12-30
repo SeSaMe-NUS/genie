@@ -6,8 +6,10 @@
 
 using namespace std;
 
-namespace GaLG {
-  class inv_list {
+namespace GaLG
+{
+  class inv_list
+  {
   private:
     /**
      * @brief The number of instances.
@@ -32,7 +34,10 @@ namespace GaLG {
      * @brief Default constructor.
      * @details Create an empty inv_list.
      */
-    inv_list(){}
+    inv_list() :
+        _size(0)
+    {
+    }
 
     /**
      * @brief Create an inv_list from an int vector.
@@ -75,21 +80,24 @@ namespace GaLG {
      * @details The min value of the inverted vector.
      * @return The min value of the inverted vector.
      */
-    int min();
+    int
+    min();
 
     /**
      * @brief The max value of the inverted vector.
      * @details The max value of the inverted vector.
      * @return The max value of the inverted vector.
      */
-    int max();
+    int
+    max();
 
     /**
      * @brief The number of instances.
      * @details The number of instances or values in the original vector.
      * @return The number of instances.
      */
-    int size();
+    int
+    size();
 
     /**
      * @brief Create an inverted list from an int vector.
@@ -97,7 +105,8 @@ namespace GaLG {
      * 
      * @param vin The vector which will be inverted.
      */
-    void invert(vector<int>& vin);
+    void
+    invert(vector<int>& vin);
 
     /**
      * @brief Create an inverted list from an int vector.
@@ -105,7 +114,8 @@ namespace GaLG {
      * 
      * @param vin The vector which will be inverted.
      */
-    void invert(vector<int>* vin);
+    void
+    invert(vector<int>* vin);
 
     /**
      * @brief Create an inverted list from an string vector.
@@ -115,7 +125,8 @@ namespace GaLG {
      * 
      * @param vin The vector which will be inverted.
      */
-    void invert(vector<string>&);
+    void
+    invert(vector<string>&);
 
     /**
      * @brief Create an inverted list from an string vector.
@@ -125,7 +136,8 @@ namespace GaLG {
      * 
      * @param vin The vector which will be inverted.
      */
-    void invert(vector<string>*);
+    void
+    invert(vector<string>*);
 
     /**
      * @brief Create an inverted list from an string vector.
@@ -140,7 +152,9 @@ namespace GaLG {
      * @param stoi The converter function pointer.
      * @param d Anyother things that will be passed to the stoi function.
      */
-    void invert(vector<string>& vin, int(*stoi)(string&, void*), void* d);
+    void
+    invert(vector<string>& vin, int
+    (*stoi)(string&, void*), void* d);
 
     /**
      * @brief Create an inverted list from an string vector.
@@ -155,7 +169,9 @@ namespace GaLG {
      * @param stoi The converter function pointer.
      * @param d Anyother things that will be passed to the stoi function.
      */
-    void invert(vector<string>* vin, int(*stoi)(string&, void*), void* d);
+    void
+    invert(vector<string>* vin, int
+    (*stoi)(string&, void*), void* d);
 
     /**
      * @brief Check whether the vaule is in the inv_list.
@@ -164,7 +180,8 @@ namespace GaLG {
      * @param  value The value which will be checked.
      * @return Whether the vaule is in the inv_list.
      */
-    bool contains(int value);
+    bool
+    contains(int value);
 
     /**
      * @brief The indexes of the value.
@@ -175,7 +192,8 @@ namespace GaLG {
      * @return Pointer points to the indexes vector. NULL if the value does not appear
      *         in the original vector.
      */
-    vector<int>* index(int value);
+    vector<int>*
+    index(int value);
   };
 }
 
