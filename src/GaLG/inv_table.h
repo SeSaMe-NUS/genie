@@ -122,6 +122,12 @@ namespace GaLG
     vector<inv_list>*
     inv_lists();
 
+    vector<int>*
+    ck();
+
+    vector<int>*
+    inv();
+
     /**
      * @brief Build the inv_table.
      * @details This method will merge all inv_lists to

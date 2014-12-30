@@ -52,6 +52,18 @@ GaLG::inv_table::inv_lists()
   return &_inv_lists;
 }
 
+vector<int>*
+GaLG::inv_table::ck()
+{
+  return &_ck;
+}
+
+vector<int>*
+GaLG::inv_table::inv()
+{
+  return &_inv;
+}
+
 void
 GaLG::inv_table::build()
 {
