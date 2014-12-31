@@ -12,7 +12,8 @@ using namespace thrust;
 namespace GaLG
 {
   void
-  match(inv_table& table, vector<query>& queries, device_vector<float>& d_agg);
+  match(inv_table& table, vector<query>& queries, device_vector<int>& d_count,
+      device_vector<float>& d_agg) throw (int);
 }
 
 #endif

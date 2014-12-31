@@ -26,6 +26,8 @@ namespace GaLG
   public:
     query(inv_table* ref);
     query(inv_table& ref);
+    inv_table*
+    ref_table();
     void
     attr(int index, int low, int up, float weight);
     void

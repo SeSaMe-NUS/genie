@@ -30,6 +30,12 @@ GaLG::query::query(inv_table& ref)
     }
 }
 
+GaLG::inv_table*
+GaLG::query::ref_table()
+{
+  return _ref_table;
+}
+
 void
 GaLG::query::attr(int index, int low, int up, float weight)
 {

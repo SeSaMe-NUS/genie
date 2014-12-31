@@ -46,6 +46,12 @@ GaLG::inv_table::append(inv_list& inv)
     }
 }
 
+GaLG::inv_table::status
+GaLG::inv_table::build_status()
+{
+  return _build_status;
+}
+
 vector<inv_list>*
 GaLG::inv_table::inv_lists()
 {

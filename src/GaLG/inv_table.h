@@ -12,16 +12,25 @@ namespace GaLG
 {
   class inv_table
   {
+  public:
+    enum status
+    {
+      not_builded, builded
+    };
+
+    enum exception
+    {
+      not_builded_exception,
+      not_matched_exception
+    };
+
   private:
     /**
      * @brief Current status of the inv_table.
      *        Any modification will make the 
      *        inv_table not_builded.
      */
-    enum
-    {
-      not_builded, builded
-    } _build_status;
+    status _build_status;
 
     /**
      * @brief Bits should be shifted.
@@ -114,6 +123,9 @@ namespace GaLG
     void
     append(inv_list& inv);
 
+    status
+    build_status();
+
     /**
      * @brief The _inv_lists vector's pointer.
      * @details The _inv_lists vector's pointer.
@@ -122,9 +134,19 @@ namespace GaLG
     vector<inv_list>*
     inv_lists();
 
+    /**
+     * @brief The _ck vector's pointer.
+     * @details The _ck vector's pointer
+     * @return The pointer points to _ck vector.
+     */
     vector<int>*
     ck();
 
+    /**
+     * @brief The _inv vector's pointer.
+     * @details The _inv vector's pointer
+     * @return The pointer points to _inv vector.
+     */
     vector<int>*
     inv();
 
