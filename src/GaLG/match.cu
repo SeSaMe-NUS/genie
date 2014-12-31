@@ -60,6 +60,10 @@ GaLG::match(inv_table& table, vector<query>& queries,
     {
       if (queries[i].ref_table() != &table)
         throw inv_table::not_matched_exception;
+      if(table.build_status() == inv_table::builded)
+        queries[i].build();
+      else if(table.build_status() == inv_table::builded_compressed)
+        queries[i].build_compressed();
       queries[i].dump(dims);
     }
 
