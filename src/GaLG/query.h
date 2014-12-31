@@ -21,6 +21,7 @@ namespace GaLG
     };
   private:
     inv_table* _ref_table;
+    vector<dim> _attr;
     vector<dim> _dims;
 
   public:
@@ -30,6 +31,13 @@ namespace GaLG
     ref_table();
     void
     attr(int index, int low, int up, float weight);
+
+    void
+    build();
+
+    void
+    build_compressed();
+
     void
     dump(vector<dim>& vout);
   };

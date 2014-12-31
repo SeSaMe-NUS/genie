@@ -9,6 +9,9 @@ GaLG::inv_table::clear()
 {
   _build_status = not_builded;
   _inv_lists.clear();
+  _ck.clear();
+  _inv.clear();
+  _ck_map.clear();
 }
 
 bool
@@ -70,6 +73,12 @@ GaLG::inv_table::inv()
   return &_inv;
 }
 
+map<int, int>*
+GaLG::inv_table::ck_map()
+{
+  return &_ck_map;
+}
+
 void
 GaLG::inv_table::build()
 {
@@ -98,4 +107,31 @@ GaLG::inv_table::build()
         }
     }
   _build_status = builded;
+}
+
+void
+GaLG::inv_table::build_compressed()
+{
+  _ck.clear(), _inv.clear(), _ck_map.clear();
+  int i, j, key, dim, value;
+  for (i = 0; i < _inv_lists.size(); i++)
+    {
+      dim = i << _shifter;
+      for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
+        {
+          key = dim + value - _inv_lists[i].min();
+          vector<int>* indexes = _inv_lists[i].index(value);
+
+          for (j = 0; j < indexes->size(); j++)
+            {
+              _inv.push_back((*indexes)[j]);
+              _ck_map[key] = _ck.size();
+            }
+          if (indexes->size() > 0)
+            {
+              _ck.push_back(_inv.size());
+            }
+        }
+    }
+  _build_status = builded_compressed;
 }

@@ -5,6 +5,7 @@
 #include "inv_list.h"
 
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -15,13 +16,12 @@ namespace GaLG
   public:
     enum status
     {
-      not_builded, builded
+      not_builded, builded, builded_compressed
     };
 
     enum exception
     {
-      not_builded_exception,
-      not_matched_exception
+      not_builded_exception, not_matched_exception
     };
 
   private:
@@ -56,6 +56,8 @@ namespace GaLG
      * @brief The inverted indexes' vector.
      */
     vector<int> _inv;
+
+    map<int, int> _ck_map;
 
   public:
     /**
@@ -150,6 +152,9 @@ namespace GaLG
     vector<int>*
     inv();
 
+    map<int, int>*
+    ck_map();
+
     /**
      * @brief Build the inv_table.
      * @details This method will merge all inv_lists to
@@ -159,6 +164,9 @@ namespace GaLG
      */
     void
     build();
+
+    void
+    build_compressed();
   };
 }
 
