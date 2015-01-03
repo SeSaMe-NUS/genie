@@ -60,9 +60,9 @@ GaLG::match(inv_table& table, vector<query>& queries,
     {
       if (queries[i].ref_table() != &table)
         throw inv_table::not_matched_exception;
-      if(table.build_status() == inv_table::builded)
+      if (table.build_status() == inv_table::builded)
         queries[i].build();
-      else if(table.build_status() == inv_table::builded_compressed)
+      else if (table.build_status() == inv_table::builded_compressed)
         queries[i].build_compressed();
       queries[i].dump(dims);
     }
@@ -86,4 +86,13 @@ GaLG::match(inv_table& table, vector<query>& queries,
 
   device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
   (table.m_size(), table.i_size(), d_ck_p, d_inv_p, d_dims_p, d_count_p, d_aggregation_p);
+}
+
+void
+GaLG::match(inv_table& table, query& queries, device_vector<int>& d_count,
+    device_vector<float>& d_aggregation) throw (int)
+{
+  vector<query> _q;
+  _q.push_back(queries);
+  match(table, _q, d_count, d_aggregation);
 }

@@ -28,6 +28,10 @@ namespace GaLG
   void
   match(inv_table& table, vector<query>& queries, device_vector<int>& d_count,
       device_vector<float>& d_aggregation) throw (int);
+
+  void
+  match(inv_table& table, query& queries, device_vector<int>& d_count,
+      device_vector<float>& d_aggregation) throw (int);
 }
 
 #endif
