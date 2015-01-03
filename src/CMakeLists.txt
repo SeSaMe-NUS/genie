@@ -8,6 +8,15 @@ set(LIB_SRC_LIST
   GaLG/lib/libcsv/csv.h
   GaLG/lib/libcsv/libcsv.c
 
+  GaLG/lib/bucket_topk/assign_bucket.inc
+  GaLG/lib/bucket_topk/bucket_topk.h
+  GaLG/lib/bucket_topk/bucket_topk.inc
+  GaLG/lib/bucket_topk/count_sum.inc
+  GaLG/lib/bucket_topk/result_thread_partition.inc
+  GaLG/lib/bucket_topk/save_result.inc
+  GaLG/lib/bucket_topk/update_min_max.inc
+  GaLG/lib/bucket_topk/utils.inc
+
   GaLG/raw_data.h
   GaLG/raw_data.cc
   GaLG/inv_list.h
@@ -18,6 +27,8 @@ set(LIB_SRC_LIST
   GaLG/query.cc
   GaLG/match.h
   GaLG/match.cu
+  GaLG/topk.h
+  GaLG/topk.cu
 
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)
