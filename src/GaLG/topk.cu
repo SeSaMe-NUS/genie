@@ -2,32 +2,39 @@
 
 struct ValueOf
 {
+  float max;
   __host__ __device__ float
   valueOf(float data)
   {
-    return (float) data;
+    return (float) max - data;
   }
-} val;
+};
 
 void
 GaLG::topk(device_vector<float>& d_search, device_vector<int>& d_tops,
     device_vector<int>& d_top_indexes)
 {
   int parts = d_tops.size();
-  int total = 0, i;
-  for (i = 0; i < d_tops.size(); i++)
+  int total = 0, i, num;
+  for (i = 0; i < parts; i++)
     {
-      total += d_tops[i];
+      num = d_tops[i];
+      total += num;
     }
-  float* min = thrust::min_element(raw_pointer_cast(d_search.data()), raw_pointer_cast(d_search.data()) + d_search.size());
-  float* max = thrust::max_element(raw_pointer_cast(d_search.data()), raw_pointer_cast(d_search.data()) + d_search.size());
-
+  thrust::pair<device_vector<float>::iterator, device_vector<float>::iterator> minmax =
+      thrust::minmax_element(d_search.begin(), d_search.end());
+  host_vector<int> h_end_index(parts);
   device_vector<int> d_end_index(parts);
   int number_of_each = d_search.size() / parts;
-  for(i=0; i<parts; i++)
+  for (i = 0; i < parts; i++)
     {
-      d_end_index[i] = (i+1) * number_of_each;
+      h_end_index[i] = (i + 1) * number_of_each;
     }
+  d_end_index = h_end_index;
   d_top_indexes.clear(), d_top_indexes.resize(total);
-  bucket_topk<float, ValueOf>(&d_search, val, *min, *max, &d_tops, &d_end_index, parts, &d_top_indexes);
+
+  ValueOf val;
+  val.max = *minmax.second;
+  bucket_topk<float, ValueOf>(&d_search, val, *minmax.first, *minmax.second,
+      &d_tops, &d_end_index, parts, &d_top_indexes);
 }
