@@ -12,8 +12,7 @@ namespace GaLG
   {
     /**
      * @brief The meta information.
-     * @details The meta information which basically
-     *          are the attributes' names.
+     * @details The meta information or the attributes' names.
      */
     vector<string> _meta;
 
@@ -25,7 +24,7 @@ namespace GaLG
 
     /**
      * @brief Columns.
-     * @details The transposition matrix of the instance's matrix.
+     * @details The transposition matrix of the _instance's matrix.
      */
     vector<vector<string> > _transpose;
 
@@ -92,7 +91,7 @@ namespace GaLG
 
     /**
      * @brief The column of given attribute.
-     * @details The column of given attribute. The method will look the
+     * @details The column of given attribute. The method will check the
      *          _transpose vector to get the column information. The method
      *          will first check whether _transpose vector is empty. It will first
      *          build the _transpose vector if it is empty or simply return the column's
@@ -106,7 +105,7 @@ namespace GaLG
 
     /**
      * @brief The column of given attribute index.
-     * @details The column of given attribute index. The method will look the
+     * @details The column of given attribute index. The method will check the
      *          _transpose vector to get the column information. The method
      *          will first check whether _transpose vector is empty. It will first
      *          build the _transpose vector if it is empty or simply return the column's

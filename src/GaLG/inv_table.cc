@@ -49,6 +49,15 @@ GaLG::inv_table::append(inv_list& inv)
     }
 }
 
+void
+GaLG::inv_table::append(inv_list* inv)
+{
+  if (inv != NULL)
+    {
+      append(*inv);
+    }
+}
+
 GaLG::inv_table::status
 GaLG::inv_table::build_status()
 {

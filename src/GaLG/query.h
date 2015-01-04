@@ -21,31 +21,49 @@ namespace GaLG
     };
 
   private:
+    /**
+     * @brief The refrenced table.
+     * @details The refrenced table. The query can only be
+     *        used to query the refrenced table.
+     */
     inv_table* _ref_table;
+
+    /**
+     * @brief The saved ranges.
+     * @details The saved ranges. Since different table requires
+     *          different ranges setting, the attribute saves the
+     *          raw range settings.
+     */
     vector<dim> _attr;
+
+    /**
+     * @brief The queried ranges.
+     * @details The queried ranges. In matching steps, this vector will
+     *          be transferred to device.
+     */
     vector<dim> _dims;
 
   public:
     /**
-     * @brief Create a query based on a inv_table.
-     * @details Create a query based on a inv_table.
+     * @brief Create a query based on an inv_table.
+     * @details Create a query based on an inv_table.
      * 
      * @param ref The refrence to the inv_table.
      */
     query(inv_table* ref);
 
     /**
-     * @brief Create a query based on a inv_table.
-     * @details Create a query based on a inv_table.
+     * @brief Create a query based on an inv_table.
+     * @details Create a query based on an inv_table.
      * 
      * @param ref The pointer to the inv_table.
      */
     query(inv_table& ref);
 
     /**
-     * @brief The refrence table's pointer.
-     * @details The refrence table's pointer.
-     * @return The pointer points to the refrence table.
+     * @brief The refrenced table's pointer.
+     * @details The refrenced table's pointer.
+     * @return The pointer points to the refrenced table.
      */
     inv_table*
     ref_table();
@@ -55,8 +73,8 @@ namespace GaLG
      * @details Modify the matching range and weight of an attribute.
      * 
      * @param index Attribute index
-     * @param low Lower bound
-     * @param up Upper bound
+     * @param low Lower bound (included)
+     * @param up Upper bound (included)
      * @param weight The weight
      */
     void
@@ -77,9 +95,9 @@ namespace GaLG
     build_compressed();
 
     /**
-     * @brief Transfer matching information to vector vout.
-     * @details Transfer matching information to vector vout. vout will not
-     *          be cleared, the push_back method will be invoked instead.
+     * @brief Transfer the matching information(the queried ranges) to vector vout.
+     * @details Transfer matching information(the queried ranges) to vector vout.
+     *          vout will not be cleared, the push_back method will be invoked instead.
      * 
      * @param vout The target vector.
      */

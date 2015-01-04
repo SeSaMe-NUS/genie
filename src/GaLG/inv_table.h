@@ -26,14 +26,14 @@ namespace GaLG
 
   private:
     /**
-     * @brief Current status of the inv_table.
+     * @brief Building status of the inv_table.
      *        Any modification will make the 
      *        inv_table not_builded.
      */
     status _build_status;
 
     /**
-     * @brief Bits should be shifted.
+     * @brief Bits shifted.
      */
     int _shifter;
 
@@ -57,12 +57,15 @@ namespace GaLG
      */
     vector<int> _inv;
 
+    /**
+     * @brief The map used in compressed array.
+     */
     map<int, int> _ck_map;
 
   public:
     /**
      * @brief Default constructor of the inv_table.
-     * @details It set the _shifter to 16 and set the
+     * @details It sets the _shifter to 16 and set the
      *        _size to -1.
      */
     inv_table() :
@@ -72,7 +75,7 @@ namespace GaLG
 
     /**
      * @brief Clear the inv_table
-     * @details The method remove all content in _inv_lists, _ck and _inv.
+     * @details The method removes all content in _inv_lists, _ck and _inv.
      *          It also sets the _size back to -1.
      */
     void
@@ -91,7 +94,7 @@ namespace GaLG
 
     /**
      * @brief Get the number of dimensions.
-     * @details Get the number of dimensions or meta datas.
+     * @details Get the number of dimensions.
      * @return The number of dimensions.
      */
     int
@@ -99,7 +102,7 @@ namespace GaLG
 
     /**
      * @brief Get the number of instances.
-     * @details Get the number of instances or rows.
+     * @details Get the number of instances.
      * @return The number of instances
      */
     int
@@ -125,6 +128,23 @@ namespace GaLG
     void
     append(inv_list& inv);
 
+    /**
+     * @brief Append an inv_list to the inv_table.
+     * @details The appended inv_list will be added
+     *          to _inv_lists. The first inv_list will set
+     *          the _size to correct number. If _size is not
+     *          equal to the size of inv_list or -1. This
+     *          method will simply return and do nothing.
+     * @param inv: the refrence to the inv_list which will be appended.
+     */
+    void
+    append(inv_list* inv);
+
+    /**
+     * @brief Get building status of the inv_table.
+     * @details Get building status of the inv_table.
+     * @return Building status of the inv_table.
+     */
     status
     build_status();
 
@@ -152,6 +172,11 @@ namespace GaLG
     vector<int>*
     inv();
 
+    /**
+     * @brief The _ck_map's pointer.
+     * @details The _ck_map's pointer.
+     * @return The pointer points to _ck_map.
+     */
     map<int, int>*
     ck_map();
 
@@ -165,6 +190,13 @@ namespace GaLG
     void
     build();
 
+    /**
+     * @brief Build the inv_table as a compressed array.
+     * @details This method will merge all inv_lists to
+     *          two vector _ck and _inv and keep the indexes
+     *          in _ck_map, thenset the _build_status to builded_compressed.
+     *          Any query should only be done after the inv_table has been builded.
+     */
     void
     build_compressed();
   };
