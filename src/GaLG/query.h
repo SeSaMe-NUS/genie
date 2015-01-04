@@ -43,6 +43,12 @@ namespace GaLG
      */
     vector<dim> _dims;
 
+    /**
+     * @brief The top k matches required.
+     * @details The top k matches required.
+     */
+    int _topk;
+
   public:
     /**
      * @brief Create a query based on an inv_table.
@@ -79,6 +85,24 @@ namespace GaLG
      */
     void
     attr(int index, int low, int up, float weight);
+
+    /**
+     * @brief Set top k matches.
+     * @details Set top k matches.
+     *
+     * @param k The top k matches.
+     */
+    void
+    topk(int k);
+
+    /**
+     * @brief Get top k matches.
+     * @details Get top k matches.
+     *
+     * @return The top k matches.
+     */
+    int
+    topk();
 
     /**
      * @brief Construct the query based on a normal table.

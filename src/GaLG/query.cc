@@ -19,6 +19,7 @@ GaLG::query::query(inv_table* ref)
       _dims[i].up = -1;
       _dims[i].weight = 0;
     }
+  _topk = 1;
 }
 
 GaLG::query::query(inv_table& ref)
@@ -40,6 +41,7 @@ GaLG::query::query(inv_table& ref)
       _dims[i].up = -1;
       _dims[i].weight = 0;
     }
+  _topk = 1;
 }
 
 GaLG::inv_table*
@@ -57,6 +59,18 @@ GaLG::query::attr(int index, int low, int up, float weight)
   _attr[index].low = low;
   _attr[index].up = up;
   _attr[index].weight = weight;
+}
+
+void
+GaLG::query::topk(int k)
+{
+  _topk = k;
+}
+
+int
+GaLG::query::topk()
+{
+  return _topk;
 }
 
 void
