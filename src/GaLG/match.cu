@@ -33,7 +33,7 @@ namespace GaLG
           if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
             {
               atomicAdd(
-                  &d_aggregation[part]
+                  &d_count[part]
                       + d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK
                           + min], 1);
               atomicAdd(
