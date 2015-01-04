@@ -1,5 +1,7 @@
 #include "topk.h"
 
+#include <thrust/host_vector.h>
+
 struct ValueOfFloat
 {
   float max;__host__ __device__ float
@@ -19,7 +21,35 @@ struct ValueOfInt
 };
 
 void
-topk(device_vector<int>& d_search, device_vector<int>& d_tops,
+GaLG::topk(device_vector<int>& d_search, vector<GaLG::query> queries,
+    device_vector<int>& d_top_indexes)
+{
+  host_vector<int> h_tops(queries.size());
+  int i;
+  for (i = 0; i < queries.size(); i++)
+    {
+      h_tops[i] = queries[i].topk();
+    }
+  device_vector<int> d_tops(h_tops);
+  topk(d_search, d_tops, d_top_indexes);
+}
+
+void
+GaLG::topk(device_vector<float>& d_search, vector<GaLG::query> queries,
+    device_vector<int>& d_top_indexes)
+{
+  host_vector<int> h_tops(queries.size());
+  int i;
+  for (i = 0; i < queries.size(); i++)
+    {
+      h_tops[i] = queries[i].topk();
+    }
+  device_vector<int> d_tops(h_tops);
+  topk(d_search, d_tops, d_top_indexes);
+}
+
+void
+GaLG::topk(device_vector<int>& d_search, device_vector<int>& d_tops,
     device_vector<int>& d_top_indexes)
 {
   int parts = d_tops.size();
