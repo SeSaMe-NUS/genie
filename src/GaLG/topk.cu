@@ -21,7 +21,19 @@ struct ValueOfInt
 };
 
 void
-GaLG::topk(GaLG::inv_table& table, vector<GaLG::query> queries,
+GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
+    device_vector<int>& d_top_indexes)
+{
+  device_vector<int> d_c;
+  device_vector<float> d_a;
+  vector<query> q;
+  q.push_back(queries);
+  match(table, q, d_c, d_a);
+  topk(d_a, q, d_top_indexes);
+}
+
+void
+GaLG::topk(GaLG::inv_table& table, vector<GaLG::query>& queries,
     device_vector<int>& d_top_indexes)
 {
   device_vector<int> d_c;
@@ -31,7 +43,7 @@ GaLG::topk(GaLG::inv_table& table, vector<GaLG::query> queries,
 }
 
 void
-GaLG::topk(device_vector<int>& d_search, vector<GaLG::query> queries,
+GaLG::topk(device_vector<int>& d_search, vector<GaLG::query>& queries,
     device_vector<int>& d_top_indexes)
 {
   host_vector<int> h_tops(queries.size());
@@ -45,7 +57,7 @@ GaLG::topk(device_vector<int>& d_search, vector<GaLG::query> queries,
 }
 
 void
-GaLG::topk(device_vector<float>& d_search, vector<GaLG::query> queries,
+GaLG::topk(device_vector<float>& d_search, vector<GaLG::query>& queries,
     device_vector<int>& d_top_indexes)
 {
   host_vector<int> h_tops(queries.size());

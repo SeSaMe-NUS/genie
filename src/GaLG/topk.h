@@ -23,7 +23,19 @@ namespace GaLG
    * @param d_top_indexes The results' indexes.
    */
   void
-  topk(inv_table& table, vector<query> queries,
+  topk(inv_table& table, query& queries,
+      device_vector<int>& d_top_indexes);
+
+  /**
+   * @brief Find the top k values in given inv_table.
+   * @details Find the top k values in given inv_table.
+   *
+   * @param table The given table.
+   * @param queries The queries.
+   * @param d_top_indexes The results' indexes.
+   */
+  void
+  topk(inv_table& table, vector<query>& queries,
       device_vector<int>& d_top_indexes);
 
   /**
@@ -35,7 +47,7 @@ namespace GaLG
    * @param d_top_indexes The results' indexes.
    */
   void
-  topk(device_vector<int>& d_search, vector<query> queries,
+  topk(device_vector<int>& d_search, vector<query>& queries,
       device_vector<int>& d_top_indexes);
 
   /**
@@ -47,7 +59,7 @@ namespace GaLG
    * @param d_top_indexes The results' indexes.
    */
   void
-  topk(device_vector<float>& d_search, vector<query> queries,
+  topk(device_vector<float>& d_search, vector<query>& queries,
       device_vector<int>& d_top_indexes);
 
   /**
