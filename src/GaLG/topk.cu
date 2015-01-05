@@ -21,6 +21,16 @@ struct ValueOfInt
 };
 
 void
+GaLG::topk(GaLG::inv_table& table, vector<GaLG::query> queries,
+    device_vector<int>& d_top_indexes)
+{
+  device_vector<int> d_c;
+  device_vector<float> d_a;
+  match(table, queries, d_c, d_a);
+  topk(d_a, queries, d_top_indexes);
+}
+
+void
 GaLG::topk(device_vector<int>& d_search, vector<GaLG::query> queries,
     device_vector<int>& d_top_indexes)
 {
