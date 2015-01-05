@@ -46,5 +46,7 @@ main()
   device_vector<float> d_aggregation;
   match(table, queries, d_count, d_aggregation);
 
+  //The matching result is stored in d_count and d_aggregation;
+
   return 0;
 }
