@@ -43,6 +43,6 @@ main()
   topk(d_f, d_tops, d_indexes);
 
   assert(d_indexes[0] == 1);
-  assert(d_indexes[0] == 6);
-  assert(d_indexes[0] == 2);
+  assert(d_indexes[1] == 6);
+  assert(d_indexes[2] == 2);
 }
