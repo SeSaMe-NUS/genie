@@ -71,7 +71,7 @@ namespace GaLG
      * @details Return the index of the given meta information. Return
      *          -1 if the meta information is not found in the raw_data.
      * 
-     * @param  The given meta information.
+     * @param attr The given meta information.
      * @return The index of the given meta information or -1 if it cannot
      *         be found.
      */
@@ -111,7 +111,7 @@ namespace GaLG
      *          build the _transpose vector if it is empty or simply return the column's
      *          pointer if the _transpose vector has been already builded.
      * 
-     * @param  The attribute index.
+     * @param attr_index The attribute index.
      * @return A pointer points to the column. Return NULL if the attribute does not exist.
      */
     vector<string>*
