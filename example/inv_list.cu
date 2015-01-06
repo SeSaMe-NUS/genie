@@ -5,6 +5,24 @@
 using namespace GaLG;
 using namespace std;
 
+struct mm {
+  int min;
+  int max;
+};
+
+int
+converter(string& value, void* d)
+{
+  int num = atoi(value.c_str());
+  mm* minmax_value = (mm*) d;
+
+  if(num < (minmax_value->min))
+    return minmax_value ->min;
+  if(num > (minmax_value->max))
+    return minmax_value ->max;
+  return num;
+}
+
 int
 main()
 {
@@ -22,6 +40,12 @@ main()
 
   //The inverted index list of the column g2.
   list.invert(data.col("g2"));
+
+  //Invert a string vector using a converter.
+  mm minmax_value;
+  minmax_value.min = 0;
+  minmax_value.max = 100;
+  list.invert(data.col("g2"), &converter, &minmax_value);
 
   //indexes of value 2
   vector<int>& indexes = *list.index(2);
