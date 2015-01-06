@@ -1,5 +1,5 @@
-#ifndef GaLG_tool_parser_h
-#define GaLG_tool_parser_h
+#ifndef GaLG_parser_h
+#define GaLG_parser_h
 
 #include "GaLG/raw_data.h"
 

@@ -1,4 +1,5 @@
 #include "topk.h"
+#include "GaLG/lib/bucket_topk/bucket_topk.h"
 
 #include <thrust/host_vector.h>
 

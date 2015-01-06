@@ -4,7 +4,6 @@
 #include "inv_table.h"
 #include "query.h"
 #include "match.h"
-#include "GaLG/lib/bucket_topk/bucket_topk.h"
 
 #include <vector>
 #include <thrust/device_vector.h>
