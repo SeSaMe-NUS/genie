@@ -91,3 +91,12 @@ GaLG::parser::csv(string file, raw_data& data)
 
   return info.rows;
 }
+
+int
+GaLG::parser::csv(string file, raw_data& data, bool include_meta)
+{
+  int rows = csv(file, data);
+  if (include_meta)
+    data._instance.insert(data._instance.begin(), data._meta);
+  return rows;
+}
