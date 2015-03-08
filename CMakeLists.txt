@@ -7,9 +7,11 @@ set(PROJECT_MINOR_VERSION 0.0)
 project(${PROJECT_NAME})
 enable_testing()
 
+
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(warnings "-Wall -Wextra -Werror")
+    set(warnings "-Wall -Wextra ") #-Werror
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /WX /EHsc")
 endif()
@@ -23,7 +25,12 @@ endif()
 
 find_package(CUDA QUIET REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-set(BUILD_SHARED_LIBS ON)
+#set(BUILD_SHARED_LIBS ON)
+set(BUILD_STATIC_LIBS ON)
+
+#SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
+SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-lcudadevrt --relocatable-device-code=true -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35)
+
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)

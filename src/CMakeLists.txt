@@ -33,10 +33,16 @@ set(LIB_SRC_LIST
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)
 
+#cuda_add_library(
+#  ${PROJECT_NAME}
+#  SHARED
+#  ${LIB_SRC_LIST})
+
 cuda_add_library(
   ${PROJECT_NAME}
-  SHARED
+  STATIC
   ${LIB_SRC_LIST})
+
 
 set_target_properties(
   ${PROJECT_NAME}
@@ -45,7 +51,9 @@ set_target_properties(
   SOVERSION ${PROJECT_API_VERSION})
 
 
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+install(TARGETS ${PROJECT_NAME} 
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib)
 install(FILES GaLG.h DESTINATION include)
 
 function(install_header TARGET)
