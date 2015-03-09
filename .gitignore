@@ -6,6 +6,7 @@
 *.elf
 *.*~
 Makefile~
+makefile~
 
 # Libraries
 *.lib
