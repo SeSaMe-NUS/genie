@@ -9,7 +9,7 @@ int
 main()
 {
   raw_data data;
-  parser::csv("static/t1.csv", data);
+  parser::csv("../static/t1.csv", data);
 
   inv_list list;
   inv_table table;
@@ -46,7 +46,7 @@ main()
   device_vector<float> d_aggregation;
   match(table, queries, d_count, d_aggregation);
 
-  //The matching result is stored in d_count and d_aggregation;
+  printf(">>>>>>>>>>>>>The matching result is stored in d_count and d_aggregation;\n");
 
   return 0;
 }
