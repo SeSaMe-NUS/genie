@@ -1,6 +1,7 @@
 #include <GaLG.h>
 #include <vector>
 #include <string>
+#include <stdio.h>
 
 using namespace GaLG;
 using namespace std;
@@ -9,7 +10,7 @@ int
 main()
 {
   raw_data data;
-  parser::csv("static/t1.csv", data);
+  parser::csv("../static/t1.csv", data);
 
   inv_list list;
   inv_table table;
@@ -49,7 +50,7 @@ main()
 
   //Or you can get matching result first then call the top k.
   device_vector<int> d_c;
-  device_vector<int> d_a;
+  device_vector<float> d_a;
   match(table, queries, d_c, d_a);
   topk(d_a, queries, d_top_indexes);
 
@@ -66,13 +67,15 @@ main()
   //The indexes are stored in the d_top_indexes vector.
   //You can transfer it back to host_vector and using it to select the
   //instances in the raw_data.
-  int i, index;
-  vector<string>& row;
-  for (i = 0; i < 4; i++)
-    {
-      index = d_top_indexes[i];
-      //The top matched row.
-      row = *data.row(index);
-    }
+  //int i, index;
+  //vector<string>& row;
+  //for (i = 0; i < 4; i++)
+  //  {
+  //    index = d_top_indexes[i];
+  //    //The top matched row.
+  //    row = *data.row(index);
+  //  }
+
+  printf(">>>>>>>>>>>>>Successful topk searching, the searching result is stored in d_top_indexes vector;\n");
   return 0;
 }

@@ -1,5 +1,6 @@
 #include <GaLG.h>
 #include <vector>
+#include <stdio.h>
 #include <string>
 
 using namespace GaLG;
@@ -28,7 +29,7 @@ main()
 {
   //Get datas from a csv.
   raw_data data;
-  parser::csv("static/t1.csv", data);
+  parser::csv("../static/t1.csv", data);
 
   //Get column.
   vector<string>& col = *data.col(0); //The first column;
@@ -53,5 +54,7 @@ main()
   //min max value
   int min = list.min();
   int max = list.max();
+
+ printf(">>>>>>>>>>>>>Successful reading, the minimum =%d the maximum =%d;\n",min,max);
   return 0;
 }

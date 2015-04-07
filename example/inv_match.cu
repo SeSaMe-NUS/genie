@@ -46,7 +46,7 @@ main()
   device_vector<float> d_aggregation;
   match(table, queries, d_count, d_aggregation);
 
-  printf(">>>>>>>>>>>>>The matching result is stored in d_count and d_aggregation;\n");
+  printf(">>>>>>>>>>>>>Successful maching, the matching result is stored in d_count and d_aggregation;\n");
 
   return 0;
 }
