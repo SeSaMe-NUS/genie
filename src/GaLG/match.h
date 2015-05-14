@@ -28,7 +28,7 @@ namespace GaLG
    */
   void
   match(inv_table& table, vector<query>& queries, device_vector<int>& d_count,
-      device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size) throw (int);
+      device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size, int& ndims) throw (int);
 
   /**
    * @brief Search the inv_table and save the match
@@ -46,7 +46,7 @@ namespace GaLG
    */
   void
   match(inv_table& table, query& queries, device_vector<int>& d_count,
-      device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size) throw (int);
+      device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size, int& ndims) throw (int);
 }
 
 #endif

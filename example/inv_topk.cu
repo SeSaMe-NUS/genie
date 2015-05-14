@@ -53,13 +53,14 @@ main()
   device_vector<float> d_a;
   device_vector<int> d_h;
   int hash_table_size;
-  match(table, queries, d_c, d_a, d_h, hash_table_size);
+  int ndims;
+  match(table, queries, d_c, d_a, d_h, hash_table_size, ndims);
   
   //TODO: Modify topk.
   //topk(d_a, queries, d_top_indexes);
 
   //If you want to have different top k values with the queries, you can pass them in via a device_vector.
-  match(table, queries, d_c, d_a);
+  match(table, queries, d_c, d_a, d_h, hash_table_size, ndims);
   //2 Parts
   device_vector<int> d_tops(2);
   //Top 2 values in the first part;

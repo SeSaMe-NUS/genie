@@ -239,7 +239,7 @@ GaLG::match(inv_table& table, vector<query>& queries,
     device_vector<int>& d_count,
     device_vector<float>& d_aggregation,
     device_vector<int>& d_hash,
-            int& hash_table_size)
+            int& hash_table_size, int& ndims)
         throw (int)
 {
   if (table.build_status() == inv_table::not_builded)
@@ -256,6 +256,7 @@ GaLG::match(inv_table& table, vector<query>& queries,
         queries[i].build_compressed();
       queries[i].dump(dims);
     }
+  ndims = dims.size();
 
   int total = table.i_size() * queries.size();
 
@@ -267,6 +268,7 @@ GaLG::match(inv_table& table, vector<query>& queries,
 
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+  
 
   hash_table_size =(int)sqrt((double)total);
   
@@ -335,9 +337,9 @@ GaLG::match(inv_table& table, vector<query>& queries,
 
 void
 GaLG::match(inv_table& table, query& queries, device_vector<int>& d_count,
-    device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size) throw (int)
+    device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size, int& ndims) throw (int)
 {
   vector<query> _q;
   _q.push_back(queries);
-  match(table, _q, d_count, d_aggregation, d_hash, hash_table_size);
+  match(table, _q, d_count, d_aggregation, d_hash, hash_table_size, ndims);
 }

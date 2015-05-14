@@ -46,8 +46,10 @@ main()
   device_vector<float> d_aggregation;
   device_vector<int> d_hash;
   int hash_table_size;
-  match(table, queries, d_count, d_aggregation, d_hash, hash_table_size);
+  int ndims;
+  match(table, queries, d_count, d_aggregation, d_hash, hash_table_size, ndims);
 
+  printf("hash table size: %d, number of dimensions: %d \n", hash_table_size, ndims);
   printf(">>>>>>>>>>>>>Successful maching, the matching result is stored in d_count and d_aggregation;\n");
 
   return 0;
