@@ -44,7 +44,9 @@ main()
 
   device_vector<int> d_count;
   device_vector<float> d_aggregation;
-  match(table, queries, d_count, d_aggregation);
+  device_vector<int> d_hash;
+  int hash_table_size;
+  match(table, queries, d_count, d_aggregation, d_hash, hash_table_size);
 
   printf(">>>>>>>>>>>>>Successful maching, the matching result is stored in d_count and d_aggregation;\n");
 

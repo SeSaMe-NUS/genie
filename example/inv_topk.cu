@@ -51,8 +51,12 @@ main()
   //Or you can get matching result first then call the top k.
   device_vector<int> d_c;
   device_vector<float> d_a;
-  match(table, queries, d_c, d_a);
-  topk(d_a, queries, d_top_indexes);
+  device_vector<int> d_h;
+  int hash_table_size;
+  match(table, queries, d_c, d_a, d_h, hash_table_size);
+  
+  //TODO: Modify topk.
+  //topk(d_a, queries, d_top_indexes);
 
   //If you want to have different top k values with the queries, you can pass them in via a device_vector.
   match(table, queries, d_c, d_a);
@@ -62,7 +66,9 @@ main()
   d_tops[0] = 2;
   //Top 2 values in the second value;
   d_tops[1] = 2;
-  topk(d_a, d_tops, d_top_indexes);
+  
+  //TODO: Modify topk.
+  //topk(d_a, d_tops, d_top_indexes);
 
   //The indexes are stored in the d_top_indexes vector.
   //You can transfer it back to host_vector and using it to select the
