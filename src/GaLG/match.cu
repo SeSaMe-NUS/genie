@@ -1,6 +1,6 @@
 #include "match.h"
 #include <cmath>
-#include <cstdlib.h>
+#include <stdlib>
 
 #ifndef GaLG_device_THREADS_PER_BLOCK
 #define GaLG_device_THREADS_PER_BLOCK 256
