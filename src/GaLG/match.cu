@@ -14,13 +14,18 @@ typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
+typedef u64 T_HASHTABLE;
+typedef u32 T_KEY;
+typedef u32 T_AGE;
+
+
 namespace GaLG
 {
   namespace device
   {
      const u32 DEFAULT_GROUP_SIZE            = 192u;
     
-     const u32 KEY_TYPE_BITS                 = 28u;
+     const u32 KEY_TYPE_BITS                 = 32u;
      const u32 KEY_TYPE_MASK                 = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
      const u32 PACKED_KEY_TYPE_MASK          = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
      const u32 KEY_TYPE_RANGE                = u32( u64((1ull) << KEY_TYPE_BITS) - 2u );
@@ -40,32 +45,44 @@ namespace GaLG
     const u32 KEY_TYPE_MAX_AGE_MASK    = 4u;
     const u32 KEY_TYPE_MAX_AGE_BITS    = 4u;
     
-    CUDA_CONST u32 offsets[16] = OFFSETS_TABLE_16;
+    __device__ __constant__ u32 offsets[16];
     
     __inline__ __host__ __device__
-    u32
-    get_key_pos(u32 key)
+    T_KEY
+    get_key_pos(T_HASHTABLE key)
     {
       return key & KEY_TYPE_MASK;
     }
     
     __inline__ __host__ __device__
-    u32
-    get_key_age(u32 key)
+    T_AGE
+    get_key_age(T_HASHTABLE key)
     {
-      return key >> KEY_TYPE_BITS;
+      return ((key) >> (ATTACH_ID_TYPE_BITS + KEY_TYPE_BITS));
+    }
+
+    __host__ __inline__ __device__
+    u32
+    get_key_attach_id(T_HASHTABLE key)
+    {
+      return ((k) >> (KEY_TYPE_BITS)) & ATTACH_ID_TYPE_MASK;
+    }
+    __host__ __inline__ __device__
+    T_HASHTABLE
+    pack_key_pos(T_KEY p)
+    {
+      return ((p) & KEY_TYPE_MASK);
+    }
+    __host__ __inline__ __device__
+    T_HASHTABLE
+    pack_key_pos_and_attach_id_and_age(T_KEY p, u32 i, T_AGE a)
+    {
+      return u64(((u64(a) << (ATTACH_ID_TYPE_BITS + KEY_TYPE_BITS))) + ((u64(i) & ATTACH_ID_TYPE_MASK) << (KEY_TYPE_BITS)) + u64(p & KEY_TYPE_MASK));
     }
     
     __inline__ __host__ __device__
     u32
-    pack_key_pos_and_age(u32 key, u32 age)
-    {
-      return ((a << KEY_TYPE_BITS)+(key & KEY_TYPE_MASK));
-    }
-    
-    __inline__ __host__ __device__
-    u32
-    hash(u32 key, u8 age, int hash_table_size){
+    hash(T_KEY key, T_AGE age, int hash_table_size){
       return (offsets[age] + key) % hash_table_size;
     }
     
@@ -73,22 +90,22 @@ namespace GaLG
     __inline__ __device__
     void
     access_kernel(u32 id,
-                  u32* htable,
+                  T_HASHTABLE* htable,
                   int table_size,
-                  u32 * key_location,
+                  u32 * index,
                   int * key_found,
                   u32 max_age)
     {
       u32 location;
-      u32 out_key;
-      u8 age = KEY_TYPE_NULL_AGE;
+      T_HASHTABLE out_key;
+      T_AGE age = KEY_TYPE_NULL_AGE;
       
       location = hash(id, age, hash_table_size);
       out_key = htable[location];
       
-      if(out_key == id){
+      if(get_key_pos(out_key) == id){
         * key_found = 1;
-        * key_location = location;
+        * index = get_key_attach_id(out_key);
         return;
       }
       
@@ -104,31 +121,39 @@ namespace GaLG
         
         if(get_key_pos(out_key) == id){
           * key_found = 1;
-          * key_location = location;
+          * index = get_key_attach_id(out_key);
           return;
         }
       }
       
       //Entry not found. Return NULL key.
       * key_found = 0;
-      * key_location = UNDEFINED_KEY;
+      * index = UNDEFINED_KEY;
       
     }
+    
     
     __inline__ __device__
     void
     hash_kernel(u32 id,
-                u32* htable,
-                u32* max_table,
+                T_HASHTABLE* htable,
+                T_AGE* max_table,
                 int table_size,
-                u32* key_location,
-                u32 max_age)
+                u32* value_index,
+                T_AGE max_age,
+                u32 * value)
     {
+
+      u32 my_value = atomicAdd(value, 1);
+      *value_index = my_value;
+      
       u32 location;
       u32 root_location;
-      u32 evicted_key;
-      u32 age = NULL_AGE;
-      u32 key = pack_key_pos_and_age(id, KEY_TYPE_INIT_AGE);
+      T_HASHTABLE evicted_key;
+      T_AGE age = KEY_TYPE_NULL_AGE;
+      T_KEY key = pack_key_pos_and_attach_id_and_age(id,
+                                                   my_value,
+                                                   KEY_TYPE_INIT_AGE);
       
       //Loop until max_age
       while(age < max_age){
@@ -141,7 +166,7 @@ namespace GaLG
         if(evicted_key < key){
           root_location = hash(get_key_pos(key), 0u, hash_table_size);
           atomicMax(&max_table[root_location], get_key_age(key));
-  
+          
           //If not an empty location, loop again to insert the evicted key.
           if(get_key_age(evicted_key) > 0u)
           {
@@ -151,7 +176,7 @@ namespace GaLG
           //If empty location, finish the insertion.
           else
           {
-            *key_location = get_key_pos(key);
+            *value_index = my_value;
             break;
           }
         }
@@ -159,7 +184,7 @@ namespace GaLG
         {
           //Increase age and try again.
           age++;
-          key = pack_key_pos_and_age(get_key_pos(key), age);
+          key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
         }
       }
     }
@@ -172,18 +197,20 @@ namespace GaLG
           int* d_ck,
           int* d_inv,
           query::dim* d_dims,
-          u32** hash_table_list,
-          u32** count_table_list,
-          float** aggregation_table_list,
-          u32** age_table_list,
-          u32 max_age)
+          T_HASHTABLE** hash_table_list,
+          data** data_table_list,
+          T_AGE** age_table_list,
+          T_AGE max_age,
+          u32 * value_idx)
     {
+      int query_index =blockIdx.x / m_size;
       query::dim* q = &d_dims[blockIdx.x];
       
-      u32* hash_table = hash_table_list[blockIdx.x];
-      u32* count_table = count_table_list[blockIdx.x];
-      float* aggregation_table = aggregation_table_list[blockIdx.x];
-      u32* age_table = age_table_list[blockIdx.x];
+      T_HASHTABLE* hash_table = hash_table_list[query_index];
+      T_AGE* age_table = age_table_list[query_index];
+      data* data_table = data_table_list[query_index];
+      
+      u32 index, access_id;
 
       int min, max;
       min = q->low;
@@ -195,39 +222,40 @@ namespace GaLG
       max = d_ck[max];
 
       int loop = (max - min) / GaLG_device_THREADS_PER_BLOCK + 1;
-      int part = blockIdx.x / m_size * i_size;
+
 
       int i;
       for (i = 0; i < loop; i++)
         {
           if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
             {
-              u32 access_id = part + d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
-              u32 key_location;
+              access_id = d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
+
               int key_found = 0;
               
               //Try to find the entry in hash tables
               access_kernel(access_id,
                             hash_table,
                             hash_table_size,
-                            &key_location,
+                            &index,
                             &key_found,
                             max_age);
               
               if(!key_found)
               {
-                //Insert the key into count_table
+                //Insert the key into hash table
                 //access_id and its location are packed into a packed key
-                //Create entry at the same location of aggregation_table
                 hash_kernel(access_id,
                             hash_table,
                             age_table,
                             hash_table_size,
-                            &key_location,
-                            max_age);
+                            &index,
+                            max_age,
+                            value_idx);
               }
-              atomicAdd(&count_table[key_location], 1);
-              atomicAdd(&aggregation_table[key_location],q->weight);
+              data_table[index].id = access_id;
+              atomicAdd(&(data_table[index].count), 1u);
+              atomicAdd(&(data_table[index].aggregation),q->weight);
             }
         }
     }
@@ -235,12 +263,11 @@ namespace GaLG
 }
 
 void
-GaLG::match(inv_table& table, vector<query>& queries,
-    device_vector<int>& d_count,
-    device_vector<float>& d_aggregation,
-    device_vector<int>& d_hash,
-            int& hash_table_size, int& ndims)
-        throw (int)
+GaLG::match(inv_table& table,
+            vector<query>& queries,
+            device_vector<data>& d_data,
+            int& hash_table_size)
+throw (int)
 {
   if (table.build_status() == inv_table::not_builded)
     throw inv_table::not_builded_exception;
@@ -256,8 +283,6 @@ GaLG::match(inv_table& table, vector<query>& queries,
         queries[i].build_compressed();
       queries[i].dump(dims);
     }
-  ndims = dims.size();
-
   int total = table.i_size() * queries.size();
 
   device_vector<int> d_ck(*table.ck());
@@ -272,36 +297,44 @@ GaLG::match(inv_table& table, vector<query>& queries,
 
   hash_table_size =(int)sqrt((double)total);
   
-  u32** d_hash_table_list;
-  cudaMalloc(&d_hash_table_list, sizeof(u32*)*dims.size());
+  T_HASHTABLE** d_hash_table_list;
+  cudaMalloc(&d_hash_table_list, sizeof(T_HASHTABLE*)*queries.size());
   
-  u32** d_count_table_list;
-  cudaMalloc(&d_count_table_list, sizeof(u32*)*dims.size());
+  data** d_data_table_list;
+  cudaMalloc(&d_data_table_list, sizeof(data*)*queries.size());
   
-  float** d_aggregation_table_list;
-  cudaMalloc(&d_aggregation_table_list, sizeof(float)*dims.size());
+  T_AGE** d_max_table_list;
+  cudaMalloc(&d_max_table_list, sizeof(T_AGE)*queries.size());
   
-  u32** d_max_table_list;
-  cudaMalloc(&d_max_table_list, sizeof(u32)*dims.size());
-  
-  for(i = 0; i < dims.size(); ++i){
+  for(i = 0; i < queries.size()(); ++i){
     //hash table memory
-    cudaMalloc(&d_hash_table_list[i], sizeof(u32)*hash_table_size);
-    cudaMemset(&d_hash_table_list[i], UNDEFINED_KEY, sizeof(u32)*hash_table_size);
-    //count table memory
-    cudaMalloc(&d_count_table_list[i], sizeof(u32)*hash_table_size);
-    cudaMemset(&d_count_table_list[i], 0u, sizeof(u32)*hash_table_size);
-    //aggregation table memory
-    cudaMalloc(&d_aggregation_table_list[i], sizeof(float)*hash_table_size);
-    cudaMemset(&d_aggregation_table_list[i], 0f,sizeof(float)*hash_table_size);
+    cudaMalloc(&d_hash_table_list[i], sizeof(T_HASHTABLE)*hash_table_size);
+    cudaMemset(&d_hash_table_list[i], UNDEFINED_KEY, sizeof(T_HASHTABLE)*hash_table_size);
+    //data table memory
+    cudaMalloc(&d_data_table_list[i], sizeof(data)*hash_table_size);
+    cudaMemset(&d_data_table_list[i], 0u, sizeof(data)*hash_table_size);
     //max table memory
-    cudaMalloc(&d_max_table_list[i], sizeof(u32)*hash_table_size);
-    cudaMemset(&d_max_table_list[i], 0,sizeof(u32)*hash_table_size);
+    cudaMalloc(&d_max_table_list[i], sizeof(T_AGE)*hash_table_size);
+    cudaMemset(&d_max_table_list[i], 0,sizeof(T_AGE)*hash_table_size);
   }
   
   u32 max_age = 16u;
   
-  device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+  u32 h_offsets[16] = OFFSETS_TABLE_16;
+  
+  if(!h_offsets_initialized)
+  {
+    cudaMemcpyToSymbol(offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice);
+    h_offsets_initialized = 1;
+  }
+ 
+  
+  u32 h_value_idx = 0;
+  u32 * d_value_idx;
+  cudaMalloc(&d_value_idx, sizeof(u32));
+  cudaMemcpy(d_value_idx, &h_value_idx, sizeof(u32), cudaMemcpyHostToDevice);
+  
+  device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK, sizeof(u32)>>>
   (table.m_size(),
    table.i_size(),
    hash_table_size,
@@ -309,37 +342,39 @@ GaLG::match(inv_table& table, vector<query>& queries,
    d_inv_p,
    d_dims_p,
    d_hash_table_list,
-   d_count_table_list,
-   d_aggregation_table_list,
+   d_data_table_list,
    d_max_table_list,
-   max_age);
+   max_age,
+   d_value_idx);
   
-  d_count.resize(dims.size()*hash_table_size);
-  d_aggregation.resize(dims.size()*hash_table_size);
-  d_hash.resize(dims.size()*hash_table_size);
+  cudaDeviceSynchronize();
   
-  for(i =0; i < dims.size(); ++i){
+  d_data.resize(dims.size()*hash_table_size);
+
+  for(i =0; i < queries.size(); ++i){
     
-    thrust::copy(d_count_table_list[i],
-                 d_count_table_list[i] + hash_table_size,
-                 d_count.begin() + i * hash_table_size);
-    
-    thrust::copy(d_aggregation_table_list[i],
-                 d_aggregation_table_list[i] + hash_table_size,
-                 d_aggregation.begin() + i * hash_table_size);
-    
-    thrust::copy(d_hash_table_list[i],
-                 d_hash_table_list[i] + hash_table_size,
-                 d_hash.begin() + i * hash_table_size);
+    thrust::copy(d_data_table_list[i],
+                 d_data_table_list[i] + hash_table_size,
+                 d_data.begin() + i * hash_table_size);
+    cudaFree(d_data_table_list[i]);
+    cudaFree(d_hash_table_list[i]);
+    cudaFree(d_max_table_list[i]);
   }
+  
+  cudaFree(d_data_table_list);
+  cudaFree(d_hash_table_list);
+  cudaFree(d_max_table_list);
   
 }
 
 void
-GaLG::match(inv_table& table, query& queries, device_vector<int>& d_count,
-    device_vector<float>& d_aggregation, device_vector<int>& d_hash, int& hash_table_size, int& ndims) throw (int)
+GaLG::match(inv_table& table,
+            query& queries,
+            device_vector<data>& d_data,
+            int& hash_table_size)
+throw (int)
 {
   vector<query> _q;
   _q.push_back(queries);
-  match(table, _q, d_count, d_aggregation, d_hash, hash_table_size, ndims);
+  match(table, _q, d_data, hash_table_size);
 }
