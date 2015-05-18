@@ -10,9 +10,6 @@
 
 #define NULL_AGE 0
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long u64;
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
