@@ -58,7 +58,7 @@ main()
 	  printf("Matching Result for query %d:\n", i);
 	  for(j = 0; j < hash_table_size; ++j){
 		   hd = h_data[hash_table_size * i + j];
-		  printf("%3d. Count: %3u, Aggregation: %3.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
+		  printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
 	  }
 	  printf("-------\n");
   }

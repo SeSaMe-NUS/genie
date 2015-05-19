@@ -267,6 +267,11 @@ GaLG::match(inv_table& table,
             int& hash_table_size)
 throw (int)
 {
+#ifdef DEBUG
+	printf("[  0%] Starting matching...\n");
+	printf("[ 10%] Fetching and packing data...\n");
+#endif
+
   if (table.build_status() == inv_table::not_builded)
     throw inv_table::not_builded_exception;
   vector<query::dim> dims;
@@ -283,6 +288,10 @@ throw (int)
     }
   int total = table.i_size() * queries.size();
 
+#ifdef DEBUG
+	printf("[ 20%] Declaring device memory...\n");
+#endif
+
   device_vector<int> d_ck(*table.ck());
   int* d_ck_p = raw_pointer_cast(d_ck.data());
 
@@ -297,7 +306,7 @@ throw (int)
   if(hash_table_size < 11) hash_table_size = 11;
   
 #ifdef DEBUG
-  printf("Starting allocating device memory to table lists...\n");
+  printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
   data_t null_data;
@@ -319,8 +328,7 @@ throw (int)
   u32 max_age = 16u;
   
 #ifdef DEBUG
-  printf("Device memory allocation finished!\n");
-  printf("Starting memory copy to symbol...\n");
+  printf("[ 33%] Copying memory to symbol...\n");
 #endif
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
@@ -328,8 +336,7 @@ throw (int)
   cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice);
   
 #ifdef DEBUG
-  printf("Memory copy to symbol finished!\n");
-  printf("Starting creating incremental index variable...\n");
+  printf("[ 36%] Creating incremental index variable...\n");
 #endif
 
   u32 h_value_idx = 0;
@@ -338,8 +345,7 @@ throw (int)
   cudaMemcpy(d_value_idx, &h_value_idx, sizeof(u32), cudaMemcpyHostToDevice);
   
 #ifdef DEBUG
-  printf("Creating index variable finished!\n");
-  printf("Starting match kernel...\n");
+  printf("[ 40%] Starting match kernels...\n");
 #endif
 
   device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK, sizeof(u32)>>>
@@ -358,8 +364,7 @@ throw (int)
   cudaDeviceSynchronize();
   
 #ifdef DEBUG
-  printf("Kernel launch finished!\n");
-  printf("Starting memory copy to host...\n");
+  printf("[ 90%] Starting memory copy to host...\n");
 #endif
 
   d_data.resize(queries.size()*hash_table_size);
@@ -368,8 +373,7 @@ throw (int)
                d_data.begin());
 
 #ifdef DEBUG
-  printf("Memory copy finished\n");
-  printf("Cleaning up memory...\n");
+  printf("[ 95%] Cleaning up memory...\n");
 #endif
 
   cudaFree(d_data_table);
@@ -378,7 +382,7 @@ throw (int)
   cudaFree(d_value_idx);
   
 #ifdef DEBUG
-  printf("Matching is done!\n");
+  printf("[100%] Matching is done!\n");
 #endif
 }
 
