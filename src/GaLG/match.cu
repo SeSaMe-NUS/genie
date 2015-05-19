@@ -10,6 +10,7 @@
 
 #define NULL_AGE 0
 
+#define DEBUG
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -62,7 +63,7 @@ namespace GaLG
     u32
     get_key_attach_id(T_HASHTABLE key)
     {
-      return ((k) >> (KEY_TYPE_BITS)) & ATTACH_ID_TYPE_MASK;
+      return ((key) >> (KEY_TYPE_BITS)) & ATTACH_ID_TYPE_MASK;
     }
     __host__ __inline__ __device__
     T_HASHTABLE
@@ -88,7 +89,7 @@ namespace GaLG
     void
     access_kernel(u32 id,
                   T_HASHTABLE* htable,
-                  int table_size,
+                  int hash_table_size,
                   u32 * index,
                   int * key_found,
                   u32 max_age)
@@ -135,7 +136,7 @@ namespace GaLG
     hash_kernel(u32 id,
                 T_HASHTABLE* htable,
                 T_AGE* max_table,
-                int table_size,
+                int hash_table_size,
                 u32* value_index,
                 T_AGE max_age,
                 u32 * value)
@@ -194,18 +195,18 @@ namespace GaLG
           int* d_ck,
           int* d_inv,
           query::dim* d_dims,
-          T_HASHTABLE** hash_table_list,
-          data** data_table_list,
-          T_AGE** age_table_list,
+          T_HASHTABLE* hash_table_list,
+          data_t* data_table_list,
+          T_AGE* age_table_list,
           T_AGE max_age,
           u32 * value_idx)
     {
       int query_index =blockIdx.x / m_size;
       query::dim* q = &d_dims[blockIdx.x];
       
-      T_HASHTABLE* hash_table = hash_table_list[query_index];
-      T_AGE* age_table = age_table_list[query_index];
-      data* data_table = data_table_list[query_index];
+      T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
+      T_AGE* age_table = &age_table_list[query_index*hash_table_size];
+      data_t* data_table = &data_table_list[query_index*hash_table_size];
       
       u32 index, access_id;
 
@@ -262,7 +263,7 @@ namespace GaLG
 void
 GaLG::match(inv_table& table,
             vector<query>& queries,
-            device_vector<data>& d_data,
+            device_vector<data_t>& d_data,
             int& hash_table_size)
 throw (int)
 {
@@ -293,44 +294,54 @@ throw (int)
   
 
   hash_table_size =(int)sqrt((double)total);
+  if(hash_table_size < 11) hash_table_size = 11;
   
-  T_HASHTABLE** d_hash_table_list;
-  cudaMalloc(&d_hash_table_list, sizeof(T_HASHTABLE*)*queries.size());
-  
-  data** d_data_table_list;
-  cudaMalloc(&d_data_table_list, sizeof(data*)*queries.size());
-  
-  T_AGE** d_max_table_list;
-  cudaMalloc(&d_max_table_list, sizeof(T_AGE)*queries.size());
-  
-  for(i = 0; i < queries.size()(); ++i){
-    //hash table memory
-    cudaMalloc(&d_hash_table_list[i], sizeof(T_HASHTABLE)*hash_table_size);
-    cudaMemset(&d_hash_table_list[i], UNDEFINED_KEY, sizeof(T_HASHTABLE)*hash_table_size);
-    //data table memory
-    cudaMalloc(&d_data_table_list[i], sizeof(data)*hash_table_size);
-    cudaMemset(&d_data_table_list[i], 0u, sizeof(data)*hash_table_size);
-    //max table memory
-    cudaMalloc(&d_max_table_list[i], sizeof(T_AGE)*hash_table_size);
-    cudaMemset(&d_max_table_list[i], 0,sizeof(T_AGE)*hash_table_size);
-  }
-  
+#ifdef DEBUG
+  printf("Starting allocating device memory to table lists...\n");
+#endif
+
+  data_t null_data;
+  null_data.count = 0u;
+  null_data.aggregation = 0.0f;
+  null_data.id = 0u;
+  std::vector<data_t> h_null_data(queries.size() * hash_table_size, null_data);
+
+  T_HASHTABLE* d_hash_table;
+  cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
+  cudaMemset(&d_hash_table, (u64)GaLG::device::PACKED_UNDEFINED_KEY, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
+  data_t* d_data_table;
+  cudaMalloc(&d_data_table, sizeof(data_t)*queries.size()*hash_table_size);
+  cudaMemcpy(d_data_table, &h_null_data.front(), sizeof(data_t)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
+  T_AGE* d_max_table;
+  cudaMalloc(&d_max_table, sizeof(T_AGE)*queries.size()*hash_table_size);
+  cudaMemset(&d_max_table, 0u,sizeof(T_AGE)*queries.size()*hash_table_size);
+
   u32 max_age = 16u;
   
+#ifdef DEBUG
+  printf("Device memory allocation finished!\n");
+  printf("Starting memory copy to symbol...\n");
+#endif
+
   u32 h_offsets[16] = OFFSETS_TABLE_16;
   
-  if(!h_offsets_initialized)
-  {
-    cudaMemcpyToSymbol(offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice);
-    h_offsets_initialized = 1;
-  }
- 
+  cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice);
   
+#ifdef DEBUG
+  printf("Memory copy to symbol finished!\n");
+  printf("Starting creating incremental index variable...\n");
+#endif
+
   u32 h_value_idx = 0;
   u32 * d_value_idx;
   cudaMalloc(&d_value_idx, sizeof(u32));
   cudaMemcpy(d_value_idx, &h_value_idx, sizeof(u32), cudaMemcpyHostToDevice);
   
+#ifdef DEBUG
+  printf("Creating index variable finished!\n");
+  printf("Starting match kernel...\n");
+#endif
+
   device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK, sizeof(u32)>>>
   (table.m_size(),
    table.i_size(),
@@ -338,36 +349,43 @@ throw (int)
    d_ck_p,
    d_inv_p,
    d_dims_p,
-   d_hash_table_list,
-   d_data_table_list,
-   d_max_table_list,
+   d_hash_table,
+   d_data_table,
+   d_max_table,
    max_age,
    d_value_idx);
   
   cudaDeviceSynchronize();
   
-  d_data.resize(dims.size()*hash_table_size);
+#ifdef DEBUG
+  printf("Kernel launch finished!\n");
+  printf("Starting memory copy to host...\n");
+#endif
 
-  for(i =0; i < queries.size(); ++i){
-    
-    thrust::copy(d_data_table_list[i],
-                 d_data_table_list[i] + hash_table_size,
-                 d_data.begin() + i * hash_table_size);
-    cudaFree(d_data_table_list[i]);
-    cudaFree(d_hash_table_list[i]);
-    cudaFree(d_max_table_list[i]);
-  }
+  d_data.resize(queries.size()*hash_table_size);
+  thrust::copy(d_data_table,
+               d_data_table + hash_table_size*queries.size(),
+               d_data.begin());
+
+#ifdef DEBUG
+  printf("Memory copy finished\n");
+  printf("Cleaning up memory...\n");
+#endif
+
+  cudaFree(d_data_table);
+  cudaFree(d_hash_table);
+  cudaFree(d_max_table);
+  cudaFree(d_value_idx);
   
-  cudaFree(d_data_table_list);
-  cudaFree(d_hash_table_list);
-  cudaFree(d_max_table_list);
-  
+#ifdef DEBUG
+  printf("Matching is done!\n");
+#endif
 }
 
 void
 GaLG::match(inv_table& table,
             query& queries,
-            device_vector<data>& d_data,
+            device_vector<data_t>& d_data,
             int& hash_table_size)
 throw (int)
 {

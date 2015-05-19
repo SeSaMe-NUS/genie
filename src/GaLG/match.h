@@ -16,15 +16,15 @@ typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-typedef struct {
+typedef struct data_{
   u32 count;
-  double aggregation;
+  float aggregation;
   u32 id;
-} data;
+} data_t;
 
 namespace GaLG
 {
-  int h_offsets_initialized = 0;
+
   /**
    * @brief Search the inv_table and save the match
    *        result into d_count and d_aggregation.
@@ -43,7 +43,7 @@ namespace GaLG
   void
   match(inv_table& table,
         vector<query>& queries,
-        device_vector<data>& d_data,
+        device_vector<data_t>& d_data,
         int& hash_table_size) throw (int);
 
   /**
@@ -64,7 +64,7 @@ namespace GaLG
   void
   match(inv_table& table,
         query& queries,
-        device_vector<int>& d_data,
+        device_vector<data_t>& d_data,
         int& hash_table_size)
   throw (int);
 }

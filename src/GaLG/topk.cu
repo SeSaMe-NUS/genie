@@ -27,7 +27,7 @@ GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
     device_vector<int>& d_top_indexes)
 {
   device_vector<float> d_a;
-  device_vector<data> d_data;
+  device_vector<data_t> d_data;
   int hash_table_size;
   vector<query> q;
   q.push_back(queries);
@@ -40,7 +40,7 @@ GaLG::topk(GaLG::inv_table& table, vector<GaLG::query>& queries,
     device_vector<int>& d_top_indexes)
 {
   device_vector<float> d_a;
-  device_vector<data> d_data;
+  device_vector<data_t> d_data;
   int hash_table_size;
   match(table, queries, d_data, hash_table_size);
   topk(d_a, queries, d_top_indexes);
