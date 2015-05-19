@@ -1,4 +1,4 @@
-#include <GaLG.h>
+#include "GaLG.h"
 #include <stdio.h>
 #include <string>
 
@@ -42,12 +42,26 @@ main()
 
   table.build();
 
-  device_vector<data> d_data;
+  device_vector<data_t> d_data;
   int hash_table_size;
   match(table, queries, d_data, hash_table_size);
 
-  printf("hash table size: %d\n", hash_table_size);
-  printf(">>>>>>>>>>>>>Successful maching, the matching result is stored in d_count and d_aggregation;\n");
+  std::vector<data_t> h_data(hash_table_size * queries.size());
+  thrust::copy(d_data.begin(), d_data.begin()+hash_table_size * queries.size(), h_data.begin());
+  cudaDeviceSynchronize();
 
+  printf("hash table size: %d\n", hash_table_size);
+
+  int i,j;
+  data_t hd;
+  for(i = 0; i < queries.size();++i){
+	  printf("Matching Result for query %d:\n", i);
+	  for(j = 0; j < hash_table_size; ++j){
+		   hd = h_data[hash_table_size * i + j];
+		  printf("%3d. Count: %3u, Aggregation: %3.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
+	  }
+	  printf("-------\n");
+  }
+  printf(">>>>>>>>>>>>>Successful maching, the matching result is stored in d_data;\n");
   return 0;
 }

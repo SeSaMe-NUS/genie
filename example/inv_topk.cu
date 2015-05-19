@@ -49,7 +49,7 @@ main()
   topk(table, queries, d_top_indexes);
 
   //Or you can get matching result first then call the top k.
-  device_vector<data> d_data;
+  device_vector<data_t> d_data;
   device_vector<float> d_a;
   int hash_table_size;
   match(table, queries, d_data, hash_table_size);
