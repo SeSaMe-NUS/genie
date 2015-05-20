@@ -99,11 +99,23 @@ namespace GaLG
       T_AGE age = KEY_TYPE_NULL_AGE;
       
       location = hash(id, age, hash_table_size);
+
+#ifdef DEBUG
+        printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
+#endif
+
       out_key = htable[location];
       
-      if(get_key_pos(out_key) == id){
+      if(get_key_pos(out_key) == id
+      		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
+      		&& get_key_age(out_key) < max_age){
         * key_found = 1;
         * index = get_key_attach_id(out_key);
+
+#ifdef DEBUG
+        printf(">>> [b%d t%d]Access: Entry found in hash table.\n>>> access_id: %u, index: %u, age: %u, hash: %u\n", blockIdx.x, threadIdx.x, id, index, age, location);
+#endif
+
         return;
       }
       
@@ -117,16 +129,25 @@ namespace GaLG
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
         
-        if(get_key_pos(out_key) == id){
+#ifdef DEBUG
+        printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
+#endif
+
+        if(get_key_pos(out_key) == id
+        		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
+        		&& get_key_age(out_key) < max_age){
           * key_found = 1;
           * index = get_key_attach_id(out_key);
+#ifdef DEBUG
+        printf(">>> [b%d t%d]Access: Entry found in hash table.\n>>> access_id: %u, index: %u, age: %u, hash: %u\n", blockIdx.x, threadIdx.x, id, index, age, location);
+#endif
           return;
         }
       }
       
       //Entry not found. Return NULL key.
       * key_found = 0;
-      * index = UNDEFINED_KEY;
+      * index = (u32)-1;
       
     }
     
@@ -143,6 +164,9 @@ namespace GaLG
     {
 
       u32 my_value = atomicAdd(value, 1);
+#ifdef DEBUG
+      printf(">>> [b%d t%d]Insertion starts. my_value is %u.\n", blockIdx.x, threadIdx.x, my_value);
+#endif
       *value_index = my_value;
       
       u32 location;
@@ -160,7 +184,9 @@ namespace GaLG
         //Update it if the to-be-inserted key is of a larger age
         location = hash(get_key_pos(key), age, hash_table_size);
         evicted_key = atomicMax(&htable[location], key);
-        
+#ifdef DEBUG
+        printf(">>> [b%d t%d]Insertion: hash to %u. id: %u, age: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, location, id, age, my_value);
+#endif
         if(evicted_key < key){
           root_location = hash(get_key_pos(key), 0u, hash_table_size);
           atomicMax(&max_table[root_location], get_key_age(key));
@@ -174,7 +200,9 @@ namespace GaLG
           //If empty location, finish the insertion.
           else
           {
-            *value_index = my_value;
+#ifdef DEBUG
+        	printf(">>> [b%d t%d]Insertion finished.\n>>> access_id: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, id, my_value);
+#endif
             break;
           }
         }
@@ -207,7 +235,7 @@ namespace GaLG
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
       T_AGE* age_table = &age_table_list[query_index*hash_table_size];
       data_t* data_table = &data_table_list[query_index*hash_table_size];
-      
+      u32 * my_value_idx = &value_idx[query_index];
       u32 index, access_id;
 
       int min, max;
@@ -249,8 +277,9 @@ namespace GaLG
                             hash_table_size,
                             &index,
                             max_age,
-                            value_idx);
+                            my_value_idx);
               }
+
               data_table[index].id = access_id;
               atomicAdd(&(data_table[index].count), 1u);
               atomicAdd(&(data_table[index].aggregation),q->weight);
@@ -317,7 +346,7 @@ throw (int)
 
   T_HASHTABLE* d_hash_table;
   cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
-  cudaMemset(&d_hash_table, (u64)GaLG::device::PACKED_UNDEFINED_KEY, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
+  cudaMemset(&d_hash_table, 0ull, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
   data_t* d_data_table;
   cudaMalloc(&d_data_table, sizeof(data_t)*queries.size()*hash_table_size);
   cudaMemcpy(d_data_table, &h_null_data.front(), sizeof(data_t)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
@@ -339,16 +368,20 @@ throw (int)
   printf("[ 36%] Creating incremental index variable...\n");
 #endif
 
-  u32 h_value_idx = 0;
   u32 * d_value_idx;
-  cudaMalloc(&d_value_idx, sizeof(u32));
-  cudaMemcpy(d_value_idx, &h_value_idx, sizeof(u32), cudaMemcpyHostToDevice);
+  cudaMalloc(&d_value_idx, sizeof(u32) * queries.size());
+  std::vector<u32> h_value_idx(queries.size(), 0u);
+  cudaMemcpy(d_value_idx, &h_value_idx.front(), sizeof(u32)*queries.size(), cudaMemcpyHostToDevice);
   
+#ifdef DEBUG
+
+#endif
+
 #ifdef DEBUG
   printf("[ 40%] Starting match kernels...\n");
 #endif
 
-  device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK, sizeof(u32)>>>
+  device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
   (table.m_size(),
    table.i_size(),
    hash_table_size,
@@ -367,6 +400,7 @@ throw (int)
   printf("[ 90%] Starting memory copy to host...\n");
 #endif
 
+  d_data.clear();
   d_data.resize(queries.size()*hash_table_size);
   thrust::copy(d_data_table,
                d_data_table + hash_table_size*queries.size(),
