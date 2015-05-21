@@ -11,6 +11,7 @@
 #define NULL_AGE 0
 
 #define DEBUG
+#define DEBUG_VERBOSE
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -100,7 +101,7 @@ namespace GaLG
       
       location = hash(id, age, hash_table_size);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
 #endif
 
@@ -112,7 +113,7 @@ namespace GaLG
         * key_found = 1;
         * index = get_key_attach_id(out_key);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: Entry found in hash table.\n>>> access_id: %u, index: %u, age: %u, hash: %u\n", blockIdx.x, threadIdx.x, id, index, age, location);
 #endif
 
@@ -129,7 +130,7 @@ namespace GaLG
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
         
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
 #endif
 
@@ -138,7 +139,7 @@ namespace GaLG
         		&& get_key_age(out_key) < max_age){
           * key_found = 1;
           * index = get_key_attach_id(out_key);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: Entry found in hash table.\n>>> access_id: %u, index: %u, age: %u, hash: %u\n", blockIdx.x, threadIdx.x, id, index, age, location);
 #endif
           return;
@@ -164,16 +165,18 @@ namespace GaLG
     {
 
       u32 my_value = atomicAdd(value, 1);
-#ifdef DEBUG
+
+#ifdef DEBUG_VERBOSE
       printf(">>> [b%d t%d]Insertion starts. my_value is %u.\n", blockIdx.x, threadIdx.x, my_value);
 #endif
+
       *value_index = my_value;
       
       u32 location;
       u32 root_location;
       T_HASHTABLE evicted_key;
       T_AGE age = KEY_TYPE_NULL_AGE;
-      T_KEY key = pack_key_pos_and_attach_id_and_age(id,
+      T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
                                                    my_value,
                                                    KEY_TYPE_INIT_AGE);
       
@@ -184,10 +187,13 @@ namespace GaLG
         //Update it if the to-be-inserted key is of a larger age
         location = hash(get_key_pos(key), age, hash_table_size);
         evicted_key = atomicMax(&htable[location], key);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Insertion: hash to %u. id: %u, age: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, location, id, age, my_value);
 #endif
         if(evicted_key < key){
+#ifdef DEBUG_VERBOSE
+        printf(">>> [b%d t%d]Insertion: Key %llu evicted at age %u!\n", blockIdx.x, threadIdx.x, evicted_key, age);
+#endif
           root_location = hash(get_key_pos(key), 0u, hash_table_size);
           atomicMax(&max_table[root_location], get_key_age(key));
           
@@ -200,7 +206,7 @@ namespace GaLG
           //If empty location, finish the insertion.
           else
           {
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
         	printf(">>> [b%d t%d]Insertion finished.\n>>> access_id: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, id, my_value);
 #endif
             break;
@@ -246,7 +252,9 @@ namespace GaLG
 
       min < 1 ? min = 0 : min = d_ck[min - 1];
       max = d_ck[max];
-
+#ifdef DEBUG_VERBOSE
+      printf("[b%d t%d] Match: min %d, max %d.\n", blockIdx.x, threadIdx.x, min, max);
+#endif
       int loop = (max - min) / GaLG_device_THREADS_PER_BLOCK + 1;
 
 
@@ -330,9 +338,11 @@ throw (int)
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
   
+  if(hash_table_size == 0){
+	  hash_table_size =(int)sqrt((double)table.i_size())*2;
+	  if(hash_table_size < 11) hash_table_size = 11;
+  }
 
-  hash_table_size =(int)sqrt((double)total);
-  if(hash_table_size < 11) hash_table_size = 11;
   
 #ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
