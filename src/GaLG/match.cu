@@ -6,12 +6,28 @@
 #define GaLG_device_THREADS_PER_BLOCK 256
 #endif
 
+#define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
+
+inline void __cudaSafeCall( cudaError err, const char *file, const int line )
+{
+
+    if ( cudaSuccess != err )
+    {
+        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
+                 file, line, cudaGetErrorString( err ) );
+        exit( -1 );
+    }
+
+
+    return;
+}
+
 #define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
 
 #define NULL_AGE 0
 
 #define DEBUG
-#define DEBUG_VERBOSE
+//#define DEBUG_VERBOSE
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -167,7 +183,7 @@ namespace GaLG
       u32 my_value = atomicAdd(value, 1);
 
 #ifdef DEBUG_VERBOSE
-      printf(">>> [b%d t%d]Insertion starts. my_value is %u.\n", blockIdx.x, threadIdx.x, my_value);
+      printf(">>> [b%d t%d]Insertion starts. my_value is %u, id is %d.\n", blockIdx.x, threadIdx.x, my_value, id);
 #endif
 
       *value_index = my_value;
@@ -188,11 +204,11 @@ namespace GaLG
         location = hash(get_key_pos(key), age, hash_table_size);
         evicted_key = atomicMax(&htable[location], key);
 #ifdef DEBUG_VERBOSE
-        printf(">>> [b%d t%d]Insertion: hash to %u. id: %u, age: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, location, id, age, my_value);
+        printf(">>> [b%d t%d]Insertion: hash to %u. id: %u, age: %u, my_value: %u, evicted key %llu.\n", blockIdx.x, threadIdx.x, location, id, age, my_value, evicted_key);
 #endif
         if(evicted_key < key){
 #ifdef DEBUG_VERBOSE
-        printf(">>> [b%d t%d]Insertion: Key %llu evicted at age %u!\n", blockIdx.x, threadIdx.x, evicted_key, age);
+        printf(">>> [b%d t%d]Insertion: Key id %u evicted at age %u!\n", blockIdx.x, threadIdx.x, get_key_pos(evicted_key), age);
 #endif
           root_location = hash(get_key_pos(key), 0u, hash_table_size);
           atomicMax(&max_table[root_location], get_key_age(key));
@@ -252,9 +268,7 @@ namespace GaLG
 
       min < 1 ? min = 0 : min = d_ck[min - 1];
       max = d_ck[max];
-#ifdef DEBUG_VERBOSE
-      printf("[b%d t%d] Match: min %d, max %d.\n", blockIdx.x, threadIdx.x, min, max);
-#endif
+
       int loop = (max - min) / GaLG_device_THREADS_PER_BLOCK + 1;
 
 
@@ -338,7 +352,7 @@ throw (int)
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
   
-  if(hash_table_size == 0){
+  if(hash_table_size <= 0){
 	  hash_table_size =(int)sqrt((double)table.i_size())*2;
 	  if(hash_table_size < 11) hash_table_size = 11;
   }
@@ -354,14 +368,30 @@ throw (int)
   null_data.id = 0u;
   std::vector<data_t> h_null_data(queries.size() * hash_table_size, null_data);
 
+#ifdef DEBUG
+  for(i = 0; i < h_null_data.size();++i)
+  {
+	  null_data = h_null_data[i];
+	  if(!(null_data.count == 0u && null_data.aggregation == 0.0f && null_data.id == 0u))
+	  {
+		  printf(">>> Null data table initialization error!\n");
+		  h_null_data[i].count = 0u;
+		  h_null_data[i].aggregation = 0.0f;
+		  h_null_data[i].id = 0u;
+	  }
+  }
+#endif
+
+  std::vector<T_HASHTABLE> h_hash_table(queries.size()*hash_table_size, 0ull);
+
   T_HASHTABLE* d_hash_table;
-  cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
-  cudaMemset(&d_hash_table, 0ull, sizeof(T_HASHTABLE)*queries.size()*hash_table_size);
+  cudaCheckErrors(cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size));
+  cudaMemcpy(d_hash_table, &h_hash_table.front(), sizeof(T_HASHTABLE)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
   data_t* d_data_table;
-  cudaMalloc(&d_data_table, sizeof(data_t)*queries.size()*hash_table_size);
+  cudaCheckErrors(cudaMalloc(&d_data_table, sizeof(data_t)*queries.size()*hash_table_size));
   cudaMemcpy(d_data_table, &h_null_data.front(), sizeof(data_t)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
   T_AGE* d_max_table;
-  cudaMalloc(&d_max_table, sizeof(T_AGE)*queries.size()*hash_table_size);
+  cudaCheckErrors(cudaMalloc(&d_max_table, sizeof(T_AGE)*queries.size()*hash_table_size));
   cudaMemset(&d_max_table, 0u,sizeof(T_AGE)*queries.size()*hash_table_size);
 
   u32 max_age = 16u;
@@ -372,16 +402,16 @@ throw (int)
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
   
-  cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice);
+  cudaCheckErrors(cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
   
 #ifdef DEBUG
   printf("[ 36%] Creating incremental index variable...\n");
 #endif
 
   u32 * d_value_idx;
-  cudaMalloc(&d_value_idx, sizeof(u32) * queries.size());
+  cudaCheckErrors(cudaMalloc(&d_value_idx, sizeof(u32) * queries.size()));
   std::vector<u32> h_value_idx(queries.size(), 0u);
-  cudaMemcpy(d_value_idx, &h_value_idx.front(), sizeof(u32)*queries.size(), cudaMemcpyHostToDevice);
+  cudaCheckErrors(cudaMemcpy(d_value_idx, &h_value_idx.front(), sizeof(u32)*queries.size(), cudaMemcpyHostToDevice));
   
 #ifdef DEBUG
 
@@ -404,11 +434,13 @@ throw (int)
    max_age,
    d_value_idx);
   
-  cudaDeviceSynchronize();
+  cudaCheckErrors(cudaDeviceSynchronize());
   
 #ifdef DEBUG
   printf("[ 90%] Starting memory copy to host...\n");
 #endif
+
+  //cudaCheckErrors(cudaGetLastError());
 
   d_data.clear();
   d_data.resize(queries.size()*hash_table_size);
@@ -416,14 +448,16 @@ throw (int)
                d_data_table + hash_table_size*queries.size(),
                d_data.begin());
 
+  //cudaCheckErrors(cudaGetLastError());
+
 #ifdef DEBUG
   printf("[ 95%] Cleaning up memory...\n");
 #endif
 
-  cudaFree(d_data_table);
-  cudaFree(d_hash_table);
-  cudaFree(d_max_table);
-  cudaFree(d_value_idx);
+  cudaCheckErrors(cudaFree(d_data_table));
+  cudaCheckErrors(cudaFree(d_hash_table));
+  cudaCheckErrors(cudaFree(d_max_table));
+  cudaCheckErrors(cudaFree(d_value_idx));
   
 #ifdef DEBUG
   printf("[100%] Matching is done!\n");

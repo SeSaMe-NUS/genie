@@ -103,7 +103,7 @@ void test1(void)
   table.build();
 
   device_vector<data_t> d_data;
-  int hash_table_size;
+  int hash_table_size = 0;
   match(table, queries, d_data, hash_table_size);
 
   std::vector<data_t> h_data(hash_table_size * queries.size());
@@ -125,7 +125,7 @@ void test1(void)
   printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 }
 
-void test2(const char * dfname, const char * qfname, int num_of_queries, int num_of_dims, int num_of_query_dims, int radius)
+void test2(const char * dfname, const char * qfname, int num_of_queries, int num_of_dims, int num_of_query_dims, int radius, int hash_table_size_)
 {
 	  raw_data data;
 
@@ -150,7 +150,7 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  table.build();
 
 	  device_vector<data_t> d_data;
-	  int hash_table_size = 400;
+	  int hash_table_size = hash_table_size_;
 	  match(table, queries, d_data, hash_table_size);
 
 	  std::vector<data_t> h_data(hash_table_size * queries.size());
@@ -161,7 +161,7 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 
 	  int j;
 	  data_t hd;
-	  for(i = 0; i < queries.size();++i){
+	  for(i = 0; i < queries.size() && i < 2;++i){
 		  printf("Matching Result for query %d:\n", i);
 		  for(j = 0; j < hash_table_size; ++j){
 			   hd = h_data[hash_table_size * i + j];
@@ -179,9 +179,12 @@ main(int argc, char * argv[])
   {
 	  test1();
   }
-  else if(argc == 8 && argv[1][0] == '2')
+  else if((argc == 8 || argc == 9) && argv[1][0] == '2')
   {
-	  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]));
+	  if(argc == 8)
+		  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), 0);
+	  else if (argc == 9)
+		  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]));
   }
   else
   {
@@ -190,7 +193,7 @@ main(int argc, char * argv[])
 			 "    To run simple test with 12 data points and 2 queries only:\n"
 			 "        inv_match_bin 1 \n"
 			 "    To run arbitrary test:\n"
-			 "        inv_match_bin 2 <data path> <query path> <num of queries> <num of dims> <num of query dims> <query radius>\n"
+			 "        inv_match_bin 2 <data path> <query path> <num of queries> <num of dims> <num of query dims> <query radius> [<hash table size>]\n"
 			 "Please start over again...\n");
   }
   return 0;
