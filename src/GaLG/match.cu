@@ -1,5 +1,6 @@
 #include "match.h"
 #include <cmath>
+#include <sys/time.h>
 #include <algorithm>
 
 #ifndef GaLG_device_THREADS_PER_BLOCK
@@ -33,11 +34,30 @@ typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
 
+u64 getTime()
+{
+ struct timeval tv;
+
+ gettimeofday(&tv, NULL);
+
+ u64 ret = tv.tv_usec;
+
+ /* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
+ ret += (tv.tv_sec * 1000 * 1000);
+
+ return ret;
+}
+
+float getInterval(u64 start, u64 stop)
+{
+	return ((float)(stop - start)) / 1000;
+}
 
 namespace GaLG
 {
   namespace device
   {
+
      const u32 DEFAULT_GROUP_SIZE            = 192u;
     
      const u32 KEY_TYPE_BITS                 = 32u;
@@ -319,6 +339,12 @@ GaLG::match(inv_table& table,
 throw (int)
 {
 #ifdef DEBUG
+	u64 match_stop, match_elapsed, match_start;
+	cudaEvent_t kernel_start, kernel_stop;
+	float kernel_elapsed;
+	cudaEventCreate(&kernel_start);
+	cudaEventCreate(&kernel_stop);
+	match_start = getTime();
 	printf("[  0%] Starting matching...\n");
 	printf("[ 10%] Fetching and packing data...\n");
 #endif
@@ -419,6 +445,7 @@ throw (int)
 
 #ifdef DEBUG
   printf("[ 40%] Starting match kernels...\n");
+  cudaEventRecord(kernel_start);
 #endif
 
   device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
@@ -434,11 +461,12 @@ throw (int)
    max_age,
    d_value_idx);
   
-  cudaCheckErrors(cudaDeviceSynchronize());
-  
 #ifdef DEBUG
+  cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting memory copy to host...\n");
 #endif
+
+  cudaCheckErrors(cudaDeviceSynchronize());
 
   //cudaCheckErrors(cudaGetLastError());
 
@@ -449,6 +477,8 @@ throw (int)
                d_data.begin());
 
   //cudaCheckErrors(cudaGetLastError());
+
+  cudaMemcpy(&h_value_idx.front(), d_value_idx, sizeof(u32)*queries.size(),cudaMemcpyDeviceToHost);
 
 #ifdef DEBUG
   printf("[ 95%] Cleaning up memory...\n");
@@ -461,6 +491,21 @@ throw (int)
   
 #ifdef DEBUG
   printf("[100%] Matching is done!\n");
+
+  match_stop = getTime();
+  match_elapsed = match_stop - match_start;
+
+  cudaEventSynchronize(kernel_stop);
+  kernel_elapsed = 0.0f;
+  cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
+  printf("[Info] Match function takes %f ms.\n", getInterval(match_start, match_stop));
+  printf("[Info] Match kernel takes %f ms.\n", kernel_elapsed);
+  printf("Hashed value size:\n");
+  for(i = 0; i < queries.size();++i)
+  {
+	  printf("Query %d: %u.\n", i, h_value_idx[i]);
+  }
+  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
 }
 

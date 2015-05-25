@@ -22,6 +22,8 @@ typedef struct data_{
   u32 id;
 } data_t;
 
+u64 getTime();
+float getInterval(u64 t1, u64 t2);
 namespace GaLG
 {
 
