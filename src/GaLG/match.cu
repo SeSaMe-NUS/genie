@@ -193,7 +193,6 @@ namespace GaLG
     void
     hash_kernel(u32 id,
                 T_HASHTABLE* htable,
-                T_AGE* max_table,
                 int hash_table_size,
                 u32* value_index,
                 T_AGE max_age,
@@ -230,9 +229,7 @@ namespace GaLG
 #ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Insertion: Key id %u evicted at age %u!\n", blockIdx.x, threadIdx.x, get_key_pos(evicted_key), age);
 #endif
-          root_location = hash(get_key_pos(key), 0u, hash_table_size);
-          atomicMax(&max_table[root_location], get_key_age(key));
-          
+
           //If not an empty location, loop again to insert the evicted key.
           if(get_key_age(evicted_key) > 0u)
           {
@@ -267,7 +264,6 @@ namespace GaLG
           query::dim* d_dims,
           T_HASHTABLE* hash_table_list,
           data_t* data_table_list,
-          T_AGE* age_table_list,
           T_AGE max_age,
           u32 * value_idx)
     {
@@ -275,7 +271,6 @@ namespace GaLG
       query::dim* q = &d_dims[blockIdx.x];
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
-      T_AGE* age_table = &age_table_list[query_index*hash_table_size];
       data_t* data_table = &data_table_list[query_index*hash_table_size];
       u32 * my_value_idx = &value_idx[query_index];
       u32 index, access_id;
@@ -315,7 +310,6 @@ namespace GaLG
                 //access_id and its location are packed into a packed key
                 hash_kernel(access_id,
                             hash_table,
-                            age_table,
                             hash_table_size,
                             &index,
                             max_age,
@@ -416,9 +410,6 @@ throw (int)
   data_t* d_data_table;
   cudaCheckErrors(cudaMalloc(&d_data_table, sizeof(data_t)*queries.size()*hash_table_size));
   cudaMemcpy(d_data_table, &h_null_data.front(), sizeof(data_t)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
-  T_AGE* d_max_table;
-  cudaCheckErrors(cudaMalloc(&d_max_table, sizeof(T_AGE)*queries.size()*hash_table_size));
-  cudaMemset(&d_max_table, 0u,sizeof(T_AGE)*queries.size()*hash_table_size);
 
   u32 max_age = 16u;
   
@@ -457,7 +448,6 @@ throw (int)
    d_dims_p,
    d_hash_table,
    d_data_table,
-   d_max_table,
    max_age,
    d_value_idx);
   
@@ -486,7 +476,6 @@ throw (int)
 
   cudaCheckErrors(cudaFree(d_data_table));
   cudaCheckErrors(cudaFree(d_hash_table));
-  cudaCheckErrors(cudaFree(d_max_table));
   cudaCheckErrors(cudaFree(d_value_idx));
   
 #ifdef DEBUG
