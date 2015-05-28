@@ -199,58 +199,103 @@ namespace GaLG
                 u32 * value)
     {
 
-      u32 my_value = atomicAdd(value, 1);
+      //u32 my_value = atomicAdd(value, 1);
 
 #ifdef DEBUG_VERBOSE
       printf(">>> [b%d t%d]Insertion starts. my_value is %u, id is %d.\n", blockIdx.x, threadIdx.x, my_value, id);
 #endif
 
-      *value_index = my_value;
+      //*value_index = my_value;
       
       u32 location;
       u32 root_location;
-      T_HASHTABLE evicted_key;
+      T_HASHTABLE evicted_key, peek_key;
       T_AGE age = KEY_TYPE_NULL_AGE;
       T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
-                                                   my_value,
+                                                   0,
                                                    KEY_TYPE_INIT_AGE);
-      
+      bool first = true;
+
       //Loop until max_age
       while(age < max_age){
 
         //evict key at current age-location
         //Update it if the to-be-inserted key is of a larger age
         location = hash(get_key_pos(key), age, hash_table_size);
-        evicted_key = atomicMax(&htable[location], key);
+
+        while(1)
+        {
+        	peek_key = htable[location];
+        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)
+        	{
+        		//printf("Key found! Stop insertion!...\n");
+        		*value_index = get_key_attach_id(peek_key);
+        		return;
+        	}
+        	if(get_key_age(peek_key) < get_key_age(key))
+        	{
+        		if(first)
+        		{
+        			first = false;
+        			u32 my_value = atomicAdd(value, 1);
+        			*value_index = my_value;
+        			key = pack_key_pos_and_attach_id_and_age(id,
+        			                                         my_value,
+        			                                         KEY_TYPE_INIT_AGE);
+        		}
+        		evicted_key = atomicCAS(&htable[location], peek_key, key);
+        		if(evicted_key != peek_key)
+        			continue;
+                if(get_key_age(evicted_key) > 0u)
+                {
+                  key = evicted_key;
+                  age = get_key_age(evicted_key);
+                  break;
+                }
+                else
+                {
+                	return;
+                }
+        	}
+        	else
+        	{
+                age++;
+                key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
+                break;
+        	}
+        	//evicted_key = atomicMax(&htable[location], key);
+        }
+
+
 #ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Insertion: hash to %u. id: %u, age: %u, my_value: %u, evicted key %llu.\n", blockIdx.x, threadIdx.x, location, id, age, my_value, evicted_key);
 #endif
-        if(evicted_key < key){
+//        if(evicted_key < key){
 #ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Insertion: Key id %u evicted at age %u!\n", blockIdx.x, threadIdx.x, get_key_pos(evicted_key), age);
 #endif
 
           //If not an empty location, loop again to insert the evicted key.
-          if(get_key_age(evicted_key) > 0u)
-          {
-            key = evicted_key;
-            age = get_key_age(evicted_key);
-          }
+//          if(get_key_age(evicted_key) > 0u)
+//          {
+//            key = evicted_key;
+//            age = get_key_age(evicted_key);
+//          }
           //If empty location, finish the insertion.
-          else
-          {
+//          else
+//          {
 #ifdef DEBUG_VERBOSE
         	printf(">>> [b%d t%d]Insertion finished.\n>>> access_id: %u, my_value: %u.\n", blockIdx.x, threadIdx.x, id, my_value);
 #endif
-            break;
-          }
-        }
-        else
-        {
+//            break;
+//          }
+//        }
+//        else
+//        {
           //Increase age and try again.
-          age++;
-          key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
-        }
+//          age++;
+//          key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
+//        }
       }
     }
     
