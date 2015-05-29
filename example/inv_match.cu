@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sys/time.h>
 #include <ctime>
+#include <map>
+#include <vector>
 
 using namespace GaLG;
 using namespace std;
@@ -185,13 +187,47 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 
 	  printf("hash table size: %d\n", hash_table_size);
 
-	  int j;
+	  int j, non_zero_count, total_non_zero_count = 0;
 	  data_t hd;
+	  std::map<u32, float> m;
+	  printf("Non-zero Item Number:\n");
+	  for(i = 0; i < queries.size(); ++i)
+	  {
+		  non_zero_count = 0;
+		  for(j = 0; j < hash_table_size; ++j)
+		  {
+			  hd = h_data[hash_table_size * i + j];
+			  if(hd.count != 0u)
+			  {
+				  ++ non_zero_count;
+				  ++ total_non_zero_count;
+				  if(m.find(hd.count) == m.end())
+				  {
+					  m[hd.count] = 0.0f;
+				  }
+				  m[hd.count] += 1.0f;
+			  }
+		  }
+		  //printf("\t Query %d: %d\n", i, non_zero_count);
+	  }
+	  printf("[Info] Average Non-zero Item: %f\n", total_non_zero_count / (float)queries.size());
+	  printf("Result distribution:\n");
+	  float all_count = 0.0f;
+	  for(std::map<u32, float>::iterator it = m.begin(); it != m.end(); ++it)
+	  {
+		  all_count += it->second;
+	  }
+	  for(std::map<u32, float>::iterator it = m.begin(); it != m.end(); ++it)
+	  {
+		  it->second /= all_count;
+		  printf("\t %u: %.5f%%\n", it->first, 100 * it->second);
+	  }
 	  for(i = 0; i < queries.size() && i < num_of_query_print;++i){
 		  printf("Matching Result for query %d:\n", i);
 		  for(j = 0; j < hash_table_size; ++j){
 			   hd = h_data[hash_table_size * i + j];
-			  printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
+			   printf("%d %u %.2f %u\n", j, hd.count, hd.aggregation, hd.id);
+			  //printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
 		  }
 		  printf("-------\n");
 	  }

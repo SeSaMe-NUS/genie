@@ -534,11 +534,14 @@ throw (int)
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
   printf("[Info] Match function takes %f ms.\n", getInterval(match_start, match_stop));
   printf("[Info] Match kernel takes %f ms.\n", kernel_elapsed);
-  printf("Hashed value size:\n");
+  printf("[Info] Hashed value size:\n");
+  u32 count_index = 0;
   for(i = 0; i < queries.size();++i)
   {
-	  printf("Query %d: %u.\n", i, h_value_idx[i]);
+	  count_index += h_value_idx[i];
+	  //printf("\tQuery %d: %u.\n", i, h_value_idx[i]);
   }
+  printf("[Info] Average Size: %.1f.\n", count_index/(float)queries.size());
   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
 }
