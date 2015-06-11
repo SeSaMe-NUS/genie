@@ -187,12 +187,18 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 
 	  printf("hash table size: %d\n", hash_table_size);
 
-	  int j, non_zero_count, total_non_zero_count = 0;
+	  int j;
+	  u64 non_zero_count, total_non_zero_count = 0;
 	  data_t hd;
-	  std::map<u32, float> m;
+	  std::map<u32, u32> m;
+
+	  std::vector<int> count1(9,0);
+	  std::vector<int> count2(9,0);
+
 	  printf("Non-zero Item Number:\n");
 	  for(i = 0; i < queries.size(); ++i)
 	  {
+		  std::map<u32, int> im;
 		  non_zero_count = 0;
 		  for(j = 0; j < hash_table_size; ++j)
 		  {
@@ -203,24 +209,34 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 				  ++ total_non_zero_count;
 				  if(m.find(hd.count) == m.end())
 				  {
-					  m[hd.count] = 0.0f;
+					  m[hd.count] = 0u;
 				  }
-				  m[hd.count] += 1.0f;
+				  m[hd.count] += 1u;
+
+				  if(im.find(hd.count) == im.end())
+				  {
+					 im[hd.count] = 0;
+				  }
+				  im[hd.count] += 1;
 			  }
 		  }
+
+		  int c1 = int((im[1u]/(float)non_zero_count)*10);
+		  count1[c1] ++;
+		  int c2 = int((im[2u]/(float)non_zero_count)*10);
+		  count2[c2]++;
 		  //printf("\t Query %d: %d\n", i, non_zero_count);
 	  }
 	  printf("[Info] Average Non-zero Item: %f\n", total_non_zero_count / (float)queries.size());
 	  printf("Result distribution:\n");
-	  float all_count = 0.0f;
-	  for(std::map<u32, float>::iterator it = m.begin(); it != m.end(); ++it)
+	  u64 all_count = 0ull;
+	  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
 	  {
 		  all_count += it->second;
 	  }
-	  for(std::map<u32, float>::iterator it = m.begin(); it != m.end(); ++it)
+	  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
 	  {
-		  it->second /= all_count;
-		  printf("\t %u: %.5f%%\n", it->first, 100 * it->second);
+		  printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
 	  }
 	  for(i = 0; i < queries.size() && i < num_of_query_print;++i){
 		  printf("Matching Result for query %d:\n", i);
@@ -230,6 +246,17 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 			  //printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
 		  }
 		  printf("-------\n");
+	  }
+
+	  printf("Count 1 Distribution: \n");
+	  for(i = 0; i < 10; ++i)
+	  {
+		  printf("0.%d-0.%d9 : %d\n",i, i, count1[i]);
+	  }
+	  printf("Count 2 Distribution: \n");
+	  for(i = 0; i < 10; ++i)
+	  {
+		  printf("0.%d-0.%d9 : %d\n",i, i, count2[i]);
 	  }
 	  printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 	  timestop = getTime();
