@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <ctime>
 #include <map>
+#include <bitset>
 #include <vector>
 
 using namespace GaLG;
@@ -122,7 +123,7 @@ void test1(void)
 	  printf("Matching Result for query %d:\n", i);
 	  for(j = 0; j < hash_table_size; ++j){
 		   hd = h_data[hash_table_size * i + j];
-		  printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
+		  printf("%3d. Aggregation: %5.2f, Index: %3u\n", j, hd.aggregation, hd.id);
 	  }
 	  printf("-------\n");
   }
@@ -203,21 +204,21 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 		  for(j = 0; j < hash_table_size; ++j)
 		  {
 			  hd = h_data[hash_table_size * i + j];
-			  if(hd.count != 0u)
+			  if(hd.aggregation != 0.0f)
 			  {
 				  ++ non_zero_count;
 				  ++ total_non_zero_count;
-				  if(m.find(hd.count) == m.end())
+				  if(m.find(hd.aggregation) == m.end())
 				  {
-					  m[hd.count] = 0u;
+					  m[hd.aggregation] = 0u;
 				  }
-				  m[hd.count] += 1u;
+				  m[hd.aggregation] += 1u;
 
-				  if(im.find(hd.count) == im.end())
+				  if(im.find(hd.aggregation) == im.end())
 				  {
-					 im[hd.count] = 0;
+					 im[hd.aggregation] = 0;
 				  }
-				  im[hd.count] += 1;
+				  im[hd.aggregation] += 1;
 			  }
 		  }
 
@@ -238,26 +239,27 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  {
 		  printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
 	  }
+
 	  for(i = 0; i < queries.size() && i < num_of_query_print;++i){
 		  printf("Matching Result for query %d:\n", i);
 		  for(j = 0; j < hash_table_size; ++j){
 			   hd = h_data[hash_table_size * i + j];
-			   printf("%d %u %.2f %u\n", j, hd.count, hd.aggregation, hd.id);
+			   printf("%d %.5f %u\n", j, hd.aggregation, hd.id);
 			  //printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
 		  }
 		  printf("-------\n");
 	  }
 
-	  printf("Count 1 Distribution: \n");
-	  for(i = 0; i < 10; ++i)
-	  {
-		  printf("0.%d-0.%d9 : %d\n",i, i, count1[i]);
-	  }
-	  printf("Count 2 Distribution: \n");
-	  for(i = 0; i < 10; ++i)
-	  {
-		  printf("0.%d-0.%d9 : %d\n",i, i, count2[i]);
-	  }
+//	  printf("Count 1 Distribution: \n");
+//	  for(i = 0; i < 10; ++i)
+//	  {
+//		  printf("0.%d-0.%d9 : %d\n",i, i, count1[i]);
+//	  }
+//	  printf("Count 2 Distribution: \n");
+//	  for(i = 0; i < 10; ++i)
+//	  {
+//		  printf("0.%d-0.%d9 : %d\n",i, i, count2[i]);
+//	  }
 	  printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 	  timestop = getTime();
 	  printf("Finish testing. Time elapsed: %f ms. \n", getInterval(totalstart, timestop));
