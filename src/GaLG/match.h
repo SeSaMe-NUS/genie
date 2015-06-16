@@ -17,9 +17,8 @@ typedef unsigned int u32;
 typedef unsigned long long u64;
 
 typedef struct data_{
-  u32 count;
-  float aggregation;
   u32 id;
+  float aggregation;
 } data_t;
 
 u64 getTime();
