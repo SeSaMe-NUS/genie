@@ -143,34 +143,39 @@ namespace GaLG
 #ifdef DEBUG_VERBOSE
        printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
 #endif
+      while(1)
+      {
+          out_key = htable[location];
 
-      out_key = htable[location];
-      
-      if(get_key_pos(out_key) == id
-      		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
-      		&& get_key_age(out_key) < max_age){
-    	u32 attach_id = get_key_attach_id(out_key);
-        float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
+          if(get_key_pos(out_key) == id
+          		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
+          		&& get_key_age(out_key) < max_age){
+        	u32 attach_id = get_key_attach_id(out_key);
+            float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
 #ifdef DEBUG_VERBOSE
-        printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
+            printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
 #endif
-        new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-        											 *reinterpret_cast<u32*>(&old_value_plus),
-        											 get_key_age(out_key));
-        if(atomicCAS(&htable[location], out_key, new_key) == out_key)
-        {
-        	*key_found =1;
-        	return;
-        }
+            new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+            											 *reinterpret_cast<u32*>(&old_value_plus),
+            											 get_key_age(out_key));
+            if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+            {
+            	*key_found =1;
+            	return;
+            }
+          }
+          else
+          {
+        	  break;
+          }
       }
-      
+
       //Key at root location is packed with its max age
       // in its hashing sequence.
-      max_age = get_key_age(out_key);
-      
+
       //Loop until max_age
       while(age < max_age){
-        age ++;
+    	age ++;
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
         
@@ -180,7 +185,8 @@ namespace GaLG
 
         if(get_key_pos(out_key) == id
         		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
-        		&& get_key_age(out_key) < max_age){
+        		&& get_key_age(out_key) < max_age)
+        {
         	u32 attach_id = get_key_attach_id(out_key);
             float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
 #ifdef DEBUG_VERBOSE
@@ -202,6 +208,8 @@ namespace GaLG
             	continue;
             }
         }
+
+
       }
       
       //Entry not found. Return NULL key.
@@ -262,6 +270,8 @@ namespace GaLG
         			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
 #endif
         			return;
+        		} else {
+        			continue;
         		}
         	}
         	if(get_key_age(peek_key) < get_key_age(key))
@@ -303,6 +313,8 @@ namespace GaLG
         }
 
       }
+      u32 attachid = get_key_attach_id(key);
+      printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(attachid));
     }
     
     __global__
@@ -368,18 +380,14 @@ namespace GaLG
 
 	__global__
 	void
-	convert_to_data(T_HASHTABLE* table, data_t* data, u32 size)
+	convert_to_data(T_HASHTABLE* table, u32 size)
 	{
 		u32 tid = threadIdx.x + blockIdx.x * blockDim.x;
 		if(tid >= size) return;
-		//if(get_key_pos(table[tid]) != 0)
-		//{
-		//	u32 attach_id = get_key_attach_id(table[tid]);
-		//	printf("%u -> %.5f\n", get_key_pos(table[tid]), *reinterpret_cast<float*>(&attach_id));
-		//}
-		data[tid].id = get_key_pos(table[tid]);
-		u32 attach_id = get_key_attach_id(table[tid]);
-		data[tid].aggregation = *reinterpret_cast<float*>(&attach_id);
+		data_t *mytable = reinterpret_cast<data_t*>(&table[tid]);
+		mytable->id = get_key_pos(table[tid]);
+		u32 agg = get_key_attach_id(table[tid]);
+		mytable->aggregation = *reinterpret_cast<float*>(&agg);
 	}
 
   }
@@ -391,6 +399,8 @@ GaLG::match(inv_table& table,
             int& hash_table_size)
 throw (int)
 {
+
+	printf("match.cu version : %s\n", VERSION);
 #ifdef DEBUG
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
@@ -443,8 +453,15 @@ throw (int)
   std::vector<T_HASHTABLE> h_hash_table(queries.size()*hash_table_size, 0ull);
 
   T_HASHTABLE* d_hash_table;
-  cudaCheckErrors(cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size));
+  data_t* d_data_table;
+  d_data.clear();
+  d_data.resize(queries.size()*hash_table_size);
+  d_data_table = thrust::raw_pointer_cast(d_data.data());
+  d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+  //cudaCheckErrors(cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size));
   cudaMemcpy(d_hash_table, &h_hash_table.front(), sizeof(T_HASHTABLE)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
+  cudaCheckErrors(cudaDeviceSynchronize());
+  h_hash_table.clear();
 
   u32 max_age = 16u;
   
@@ -474,22 +491,14 @@ throw (int)
   
 #ifdef DEBUG
   cudaEventRecord(kernel_stop);
-  printf("[ 90%] Starting memory copy to host...\n");
+  printf("[ 90%] Starting data converting......\n");
 #endif
 
   cudaCheckErrors(cudaDeviceSynchronize());
-  d_data.clear();
-  d_data.resize(queries.size()*hash_table_size);
-  data_t * d_data_p = thrust::raw_pointer_cast(d_data.data());
-  device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table, d_data_p, (u32)hash_table_size*queries.size());
+
+  device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
 
-#ifdef DEBUG
-  printf("[ 95%] Cleaning up memory...\n");
-#endif
-
-  cudaCheckErrors(cudaFree(d_hash_table));
-  
 #ifdef DEBUG
   printf("[100%] Matching is done!\n");
 

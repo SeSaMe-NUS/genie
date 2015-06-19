@@ -132,6 +132,11 @@ void test1(void)
 
 void test2(const char * dfname, const char * qfname, int num_of_queries, int num_of_dims, int num_of_query_dims, int radius, int hash_table_size_, int num_of_query_print)
 {
+	 cudaDeviceReset();
+	 int device_count;
+	 cudaGetDeviceCount(&device_count);
+	 cudaSetDevice(device_count - 1);
+
 	  u64 load_elapsed, timestart, timestop, totalstart, total_elapsed;
 	  raw_data data;
 
@@ -193,9 +198,6 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  data_t hd;
 	  std::map<u32, u32> m;
 
-	  std::vector<int> count1(9,0);
-	  std::vector<int> count2(9,0);
-
 	  printf("Non-zero Item Number:\n");
 	  for(i = 0; i < queries.size(); ++i)
 	  {
@@ -222,11 +224,6 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 			  }
 		  }
 
-		  int c1 = int((im[1u]/(float)non_zero_count)*10);
-		  count1[c1] ++;
-		  int c2 = int((im[2u]/(float)non_zero_count)*10);
-		  count2[c2]++;
-		  //printf("\t Query %d: %d\n", i, non_zero_count);
 	  }
 	  printf("[Info] Average Non-zero Item: %f\n", total_non_zero_count / (float)queries.size());
 	  printf("Result distribution:\n");
@@ -237,7 +234,8 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  }
 	  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
 	  {
-		  printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
+		  //printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
+		  printf("\t %u: %u\n", it->first, it->second);
 	  }
 
 	  for(i = 0; i < queries.size() && i < num_of_query_print;++i){
@@ -250,16 +248,6 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 		  printf("-------\n");
 	  }
 
-//	  printf("Count 1 Distribution: \n");
-//	  for(i = 0; i < 10; ++i)
-//	  {
-//		  printf("0.%d-0.%d9 : %d\n",i, i, count1[i]);
-//	  }
-//	  printf("Count 2 Distribution: \n");
-//	  for(i = 0; i < 10; ++i)
-//	  {
-//		  printf("0.%d-0.%d9 : %d\n",i, i, count2[i]);
-//	  }
 	  printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 	  timestop = getTime();
 	  printf("Finish testing. Time elapsed: %f ms. \n", getInterval(totalstart, timestop));
@@ -268,6 +256,9 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 int
 main(int argc, char * argv[])
 {
+
+
+  printf("Current Version: %s\n", VERSION);
   if(argc == 2 && argv[1][0] == '1')
   {
 	  test1();
