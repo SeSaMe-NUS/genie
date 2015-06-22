@@ -10,8 +10,24 @@
 using namespace std;
 using namespace thrust;
 
+#define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 
-const char VERSION[] = "0.1.8";
+
+inline void __cudaSafeCall( cudaError err, const char *file, const int line )
+{
+
+    if ( cudaSuccess != err )
+    {
+        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
+                 file, line, cudaGetErrorString( err ) );
+        exit( -1 );
+    }
+
+
+    return;
+}
+
+const char VERSION[] = "0.1.10";
 typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;

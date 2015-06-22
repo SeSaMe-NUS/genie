@@ -11,23 +11,6 @@
 #define GaLG_device_THREADS_PER_BLOCK 256
 #endif
 
-#define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
-
-
-inline void __cudaSafeCall( cudaError err, const char *file, const int line )
-{
-
-    if ( cudaSuccess != err )
-    {
-        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
-        exit( -1 );
-    }
-
-
-    return;
-}
-
 #define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
 
 #define NULL_AGE 0

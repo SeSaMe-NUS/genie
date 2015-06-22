@@ -10,6 +10,9 @@
 #include <bitset>
 #include <vector>
 
+
+#define DEFAULT_TOP_K 5
+
 using namespace GaLG;
 using namespace std;
 
@@ -37,7 +40,8 @@ string eraseSpace(string origin) {
 	return origin.substr(start, end - start + 1);
 }
 
-void read_query(inv_table& table, const char* fname, vector<query>& queries, int num_of_queries, int num_of_query_dims, int radius) {
+void read_query(inv_table& table, const char* fname, vector<query>& queries, int num_of_queries, int num_of_query_dims, int radius, int topk)
+{
 
 	string line;
 	ifstream ifile(fname);
@@ -62,6 +66,7 @@ void read_query(inv_table& table, const char* fname, vector<query>& queries, int
 					   value + radius,
 					   1);
 			}
+			q.topk(topk);
 			queries.push_back(q);
 			++j;
 		}
@@ -130,7 +135,7 @@ void test1(void)
   printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 }
 
-void test2(const char * dfname, const char * qfname, int num_of_queries, int num_of_dims, int num_of_query_dims, int radius, int hash_table_size_, int num_of_query_print)
+void test2(const char * dfname, int num_of_queries, int num_of_dims, int num_of_query_dims, int radius, float hash_table_size_, int num_of_query_print)
 {
 	 cudaDeviceReset();
 	 int device_count;
@@ -168,7 +173,7 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 
 	  query q(table);
 
-	  read_query(table, qfname, queries, num_of_queries, num_of_query_dims, radius);
+	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K);
 
 	  timestop = getTime();
 	  printf("Finish creating query. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
@@ -180,7 +185,7 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  printf("Finish building table. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
 
 	  device_vector<data_t> d_data;
-	  int hash_table_size = hash_table_size_;
+	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
 	  match(table, queries, d_data, hash_table_size);
 
 	  printf("Starting copying device result to host...\n");
@@ -253,24 +258,128 @@ void test2(const char * dfname, const char * qfname, int num_of_queries, int num
 	  printf("Finish testing. Time elapsed: %f ms. \n", getInterval(totalstart, timestop));
 }
 
+void test3(const char * dfname,
+		   const int num_of_queries,
+		   const int num_of_dims,
+		   const int num_of_query_dims,
+		   const int radius,
+		   const float hash_table_size_,
+		   const int num_of_query_print,
+		   const int top_k_size)
+{
+	 cudaDeviceReset();
+	 int device_count;
+	 cudaGetDeviceCount(&device_count);
+	 cudaSetDevice(device_count - 1);
+
+	  u64 load_elapsed, timestart, timestop, totalstart, total_elapsed;
+	  raw_data data;
+
+	  printf("Start loading data...\n");
+	  totalstart = timestart = getTime();
+	  parser::csv(dfname, data);
+	  timestop = getTime();
+	  printf("Finish loading data. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+
+	  inv_list list;
+	  inv_table table;
+
+	  printf("Start inverting data...\n");
+	  timestart = getTime();
+	  int i;
+	  for(i = 0; i < num_of_dims; ++i)
+	  {
+		  list.invert(data.col(i));
+		  table.append(list);
+	  }
+
+	  timestop = getTime();
+	  printf("Finish inverting data. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+
+	  vector<query> queries;
+
+	  timestart = getTime();
+	  printf("Start creating query...\n");
+
+	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, top_k_size);
+
+	  timestop = getTime();
+	  printf("Finish creating query. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+
+	  printf("Start building table...\n");
+	  timestart = getTime();
+	  table.build();
+	  timestop = getTime();
+	  printf("Finish building table. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+
+	  device_vector<int> d_topk;
+	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
+	  printf("hash table size: %d\n", hash_table_size);
+	  GaLG::topk(table, queries, d_topk, hash_table_size);
+
+	  printf("Starting copying device result to host...\n");
+	  timestart = getTime();
+	  host_vector<int> h_topk(d_topk);
+	  cudaDeviceSynchronize();
+	  timestop = getTime();
+	  printf("Finish copying result. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+
+
+
+	  for(int i = 0; i < queries.size() && i < num_of_query_print; ++i)
+	  {
+		  printf("The top %d of query %d is \n", queries[i].topk(),i);
+		  if(queries[i].topk() > 0) printf("%d", h_topk[0 + i * queries[i].topk()]);
+		  for(int j = 1; j < queries[i].topk(); ++j)
+		  {
+			  printf(", %d", h_topk[i * queries[i].topk() + j]);
+		  }
+		  printf("\n");
+	  }
+
+	  printf(">>>>>>>>>>>>>Successful topk searching.\n");
+	  timestop = getTime();
+	  printf("Finish testing. Time elapsed: %f ms. \n", getInterval(totalstart, timestop));
+}
+
 int
 main(int argc, char * argv[])
 {
 
+  const int DATA_PATH 			 	= 2,
+			NUM_OF_QUERY		 	= 3,
+			NUM_OF_DIM			 	= 4,
+			NUM_OF_QUERY_DIM 	 	= 5,
+			RADIUS					= 6,
+			HASHTABLE_SIZE			= 7,
+			NUM_OF_QUERY_PRINTING 	= 8,
+			TOP_K					= 9;
 
   printf("Current Version: %s\n", VERSION);
-  if(argc == 2 && argv[1][0] == '1')
+  if(argc >= 2 && argv[1][0] == '1')
   {
 	  test1();
   }
-  else if((argc == 8 || argc == 9 || argc == 10) && argv[1][0] == '2')
+  else if(argc == 9 && argv[1][0] == '2')
   {
-	  if(argc == 8)
-		  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), 0, 1);
-	  else if (argc == 9)
-		  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), 1);
-	  else if(argc == 10)
-		  test2(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]));
+	  test2(argv[DATA_PATH],
+			atoi(argv[NUM_OF_QUERY]),
+			atoi(argv[NUM_OF_DIM]),
+			atoi(argv[NUM_OF_QUERY_DIM]),
+			atoi(argv[RADIUS]),
+			atof(argv[HASHTABLE_SIZE]),
+			atoi(argv[NUM_OF_QUERY_PRINTING]));
+  }
+  else if(argc >= 10 && argv[1][0] == '3')
+  {
+	  test3(argv[DATA_PATH],
+			atoi(argv[NUM_OF_QUERY]),
+			atoi(argv[NUM_OF_DIM]),
+			atoi(argv[NUM_OF_QUERY_DIM]),
+			atoi(argv[RADIUS]),
+			atof(argv[HASHTABLE_SIZE]),
+			atoi(argv[NUM_OF_QUERY_PRINTING]),
+			atoi(argv[TOP_K]));
   }
   else
   {

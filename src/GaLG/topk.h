@@ -13,6 +13,13 @@ using namespace thrust;
 
 namespace GaLG
 {
+void
+topk(inv_table& table, query& queries,
+	      device_vector<int>& d_top_indexes, int hash_table_size);
+
+void
+topk(inv_table& table, vector<query>& queries,
+	      device_vector<int>& d_top_indexes, int hash_table_size);
   /**
    * @brief Find the top k values in given inv_table.
    * @details Find the top k values in given inv_table.
