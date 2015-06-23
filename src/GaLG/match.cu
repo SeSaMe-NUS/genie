@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdlib.h>
 
 #ifndef GaLG_device_THREADS_PER_BLOCK
 #define GaLG_device_THREADS_PER_BLOCK 256
@@ -433,16 +434,16 @@ throw (int)
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
-  std::vector<T_HASHTABLE> h_hash_table(queries.size()*hash_table_size, 0ull);
 
+
+  std::vector<T_HASHTABLE> h_hash_table(queries.size()*hash_table_size, 0ull);
   T_HASHTABLE* d_hash_table;
   data_t* d_data_table;
   d_data.clear();
   d_data.resize(queries.size()*hash_table_size);
   d_data_table = thrust::raw_pointer_cast(d_data.data());
   d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-  //cudaCheckErrors(cudaMalloc(&d_hash_table, sizeof(T_HASHTABLE)*queries.size()*hash_table_size));
-  cudaMemcpy(d_hash_table, &h_hash_table.front(), sizeof(T_HASHTABLE)*queries.size()*hash_table_size, cudaMemcpyHostToDevice);
+  cudaCheckErrors(cudaMemcpy(d_hash_table, &h_hash_table.front(), sizeof(T_HASHTABLE)*queries.size()*hash_table_size, cudaMemcpyHostToDevice));
   cudaCheckErrors(cudaDeviceSynchronize());
   h_hash_table.clear();
 

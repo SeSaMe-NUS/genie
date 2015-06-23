@@ -27,7 +27,7 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
     return;
 }
 
-const char VERSION[] = "0.1.10";
+const char VERSION[] = "0.1.13";
 typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
