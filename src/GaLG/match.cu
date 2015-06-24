@@ -108,6 +108,13 @@ namespace GaLG
       return (offsets[age] + key) % hash_table_size;
     }
     
+    __inline__ __device__ __host__
+    void print_binary(char * b, u32 data)
+    {
+    	for (int i = 31; i >= 0; i--)
+        	b[31-i] = ((data >> i) & 1) == 1 ? '1' : '0';
+        b[32] = '\0';
+    }
     
     __inline__ __device__
     void
@@ -115,7 +122,7 @@ namespace GaLG
                   T_HASHTABLE* htable,
                   int hash_table_size,
                   query::dim* q,
-                  int * key_found,
+                  bool * key_found,
                   u32 max_age)
     {
       u32 location;
@@ -144,7 +151,7 @@ namespace GaLG
             											 get_key_age(out_key));
             if(atomicCAS(&htable[location], out_key, new_key) == out_key)
             {
-            	*key_found =1;
+            	*key_found =true;
             	return;
             }
           }
@@ -181,7 +188,7 @@ namespace GaLG
             											 get_key_age(out_key));
             if(atomicCAS(&htable[location], out_key, new_key) == out_key)
             {
-            	*key_found =1;
+            	*key_found =true;
 #ifdef DEBUG_VERBOSE
             	attach_id = get_key_attach_id(htable[location]);
     			printf("[b%dt%d] <Access3> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attach_id));
@@ -301,6 +308,51 @@ namespace GaLG
       printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(attachid));
     }
     
+
+    __device__ __host__ __inline__
+    u32
+    get_count(u32 data, int offset, int bits)
+    {
+    	return (data >> offset) & ((1u << bits) - 1u);
+    }
+
+    __device__ __host__ __inline__
+    u32
+    pack_count(u32 data, int offset, int bits, u32 count)
+    {
+    	u32 r;
+    	r = data & (~(((1u << bits) - 1u) << offset));
+    	r |= (count << offset);
+    	return r;
+    }
+
+    __device__ __inline__
+    void
+    bitmap_kernel(u32 access_id,
+  		  	      u32 * bitmap,
+  		  	      int bits,
+  		  	      bool * key_eligible)
+    {
+    	u32 value, count, new_value;
+    	int offset;
+    	while(1)
+    	{
+        	value = bitmap[access_id / (32 / bits)];
+        	offset = (access_id % (32 / bits))*bits;
+        	count = get_count(value, offset, bits);
+        	if(count < (1u << bits) - 1u)
+        	{
+        		*key_eligible = false;
+        		count ++;
+        	} else {
+        		*key_eligible = true;
+        	}
+        	new_value = pack_count(value, offset, bits, count);
+        	if(atomicCAS(&bitmap[access_id / (32 / bits)], value, new_value) == value)
+        		return;
+    	}
+
+    }
     __global__
     void
     match(int m_size,
@@ -310,13 +362,16 @@ namespace GaLG
           int* d_inv,
           query::dim* d_dims,
           T_HASHTABLE* hash_table_list,
+          u32 * bitmap_list,
+          int bitmap_bits,
           T_AGE max_age)
     {
       int query_index =blockIdx.x / m_size;
       query::dim* q = &d_dims[blockIdx.x];
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
-      u32 index, access_id;
+      u32 * bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
+      u32 access_id;
 
       int min, max;
       min = q->low;
@@ -327,18 +382,24 @@ namespace GaLG
       min < 1 ? min = 0 : min = d_ck[min - 1];
       max = d_ck[max];
 
-      int loop = (max - min) / GaLG_device_THREADS_PER_BLOCK + 1;
-
-
       int i;
-      for (i = 0; i < loop; i++)
+      bool key_found, key_eligible;
+      for (i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
         {
           if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
             {
               access_id = d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
-
-              int key_found = 0;
               
+              key_eligible = false;
+
+              bitmap_kernel(access_id,
+            		  	    bitmap,
+            		  	    bitmap_bits,
+            		  	    &key_eligible);
+
+              if( !key_eligible ) continue;
+
+              key_found = false;
               //Try to find the entry in hash tables
               access_kernel(access_id,
                             hash_table,
@@ -380,7 +441,8 @@ void
 GaLG::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
-            int& hash_table_size)
+            int hash_table_size,
+            int bitmap_bits)
 throw (int)
 {
 
@@ -411,7 +473,8 @@ throw (int)
       queries[i].dump(dims);
     }
   int total = table.i_size() * queries.size();
-
+  int bitmap_size = (table.i_size() / (32/bitmap_bits) + 1)* queries.size();
+  int bitmap_bytes = bitmap_size * sizeof(u32);
 #ifdef DEBUG
 	printf("[ 20%] Declaring device memory...\n");
 #endif
@@ -425,27 +488,25 @@ throw (int)
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
   
-  if(hash_table_size <= 0){
-	  hash_table_size =table.i_size()/2 +1;
-  }
-
+  device_vector<u32> d_bitmap(bitmap_size);
+  thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+  u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
   
+
 #ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
-
-
-  std::vector<T_HASHTABLE> h_hash_table(queries.size()*hash_table_size, 0ull);
+  data_t nulldata;
+  nulldata.id = 0u;
+  nulldata.aggregation = 0.0f;
   T_HASHTABLE* d_hash_table;
   data_t* d_data_table;
   d_data.clear();
   d_data.resize(queries.size()*hash_table_size);
+  thrust::fill(d_data.begin(), d_data.end(), nulldata);
   d_data_table = thrust::raw_pointer_cast(d_data.data());
   d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-  cudaCheckErrors(cudaMemcpy(d_hash_table, &h_hash_table.front(), sizeof(T_HASHTABLE)*queries.size()*hash_table_size, cudaMemcpyHostToDevice));
-  cudaCheckErrors(cudaDeviceSynchronize());
-  h_hash_table.clear();
 
   u32 max_age = 16u;
   
@@ -471,6 +532,8 @@ throw (int)
    d_inv_p,
    d_dims_p,
    d_hash_table,
+   d_bitmap_p,
+   bitmap_bits,
    max_age);
   
 #ifdef DEBUG
@@ -503,10 +566,11 @@ void
 GaLG::match(inv_table& table,
             query& queries,
             device_vector<data_t>& d_data,
-            int& hash_table_size)
+            int hash_table_size,
+            int bitmap_bits)
 throw (int)
 {
   vector<query> _q;
   _q.push_back(queries);
-  match(table, _q, d_data, hash_table_size);
+  match(table, _q, d_data, hash_table_size, bitmap_bits);
 }

@@ -77,11 +77,12 @@ void read_query(inv_table& table, const char* fname, vector<query>& queries, int
 }
 
 void match_test(inv_table& table,
-				const char * dfname,
+				char * dfname,
 				int num_of_queries,
 				int num_of_query_dims,
 				int radius,
 				float hash_table_size_,
+				int bitmap_bits,
 				int num_of_query_print)
 {
 	 cudaDeviceReset();
@@ -97,15 +98,15 @@ void match_test(inv_table& table,
 	  printf("Start creating query...\n");
 
 	  query q(table);
-
+	  printf("filename is %s.\n", dfname);
 	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K);
 
 	  timestop = getTime();
-	  printf("Finish creating query. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
+	  printf("Finish creating %d query. Time elapsed: %f ms. \n", queries.size(), getInterval(timestart, timestop));
 
 	  device_vector<data_t> d_data;
 	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
-	  match(table, queries, d_data, hash_table_size);
+	  match(table, queries, d_data, hash_table_size, bitmap_bits);
 
 	  printf("Starting copying device result to host...\n");
 	  timestart = getTime();
@@ -177,11 +178,12 @@ void match_test(inv_table& table,
 }
 
 void topk_test( inv_table& table,
-				const char * dfname,
+				char * dfname,
 				const int num_of_queries,
 				const int num_of_query_dims,
 				const int radius,
 				const float hash_table_size_,
+				const int bitmap_bits,
 				const int num_of_query_print,
 				const int top_k_size)
 {
@@ -191,7 +193,6 @@ void topk_test( inv_table& table,
 	 cudaSetDevice(device_count - 1);
 
 	  u64 timestart, timestop, totalstart;
-
 
 	  vector<query> queries;
 
@@ -209,7 +210,7 @@ void topk_test( inv_table& table,
 	  printf("hash table size: %d\n", hash_table_size);
 
 	  timestart = getTime();
-	  GaLG::topk(table, queries, d_topk, hash_table_size);
+	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits);
 	  timestop = getTime();
 	  printf("Topk takes %f ms.\n", getInterval(timestart, timestop));
 
@@ -288,131 +289,159 @@ int
 main(int argc, char * argv[])
 {
 
-  const char * fname;
-  bool error = false;
-  int num_of_query, num_of_dim, radius, num_of_query_printing, num_of_topk;
-  float hashtable;
+  const char * fname = NULL;
+  char lastfname[1000];
+
+  int num_of_query = 1, num_of_dim = -1, radius = 0, num_of_query_printing = 0, num_of_topk =5, bitmap_bits = 2;
+  float hashtable = 1.0f;
   std::vector<std::string> ss;
   inv_table table;
+  int function = -1;
 
   for(int i = 1;i < argc; ++i)
   {
 	  ss.push_back(std::string(argv[i]));
   }
-  std::vector<std::string>::iterator s = ss.begin();
-  std::vector<std::string>::iterator e = ss.end();
 
-
-  if(cmd_option_exists(s, e, "-f"))
+  while(1)
   {
-	  fname =  get_cmd_option(s, e, "-f");
-  } else {
-	  printf("Please indicate data file path using -f.\n");
-	  error =true;
+	  bool error = false;
+	    std::vector<std::string>::iterator s = ss.begin();
+	    std::vector<std::string>::iterator e = ss.end();
+
+
+	    if(cmd_option_exists(s, e, "-f"))
+	    {
+	  	  fname =  get_cmd_option(s, e, "-f");
+	    } else {
+	  	  if(fname != NULL)
+	  	  {
+	  		  printf("Using last file: %s.\n", fname);
+	  	  }
+	  	  else
+	  	  {
+	  		  printf("Please indicate data file path using -f.\n");
+	  		  error =true;
+	  	  }
+
+	    }
+
+	    if(cmd_option_exists(s, e, "-q"))
+	    {
+	  	  num_of_query =  atoi(get_cmd_option(s, e, "-q"));
+	    } else {
+	  	  printf("Using default/last number of query: %d.\n", num_of_query);
+	    }
+
+	    if(cmd_option_exists(s, e, "-d"))
+	    {
+	  	  num_of_dim =  atoi(get_cmd_option(s, e, "-d"));
+	    } else {
+	  	  if(num_of_dim != -1)
+	  	  {
+	  		  printf("Using last number of dim: %d.\n", num_of_dim);
+	  	  }
+	  	  else
+	  	  {
+	  		  printf("Please indicate data dimension using -d.\n");
+	  		  error =true;
+	  	  }
+
+	    }
+
+	    if(cmd_option_exists(s, e, "-r"))
+	    {
+	  	  radius =  atoi(get_cmd_option(s, e, "-r"));
+	    } else {
+	  	  printf("Using default/last radius: %d.\n", radius);
+	    }
+
+	    if(cmd_option_exists(s, e, "-h"))
+	    {
+	  	  hashtable =  atof(get_cmd_option(s, e, "-h"));
+	    } else {
+	  	  printf("Using default/last hashtable ratio: %.1f.\n", hashtable);
+	    }
+
+	    if(cmd_option_exists(s, e, "-b"))
+	    {
+	  	  bitmap_bits =  atoi(get_cmd_option(s, e, "-b"));
+	    } else {
+	  	  printf("Using default/last bitmap bits: %d.\n", bitmap_bits);
+	    }
+
+	    if(cmd_option_exists(s, e, "-p"))
+	    {
+	  	  num_of_query_printing =  atoi(get_cmd_option(s, e, "-p"));
+	    } else {
+	  	  printf("Using default/last number of query to be printed: %d.\n", num_of_query_printing);
+	    }
+
+	    if(!error && (cmd_option_exists(s, e, "match") || cmd_option_exists(s, e, "topk")))
+	    {
+	  	  if(strcmp(lastfname,fname) != 0)
+	  	  {
+	  		  build_table(table, fname, num_of_dim);
+	  		  strcpy(lastfname, fname);
+	  	  }
+	    }
+
+	    if(cmd_option_exists(s, e, "match"))
+	    {
+	  	  function = 0;
+	    }
+	    else if(cmd_option_exists(s, e, "topk"))
+	    {
+	  	  function = 1;
+	    }
+	    else if(function == -1)
+	    {
+	  	  error = true;
+	  	  printf("Please specify function.\n");
+	    }
+	    else
+	    {
+	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
+	    }
+
+	    if(function == 0 && !error)
+	    {
+	  	  match_test(table, lastfname, num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+	    }
+	    else if(function == 1 && !error)
+	    {
+	  	  if(cmd_option_exists(s, e, "-t"))
+	  	  {
+	  		  num_of_topk =  atoi(get_cmd_option(s, e, "-t"));
+	  	  } else {
+	  		  printf("Using default number of topk items: %d.\n", num_of_topk);
+	  	  }
+
+	  	  topk_test(table, lastfname, num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+
+	    }
+	    else
+	    {
+	  	  printf("Shutting down kernel... Please try again.\n");
+	    }
+
+	    printf("[Ctrl + D] to exit, [Enter] to run with same config, or change config to run again.\n");
+	    char choice = (char) getchar();
+	    if(EOF == choice)
+	    {
+	  	  return 0;
+	    }
+	    else if( '\n' != choice)
+	    {
+	  	  char temp[1000];
+	  	  scanf("%[^\n]", temp);
+	  	  std::string st(temp);
+	  	  st.insert(0, 1, choice);
+	  	  ss = split(st, " ");
+	  	  getchar();
+	    } else {
+	  	  ss.clear();
+	    }
   }
 
-  if(cmd_option_exists(s, e, "-q"))
-  {
-	  num_of_query =  atoi(get_cmd_option(s, e, "-q"));
-  } else {
-	  num_of_query = 1;
-	  printf("Using default number of query: %d.\n", num_of_query);
-  }
-
-  if(cmd_option_exists(s, e, "-d"))
-  {
-	  num_of_dim =  atoi(get_cmd_option(s, e, "-d"));
-  } else {
-	  printf("Please indicate data dimension using -d.\n");
-	  error =true;
-  }
-
-  if(cmd_option_exists(s, e, "-r"))
-  {
-	  radius =  atoi(get_cmd_option(s, e, "-r"));
-  } else {
-	  radius = 0;
-	  printf("Using default radius: %d.\n", radius);
-  }
-
-  if(cmd_option_exists(s, e, "-h"))
-  {
-	  hashtable =  atof(get_cmd_option(s, e, "-h"));
-  } else {
-	  hashtable = 1.0f;
-	  printf("Using default hashtable ratio: %.1f.\n", hashtable);
-  }
-
-  if(cmd_option_exists(s, e, "-p"))
-  {
-	  num_of_query_printing =  atoi(get_cmd_option(s, e, "-p"));
-  } else {
-	  num_of_query_printing = 0;
-	  printf("Using default number of query to be printed: %d.\n", num_of_query_printing);
-  }
-
-  if(cmd_option_exists(s, e, "match") && !error)
-  {
-	  build_table(table, fname, num_of_dim);
-	  match_test(table, fname, num_of_query, num_of_dim, radius, hashtable, num_of_query_printing);
-  }
-  else if(cmd_option_exists(s, e, "topk") && !error)
-  {
-	  if(cmd_option_exists(s, e, "-t"))
-	  {
-		  num_of_topk =  atoi(get_cmd_option(s, e, "-t"));
-	  } else {
-		  num_of_topk = 5;
-		  printf("Using default number of topk items: %d.\n", num_of_topk);
-	  }
-	  build_table(table, fname, num_of_dim);
-	  topk_test(table, fname, num_of_query, num_of_dim, radius, hashtable, num_of_query_printing, num_of_topk);
-
-  }
-  else
-  {
-	  printf("Shutting down kernel... Please try again.\n");
-  }
-
-//  const int DATA_PATH 			 	= 2,
-//			NUM_OF_QUERY		 	= 3,
-//			NUM_OF_DIM			 	= 4,
-//			NUM_OF_QUERY_DIM 	 	= 5,
-//			RADIUS					= 6,
-//			HASHTABLE_SIZE			= 7,
-//			NUM_OF_QUERY_PRINTING 	= 8,
-//			TOP_K					= 9;
-//
-//  printf("Current Version: %s\n", VERSION);
-//
-//  inv_table table;
-//
-//  if(argc == 9 && (argv[1][0] == 'm' || argv[1][0] == 'M'))
-//  {
-//	  build_table(table, argv[DATA_PATH], atoi(argv[NUM_OF_DIM]));
-//	  match_test(table,
-//			  argv[DATA_PATH],
-//			atoi(argv[NUM_OF_QUERY]),
-//			atoi(argv[NUM_OF_QUERY_DIM]),
-//			atoi(argv[RADIUS]),
-//			atof(argv[HASHTABLE_SIZE]),
-//			atoi(argv[NUM_OF_QUERY_PRINTING]));
-//  }
-//  else if(argc >= 10 && (argv[1][0] == 't'||argv[1][0] == 'T'))
-//  {
-//	  build_table(table, argv[DATA_PATH], atoi(argv[NUM_OF_DIM]));
-//	  topk_test(table,
-//			  argv[DATA_PATH],
-//			atoi(argv[NUM_OF_QUERY]),
-//			atoi(argv[NUM_OF_QUERY_DIM]),
-//			atoi(argv[RADIUS]),
-//			atof(argv[HASHTABLE_SIZE]),
-//			atoi(argv[NUM_OF_QUERY_PRINTING]),
-//			atoi(argv[TOP_K]));
-//  }
-//  else
-//  {
-//	  printf("Wrong number of arguments provided!\n");
-//  }
-  return 0;
 }

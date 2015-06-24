@@ -9,7 +9,11 @@
 #endif
 
 #ifndef GaLG_topk_DEFAULT_HASH_TABLE_SIZE
-#define GaLG_topk_DEFAULT_HASH_TABLE_SIZE 0.5
+#define GaLG_topk_DEFAULT_HASH_TABLE_SIZE 1
+#endif
+
+#ifndef GaLG_topk_DEFAULT_BITMAP_BITS
+#define GaLG_topk_DEFAULT_BITMAP_BITS 2
 #endif
 
 struct ValueOfFloat
@@ -54,7 +58,7 @@ GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
     device_vector<int>& d_top_indexes)
 {
 	int hash_table_size = GaLG_topk_DEFAULT_HASH_TABLE_SIZE * table.i_size() + 1;
-	topk(table, queries, d_top_indexes, hash_table_size);
+	topk(table, queries, d_top_indexes, hash_table_size, GaLG_topk_DEFAULT_BITMAP_BITS);
 }
 
 void
@@ -63,18 +67,18 @@ GaLG::topk(GaLG::inv_table& table,
 		   device_vector<int>& d_top_indexes)
 {
 	int hash_table_size = GaLG_topk_DEFAULT_HASH_TABLE_SIZE * table.i_size() + 1;
-	topk(table, queries, d_top_indexes, hash_table_size);
+	topk(table, queries, d_top_indexes, hash_table_size, GaLG_topk_DEFAULT_BITMAP_BITS);
 }
 
 void
 GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
-    device_vector<int>& d_top_indexes, int hash_table_size)
+    device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits)
 {
   device_vector<float> d_a;
   device_vector<data_t> d_data;
   vector<query> q;
   q.push_back(queries);
-  match(table, q, d_data, hash_table_size);
+  match(table, q, d_data, hash_table_size, bitmap_bits);
   d_a.resize(hash_table_size * q.size());
   convert_data<<<hash_table_size * q.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
 		  	  (thrust::raw_pointer_cast(d_a.data()), thrust::raw_pointer_cast(d_data.data()), hash_table_size * q.size());
@@ -86,12 +90,12 @@ GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
 void
 GaLG::topk(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes, int hash_table_size)
+		   device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits)
 {
   device_vector<float> d_a(hash_table_size * queries.size());
   device_vector<data_t> d_data;
-  match(table, queries, d_data, hash_table_size);
 
+  match(table, queries, d_data, hash_table_size, bitmap_bits);
   printf("Start converting data for topk...\n");
   convert_data<<<hash_table_size * queries.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
 		  	  (thrust::raw_pointer_cast(d_a.data()), thrust::raw_pointer_cast(d_data.data()), hash_table_size * queries.size());
@@ -185,6 +189,7 @@ GaLG::topk(device_vector<float>& d_search,
       thrust::minmax_element(d_search.begin(), d_search.end());
   host_vector<int> h_end_index(parts);
   device_vector<int> d_end_index(parts);
+
   int number_of_each = d_search.size() / parts;
   for (i = 0; i < parts; i++)
     {
@@ -192,7 +197,6 @@ GaLG::topk(device_vector<float>& d_search,
     }
   d_end_index = h_end_index;
   d_top_indexes.clear(), d_top_indexes.resize(total);
-
   ValueOfFloat val;
   val.max = *minmax.second;
   bucket_topk<float, ValueOfFloat>(&d_search, val, *minmax.first,

@@ -27,7 +27,7 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
     return;
 }
 
-const char VERSION[] = "0.1.13";
+const char VERSION[] = "0.2.1";
 typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
@@ -61,7 +61,8 @@ namespace GaLG
   match(inv_table& table,
         vector<query>& queries,
         device_vector<data_t>& d_data,
-        int& hash_table_size) throw (int);
+        int hash_table_size,
+        int bitmap_bits) throw (int);
 
   /**
    * @brief Search the inv_table and save the match
@@ -82,7 +83,8 @@ namespace GaLG
   match(inv_table& table,
         query& queries,
         device_vector<data_t>& d_data,
-        int& hash_table_size)
+        int hash_table_size,
+        int bitmap_bits)
   throw (int);
 }
 
