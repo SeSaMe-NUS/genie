@@ -77,7 +77,7 @@ void read_query(inv_table& table, const char* fname, vector<query>& queries, int
 }
 
 void match_test(inv_table& table,
-				char * dfname,
+				const char * dfname,
 				int num_of_queries,
 				int num_of_query_dims,
 				int radius,
@@ -98,7 +98,7 @@ void match_test(inv_table& table,
 	  printf("Start creating query...\n");
 
 	  query q(table);
-	  printf("filename is %s.\n", dfname);
+	  //printf("filename is %s.\n", dfname);
 	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K);
 
 	  timestop = getTime();
@@ -178,7 +178,7 @@ void match_test(inv_table& table,
 }
 
 void topk_test( inv_table& table,
-				char * dfname,
+				const char * dfname,
 				const int num_of_queries,
 				const int num_of_query_dims,
 				const int radius,
@@ -269,13 +269,12 @@ build_table(inv_table& table,const char * dfname,const int num_of_dims)
 	  printf("Finish building table. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
 }
 
-const char* get_cmd_option(std::vector<std::string>::iterator& begin, std::vector<std::string>::iterator& end, const std::string & option)
+std::string get_cmd_option(std::vector<std::string>::iterator& begin, std::vector<std::string>::iterator& end, const std::string & option)
 {
 	std::vector<std::string>::iterator itr = std::find(begin, end, option);
     if (itr != end && ++itr != end)
     {
-    	string s = *itr;
-        return s.c_str();
+        return *itr;
     }
     return 0;
 }
@@ -285,12 +284,29 @@ bool cmd_option_exists(std::vector<std::string>::iterator& begin, std::vector<st
     return std::find(begin, end, option) != end;
 }
 
+int stoi(std::string str)
+{
+	int result = atoi(str.c_str());
+	if(str.empty() ||(eraseSpace(str) != std::string("0") && result == 0)){
+		throw 0;
+	}
+	return result;
+}
+
+float stof(std::string str)
+{
+	float result = atof(str.c_str());
+	if(str.empty() ||  ( eraseSpace(str) != std::string("0") && result == 0.0f)){
+		throw 0;
+	}
+	return result;
+}
+
 int
 main(int argc, char * argv[])
 {
 
-  const char * fname = NULL;
-  char lastfname[1000];
+  std::string fname,qfname, lastfname;
 
   int num_of_query = 1, num_of_dim = -1, radius = 0, num_of_query_printing = 0, num_of_topk =5, bitmap_bits = 2;
   float hashtable = 1.0f;
@@ -305,84 +321,100 @@ main(int argc, char * argv[])
 
   while(1)
   {
-	  bool error = false;
+	    bool error = false;
 	    std::vector<std::string>::iterator s = ss.begin();
 	    std::vector<std::string>::iterator e = ss.end();
 
+	    try{
+			if(cmd_option_exists(s, e, "-f"))
+			{
+			  lastfname = fname;
+			  fname =  get_cmd_option(s, e, "-f");
+			} else {
+			  if(!fname.empty())
+			  {
+				  printf("Using last file: %s.\n", fname.c_str());
+			  }
+			  else
+			  {
+				  printf("Please indicate data file path using -f.\n");
+				  error =true;
+			  }
+			}
 
-	    if(cmd_option_exists(s, e, "-f"))
-	    {
-	  	  fname =  get_cmd_option(s, e, "-f");
-	    } else {
-	  	  if(fname != NULL)
-	  	  {
-	  		  printf("Using last file: %s.\n", fname);
-	  	  }
-	  	  else
-	  	  {
-	  		  printf("Please indicate data file path using -f.\n");
-	  		  error =true;
-	  	  }
+			if(cmd_option_exists(s, e, "-qf"))
+			{
+				qfname = get_cmd_option(s, e, "-qf");
+			} else {
+				if(qfname.empty()) qfname = fname;
+			}
 
+			if(cmd_option_exists(s, e, "-q"))
+			{
+			  num_of_query = stoi(get_cmd_option(s, e, "-q"));
+			} else {
+			  printf("Using default/last number of query: %d.\n", num_of_query);
+			}
+
+			if(cmd_option_exists(s, e, "-d"))
+			{
+			  num_of_dim = stoi(get_cmd_option(s, e, "-d"));
+			} else {
+			  if(num_of_dim != -1)
+			  {
+				  printf("Using last number of dim: %d.\n", num_of_dim);
+			  }
+			  else
+			  {
+				  printf("Please indicate data dimension using -d.\n");
+				  error =true;
+			  }
+
+			}
+
+			if(cmd_option_exists(s, e, "-r"))
+			{
+			  radius = stoi(get_cmd_option(s, e, "-r"));
+			} else {
+			  printf("Using default/last radius: %d.\n", radius);
+			}
+
+			if(cmd_option_exists(s, e, "-h"))
+			{
+			  hashtable = stof(get_cmd_option(s, e, "-h"));
+			} else {
+			  printf("Using default/last hashtable ratio: %.1f.\n", hashtable);
+			}
+
+			if(cmd_option_exists(s, e, "-b"))
+			{
+			  bitmap_bits = stoi(get_cmd_option(s, e, "-b"));
+			} else {
+			  printf("Using default/last bitmap bits: %d.\n", bitmap_bits);
+			}
+
+			if(cmd_option_exists(s, e, "-p"))
+			{
+			  num_of_query_printing = stoi(get_cmd_option(s, e, "-p"));
+			} else {
+			  printf("Using default/last number of query to be printed: %d.\n", num_of_query_printing);
+			}
+
+		    if(cmd_option_exists(s, e, "-t"))
+		    {
+		  	  num_of_topk = stoi(get_cmd_option(s, e, "-t"));
+		    } else {
+		  	  printf("Using default number of topk items: %d.\n", num_of_topk);
+		    }
+	    } catch(exception& e){
+	    	printf("Something wrong with your parameter: %s.\n", e.what());
+	    	error = true;
 	    }
-
-	    if(cmd_option_exists(s, e, "-q"))
-	    {
-	  	  num_of_query =  atoi(get_cmd_option(s, e, "-q"));
-	    } else {
-	  	  printf("Using default/last number of query: %d.\n", num_of_query);
-	    }
-
-	    if(cmd_option_exists(s, e, "-d"))
-	    {
-	  	  num_of_dim =  atoi(get_cmd_option(s, e, "-d"));
-	    } else {
-	  	  if(num_of_dim != -1)
-	  	  {
-	  		  printf("Using last number of dim: %d.\n", num_of_dim);
-	  	  }
-	  	  else
-	  	  {
-	  		  printf("Please indicate data dimension using -d.\n");
-	  		  error =true;
-	  	  }
-
-	    }
-
-	    if(cmd_option_exists(s, e, "-r"))
-	    {
-	  	  radius =  atoi(get_cmd_option(s, e, "-r"));
-	    } else {
-	  	  printf("Using default/last radius: %d.\n", radius);
-	    }
-
-	    if(cmd_option_exists(s, e, "-h"))
-	    {
-	  	  hashtable =  atof(get_cmd_option(s, e, "-h"));
-	    } else {
-	  	  printf("Using default/last hashtable ratio: %.1f.\n", hashtable);
-	    }
-
-	    if(cmd_option_exists(s, e, "-b"))
-	    {
-	  	  bitmap_bits =  atoi(get_cmd_option(s, e, "-b"));
-	    } else {
-	  	  printf("Using default/last bitmap bits: %d.\n", bitmap_bits);
-	    }
-
-	    if(cmd_option_exists(s, e, "-p"))
-	    {
-	  	  num_of_query_printing =  atoi(get_cmd_option(s, e, "-p"));
-	    } else {
-	  	  printf("Using default/last number of query to be printed: %d.\n", num_of_query_printing);
-	    }
-
 	    if(!error && (cmd_option_exists(s, e, "match") || cmd_option_exists(s, e, "topk")))
 	    {
-	  	  if(strcmp(lastfname,fname) != 0)
+	  	  if(lastfname != fname)
 	  	  {
-	  		  build_table(table, fname, num_of_dim);
-	  		  strcpy(lastfname, fname);
+	  		  build_table(table, fname.c_str(), num_of_dim);
 	  	  }
 	    }
 
@@ -406,18 +438,11 @@ main(int argc, char * argv[])
 
 	    if(function == 0 && !error)
 	    {
-	  	  match_test(table, lastfname, num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+	  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
 	    }
 	    else if(function == 1 && !error)
 	    {
-	  	  if(cmd_option_exists(s, e, "-t"))
-	  	  {
-	  		  num_of_topk =  atoi(get_cmd_option(s, e, "-t"));
-	  	  } else {
-	  		  printf("Using default number of topk items: %d.\n", num_of_topk);
-	  	  }
-
-	  	  topk_test(table, lastfname, num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+	  	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
 
 	    }
 	    else
