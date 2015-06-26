@@ -9,4 +9,6 @@
 #include <GaLG/topk.h>
 #include <GaLG/parser/parser.h>
 
+extern bool GALG_ERROR;
+
 #endif

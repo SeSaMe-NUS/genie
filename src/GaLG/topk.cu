@@ -4,6 +4,8 @@
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
 
+bool GALG_ERROR = false;
+
 #ifndef GaLG_topk_THREADS_PER_BLOCK
 #define GaLG_topk_THREADS_PER_BLOCK 1024
 #endif
@@ -94,7 +96,7 @@ GaLG::topk(GaLG::inv_table& table,
 {
   device_vector<float> d_a(hash_table_size * queries.size());
   device_vector<data_t> d_data;
-
+  try{
   match(table, queries, d_data, hash_table_size, bitmap_bits);
   printf("Start converting data for topk...\n");
   convert_data<<<hash_table_size * queries.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
@@ -108,6 +110,11 @@ GaLG::topk(GaLG::inv_table& table,
   extract_index<<<d_top_indexes.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
 		  	   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
   cudaCheckErrors(cudaDeviceSynchronize());
+  }catch(MemException& e){
+	  printf("%s.\n", e.what());
+	  printf("Please try again with smaller data/query/hashtable size.\n");
+	  GALG_ERROR = true;
+  }
   printf("Finish topk search!\n");
 }
 
@@ -202,3 +209,4 @@ GaLG::topk(device_vector<float>& d_search,
   bucket_topk<float, ValueOfFloat>(&d_search, val, *minmax.first,
       *minmax.second, &d_tops, &d_end_index, parts, &d_top_indexes);
 }
+

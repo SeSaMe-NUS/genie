@@ -443,9 +443,8 @@ GaLG::match(inv_table& table,
             device_vector<data_t>& d_data,
             int hash_table_size,
             int bitmap_bits)
-throw (int)
 {
-
+try{
 	printf("match.cu version : %s\n", VERSION);
 #ifdef DEBUG
 	u64 match_stop, match_elapsed, match_start;
@@ -487,12 +486,22 @@ throw (int)
 
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
-  
+
   device_vector<u32> d_bitmap(bitmap_size);
   thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
   u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
   
-
+//  int * d_ck_p;
+//  cudaSafeCall(checkAndMalloc((void**)&d_ck_p, (*table.ck()->size())*sizeof(int)));
+//  cudaSafeCall(cudaMemcpy(d_ck_p, &(*table.ck()->front()), (*table.ck()->size())*sizeof(int),cudaMemcpyHostToDevice));
+//
+//  int * d_inv_p;
+//  cudaSafeCall(checkAndMalloc((void**)&d_inv_p, (*table.inv()->size())*sizeof(int)));
+//  cudaSafeCall(cudaMemcpy(d_inv_p, &(*table.inv()->front()), (*table.inv()->size())*sizeof(int),cudaMemcpyHostToDevice));
+//
+//  query::dim * d_dims_p;
+//  cudaSafeCall(checkAndMalloc((void**)&d_dims_p, (dims.size())*sizeof(query::dim)));
+//  cudaSafeCall(cudaMemcpy(d_dims_p, &(dims.front()), (dims.size())*sizeof(query::dim),cudaMemcpyHostToDevice));
 #ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
@@ -503,11 +512,13 @@ throw (int)
   T_HASHTABLE* d_hash_table;
   data_t* d_data_table;
   d_data.clear();
+
   d_data.resize(queries.size()*hash_table_size);
+
+  //d_data.resize(queries.size()*hash_table_size);
   thrust::fill(d_data.begin(), d_data.end(), nulldata);
   d_data_table = thrust::raw_pointer_cast(d_data.data());
   d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-
   u32 max_age = 16u;
   
 #ifdef DEBUG
@@ -560,6 +571,19 @@ throw (int)
 
   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
+} catch(thrust::system_error& e){
+	  printf("Error occurred in match function.\n");
+	  throw MemException(e.what());
+} catch(std::bad_alloc& e){
+	  printf("Error occurred in match function.\n");
+	  throw MemException(e.what());
+} catch(std::exception& e){
+	  printf("Error occurred in match function.\n");
+	  throw MemException(e.what());
+} catch(...){
+	printf("Unknown error!\n");
+	throw MemException("Unknown error!");
+}
 }
 
 void
@@ -568,7 +592,6 @@ GaLG::match(inv_table& table,
             device_vector<data_t>& d_data,
             int hash_table_size,
             int bitmap_bits)
-throw (int)
 {
   vector<query> _q;
   _q.push_back(queries);

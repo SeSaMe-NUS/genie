@@ -10,6 +10,7 @@
 #include <bitset>
 #include <vector>
 #include <algorithm>
+#include <thrust/system_error.h>
 
 
 #define DEFAULT_TOP_K 5
@@ -83,7 +84,7 @@ void match_test(inv_table& table,
 				int radius,
 				float hash_table_size_,
 				int bitmap_bits,
-				int num_of_query_print)
+				int num_of_query_print) throw()
 {
 	 cudaDeviceReset();
 	 int device_count;
@@ -107,7 +108,11 @@ void match_test(inv_table& table,
 	  device_vector<data_t> d_data;
 	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
 	  match(table, queries, d_data, hash_table_size, bitmap_bits);
-
+	  if(GALG_ERROR){
+		  GALG_ERROR = false;
+		  cudaDeviceReset();
+		  return;
+	  }
 	  printf("Starting copying device result to host...\n");
 	  timestart = getTime();
 	  std::vector<data_t> h_data(hash_table_size * queries.size());
@@ -185,7 +190,7 @@ void topk_test( inv_table& table,
 				const float hash_table_size_,
 				const int bitmap_bits,
 				const int num_of_query_print,
-				const int top_k_size)
+				const int top_k_size)throw()
 {
 	 cudaDeviceReset();
 	 int device_count;
@@ -211,6 +216,11 @@ void topk_test( inv_table& table,
 
 	  timestart = getTime();
 	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits);
+	  if(GALG_ERROR){
+		  GALG_ERROR = false;
+		  cudaDeviceReset();
+		  return;
+	  }
 	  timestop = getTime();
 	  printf("Topk takes %f ms.\n", getInterval(timestart, timestop));
 
@@ -305,7 +315,6 @@ float stof(std::string str)
 int
 main(int argc, char * argv[])
 {
-
   std::string fname,qfname, lastfname;
 
   int num_of_query = 1, num_of_dim = -1, radius = 0, num_of_query_printing = 0, num_of_topk =5, bitmap_bits = 2;
@@ -435,20 +444,45 @@ main(int argc, char * argv[])
 	    {
 	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
 	    }
+	    try{
+		    if(function == 0 && !error)
+		    {
+		  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+		    }
+		    else if(function == 1 && !error)
+		    {
+		  	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
 
-	    if(function == 0 && !error)
-	    {
-	  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+		    }
+		    else
+		    {
+		  	  printf("Shutting down kernel... Please try again.\n");
+		    }
 	    }
-	    else if(function == 1 && !error)
+	    catch(thrust::system_error  & e)
 	    {
-	  	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+	    	printf("%s\n", e.what());
+	    	cudaDeviceReset();
+	    	printf("Please try again.\n");
+	    }
+	    catch(std::bad_alloc  & e)
+	    {
+	    	printf("%s\n", e.what());
+	    	cudaDeviceReset();
+	    	printf("Please try again.\n");
+	    }
+	    catch(MemException  & e)
+	    {
+	    	printf("%s\n", e.what());
+	    	cudaDeviceReset();
+	    	printf("Please try again.\n");
+	    }
+	    catch(...)
+	    {
+	    	printf("Unkown error!\n");
+	    	printf("Please try again.\n");
+	    }
 
-	    }
-	    else
-	    {
-	  	  printf("Shutting down kernel... Please try again.\n");
-	    }
 
 	    printf("[Ctrl + D] to exit, [Enter] to run with same config, or change config to run again.\n");
 	    char choice = (char) getchar();

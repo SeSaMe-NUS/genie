@@ -10,6 +10,22 @@
 using namespace std;
 using namespace thrust;
 
+const char VERSION[] = "0.2.5";
+typedef unsigned char u8;
+typedef unsigned int u32;
+typedef unsigned long long u64;
+class MemException: public std::exception {
+private:
+    std::string message_;
+public:
+    explicit MemException(const std::string& message){message_ = std::string(message);}
+    explicit MemException(const char * message){message_ = std::string(message);}
+    explicit MemException(char * message){message_ = std::string(message);}
+    virtual const char* what() const throw() {
+        return message_.c_str();
+    }
+    virtual ~MemException() throw(){;}
+};
 #define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 
 
@@ -18,19 +34,30 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 
     if ( cudaSuccess != err )
     {
-        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
+    	char errstr[1000];
+        sprintf( errstr, "cudaSafeCall() failed at %s:%i : %s\n",
                  file, line, cudaGetErrorString( err ) );
-        exit( -1 );
+        printf("cudaSafeCall failed in match function!\n");
+        throw MemException(errstr);
     }
 
 
     return;
 }
 
-const char VERSION[] = "0.2.1";
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+
+inline cudaError checkAndMalloc(void ** to, u64 bytes)
+{
+	size_t f, t;
+	cudaMemGetInfo(&f, &t);
+	if(f <= bytes)
+	{
+		throw MemException("Insufficient GPU memory...");
+	}
+	return cudaMalloc(to, bytes);
+}
+
+
 
 typedef struct data_{
   u32 id;
@@ -62,7 +89,7 @@ namespace GaLG
         vector<query>& queries,
         device_vector<data_t>& d_data,
         int hash_table_size,
-        int bitmap_bits) throw (int);
+        int bitmap_bits);
 
   /**
    * @brief Search the inv_table and save the match
@@ -84,8 +111,7 @@ namespace GaLG
         query& queries,
         device_vector<data_t>& d_data,
         int hash_table_size,
-        int bitmap_bits)
-  throw (int);
+        int bitmap_bits);
 }
 
 #endif
