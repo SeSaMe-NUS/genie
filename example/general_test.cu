@@ -215,13 +215,13 @@ void topk_test( inv_table& table,
 	  printf("hash table size: %d\n", hash_table_size);
 
 	  timestart = getTime();
-	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits);
+	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims);
 	  if(GALG_ERROR){
-		  GALG_ERROR = false;
 		  cudaDeviceReset();
 		  return;
 	  }
 	  timestop = getTime();
+	  GALG_TIME += (timestop - timestart);
 	  printf("Topk takes %f ms.\n", getInterval(timestart, timestop));
 
 	  printf("Starting copying device result to host...\n");
@@ -317,7 +317,13 @@ main(int argc, char * argv[])
 {
   std::string fname,qfname, lastfname;
 
-  int num_of_query = 1, num_of_dim = -1, radius = 0, num_of_query_printing = 0, num_of_topk =5, bitmap_bits = 2;
+  int num_of_query = 1,
+	  num_of_dim = -1,
+	  radius = 0,
+	  num_of_query_printing = 0,
+	  num_of_topk =5,
+	  bitmap_bits = 2,
+	  num_of_tests = 1;
   float hashtable = 1.0f;
   std::vector<std::string> ss;
   inv_table table;
@@ -392,7 +398,7 @@ main(int argc, char * argv[])
 			{
 			  hashtable = stof(get_cmd_option(s, e, "-h"));
 			} else {
-			  printf("Using default/last hashtable ratio: %.1f.\n", hashtable);
+			  printf("Using default/last hashtable ratio: %f.\n", hashtable);
 			}
 
 			if(cmd_option_exists(s, e, "-b"))
@@ -414,6 +420,12 @@ main(int argc, char * argv[])
 		  	  num_of_topk = stoi(get_cmd_option(s, e, "-t"));
 		    } else {
 		  	  printf("Using default number of topk items: %d.\n", num_of_topk);
+		    }
+		    if(cmd_option_exists(s, e, "-n"))
+		    {
+		  	  num_of_tests = stoi(get_cmd_option(s, e, "-n"));
+		    } else {
+		  	  printf("Using default number of tests: %d.\n", num_of_tests);
 		    }
 	    } catch(exception& e){
 	    	printf("Something wrong with your parameter: %s.\n", e.what());
@@ -445,13 +457,23 @@ main(int argc, char * argv[])
 	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
 	    }
 	    try{
+	    	GALG_TIME = 0ull;
+	    	GALG_ERROR= false;
 		    if(function == 0 && !error)
 		    {
 		  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
 		    }
 		    else if(function == 1 && !error)
 		    {
-		  	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+
+		      for(int i = 0; i < num_of_tests && !GALG_ERROR; ++i){
+		    	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+		      }
+		      if(num_of_tests != 1 && !GALG_ERROR)
+		      {
+		    	  printf("Average topk time is %f for %d tests.\n", GALG_TIME / (double)(num_of_tests*1000), num_of_tests);
+		      }
+
 
 		    }
 		    else

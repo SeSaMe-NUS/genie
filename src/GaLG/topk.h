@@ -18,8 +18,16 @@ topk(inv_table& table, query& queries,
 	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits);
 
 void
+topk(inv_table& table, query& queries,
+	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim);
+
+void
 topk(inv_table& table, vector<query>& queries,
 	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits);
+
+void
+topk(inv_table& table, vector<query>& queries,
+	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim);
   /**
    * @brief Find the top k values in given inv_table.
    * @details Find the top k values in given inv_table.
@@ -67,6 +75,9 @@ topk(inv_table& table, vector<query>& queries,
   void
   topk(device_vector<float>& d_search, vector<query>& queries,
       device_vector<int>& d_top_indexes);
+  void
+  topk(device_vector<data_t>& d_search, vector<query>& queries,
+      device_vector<int>& d_top_indexe, float dim);
 
   /**
    * @brief Find the top k values in given device_vector.
@@ -91,6 +102,9 @@ topk(inv_table& table, vector<query>& queries,
   void
   topk(device_vector<float>& d_search, device_vector<int>& d_tops,
       device_vector<int>& d_top_indexes);
+  void
+  topk(device_vector<data_t>& d_search, device_vector<int>& d_tops,
+      device_vector<int>& d_top_indexes, float dim);
 }
 
 #endif

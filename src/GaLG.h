@@ -10,5 +10,6 @@
 #include <GaLG/parser/parser.h>
 
 extern bool GALG_ERROR;
+extern unsigned long long GALG_TIME;
 
 #endif
