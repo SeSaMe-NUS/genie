@@ -18,6 +18,8 @@
 using namespace GaLG;
 using namespace std;
 
+u64 MAX_ITEM_NUM = 0;;
+
 vector<string> split(string& str, const char* c) {
 	char *cstr, *p;
 	vector<string> res;
@@ -139,6 +141,7 @@ void match_test(inv_table& table,
 			  {
 				  ++ non_zero_count;
 				  ++ total_non_zero_count;
+
 				  if(m.find(hd.aggregation) == m.end())
 				  {
 					  m[hd.aggregation] = 0u;
@@ -150,32 +153,41 @@ void match_test(inv_table& table,
 					 im[hd.aggregation] = 0;
 				  }
 				  im[hd.aggregation] += 1;
+
+
 			  }
+		  }
+		  if(non_zero_count > MAX_ITEM_NUM){
+			  MAX_ITEM_NUM = non_zero_count;
 		  }
 
 	  }
 	  printf("[Info] Average Non-zero Item: %f\n", total_non_zero_count / (float)queries.size());
-	  printf("Result distribution:\n");
-	  u64 all_count = 0ull;
-	  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
-	  {
-		  all_count += it->second;
-	  }
-	  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
-	  {
-		  //printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
-		  printf("\t %u: %u\n", it->first, it->second);
+
+	  if(num_of_query_print){
+		  printf("Result distribution:\n");
+		  u64 all_count = 0ull;
+		  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
+		  {
+			  all_count += it->second;
+		  }
+		  for(std::map<u32, u32>::iterator it = m.begin(); it != m.end(); ++it)
+		  {
+			  //printf("\t %u: %.5f%%\n", it->first, 100 * (it->second / (double)all_count));
+			  printf("\t %u: %u\n", it->first, it->second);
+		  }
 	  }
 
-	  for(int i = 0; i < queries.size() && i < num_of_query_print;++i){
-		  printf("Matching Result for query %d:\n", i);
-		  for(j = 0; j < hash_table_size; ++j){
-			   hd = h_data[hash_table_size * i + j];
-			   printf("%d %.5f %u\n", j, hd.aggregation, hd.id);
-			  //printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
-		  }
-		  printf("-------\n");
-	  }
+
+//	  for(int i = 0; i < queries.size() && i < num_of_query_print;++i){
+//		  printf("Matching Result for query %d:\n", i);
+//		  for(j = 0; j < hash_table_size; ++j){
+//			   hd = h_data[hash_table_size * i + j];
+//			   printf("%d %.5f %u\n", j, hd.aggregation, hd.id);
+//			  //printf("%3d. Count: %3u, Aggregation: %5.2f, Index: %3u\n", j, hd.count, hd.aggregation, hd.id);
+//		  }
+//		  printf("-------\n");
+//	  }
 
 	  printf(">>>>>>>>>>>>>Successful matching, the matching result is stored in d_data;\n");
 	  timestop = getTime();
@@ -461,7 +473,9 @@ main(int argc, char * argv[])
 	    	GALG_ERROR= false;
 		    if(function == 0 && !error)
 		    {
+		    	MAX_ITEM_NUM = 0ull;
 		  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+		  	  printf("Max number of items in query hashtables: %llu.\n", MAX_ITEM_NUM);
 		    }
 		    else if(function == 1 && !error)
 		    {

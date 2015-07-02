@@ -26,9 +26,9 @@ build:
 #Invoking: NVCC Compiler
 #	src/inv_match.o:src/inv_match.cu
 	nvcc -I../src -include ../src/GaLG.h -O3 -gencode arch=compute_35,code=sm_35  -M -o "general_test.d" "general_test.cu"
-	nvcc --device-c -I../src -O3 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35 -include ../src/GaLG.h  -x cu -o  "general_test.o" "general_test.cu"
+	nvcc --device-c  -I../src -O3 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35 -include ../src/GaLG.h  -x cu -o  "general_test.o" "general_test.cu"
 
-	nvcc --cudart shared -L../lib -L/lib64 --relocatable-device-code=true -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35 -link -o  "general_test_bin"  general_test.o   -lGaLG -lpthread
+	nvcc --cudart  shared -L../lib -L/lib64 --relocatable-device-code=true -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35 -link -o  "general_test_bin"  general_test.o   -lGaLG -lpthread
 #Finished building target: inv_match_bin
 
 ##Building file: inv_topk.cu
