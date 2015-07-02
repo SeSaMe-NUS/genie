@@ -370,7 +370,8 @@ namespace GaLG
       query::dim* q = &d_dims[blockIdx.x];
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
-      u32 * bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
+      u32 * bitmap;
+      if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
       u32 access_id;
 
       int min, max;
@@ -389,15 +390,17 @@ namespace GaLG
           if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
             {
               access_id = d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
-              
-              key_eligible = false;
+              if(bitmap_bits){
+                  key_eligible = false;
 
-              bitmap_kernel(access_id,
-            		  	    bitmap,
-            		  	    bitmap_bits,
-            		  	    &key_eligible);
+                  bitmap_kernel(access_id,
+                		  	    bitmap,
+                		  	    bitmap_bits,
+                		  	    &key_eligible);
 
-              if( !key_eligible ) continue;
+                  if( !key_eligible ) continue;
+              }
+
 
               key_found = false;
               //Try to find the entry in hash tables
@@ -472,8 +475,13 @@ try{
       queries[i].dump(dims);
     }
   int total = table.i_size() * queries.size();
-  int bitmap_size = (table.i_size() / (32/bitmap_bits) + 1)* queries.size();
-  int bitmap_bytes = bitmap_size * sizeof(u32);
+  int bitmap_size = 0, bitmap_bytes = 0;
+  if(bitmap_bits){
+	  bitmap_size = (table.i_size() / (32/bitmap_bits) + 1)* queries.size();
+	  bitmap_bytes = bitmap_size * sizeof(u32);
+  }
+
+
 #ifdef DEBUG
 	printf("[ 20%] Declaring device memory...\n");
 #endif
