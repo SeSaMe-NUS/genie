@@ -3,6 +3,7 @@
 
 #include "inv_table.h"
 #include "query.h"
+#include <stdint.h>
 
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
@@ -12,7 +13,7 @@ using namespace thrust;
 
 const char VERSION[] = "0.2.5";
 typedef unsigned char u8;
-typedef unsigned int u32;
+typedef uint32_t u32;
 typedef unsigned long long u64;
 class MemException: public std::exception {
 private:

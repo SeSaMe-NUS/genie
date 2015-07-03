@@ -26,6 +26,7 @@ makefile~
 *.i*86
 *.x86_64
 *.hex
+/example/*_bin
 
 # created by git-ignore
 CMakeCache.txt

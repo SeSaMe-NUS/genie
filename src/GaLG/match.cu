@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <stdlib.h>
+#include <math.h>
 
 #ifndef GaLG_device_THREADS_PER_BLOCK
 #define GaLG_device_THREADS_PER_BLOCK 256
@@ -331,6 +332,7 @@ namespace GaLG
     bitmap_kernel(u32 access_id,
   		  	      u32 * bitmap,
   		  	      int bits,
+  		  	      int threshold,
   		  	      bool * key_eligible)
     {
     	u32 value, count, new_value;
@@ -340,12 +342,13 @@ namespace GaLG
         	value = bitmap[access_id / (32 / bits)];
         	offset = (access_id % (32 / bits))*bits;
         	count = get_count(value, offset, bits);
-        	if(count < (1u << bits) - 1u)
+        	if(count < threshold)
         	{
         		*key_eligible = false;
         		count ++;
         	} else {
         		*key_eligible = true;
+        		return;
         	}
         	new_value = pack_count(value, offset, bits, count);
         	if(atomicCAS(&bitmap[access_id / (32 / bits)], value, new_value) == value)
@@ -364,6 +367,7 @@ namespace GaLG
           T_HASHTABLE* hash_table_list,
           u32 * bitmap_list,
           int bitmap_bits,
+          int threshold,
           T_AGE max_age)
     {
       int query_index =blockIdx.x / m_size;
@@ -371,7 +375,7 @@ namespace GaLG
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
       u32 * bitmap;
-      if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
+      if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 /bitmap_bits) + 1)];
       u32 access_id;
 
       int min, max;
@@ -391,17 +395,15 @@ namespace GaLG
             {
               access_id = d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
               if(bitmap_bits){
-                  key_eligible = false;
-
+            	  key_eligible = false;
                   bitmap_kernel(access_id,
                 		  	    bitmap,
                 		  	    bitmap_bits,
+                		  	    threshold,
                 		  	    &key_eligible);
 
                   if( !key_eligible ) continue;
               }
-
-
               key_found = false;
               //Try to find the entry in hash tables
               access_kernel(access_id,
@@ -475,14 +477,32 @@ try{
       queries[i].dump(dims);
     }
   int total = table.i_size() * queries.size();
-  int bitmap_size = 0, bitmap_bytes = 0;
-  if(bitmap_bits){
+  int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
+  if(bitmap_bits > 1){
+	  float logresult = log2((float) bitmap_bits);
+	  bitmap_bits = (int) logresult;
+	  if(logresult - bitmap_bits > 0)
+	  {
+		 bitmap_bits += 1;
+	  }
+	  logresult = log2((float)bitmap_bits);
+	  bitmap_bits = (int) logresult;
+	  if(logresult - bitmap_bits > 0)
+	  {
+		 bitmap_bits += 1;
+	  }
+	  bitmap_bits = pow(2, bitmap_bits);
 	  bitmap_size = (table.i_size() / (32/bitmap_bits) + 1)* queries.size();
 	  bitmap_bytes = bitmap_size * sizeof(u32);
+  }
+  else
+  {
+	  bitmap_bits = threshold = 0;
   }
 
 
 #ifdef DEBUG
+    printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
@@ -553,6 +573,7 @@ try{
    d_hash_table,
    d_bitmap_p,
    bitmap_bits,
+   threshold,
    max_age);
   
 #ifdef DEBUG

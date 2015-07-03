@@ -88,10 +88,10 @@ void match_test(inv_table& table,
 				int bitmap_bits,
 				int num_of_query_print) throw()
 {
-	 cudaDeviceReset();
-	 int device_count;
-	 cudaGetDeviceCount(&device_count);
-	 cudaSetDevice(device_count - 1);
+	  int device_count;
+	  cudaGetDeviceCount(&device_count);
+	  cudaSetDevice(device_count - 1);
+	  cudaDeviceReset();
 
 	  u64 timestart, timestop, totalstart;
 
