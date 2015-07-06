@@ -168,6 +168,8 @@ GaLG::topk(GaLG::inv_table& table,
   topk(d_data, queries, d_top_indexes, float(dim));
   cudaCheckErrors(cudaDeviceSynchronize());
   printf("Topk Finished! \n");
+  extract_index<<<d_top_indexes.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
+		  	   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
   }catch(MemException& e){
 	  printf("%s.\n", e.what());
 	  printf("Please try again with smaller data/query/hashtable size.\n");
