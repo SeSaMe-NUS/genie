@@ -507,19 +507,30 @@ try{
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
+
+	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after, total_m;
+	cudaMemGetInfo(&free_ck_before, &total_m);
   device_vector<int> d_ck(*table.ck());
+  cudaMemGetInfo(&free_ck_after, &total_m);
   int* d_ck_p = raw_pointer_cast(d_ck.data());
 
   device_vector<int> d_inv(*table.inv());
   int* d_inv_p = raw_pointer_cast(d_inv.data());
+  cudaMemGetInfo(&free_inv_after, &total_m);
 
   device_vector<query::dim> d_dims(dims);
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+  cudaMemGetInfo(&free_q_after, &total_m);
 
   device_vector<u32> d_bitmap(bitmap_size);
+  cudaMemGetInfo(&free_bitmap_after, &total_m);
   thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
   u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
-  
+  printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
+		  	 free_ck_before - free_ck_after,
+		  	free_ck_after - free_inv_after ,
+		  	free_inv_after - free_q_after,
+		  	free_q_after- free_bitmap_after);
 //  int * d_ck_p;
 //  cudaSafeCall(checkAndMalloc((void**)&d_ck_p, (*table.ck()->size())*sizeof(int)));
 //  cudaSafeCall(cudaMemcpy(d_ck_p, &(*table.ck()->front()), (*table.ck()->size())*sizeof(int),cudaMemcpyHostToDevice));

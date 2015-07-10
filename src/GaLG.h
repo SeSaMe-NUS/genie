@@ -8,6 +8,7 @@
 #include <GaLG/match.h>
 #include <GaLG/topk.h>
 #include <GaLG/parser/parser.h>
+#include <GaLG/interface.h>
 
 extern bool GALG_ERROR;
 extern unsigned long long GALG_TIME;

@@ -165,58 +165,6 @@ GaLG/fast:
 	$(MAKE) -f src/CMakeFiles/GaLG.dir/build.make src/CMakeFiles/GaLG.dir/build
 .PHONY : GaLG/fast
 
-#=============================================================================
-# Target rules for targets named test_inv_list
-
-# Build rule for target.
-test_inv_list: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_inv_list
-.PHONY : test_inv_list
-
-# fast build rule for target.
-test_inv_list/fast:
-	$(MAKE) -f test/CMakeFiles/test_inv_list.dir/build.make test/CMakeFiles/test_inv_list.dir/build
-.PHONY : test_inv_list/fast
-
-#=============================================================================
-# Target rules for targets named test_inv_table
-
-# Build rule for target.
-test_inv_table: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_inv_table
-.PHONY : test_inv_table
-
-# fast build rule for target.
-test_inv_table/fast:
-	$(MAKE) -f test/CMakeFiles/test_inv_table.dir/build.make test/CMakeFiles/test_inv_table.dir/build
-.PHONY : test_inv_table/fast
-
-#=============================================================================
-# Target rules for targets named test_raw_data
-
-# Build rule for target.
-test_raw_data: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_raw_data
-.PHONY : test_raw_data
-
-# fast build rule for target.
-test_raw_data/fast:
-	$(MAKE) -f test/CMakeFiles/test_raw_data.dir/build.make test/CMakeFiles/test_raw_data.dir/build
-.PHONY : test_raw_data/fast
-
-#=============================================================================
-# Target rules for targets named test_tool_csv
-
-# Build rule for target.
-test_tool_csv: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test_tool_csv
-.PHONY : test_tool_csv
-
-# fast build rule for target.
-test_tool_csv/fast:
-	$(MAKE) -f test/CMakeFiles/test_tool_csv.dir/build.make test/CMakeFiles/test_tool_csv.dir/build
-.PHONY : test_tool_csv/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -231,10 +179,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... GaLG"
-	@echo "... test_inv_list"
-	@echo "... test_inv_table"
-	@echo "... test_raw_data"
-	@echo "... test_tool_csv"
 .PHONY : help
 
 
