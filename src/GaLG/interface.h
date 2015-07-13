@@ -31,19 +31,19 @@ namespace GaLG
 		int count_threshold;
 		float hashtable_size;
 		int use_device;
-		std::vector<std::vector<int> >& data_points;
-		std::vector<std::vector<int> >& query_points;
-		_GaLG_Config(std::vector<std::vector<int> > & data,
-				     std::vector<std::vector<int> > & query)
-		{
-			num_of_topk = GALG_DEFAULT_TOPK;
-			query_radius = GALG_DEFAULT_RADIUS;
-			count_threshold = GALG_DEFAULT_THRESHOLD;
-			hashtable_size = GALG_DEFAULT_HASHTABLE_SIZE;
-			use_device = GALG_DEFAULT_DEVICE;
-			data_points = data;
-			query_points = query;
-		}
+		int dim;
+		std::vector<std::vector<int> > * data_points;
+		std::vector<std::vector<int> > * query_points;
+		_GaLG_Config():
+			num_of_topk(GALG_DEFAULT_TOPK),
+			query_radius(GALG_DEFAULT_RADIUS),
+			count_threshold(GALG_DEFAULT_THRESHOLD),
+			hashtable_size(GALG_DEFAULT_HASHTABLE_SIZE),
+			use_device(GALG_DEFAULT_DEVICE),
+			data_points(NULL),
+			query_points(NULL),
+			dim(0)
+		{}
 	} GaLG_Config;
 
 	void knn_search(std::vector<std::vector<int> >& data_points,
@@ -68,7 +68,13 @@ namespace GaLG
 					float hashtable,
 					int device);
 
-	void knn_search(std::vector<int>& result, GaLG_Config& config);
+	void knn_search(std::vector<int>& result,
+					GaLG_Config& config);
+
+	void knn_search(inv_table& table,
+					std::vector<query>& queries,
+					std::vector<int>& h_topk,
+					GaLG_Config& config);
 }
 
 

@@ -18,6 +18,9 @@
 #include <vector>
 #include <algorithm>
 #include <thrust/system_error.h>
+#include <thrust/copy.h>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 
 using namespace GaLG;
 using namespace std;
@@ -30,7 +33,7 @@ load_table(inv_table& table, std::vector<std::vector<int> >& data_points)
 	  u32 i,j;
 	  std::vector<int> col;
 
-	  for(i = 0; i < num_of_dims; ++i)
+	  for(i = 0; i < data_points[0].size(); ++i)
 	  {
 		  col.resize(data_points.size());
 		  for(j = 0; j < data_points.size(); ++j)
@@ -55,7 +58,6 @@ load_query(inv_table& table,
 	u32 i,j;
 	int value;
 	queries.clear();
-	queries.resize(query_points.size());
 	for(i = 0; i < query_points.size(); ++i)
 	{
 		query q(table);
@@ -85,20 +87,6 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 			   GALG_DEFAULT_HASHTABLE_SIZE,
 			   GALG_DEFAULT_DEVICE);
 }
-
-void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
-{
-	knn_search(config.data_points,
-			   config.query_points,
-			   result,
-			   config.num_of_topk,
-			   config.query_radius,
-			   config.count_threshold,
-			   config.hashtable_size,
-			   config.use_device);
-}
-
-
 void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
 					  std::vector<int>& result,
@@ -108,127 +96,72 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  float hashtable,
 					  int device)
 {
+	GaLG_Config config;
+	config.count_threshold = threshold;
+	config.data_points = &data_points;
+	config.hashtable_size = hashtable;
+	config.num_of_topk = num_of_topk;
+	config.query_points = &query_points;
+	config.query_radius = radius;
+	config.use_device = device;
+	if(!query_points.empty())
+		config.dim = query_points[0].size();
+
+	knn_search(result, config);
+}
+
+void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
+{
 	inv_table table;
 	std::vector<query> queries;
-	int hashtable_size = hashtable * table.i_size() + 1;
-	int device_count;
+	int hashtable_size = config.hashtable_size * table.i_size() + 1;
 
 	printf("Building table...");
-	load_table(table, data_points);
+	load_table(table, *(config.data_points));
 	printf("Done!\n");
 
 	printf("Loading queries...");
-	load_query(table, query_points, queries, num_of_topk, radius);
+	load_query(table, *(config.query_points), queries, config.num_of_topk, config.query_radius);
 	printf("Done!\n");
 
+	knn_search(table, queries, result, config);
+}
+
+
+void GaLG::knn_search(inv_table& table,
+					  std::vector<query>& queries,
+					  std::vector<int>& h_topk,
+					  GaLG_Config& config)
+{
+	int device_count, hashtable_size, dim;
 	cudaGetDeviceCount(&device_count);
 	if(device_count == 0)
 	{
 		printf("[Info] NVIDIA CUDA-SUPPORTED GPU NOT FOUND!\nProgram aborted..\n");
 		return;
-	} else if(device_count <= device)
+	} else if(device_count <= config.use_device)
 	{
-		printf("[Info] Device %d not found!", device);
-		device = GALG_DEFAULT_DEVICE;
-		printf("Using device %d...\n", device);
+		printf("[Info] Device %d not found!", config.use_device);
+		config.use_device = GALG_DEFAULT_DEVICE;
 	}
-	cudaSetDevice(device);
+	cudaSetDevice(config.use_device);
 	cudaDeviceReset();
 	cudaDeviceSynchronize();
+	printf("Using device %d...\n", config.use_device);
 
-	device_vector<int> d_topk;
+	hashtable_size = table.i_size() * config.hashtable_size + 1;
+	thrust::device_vector<int> d_topk;
 
+	printf("Starting knn search...\n");
+	GaLG::topk(table, queries, d_topk, hashtable_size, config.count_threshold, config.dim);
+	printf("knn search is done!\n");
 
-
-
-
-
-}
-void GaLG::knn_search(inv_table& table,
-				std::vector<query>& queries,
-				int radius,
-				int bitmap_bits,
-				float hash_table_size_)
-{
-	 cudaDeviceReset();
-	 int device_count;
-	 cudaGetDeviceCount(&device_count);
-	 cudaSetDevice(device_count - 1);
-
-	  u64 timestart, timestop, totalstart;
-
-	  totalstart = timestart = getTime();
-
-	  device_vector<int> d_topk;
-	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
-	  printf("hash table size: %d\n", hash_table_size);
-
-	  timestart = getTime();
-	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims);
-	  if(GALG_ERROR){
-		  cudaDeviceReset();
-		  return;
-	  }
-	  timestop = getTime();
-	  GALG_TIME += (timestop - timestart);
-	  printf("Topk takes %f ms.\n", getInterval(timestart, timestop));
-
-	  printf("Starting copying device result to host...\n");
-	  timestart = getTime();
-	  host_vector<int> h_topk(d_topk);
-	  cudaDeviceSynchronize();
-	  timestop = getTime();
-	  printf("Finish copying result. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
-
-	  for(int i = 0; i < queries.size() && i < num_of_query_print; ++i)
-	  {
-		  printf("The top %d of query %d is \n", queries[i].topk(),i);
-		  if(queries[i].topk() > 0) printf("%d", h_topk[0 + i * queries[i].topk()]);
-		  for(int j = 1; j < queries[i].topk(); ++j)
-		  {
-			  printf(", %d", h_topk[i * queries[i].topk() + j]);
-		  }
-		  printf("\n");
-	  }
-
-	  printf(">>>>>>>>>>>>>Successful topk searching.\n");
-	  timestop = getTime();
-	  printf("Finish testing. Time elapsed: %f ms. \n", getInterval(totalstart, timestop));
+	printf("Topk obtained: %d in total.\n", d_topk.size());
+	h_topk.resize(d_topk.size());
+	int * d_topk_p;
+	d_topk_p = thrust::raw_pointer_cast(d_topk.data());
+	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
 }
 
-
-
-std::string get_cmd_option(std::vector<std::string>::iterator& begin, std::vector<std::string>::iterator& end, const std::string & option)
-{
-	std::vector<std::string>::iterator itr = std::find(begin, end, option);
-    if (itr != end && ++itr != end)
-    {
-        return *itr;
-    }
-    return 0;
-}
-
-bool cmd_option_exists(std::vector<std::string>::iterator& begin, std::vector<std::string>::iterator& end, const std::string& option)
-{
-    return std::find(begin, end, option) != end;
-}
-
-int stoi(std::string str)
-{
-	int result = atoi(str.c_str());
-	if(str.empty() ||(eraseSpace(str) != std::string("0") && result == 0)){
-		throw 0;
-	}
-	return result;
-}
-
-float stof(std::string str)
-{
-	float result = atof(str.c_str());
-	if(str.empty() ||  ( eraseSpace(str) != std::string("0") && result == 0.0f)){
-		throw 0;
-	}
-	return result;
-}
 
 

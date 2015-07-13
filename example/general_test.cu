@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <thrust/system_error.h>
 
-
 #define DEFAULT_TOP_K 5
 
 using namespace GaLG;
@@ -77,6 +76,8 @@ void read_query(inv_table& table, const char* fname, vector<query>& queries, int
 	}
 
 	ifile.close();
+
+	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
 }
 
 void match_test(inv_table& table,
@@ -267,7 +268,7 @@ build_table(inv_table& table,const char * dfname,const int num_of_dims)
 
 	  printf("Start loading data...\n");
 	  timestart = getTime();
-	  parser::csv(dfname, data);
+	  parser::csv(dfname, data, false);
 	  timestop = getTime();
 	  printf("Finish loading data. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
 
@@ -324,219 +325,250 @@ float stof(std::string str)
 	return result;
 }
 
-int
-main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
-  std::string fname,qfname, lastfname;
+	std::vector<query> queries;
+	inv_table table;
+	build_table(table, "/media/hd1/home/luanwenhao/TestData2Wenhao/random/tst_d128_n100k.csv", 128);
+	read_query(table, "/media/hd1/home/luanwenhao/TestData2Wenhao/random/tst_d128_n100k.csv", queries, 100, 128, 0, 100);
 
-  int num_of_query = 1,
-	  num_of_dim = -1,
-	  radius = 0,
-	  num_of_query_printing = 0,
-	  num_of_topk =5,
-	  bitmap_bits = 2,
-	  num_of_tests = 1;
-  float hashtable = 1.0f;
-  std::vector<std::string> ss;
-  inv_table table;
-  int function = -1;
+	GaLG::GaLG_Config config;
+	config.count_threshold = 4;
+	config.dim = 128;
+	config.hashtable_size = 0.2;
+	config.num_of_topk = 100;
+	config.query_radius = 0;
+	config.use_device = 1;
 
-  for(int i = 1;i < argc; ++i)
-  {
-	  ss.push_back(std::string(argv[i]));
-  }
+	std::vector<int> result;
 
-  while(1)
-  {
-	    bool error = false;
-	    std::vector<std::string>::iterator s = ss.begin();
-	    std::vector<std::string>::iterator e = ss.end();
+	printf("Launching knn functions...\n");
+	GaLG::knn_search(table, queries, result, config);
 
-	    try{
-			if(cmd_option_exists(s, e, "-f"))
-			{
-			  lastfname = fname;
-			  fname =  get_cmd_option(s, e, "-f");
-			} else {
-			  if(!fname.empty())
-			  {
-				  printf("Using last file: %s.\n", fname.c_str());
-			  }
-			  else
-			  {
-				  printf("Please indicate data file path using -f.\n");
-				  error =true;
-			  }
-			}
-
-			if(cmd_option_exists(s, e, "-qf"))
-			{
-				qfname = get_cmd_option(s, e, "-qf");
-			} else {
-				if(qfname.empty()) qfname = fname;
-			}
-
-			if(cmd_option_exists(s, e, "-q"))
-			{
-			  num_of_query = stoi(get_cmd_option(s, e, "-q"));
-			} else {
-			  printf("Using default/last number of query: %d.\n", num_of_query);
-			}
-
-			if(cmd_option_exists(s, e, "-d"))
-			{
-			  num_of_dim = stoi(get_cmd_option(s, e, "-d"));
-			} else {
-			  if(num_of_dim != -1)
-			  {
-				  printf("Using last number of dim: %d.\n", num_of_dim);
-			  }
-			  else
-			  {
-				  printf("Please indicate data dimension using -d.\n");
-				  error =true;
-			  }
-
-			}
-
-			if(cmd_option_exists(s, e, "-r"))
-			{
-			  radius = stoi(get_cmd_option(s, e, "-r"));
-			} else {
-			  printf("Using default/last radius: %d.\n", radius);
-			}
-
-			if(cmd_option_exists(s, e, "-h"))
-			{
-			  hashtable = stof(get_cmd_option(s, e, "-h"));
-			} else {
-			  printf("Using default/last hashtable ratio: %f.\n", hashtable);
-			}
-
-			if(cmd_option_exists(s, e, "-b"))
-			{
-			  bitmap_bits = stoi(get_cmd_option(s, e, "-b"));
-			} else {
-			  printf("Using default/last bitmap bits: %d.\n", bitmap_bits);
-			}
-
-			if(cmd_option_exists(s, e, "-p"))
-			{
-			  num_of_query_printing = stoi(get_cmd_option(s, e, "-p"));
-			} else {
-			  printf("Using default/last number of query to be printed: %d.\n", num_of_query_printing);
-			}
-
-		    if(cmd_option_exists(s, e, "-t"))
-		    {
-		  	  num_of_topk = stoi(get_cmd_option(s, e, "-t"));
-		    } else {
-		  	  printf("Using default number of topk items: %d.\n", num_of_topk);
-		    }
-		    if(cmd_option_exists(s, e, "-n"))
-		    {
-		  	  num_of_tests = stoi(get_cmd_option(s, e, "-n"));
-		    } else {
-		  	  printf("Using default number of tests: %d.\n", num_of_tests);
-		    }
-	    } catch(exception& e){
-	    	printf("Something wrong with your parameter: %s.\n", e.what());
-	    	error = true;
-	    }
-	    if(!error && (cmd_option_exists(s, e, "match") || cmd_option_exists(s, e, "topk")))
-	    {
-	  	  if(lastfname != fname)
-	  	  {
-	  		  build_table(table, fname.c_str(), num_of_dim);
-	  	  }
-	    }
-
-	    if(cmd_option_exists(s, e, "match"))
-	    {
-	  	  function = 0;
-	    }
-	    else if(cmd_option_exists(s, e, "topk"))
-	    {
-	  	  function = 1;
-	    }
-	    else if(function == -1)
-	    {
-	  	  error = true;
-	  	  printf("Please specify function.\n");
-	    }
-	    else
-	    {
-	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
-	    }
-	    try{
-	    	GALG_TIME = 0ull;
-	    	GALG_ERROR= false;
-		    if(function == 0 && !error)
-		    {
-		    	MAX_ITEM_NUM = 0ull;
-		  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
-		  	  printf("Max number of items in query hashtables: %llu.\n", MAX_ITEM_NUM);
-		    }
-		    else if(function == 1 && !error)
-		    {
-
-		      for(int i = 0; i < num_of_tests && !GALG_ERROR; ++i){
-		    	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
-		      }
-		      if(num_of_tests != 1 && !GALG_ERROR)
-		      {
-		    	  printf("Average topk time is %f for %d tests.\n", GALG_TIME / (double)(num_of_tests*1000), num_of_tests);
-		      }
-
-
-		    }
-		    else
-		    {
-		  	  printf("Shutting down kernel... Please try again.\n");
-		    }
-	    }
-	    catch(thrust::system_error  & e)
-	    {
-	    	printf("%s\n", e.what());
-	    	cudaDeviceReset();
-	    	printf("Please try again.\n");
-	    }
-	    catch(std::bad_alloc  & e)
-	    {
-	    	printf("%s\n", e.what());
-	    	cudaDeviceReset();
-	    	printf("Please try again.\n");
-	    }
-	    catch(MemException  & e)
-	    {
-	    	printf("%s\n", e.what());
-	    	cudaDeviceReset();
-	    	printf("Please try again.\n");
-	    }
-	    catch(...)
-	    {
-	    	printf("Unkown error!\n");
-	    	printf("Please try again.\n");
-	    }
-
-
-	    printf("[Ctrl + D] to exit, [Enter] to run with same config, or change config to run again.\n");
-	    char choice = (char) getchar();
-	    if(EOF == choice)
-	    {
-	  	  return 0;
-	    }
-	    else if( '\n' != choice)
-	    {
-	  	  char temp[1000];
-	  	  scanf("%[^\n]", temp);
-	  	  std::string st(temp);
-	  	  st.insert(0, 1, choice);
-	  	  ss = split(st, " ");
-	  	  getchar();
-	    } else {
-	  	  ss.clear();
-	    }
-  }
-
+	for(int i = 0; i < 10; ++i)
+	{
+		printf("Query %d result is: \n\t", i);
+		for (int j = 0; j < 10; ++j)
+		{
+			printf("%d, ", result[i * 100 + j]);
+		}
+		printf("\n");
+	}
 }
+//
+//int
+//main(int argc, char * argv[])
+//{
+//  std::string fname,qfname, lastfname;
+//
+//  int num_of_query = 1,
+//	  num_of_dim = -1,
+//	  radius = 0,
+//	  num_of_query_printing = 0,
+//	  num_of_topk =5,
+//	  bitmap_bits = 2,
+//	  num_of_tests = 1;
+//  float hashtable = 1.0f;
+//  std::vector<std::string> ss;
+//  inv_table table;
+//  int function = -1;
+//
+//  for(int i = 1;i < argc; ++i)
+//  {
+//	  ss.push_back(std::string(argv[i]));
+//  }
+//
+//  while(1)
+//  {
+//	    bool error = false;
+//	    std::vector<std::string>::iterator s = ss.begin();
+//	    std::vector<std::string>::iterator e = ss.end();
+//
+//	    try{
+//			if(cmd_option_exists(s, e, "-f"))
+//			{
+//			  lastfname = fname;
+//			  fname =  get_cmd_option(s, e, "-f");
+//			} else {
+//			  if(!fname.empty())
+//			  {
+//				  printf("Using last file: %s.\n", fname.c_str());
+//			  }
+//			  else
+//			  {
+//				  printf("Please indicate data file path using -f.\n");
+//				  error =true;
+//			  }
+//			}
+//
+//			if(cmd_option_exists(s, e, "-qf"))
+//			{
+//				qfname = get_cmd_option(s, e, "-qf");
+//			} else {
+//				if(qfname.empty()) qfname = fname;
+//			}
+//
+//			if(cmd_option_exists(s, e, "-q"))
+//			{
+//			  num_of_query = stoi(get_cmd_option(s, e, "-q"));
+//			} else {
+//			  printf("Using default/last number of query: %d.\n", num_of_query);
+//			}
+//
+//			if(cmd_option_exists(s, e, "-d"))
+//			{
+//			  num_of_dim = stoi(get_cmd_option(s, e, "-d"));
+//			} else {
+//			  if(num_of_dim != -1)
+//			  {
+//				  printf("Using last number of dim: %d.\n", num_of_dim);
+//			  }
+//			  else
+//			  {
+//				  printf("Please indicate data dimension using -d.\n");
+//				  error =true;
+//			  }
+//
+//			}
+//
+//			if(cmd_option_exists(s, e, "-r"))
+//			{
+//			  radius = stoi(get_cmd_option(s, e, "-r"));
+//			} else {
+//			  printf("Using default/last radius: %d.\n", radius);
+//			}
+//
+//			if(cmd_option_exists(s, e, "-h"))
+//			{
+//			  hashtable = stof(get_cmd_option(s, e, "-h"));
+//			} else {
+//			  printf("Using default/last hashtable ratio: %f.\n", hashtable);
+//			}
+//
+//			if(cmd_option_exists(s, e, "-b"))
+//			{
+//			  bitmap_bits = stoi(get_cmd_option(s, e, "-b"));
+//			} else {
+//			  printf("Using default/last bitmap bits: %d.\n", bitmap_bits);
+//			}
+//
+//			if(cmd_option_exists(s, e, "-p"))
+//			{
+//			  num_of_query_printing = stoi(get_cmd_option(s, e, "-p"));
+//			} else {
+//			  printf("Using default/last number of query to be printed: %d.\n", num_of_query_printing);
+//			}
+//
+//		    if(cmd_option_exists(s, e, "-t"))
+//		    {
+//		  	  num_of_topk = stoi(get_cmd_option(s, e, "-t"));
+//		    } else {
+//		  	  printf("Using default number of topk items: %d.\n", num_of_topk);
+//		    }
+//		    if(cmd_option_exists(s, e, "-n"))
+//		    {
+//		  	  num_of_tests = stoi(get_cmd_option(s, e, "-n"));
+//		    } else {
+//		  	  printf("Using default number of tests: %d.\n", num_of_tests);
+//		    }
+//	    } catch(exception& e){
+//	    	printf("Something wrong with your parameter: %s.\n", e.what());
+//	    	error = true;
+//	    }
+//	    if(!error && (cmd_option_exists(s, e, "match") || cmd_option_exists(s, e, "topk")))
+//	    {
+//	  	  if(lastfname != fname)
+//	  	  {
+//	  		  build_table(table, fname.c_str(), num_of_dim);
+//	  	  }
+//	    }
+//
+//	    if(cmd_option_exists(s, e, "match"))
+//	    {
+//	  	  function = 0;
+//	    }
+//	    else if(cmd_option_exists(s, e, "topk"))
+//	    {
+//	  	  function = 1;
+//	    }
+//	    else if(function == -1)
+//	    {
+//	  	  error = true;
+//	  	  printf("Please specify function.\n");
+//	    }
+//	    else
+//	    {
+//	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
+//	    }
+//	    try{
+//	    	GALG_TIME = 0ull;
+//	    	GALG_ERROR= false;
+//		    if(function == 0 && !error)
+//		    {
+//		    	MAX_ITEM_NUM = 0ull;
+//		  	  match_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits, num_of_query_printing);
+//		  	  printf("Max number of items in query hashtables: %llu.\n", MAX_ITEM_NUM);
+//		    }
+//		    else if(function == 1 && !error)
+//		    {
+//
+//		      for(int i = 0; i < num_of_tests && !GALG_ERROR; ++i){
+//		    	  topk_test(table, qfname.c_str(), num_of_query, num_of_dim, radius, hashtable, bitmap_bits,num_of_query_printing, num_of_topk);
+//		      }
+//		      if(num_of_tests != 1 && !GALG_ERROR)
+//		      {
+//		    	  printf("Average topk time is %f for %d tests.\n", GALG_TIME / (double)(num_of_tests*1000), num_of_tests);
+//		      }
+//
+//
+//		    }
+//		    else
+//		    {
+//		  	  printf("Shutting down kernel... Please try again.\n");
+//		    }
+//	    }
+//	    catch(thrust::system_error  & e)
+//	    {
+//	    	printf("%s\n", e.what());
+//	    	cudaDeviceReset();
+//	    	printf("Please try again.\n");
+//	    }
+//	    catch(std::bad_alloc  & e)
+//	    {
+//	    	printf("%s\n", e.what());
+//	    	cudaDeviceReset();
+//	    	printf("Please try again.\n");
+//	    }
+//	    catch(MemException  & e)
+//	    {
+//	    	printf("%s\n", e.what());
+//	    	cudaDeviceReset();
+//	    	printf("Please try again.\n");
+//	    }
+//	    catch(...)
+//	    {
+//	    	printf("Unkown error!\n");
+//	    	printf("Please try again.\n");
+//	    }
+//
+//
+//	    printf("[Ctrl + D] to exit, [Enter] to run with same config, or change config to run again.\n");
+//	    char choice = (char) getchar();
+//	    if(EOF == choice)
+//	    {
+//	  	  return 0;
+//	    }
+//	    else if( '\n' != choice)
+//	    {
+//	  	  char temp[1000];
+//	  	  scanf("%[^\n]", temp);
+//	  	  std::string st(temp);
+//	  	  st.insert(0, 1, choice);
+//	  	  ss = split(st, " ");
+//	  	  getchar();
+//	    } else {
+//	  	  ss.clear();
+//	    }
+//  }
+
+//}
