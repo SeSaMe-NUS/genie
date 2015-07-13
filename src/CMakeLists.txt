@@ -29,6 +29,8 @@ set(LIB_SRC_LIST
   GaLG/match.cu
   GaLG/topk.h
   GaLG/topk.cu
+  GaLG/interface.h
+  GaLG/interface.cu
 
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)
