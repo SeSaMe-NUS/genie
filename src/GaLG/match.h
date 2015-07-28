@@ -90,7 +90,9 @@ namespace GaLG
         vector<query>& queries,
         device_vector<data_t>& d_data,
         int hash_table_size,
-        int bitmap_bits);
+        int bitmap_bits,
+        int num_of_hot_dims,
+        int hot_dim_threshold);
 
   /**
    * @brief Search the inv_table and save the match
@@ -112,7 +114,13 @@ namespace GaLG
         query& queries,
         device_vector<data_t>& d_data,
         int hash_table_size,
-        int bitmap_bits);
+        int bitmap_bits,
+        int num_of_hot_dims,
+        int hot_dim_threshold);
+
+  void
+  build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims);
+
 }
 
 #endif

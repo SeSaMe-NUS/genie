@@ -10,6 +10,9 @@ using namespace std;
 
 namespace GaLG
 {
+
+	typedef unsigned int u32;
+	typedef unsigned long long u64;
   class query
   {
   public:
@@ -49,6 +52,11 @@ namespace GaLG
      */
     int _topk;
 
+    inline u64 pack_dim_and_count(u32 dim, u64 count);
+
+    inline u32 unpack_dim(u64 packed_data);
+
+    inline u64 unpack_count(u64 packed_data);
   public:
     /**
      * @brief Create a query based on an inv_table.
@@ -85,6 +93,12 @@ namespace GaLG
      */
     void
     attr(int index, int low, int up, float weight);
+
+    void
+    split_hot_dims(query& hot_dims_query, int num);
+
+    void
+    clear_dim(int index);
 
     /**
      * @brief Set top k matches.

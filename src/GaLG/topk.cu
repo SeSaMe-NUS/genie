@@ -63,7 +63,9 @@ extract_index(int * id, data_t * od, int size)
 {
 	int tId = threadIdx.x + blockIdx.x * blockDim.x;
 	if(tId >= size) return;
-	id[tId] = od[id[tId]].id;
+	//if(od[id[tId]].aggregation != 0.0f)
+		id[tId] = od[id[tId]].id;
+	//else id[tId] = -1;
 }
 
 void
@@ -87,34 +89,31 @@ void
 GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
     device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits)
 {
-	try{
-	  device_vector<float> d_a(hash_table_size);
-	  device_vector<data_t> d_data;
-	  vector<query> q;
-	  q.push_back(queries);
-	  match(table, q, d_data, hash_table_size, bitmap_bits);
-	  convert_data<<<hash_table_size / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
-			  	  (thrust::raw_pointer_cast(d_a.data()), thrust::raw_pointer_cast(d_data.data()), hash_table_size);
-	  cudaCheckErrors(cudaDeviceSynchronize());
-	  topk(d_a, q, d_top_indexes);
-	  extract_index<<<d_top_indexes.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
-			  	   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
-	  cudaCheckErrors(cudaDeviceSynchronize());
-	}catch(MemException& e){
-		  printf("%s.\n", e.what());
-		  printf("Please try again with smaller data/query/hashtable size.\n");
-		  GALG_ERROR = true;
-	}
+	topk(table, queries, d_top_indexes, hash_table_size, bitmap_bits, table.m_size(), 0, 0);
 }
+
 void
 GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
     device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim)
+{
+	topk(table, queries, d_top_indexes, hash_table_size, bitmap_bits, dim, 0, 0);
+}
+
+void
+GaLG::topk(GaLG::inv_table& table,
+		   GaLG::query& queries,
+           device_vector<int>& d_top_indexes,
+           int hash_table_size,
+           int bitmap_bits,
+           int dim,
+           int num_of_hot_dims,
+           int hot_dim_threshold)
 {
 	try{
 	  device_vector<data_t> d_data;
 	  vector<query> q;
 	  q.push_back(queries);
-	  match(table, q, d_data, hash_table_size, bitmap_bits);
+	  match(table, q, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);
 	  topk(d_data, q, d_top_indexes, dim);
 	}catch(MemException& e){
 		  printf("%s.\n", e.what());
@@ -126,12 +125,14 @@ GaLG::topk(GaLG::inv_table& table, GaLG::query& queries,
 void
 GaLG::topk(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits)
+		   device_vector<int>& d_top_indexes,
+		   int hash_table_size,
+		   int bitmap_bits)
 {
   device_vector<float> d_a(hash_table_size * queries.size());
   device_vector<data_t> d_data;
   try{
-  match(table, queries, d_data, hash_table_size, bitmap_bits);
+  match(table, queries, d_data, hash_table_size, bitmap_bits, 0, 0);
   printf("Start converting data for topk...\n");
   convert_data<<<hash_table_size * queries.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
 		  	  (thrust::raw_pointer_cast(d_a.data()), thrust::raw_pointer_cast(d_data.data()), hash_table_size * queries.size());
@@ -160,9 +161,22 @@ GaLG::topk(GaLG::inv_table& table,
 		   int bitmap_bits,
 		   int dim)
 {
+	topk(table, queries, d_top_indexes, hash_table_size, bitmap_bits, dim, 0,0);
+}
+
+void
+GaLG::topk(GaLG::inv_table& table,
+		   vector<GaLG::query>& queries,
+		   device_vector<int>& d_top_indexes,
+		   int hash_table_size,
+		   int bitmap_bits,
+		   int dim,
+		   int num_of_hot_dims,
+		   int hot_dim_threshold)
+{
   device_vector<data_t> d_data;
   try{
-  match(table, queries, d_data, hash_table_size, bitmap_bits);
+  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);
   cudaCheckErrors(cudaDeviceSynchronize());
   printf("Start topk....\n");
   topk(d_data, queries, d_top_indexes, float(dim));

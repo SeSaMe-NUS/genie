@@ -192,6 +192,7 @@ namespace GaLG
      */
     vector<int>*
     index(int value);
+
   };
 }
 

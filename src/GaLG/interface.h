@@ -22,6 +22,8 @@
 #define GALG_DEFAULT_HASHTABLE_SIZE 0.6
 #define GALG_DEFAULT_WEIGHT 1
 #define GALG_DEFAULT_DEVICE 0
+#define GALG_DEFAULT_NUM_OF_HOT_DIMS 0
+#define GALG_DEFAULT_HOT_DIM_THRESHOLD GALG_DEFAULT_THRESHOLD
 
 namespace GaLG
 {
@@ -32,6 +34,8 @@ namespace GaLG
 		float hashtable_size;
 		int use_device;
 		int dim;
+		int num_of_hot_dims;
+		int hot_dim_threshold;
 		std::vector<std::vector<int> > * data_points;
 		std::vector<std::vector<int> > * query_points;
 		_GaLG_Config():
@@ -42,7 +46,9 @@ namespace GaLG
 			use_device(GALG_DEFAULT_DEVICE),
 			data_points(NULL),
 			query_points(NULL),
-			dim(0)
+			dim(0),
+			num_of_hot_dims(GALG_DEFAULT_NUM_OF_HOT_DIMS),
+			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD)
 		{}
 	} GaLG_Config;
 

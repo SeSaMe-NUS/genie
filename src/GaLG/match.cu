@@ -16,6 +16,7 @@
 #define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
 
 #define NULL_AGE 0
+#define MAX_AGE 16u
 
 #define DEBUG
 //#define DEBUG_VERBOSE
@@ -48,25 +49,25 @@ namespace GaLG
   namespace device
   {
 
-     const u32 KEY_TYPE_BITS                 = 28u;
-     const u32 KEY_TYPE_MASK                 = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
-     const u32 PACKED_KEY_TYPE_MASK          = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
-     const u32 KEY_TYPE_RANGE                = u32( u64((1ull) << KEY_TYPE_BITS) - 2u );
-     const u32 UNDEFINED_KEY                 = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
-     const u32 PACKED_UNDEFINED_KEY          = u32( u64((1ull) << KEY_TYPE_BITS) - 1ul);
+	const u32 KEY_TYPE_BITS                 = 28u;
+	const u32 KEY_TYPE_MASK                 = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
+	const u32 PACKED_KEY_TYPE_MASK          = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
+	const u32 KEY_TYPE_RANGE                = u32( u64((1ull) << KEY_TYPE_BITS) - 2u );
+	const u32 UNDEFINED_KEY                 = u32( u64((1ull) << KEY_TYPE_BITS) - 1u );
+	const u32 PACKED_UNDEFINED_KEY          = u32( u64((1ull) << KEY_TYPE_BITS) - 1ul);
+
+	const u32 ATTACH_ID_TYPE_BITS           = 32u;
+	const u32 ATTACH_ID_TYPE_MASK           = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul );
+	const u32 UNDEFINED_ATTACH_ID           = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul );
+	const u32 MAX_ATTACH_ID_TYPE            = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 2ul );
     
-     const u32 ATTACH_ID_TYPE_BITS           = 32u;
-     const u32 ATTACH_ID_TYPE_MASK           = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul );
-     const u32 UNDEFINED_ATTACH_ID           = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul );
-     const u32 MAX_ATTACH_ID_TYPE            = u32( u64((1ull) << ATTACH_ID_TYPE_BITS) - 2ul );
-    
-    const u32 KEY_TYPE_AGE_MASK        = 15u;
-    const u32 KEY_TYPE_AGE_BITS        = 4u;
-    const u32 KEY_TYPE_INIT_AGE        = 1u;
-    const u32 KEY_TYPE_NULL_AGE        = 0u;
-    const u32 KEY_TYPE_MAX_AGE         = 16u;
-    const u32 KEY_TYPE_MAX_AGE_MASK    = 4u;
-    const u32 KEY_TYPE_MAX_AGE_BITS    = 4u;
+	const u32 KEY_TYPE_AGE_MASK        = 15u;
+	const u32 KEY_TYPE_AGE_BITS        = 4u;
+	const u32 KEY_TYPE_INIT_AGE        = 1u;
+	const u32 KEY_TYPE_NULL_AGE        = 0u;
+	const u32 KEY_TYPE_MAX_AGE         = 16u;
+	const u32 KEY_TYPE_MAX_AGE_MASK    = 4u;
+	const u32 KEY_TYPE_MAX_AGE_BITS    = 4u;
     
     __device__ __constant__ u32 offsets[16];
     
@@ -123,8 +124,7 @@ namespace GaLG
                   T_HASHTABLE* htable,
                   int hash_table_size,
                   query::dim* q,
-                  bool * key_found,
-                  u32 max_age)
+                  bool * key_found)
     {
       u32 location;
       T_HASHTABLE out_key, new_key;
@@ -141,7 +141,7 @@ namespace GaLG
 
           if(get_key_pos(out_key) == id
           		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
-          		&& get_key_age(out_key) < max_age){
+          		&& get_key_age(out_key) < MAX_AGE){
         	u32 attach_id = get_key_attach_id(out_key);
             float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
 #ifdef DEBUG_VERBOSE
@@ -165,8 +165,8 @@ namespace GaLG
       //Key at root location is packed with its max age
       // in its hashing sequence.
 
-      //Loop until max_age
-      while(age < max_age){
+      //Loop until MAX_AGE
+      while(age < MAX_AGE){
     	age ++;
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
@@ -177,7 +177,7 @@ namespace GaLG
 
         if(get_key_pos(out_key) == id
         		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
-        		&& get_key_age(out_key) < max_age)
+        		&& get_key_age(out_key) < MAX_AGE)
         {
         	u32 attach_id = get_key_attach_id(out_key);
             float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
@@ -215,8 +215,7 @@ namespace GaLG
     hash_kernel(u32 id,
                 T_HASHTABLE* htable,
                 int hash_table_size,
-                query::dim* q,
-                T_AGE max_age)
+                query::dim* q)
     {
 
       //u32 my_value = atomicAdd(value, 1);
@@ -234,8 +233,8 @@ namespace GaLG
                                                    *reinterpret_cast<u32*>(&(q->weight)),
                                                    KEY_TYPE_INIT_AGE);
 
-      //Loop until max_age
-      while(age < max_age){
+      //Loop until MAX_AGE
+      while(age < MAX_AGE){
 
         //evict key at current age-location
         //Update it if the to-be-inserted key is of a larger age
@@ -333,7 +332,9 @@ namespace GaLG
   		  	      u32 * bitmap,
   		  	      int bits,
   		  	      int threshold,
-  		  	      bool * key_eligible)
+  		  	      bool * key_eligible,
+  		  	      int num_of_hot_dims,
+  		  	      int hot_dim_threshold)
     {
     	u32 value, count, new_value;
     	int offset;
@@ -345,8 +346,15 @@ namespace GaLG
         	if(count < threshold)
         	{
         		*key_eligible = false;
-        		count ++;
-        	} else {
+        		if(num_of_hot_dims == 0 || count + num_of_hot_dims >= hot_dim_threshold)
+        		{
+        			count ++;
+        		} else
+        		{
+        			return;
+        		}
+        	}else
+        	{
         		*key_eligible = true;
         		return;
         	}
@@ -368,8 +376,10 @@ namespace GaLG
           u32 * bitmap_list,
           int bitmap_bits,
           int threshold,
-          T_AGE max_age)
+          int num_of_hot_dims,
+          int hot_dim_threshold)
     {
+      if(m_size == 0 || i_size == 0) return;
       int query_index =blockIdx.x / m_size;
       query::dim* q = &d_dims[blockIdx.x];
       
@@ -387,9 +397,9 @@ namespace GaLG
       min < 1 ? min = 0 : min = d_ck[min - 1];
       max = d_ck[max];
 
-      int i;
-      bool key_found, key_eligible;
-      for (i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
+      bool key_eligible;
+
+      for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
         {
           if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
             {
@@ -400,28 +410,28 @@ namespace GaLG
                 		  	    bitmap,
                 		  	    bitmap_bits,
                 		  	    threshold,
-                		  	    &key_eligible);
+                		  	    &key_eligible,
+                		  	    num_of_hot_dims,
+                		  	    hot_dim_threshold);
 
                   if( !key_eligible ) continue;
               }
-              key_found = false;
+              key_eligible = false;
               //Try to find the entry in hash tables
               access_kernel(access_id,
                             hash_table,
                             hash_table_size,
                             q,
-                            &key_found,
-                            max_age);
+                            &key_eligible);
               
-              if(!key_found)
+              if(!key_eligible)
               {
                 //Insert the key into hash table
                 //access_id and its location are packed into a packed key
                 hash_kernel(access_id,
                             hash_table,
                             hash_table_size,
-                            q,
-                            max_age);
+                            q);
               }
             }
         }
@@ -443,12 +453,30 @@ namespace GaLG
 
   }
 }
+
+void
+GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims)
+{
+	for (int i = 0; i < queries.size(); i++)
+	{
+	  if (queries[i].ref_table() != &table)
+		throw inv_table::not_matched_exception;
+	  if (table.build_status() == inv_table::builded)
+		queries[i].build();
+	  else if (table.build_status() == inv_table::builded_compressed)
+		queries[i].build_compressed();
+	  queries[i].dump(dims);
+	}
+}
+
 void
 GaLG::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
             int hash_table_size,
-            int bitmap_bits)
+            int bitmap_bits,
+            int num_of_hot_dims,
+            int hot_dim_threshold)
 {
 try{
 	printf("match.cu version : %s\n", VERSION);
@@ -462,21 +490,32 @@ try{
 	printf("[  0%] Starting matching...\n");
 	printf("[ 10%] Fetching and packing data...\n");
 #endif
+	if (table.build_status() == inv_table::not_builded)
+		throw inv_table::not_builded_exception;
 
-  if (table.build_status() == inv_table::not_builded)
-    throw inv_table::not_builded_exception;
-  vector<query::dim> dims;
-  int i;
-  for (i = 0; i < queries.size(); i++)
-    {
-      if (queries[i].ref_table() != &table)
-        throw inv_table::not_matched_exception;
-      if (table.build_status() == inv_table::builded)
-        queries[i].build();
-      else if (table.build_status() == inv_table::builded_compressed)
-        queries[i].build_compressed();
-      queries[i].dump(dims);
-    }
+	vector<query::dim> dims;
+	vector<query::dim> hot_dims;
+	vector<query> hot_dims_queries;
+
+	printf("[Info] Using num of hot dims: %d.\n", num_of_hot_dims);
+
+	if(num_of_hot_dims)
+	{
+		for(int i = 0; i < queries.size(); ++i)
+		{
+			query q(table);
+			q.topk(queries[i].topk());
+			queries[i].split_hot_dims(q, num_of_hot_dims);
+			hot_dims_queries.push_back(q);
+		}
+		build_queries(hot_dims_queries, table, hot_dims);
+	}
+
+  build_queries(queries, table, dims);
+
+  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
+
+
   int total = table.i_size() * queries.size();
   int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
   if(bitmap_bits > 1){
@@ -507,59 +546,50 @@ try{
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
-
 	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after, total_m;
 	cudaMemGetInfo(&free_ck_before, &total_m);
-  device_vector<int> d_ck(*table.ck());
-  cudaMemGetInfo(&free_ck_after, &total_m);
-  int* d_ck_p = raw_pointer_cast(d_ck.data());
+	device_vector<int> d_ck(*table.ck());
+	cudaMemGetInfo(&free_ck_after, &total_m);
+	int* d_ck_p = raw_pointer_cast(d_ck.data());
 
-  device_vector<int> d_inv(*table.inv());
-  int* d_inv_p = raw_pointer_cast(d_inv.data());
-  cudaMemGetInfo(&free_inv_after, &total_m);
+	device_vector<int> d_inv(*table.inv());
+	int* d_inv_p = raw_pointer_cast(d_inv.data());
+	cudaMemGetInfo(&free_inv_after, &total_m);
 
-  device_vector<query::dim> d_dims(dims);
-  query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
-  cudaMemGetInfo(&free_q_after, &total_m);
+	device_vector<query::dim> d_dims(dims);
+	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+	cudaMemGetInfo(&free_q_after, &total_m);
 
-  device_vector<u32> d_bitmap(bitmap_size);
-  cudaMemGetInfo(&free_bitmap_after, &total_m);
-  thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
-  u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
-  printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
-		  	 free_ck_before - free_ck_after,
+	device_vector<u32> d_bitmap(bitmap_size);
+	cudaMemGetInfo(&free_bitmap_after, &total_m);
+	if(bitmap_size)
+	{
+		thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+	}
+	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
+
+	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
+		  	free_ck_before - free_ck_after,
 		  	free_ck_after - free_inv_after ,
 		  	free_inv_after - free_q_after,
 		  	free_q_after- free_bitmap_after);
-//  int * d_ck_p;
-//  cudaSafeCall(checkAndMalloc((void**)&d_ck_p, (*table.ck()->size())*sizeof(int)));
-//  cudaSafeCall(cudaMemcpy(d_ck_p, &(*table.ck()->front()), (*table.ck()->size())*sizeof(int),cudaMemcpyHostToDevice));
-//
-//  int * d_inv_p;
-//  cudaSafeCall(checkAndMalloc((void**)&d_inv_p, (*table.inv()->size())*sizeof(int)));
-//  cudaSafeCall(cudaMemcpy(d_inv_p, &(*table.inv()->front()), (*table.inv()->size())*sizeof(int),cudaMemcpyHostToDevice));
-//
-//  query::dim * d_dims_p;
-//  cudaSafeCall(checkAndMalloc((void**)&d_dims_p, (dims.size())*sizeof(query::dim)));
-//  cudaSafeCall(cudaMemcpy(d_dims_p, &(dims.front()), (dims.size())*sizeof(query::dim),cudaMemcpyHostToDevice));
+
 #ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
-  data_t nulldata;
-  nulldata.id = 0u;
-  nulldata.aggregation = 0.0f;
-  T_HASHTABLE* d_hash_table;
-  data_t* d_data_table;
-  d_data.clear();
+	data_t nulldata;
+	nulldata.id = 0u;
+	nulldata.aggregation = 0.0f;
+	T_HASHTABLE* d_hash_table;
+	data_t* d_data_table;
+	d_data.clear();
 
-  d_data.resize(queries.size()*hash_table_size);
+	d_data.resize(queries.size()*hash_table_size);
 
-  //d_data.resize(queries.size()*hash_table_size);
-  thrust::fill(d_data.begin(), d_data.end(), nulldata);
-  d_data_table = thrust::raw_pointer_cast(d_data.data());
-  d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-  u32 max_age = 16u;
+	thrust::fill(d_data.begin(), d_data.end(), nulldata);
+	d_data_table = thrust::raw_pointer_cast(d_data.data());
+	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
   
 #ifdef DEBUG
   printf("[ 33%] Copying memory to symbol...\n");
@@ -575,18 +605,68 @@ try{
   cudaEventRecord(kernel_start);
 #endif
 
-  device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-  (table.m_size(),
-   table.i_size(),
-   hash_table_size,
-   d_ck_p,
-   d_inv_p,
-   d_dims_p,
-   d_hash_table,
-   d_bitmap_p,
-   bitmap_bits,
-   threshold,
-   max_age);
+    //NON-HOT-DIM-SEARCH
+	device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+	(table.m_size(),
+	table.i_size(),
+	hash_table_size,
+	d_ck_p,
+	d_inv_p,
+	d_dims_p,
+	d_hash_table,
+	d_bitmap_p,
+	bitmap_bits,
+	threshold,
+	0 /* NUM OF HOT DIM = 0 */,
+	hot_dim_threshold);
+
+
+/* The following code snippet is to count the number of points in hash table
+	std::vector<T_HASHTABLE> temp_data;
+	temp_data.resize(hash_table_size * sizeof(T_HASHTABLE));
+	cudaCheckErrors(cudaMemcpy(&temp_data.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
+	u64 non_zero = 0ull;
+	for(int i = 0; i < temp_data.size();++i)
+	{
+		if(temp_data[i] != 0ull) non_zero += 1;
+	}
+	temp_data.clear();
+	printf("[Info] Non-zero of non-hot-dim: %llu.\n", non_zero);
+ * */
+
+	//HOT-DIM-SEARCH
+	if(num_of_hot_dims)
+	{
+		d_dims.clear();
+		device_vector<query::dim>().swap(d_dims);
+		device_vector<query::dim> d_hot_dims(hot_dims);
+		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
+		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+			(table.m_size(),
+			table.i_size(),
+			hash_table_size,
+			d_ck_p,
+			d_inv_p,
+			d_hot_dims_p,
+			d_hash_table,
+			d_bitmap_p,
+			bitmap_bits,
+			threshold,
+			num_of_hot_dims,
+			hot_dim_threshold);
+	}
+/* The following code snippet is to count the number of points in hash table
+	std::vector<T_HASHTABLE> temp_data2;
+	temp_data2.resize(hash_table_size * sizeof(T_HASHTABLE));
+	cudaCheckErrors(cudaMemcpy(&temp_data2.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
+	u64 non_zero2 = 0ull;
+	for(int i = 0; i < temp_data2.size();++i)
+	{
+		if(temp_data2[i] != 0ull) non_zero2 += 1;
+	}
+	temp_data2.clear();
+	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
+ * */
   
 #ifdef DEBUG
   cudaEventRecord(kernel_stop);
@@ -632,9 +712,11 @@ GaLG::match(inv_table& table,
             query& queries,
             device_vector<data_t>& d_data,
             int hash_table_size,
-            int bitmap_bits)
+            int bitmap_bits,
+            int num_of_hot_dims,
+            int hot_dim_threshold)
 {
   vector<query> _q;
   _q.push_back(queries);
-  match(table, _q, d_data, hash_table_size, bitmap_bits);
+  match(table, _q, d_data, hash_table_size, bitmap_bits, num_of_hot_dims,hot_dim_threshold);
 }

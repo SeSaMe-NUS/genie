@@ -133,7 +133,7 @@ void GaLG::knn_search(inv_table& table,
 					  std::vector<int>& h_topk,
 					  GaLG_Config& config)
 {
-	int device_count, hashtable_size, dim;
+	int device_count, hashtable_size;
 	cudaGetDeviceCount(&device_count);
 	if(device_count == 0)
 	{
@@ -153,13 +153,19 @@ void GaLG::knn_search(inv_table& table,
 	thrust::device_vector<int> d_topk;
 
 	printf("Starting knn search...\n");
-	GaLG::topk(table, queries, d_topk, hashtable_size, config.count_threshold, config.dim);
+	GaLG::topk(table,
+			   queries,
+			   d_topk,
+			   hashtable_size,
+			   config.count_threshold,
+			   config.dim,
+			   config.num_of_hot_dims,
+			   config.hot_dim_threshold);
 	printf("knn search is done!\n");
 
 	printf("Topk obtained: %d in total.\n", d_topk.size());
 	h_topk.resize(d_topk.size());
-	int * d_topk_p;
-	d_topk_p = thrust::raw_pointer_cast(d_topk.data());
+
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
 }
 

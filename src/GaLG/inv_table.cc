@@ -114,6 +114,7 @@ GaLG::inv_table::build()
               _ck[key] = _inv.size();
             }
         }
+
     }
   _build_status = builded;
 }
