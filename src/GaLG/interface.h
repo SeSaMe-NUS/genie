@@ -36,6 +36,8 @@ namespace GaLG
 		int dim;
 		int num_of_hot_dims;
 		int hot_dim_threshold;
+		bool use_adaptive_range;
+		float selectivity;
 		std::vector<std::vector<int> > * data_points;
 		std::vector<std::vector<int> > * query_points;
 		_GaLG_Config():
@@ -48,7 +50,9 @@ namespace GaLG
 			query_points(NULL),
 			dim(0),
 			num_of_hot_dims(GALG_DEFAULT_NUM_OF_HOT_DIMS),
-			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD)
+			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD),
+			use_adaptive_range(false),
+			selectivity(-1.0f)
 		{}
 	} GaLG_Config;
 

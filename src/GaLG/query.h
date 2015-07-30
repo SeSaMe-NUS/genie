@@ -52,6 +52,8 @@ namespace GaLG
      */
     int _topk;
 
+    float _selectivity;
+
     inline u64 pack_dim_and_count(u32 dim, u64 count);
 
     inline u32 unpack_dim(u64 packed_data);
@@ -99,6 +101,15 @@ namespace GaLG
 
     void
     clear_dim(int index);
+
+    void
+    selectivity(float s);
+
+    float
+    selectivity();
+
+    void
+    apply_adaptive_query_range();
 
     /**
      * @brief Set top k matches.

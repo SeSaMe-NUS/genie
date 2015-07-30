@@ -25,6 +25,7 @@ GaLG::query::query(inv_table* ref)
       _dims[i].weight = 0;
     }
   _topk = 1;
+  _selectivity = 0.004f;
 }
 
 GaLG::query::query(inv_table& ref)
@@ -47,6 +48,7 @@ GaLG::query::query(inv_table& ref)
       _dims[i].weight = 0;
     }
   _topk = 1;
+  _selectivity = -1.0f;
 }
 
 GaLG::inv_table*
@@ -136,6 +138,73 @@ GaLG::query::split_hot_dims(GaLG::query& hot_dims_query, int num)
 		hot_dims_query.attr(index, _attr[index].low, _attr[index].up, _attr[index].weight);
 		clear_dim(index);
 	}
+}
+
+void
+GaLG::query::selectivity(float s)
+{
+	if(s > 0) _selectivity = s;
+	else printf("Please choose a selectivity greater than 0.\n");
+}
+
+float
+GaLG::query::selectivity()
+{
+	return _selectivity;
+}
+
+void
+GaLG::query::apply_adaptive_query_range()
+{
+	inv_table& table = *_ref_table;
+	std::vector<inv_list>& lists = *table.inv_lists();
+
+	if(table.build_status() == inv_table::not_builded)
+	{
+		printf("Please build the inverted table before applying adaptive query range.\n");
+		return;
+	}
+
+	if(_selectivity <= 0.0f)
+	{
+		printf("Please set a valid selectivity.\n");
+		return;
+	}
+
+	u32 threshold = u32(_selectivity * table.i_size());
+	if(_selectivity * table.i_size() - threshold > 0)
+		threshold += 1;
+
+	for(int di = 0; di < _attr.size(); ++di)
+	{
+		dim& d = _attr[di];
+		if(d.up == -1) continue;
+		int count = 0;
+		for(int vi = d.low; vi <= d.up; ++vi)
+		{
+			if(!lists[di].contains(vi)) continue;
+			count += lists[di].index(vi)->size();
+		}
+		while(count < threshold)
+		{
+			if(d.low > 0)
+			{
+				d.low --;
+				if(!lists[di].contains(d.low)) continue;
+				count += lists[di].index(d.low)->size();
+			}
+
+			if(!lists[di].contains(d.up + 1))
+			{
+				if(d.low == 0) break;
+			} else
+			{
+				d.up++;
+				count += lists[di].index(d.up)->size();
+			}
+		}
+	}
+
 }
 
 void

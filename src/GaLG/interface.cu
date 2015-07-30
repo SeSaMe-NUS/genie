@@ -25,54 +25,59 @@
 using namespace GaLG;
 using namespace std;
 
-
-void
-load_table(inv_table& table, std::vector<std::vector<int> >& data_points)
+namespace GaLG
 {
-	  inv_list list;
-	  u32 i,j;
-	  std::vector<int> col;
-
-	  for(i = 0; i < data_points[0].size(); ++i)
-	  {
-		  col.resize(data_points.size());
-		  for(j = 0; j < data_points.size(); ++j)
-		  {
-			  col.push_back(data_points[j][i]);
-		  }
-		  list.invert(col);
-		  table.append(list);
-		  col.clear();
-	  }
-
-	  table.build();
-}
-
-void
-load_query(inv_table& table,
-			std::vector<std::vector<int> > query_points,
-		    std::vector<query> queries,
-		    int num_of_topk,
-		    int radius)
-{
-	u32 i,j;
-	int value;
-	queries.clear();
-	for(i = 0; i < query_points.size(); ++i)
+	void
+	load_table(inv_table& table, std::vector<std::vector<int> >& data_points)
 	{
-		query q(table);
-		for(j = 0; j < query_points[i].size(); ++i){
-			value = query_points[i][j];
-			q.attr(j,
-				   value - radius < 0 ? 0 : value - radius,
-				   value + radius,
-				   GALG_DEFAULT_WEIGHT);
+		  inv_list list;
+		  u32 i,j;
+		  std::vector<int> col;
+
+		  for(i = 0; i < data_points[0].size(); ++i)
+		  {
+			  col.resize(data_points.size());
+			  for(j = 0; j < data_points.size(); ++j)
+			  {
+				  col.push_back(data_points[j][i]);
+			  }
+			  list.invert(col);
+			  table.append(list);
+			  col.clear();
+		  }
+
+		  table.build();
+	}
+
+	void
+	load_query(inv_table& table,
+				std::vector<query> queries,
+				GaLG_Config& config)
+	{
+		u32 i,j;
+		int value;
+		int radius = config.query_radius;
+		std::vector<std::vector<int> >& query_points = *config.query_points;
+		for(i = 0; i < query_points.size(); ++i)
+		{
+			query q(table);
+			for(j = 0; j < query_points[i].size(); ++i){
+				value = query_points[i][j];
+				q.attr(j,
+					   value - radius < 0 ? 0 : value - radius,
+					   value + radius,
+					   GALG_DEFAULT_WEIGHT);
+			}
+			q.topk(config.num_of_topk);
+			q.selectivity(config.selectivity);
+			if(config.use_adaptive_range)
+			{
+				q.apply_adaptive_query_range();
+			}
+			queries.push_back(q);
 		}
-		q.topk(num_of_topk);
-		queries.push_back(q);
 	}
 }
-
 void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
 					  std::vector<int>& result,
@@ -121,7 +126,7 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 	printf("Done!\n");
 
 	printf("Loading queries...");
-	load_query(table, *(config.query_points), queries, config.num_of_topk, config.query_radius);
+	load_query(table,queries,config);
 	printf("Done!\n");
 
 	knn_search(table, queries, result, config);

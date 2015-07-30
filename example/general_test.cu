@@ -44,7 +44,14 @@ string eraseSpace(string origin) {
 	return origin.substr(start, end - start + 1);
 }
 
-void read_query(inv_table& table, const char* fname, vector<query>& queries, int num_of_queries, int num_of_query_dims, int radius, int topk)
+void read_query(inv_table& table,
+		        const char* fname,
+		        vector<query>& queries,
+		        int num_of_queries,
+		        int num_of_query_dims,
+		        int radius,
+		        int topk,
+		        float selectivity)
 {
 
 	string line;
@@ -71,6 +78,11 @@ void read_query(inv_table& table, const char* fname, vector<query>& queries, int
 					   1);
 			}
 			q.topk(topk);
+			if(selectivity > 0.0f)
+			{
+				q.selectivity(selectivity);
+				q.apply_adaptive_query_range();
+			}
 			queries.push_back(q);
 			++j;
 		}
@@ -90,7 +102,8 @@ void match_test(inv_table& table,
 				int bitmap_bits,
 				int num_of_query_print,
 				int num_of_hot_dims,
-				int hot_dim_threshold) throw()
+				int hot_dim_threshold,
+				float selectivity) throw()
 {
 	  int device_count;
 	  cudaGetDeviceCount(&device_count);
@@ -106,7 +119,7 @@ void match_test(inv_table& table,
 
 	  query q(table);
 	  //printf("filename is %s.\n", dfname);
-	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K);
+	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K, selectivity);
 
 	  timestop = getTime();
 	  printf("Finish creating %d query. Time elapsed: %f ms. \n", queries.size(), getInterval(timestart, timestop));
@@ -208,7 +221,8 @@ void topk_test( inv_table& table,
 				const int num_of_query_print,
 				const int top_k_size,
 				const int num_of_hot_dims,
-				const int hot_dim_threshold)throw()
+				const int hot_dim_threshold,
+				const float selectivity)throw()
 {
 	 cudaDeviceReset();
 	 int device_count;
@@ -222,7 +236,7 @@ void topk_test( inv_table& table,
 	  totalstart = timestart = getTime();
 	  printf("Start creating query...\n");
 
-	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, top_k_size);
+	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, top_k_size, selectivity);
 
 	  timestop = getTime();
 	  printf("Finish creating query. Time elapsed: %f ms. \n", getInterval(timestart, timestop));
@@ -434,6 +448,39 @@ float stof(std::string str)
 int
 main(int argc, char * argv[])
 {
+
+	if(argc == 1)
+	{
+		printf("Instruction on using this ugly testing function:\n"
+			   "  ./this_programme [<option> <option_value>] ...\n"
+			   "Options:\n"
+			   "-f    Full path to the data csv file. The file will be loaded fully.\n"
+			   "-qf   Full path to the query csv file. May not be loaded fully.\n"
+			   "        See [-q] option.\n"
+			   "-q    Number of queries to be loaded from the query file.\n"
+			   "-d    Number of dimensions of the data and queries.\n"
+			   "-t    Number of topk's for queries.\n"
+			   "-r    Radius of the to be read query file. It will extend the scanned\n"
+			   "        buckets to value + radius and value - radius.\n"
+			   "-s    The query selectivity. If set > 0, it will extend the scanned\n"
+			   "        buckets to cover enough data to match the selectivity.\n"
+			   "        Note that if radius is too large, the selectivity setting will\n"
+			   "        not shrink the query range.\n"
+			   "-b    The bitmap threshold. Number of bits to be used is automatically\n"
+			   "        controlled. Here users only need to set the cut-off threshold.\n"
+			   "-h    The hash table size in 'hash table / data size' ratio. Set to 1 \n"
+			   "        is safe but fewer queries can be processed. Smaller size must be\n"
+			   "        used together with large filter thresholds.\n"
+			   "-nhd  Number of hot dimensions. If nhd != 0, the programme will do a two-\n"
+			   "        stage scan, with first stage scanning non-hot dim and second stage\n"
+			   "        scanning hot dim.\n"
+			   "-hdt  Hot dimension threshold. If counts in bitmap + number of hot dim > \n"
+			   "        hot dimension threshold, it will proceed to count the data points,\n"
+			   "        otherwise skipped (we are confident that it will not be a topk).\n"
+			   "-p    Number of queries' topk results to be printed.\n"
+			   "-n    Number of tests to be run. Average running time will be printed.\n");
+		return 0;
+	}
   std::string fname,qfname, lastfname;
 
   int num_of_query = 1,
@@ -445,6 +492,7 @@ main(int argc, char * argv[])
 	  num_of_tests = 1,
 	  num_of_hot_dims = 0,
 	  hot_dim_safe_threshold = bitmap_threshold;
+  float selectivity = -1.0f;
   float hashtable = 1.0f;
   std::vector<std::string> ss;
   inv_table table;
@@ -548,17 +596,23 @@ main(int argc, char * argv[])
 		    } else {
 		  	  printf("Using default/last number of tests: %d.\n", num_of_tests);
 		    }
-		    if(cmd_option_exists(s, e, "-num_of_hot_dims"))
+		    if(cmd_option_exists(s, e, "-nhd"))
 		    {
-		    	num_of_hot_dims = stoi(get_cmd_option(s, e, "-num_of_hot_dims"));
+		    	num_of_hot_dims = stoi(get_cmd_option(s, e, "-nhd"));
 		    } else {
 		    	printf("Using default/last number of hot dimensions: %d.\n", num_of_hot_dims);
 		    }
-		    if(cmd_option_exists(s, e, "-hot_dim_safe_threshold"))
+		    if(cmd_option_exists(s, e, "-hdt"))
 		    {
-		    	hot_dim_safe_threshold = stoi(get_cmd_option(s, e, "-hot_dim_safe_threshold"));
+		    	hot_dim_safe_threshold = stoi(get_cmd_option(s, e, "-hdt"));
 		    } else {
 		    	printf("Using default/last hot dim safe threshold: %d.\n", hot_dim_safe_threshold);
+		    }
+		    if(cmd_option_exists(s, e, "-s"))
+		    {
+		    	selectivity = stof(get_cmd_option(s,e,"-s"));
+		    } else {
+		    	printf("Using default/last selectivity: %f.\n", selectivity);
 		    }
 	    } catch(exception& e){
 	    	printf("Something wrong with your parameter: %s.\n", e.what());
@@ -603,7 +657,8 @@ main(int argc, char * argv[])
 		  			     bitmap_threshold,
 		  			     num_of_query_printing,
 		  			     num_of_hot_dims,
-		  			     hot_dim_safe_threshold);
+		  			     hot_dim_safe_threshold,
+		  			     selectivity);
 		  	  printf("Max number of items in query hashtables: %llu.\n", MAX_ITEM_NUM);
 		    }
 		    else if(function == 1 && !error)
@@ -620,7 +675,8 @@ main(int argc, char * argv[])
 		    			    num_of_query_printing,
 		    			    num_of_topk,
 		    			    num_of_hot_dims,
-		    			    hot_dim_safe_threshold);
+		    			    hot_dim_safe_threshold,
+		    			    selectivity);
 		      }
 		      if(num_of_tests != 1 && !GALG_ERROR)
 		      {
