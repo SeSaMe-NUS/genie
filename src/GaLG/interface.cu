@@ -32,28 +32,31 @@ namespace GaLG
 	{
 		  inv_list list;
 		  u32 i,j;
-		  std::vector<int> col;
 
+
+		  printf("Data row size: %d. Data Row Number: %d.\n", data_points[0].size(), data_points.size());
 		  for(i = 0; i < data_points[0].size(); ++i)
 		  {
-			  col.resize(data_points.size());
+			  std::vector<int> col;
+			  col.reserve(data_points.size());
 			  for(j = 0; j < data_points.size(); ++j)
 			  {
 				  col.push_back(data_points[j][i]);
 			  }
 			  list.invert(col);
 			  table.append(list);
-			  col.clear();
 		  }
 
 		  table.build();
+		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
 	}
 
 	void
 	load_query(inv_table& table,
-				std::vector<query> queries,
+				std::vector<query>& queries,
 				GaLG_Config& config)
 	{
+		printf("Table dim: %d.\n", table.m_size());
 		u32 i,j;
 		int value;
 		int radius = config.query_radius;
@@ -61,21 +64,30 @@ namespace GaLG
 		for(i = 0; i < query_points.size(); ++i)
 		{
 			query q(table);
-			for(j = 0; j < query_points[i].size(); ++i){
+
+			for(j = 0; j < query_points[i].size(); ++j){
+
 				value = query_points[i][j];
+				if(value < 0)
+				{
+					continue;
+				}
 				q.attr(j,
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
 					   GALG_DEFAULT_WEIGHT);
 			}
+
 			q.topk(config.num_of_topk);
 			q.selectivity(config.selectivity);
 			if(config.use_adaptive_range)
 			{
 				q.apply_adaptive_query_range();
 			}
+
 			queries.push_back(q);
 		}
+		printf("%d queries are created!\n", queries.size());
 	}
 }
 void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
@@ -119,16 +131,12 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
-	int hashtable_size = config.hashtable_size * table.i_size() + 1;
-
 	printf("Building table...");
 	load_table(table, *(config.data_points));
 	printf("Done!\n");
-
 	printf("Loading queries...");
 	load_query(table,queries,config);
 	printf("Done!\n");
-
 	knn_search(table, queries, result, config);
 }
 
@@ -143,7 +151,7 @@ void GaLG::knn_search(inv_table& table,
 	if(device_count == 0)
 	{
 		printf("[Info] NVIDIA CUDA-SUPPORTED GPU NOT FOUND!\nProgram aborted..\n");
-		return;
+		exit(2);
 	} else if(device_count <= config.use_device)
 	{
 		printf("[Info] Device %d not found!", config.use_device);
@@ -153,11 +161,13 @@ void GaLG::knn_search(inv_table& table,
 	cudaDeviceReset();
 	cudaDeviceSynchronize();
 	printf("Using device %d...\n", config.use_device);
-
+	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
 	hashtable_size = table.i_size() * config.hashtable_size + 1;
 	thrust::device_vector<int> d_topk;
 
 	printf("Starting knn search...\n");
+	//printf("KNN Pre-condition Check: print query 0\n");
+	//queries[0].print();
 	GaLG::topk(table,
 			   queries,
 			   d_topk,

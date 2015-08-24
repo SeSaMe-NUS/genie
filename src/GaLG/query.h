@@ -152,6 +152,9 @@ namespace GaLG
      */
     void
     dump(vector<dim>& vout);
+
+    void
+    print();
   };
 }
 

@@ -457,7 +457,7 @@ namespace GaLG
 void
 GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims)
 {
-	for (int i = 0; i < queries.size(); i++)
+	for (int i = 0; i < queries.size(); ++i)
 	{
 	  if (queries[i].ref_table() != &table)
 		throw inv_table::not_matched_exception;
@@ -478,6 +478,7 @@ GaLG::match(inv_table& table,
             int num_of_hot_dims,
             int hot_dim_threshold)
 {
+
 try{
 	printf("match.cu version : %s\n", VERSION);
 #ifdef DEBUG
@@ -510,7 +511,8 @@ try{
 		}
 		build_queries(hot_dims_queries, table, hot_dims);
 	}
-
+	printf("Host query size: %d.\n", queries.size());
+	//queries[0].print();
   build_queries(queries, table, dims);
 
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());

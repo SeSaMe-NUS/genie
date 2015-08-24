@@ -1,6 +1,7 @@
 #include "query.h"
 #include <algorithm>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef unsigned int u32;
 typedef unsigned long long u64;
@@ -25,7 +26,7 @@ GaLG::query::query(inv_table* ref)
       _dims[i].weight = 0;
     }
   _topk = 1;
-  _selectivity = 0.004f;
+  _selectivity = -1.0f;
 }
 
 GaLG::query::query(inv_table& ref)
@@ -120,6 +121,7 @@ GaLG::query::split_hot_dims(GaLG::query& hot_dims_query, int num)
 
 	std::make_heap(counts.begin(), counts.end());
 	std::vector<int> hot_index;
+
 
 	//extract top [num] hot dim index
 	for(int i = 0; i < num && i < _ref_table->m_size(); ++i)
@@ -352,4 +354,14 @@ GaLG::query::dump(vector<dim>& vout)
   int i;
   for (i = 0; i < _dims.size(); i++)
     vout.push_back(_dims[i]);
+}
+
+void
+GaLG::query::print()
+{
+	printf("This query has %d dimensions.\n", _attr.size());
+	for(int i = 0; i < _attr.size(); ++i)
+	{
+		printf("dim %d: low %d, up %d, weight %.2f.\n", i, _attr[i].low, _attr[i].up, _attr[i].weight);
+	}
 }
