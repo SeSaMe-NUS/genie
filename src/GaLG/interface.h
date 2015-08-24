@@ -18,12 +18,14 @@
 
 #define GALG_DEFAULT_TOPK 10
 #define GALG_DEFAULT_RADIUS 0
-#define GALG_DEFAULT_THRESHOLD 4
-#define GALG_DEFAULT_HASHTABLE_SIZE 0.6
+#define GALG_DEFAULT_THRESHOLD 0
+#define GALG_DEFAULT_HASHTABLE_SIZE 1.0f
 #define GALG_DEFAULT_WEIGHT 1
 #define GALG_DEFAULT_DEVICE 0
 #define GALG_DEFAULT_NUM_OF_HOT_DIMS 0
 #define GALG_DEFAULT_HOT_DIM_THRESHOLD GALG_DEFAULT_THRESHOLD
+#define GALG_DEFAULT_USE_ADAPTIVE_RANGE false
+#define GALG_DEFAULT_SELECTIVITY -1.0f
 
 namespace GaLG
 {
@@ -51,8 +53,8 @@ namespace GaLG
 			dim(0),
 			num_of_hot_dims(GALG_DEFAULT_NUM_OF_HOT_DIMS),
 			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD),
-			use_adaptive_range(false),
-			selectivity(-1.0f)
+			use_adaptive_range(GALG_DEFAULT_USE_ADAPTIVE_RANGE),
+			selectivity(GALG_DEFAULT_SELECTIVITY)
 		{}
 	} GaLG_Config;
 

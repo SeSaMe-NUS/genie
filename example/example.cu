@@ -77,17 +77,21 @@ int main(int argc, char * argv[])
 	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", -1);
 	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 100);
 
-	/*** Configuration of KNN Search****/
+	/*** Configuration of KNN Search ***/
 	GaLG::GaLG_Config config;
 
 	//Data dimension
 	config.dim = 128;
 
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
+	//It is implemented as a bitmap filter.
+	//Set to 0 to disable the feature.
 	config.count_threshold = 0;
 
 	//Hash Table size ratio against data size.
-	//Topk will be generated from the hash table so it must be sufficiently large. Max 1.0f.
+	//Topk items will be generated from the hash table so it must be sufficiently large.
+	//Max 1.0f and please set to 1.0f if memory allows.
+	//Please take note that reducing hash table size is at your own risk.
 	config.hashtable_size = 1.0f;
 
 	//Number of topk items desired for each query. (NOT GUARANTEED!)
@@ -103,10 +107,15 @@ int main(int argc, char * argv[])
 
 	//Number of hot dimensions with long posting lists to be avoided.
 	//Once set to n, top n hot dimensions will be split from the query and submit again
-	//at the second stage.
+	//at the second stage. Set to 0 to disable the feature.
 	//May reduce hash table usage and memory usage.
 	//Will increase time consumption.
 	config.num_of_hot_dims = 0;
+
+	//Threshold for second stage hot dimension scan. Points with counts lower than threshold
+	//will not be processed and they will not be present in the hash table.
+	//The value should be larger than count_threshold.
+	config.hot_dim_threshold = 0;
 
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
@@ -123,7 +132,45 @@ int main(int argc, char * argv[])
 	//The pointer to the vector containing the queries.
 	config.query_points = &queries;
 
-	/*** End of Configuration ****/
+	/*** End of Configuration ***/
+
+	/*** NOTE TO DEVELOPERS ***/
+	/*
+	 The library is still under development. Therefore there might be crashes if
+	 the parameters are not set optimally.
+
+	 Optimal settings may help you launch ten times more queries than naive setting,
+	 but reducing hash table size may result in unexpected crashes or insufficient
+	 topk results. (How can you expect 100 topk results from a hash table of size 50
+	 or a threshold of 100 suppose you only have 128 dimensions?) So please be careful
+	 if you decide to use non-default settings.
+
+	 The basic & must-have settings are:
+	 1. dim
+	 2. num_of_topk
+	 3. data_points
+	 4. query_points
+	 And leave the rest to default.
+
+	 Recommended settings:
+	 If you want to increase the query selectivity (default is one bucket itself, i.e. radius 0,
+	 which is absolutely not enough), you can use either way as follows:
+	 A. set radius to a larger value, e.g. 1, 2, 3 and so on. It will expand your search
+	 	 upwards and downward by the amount of buckets you set. However, it does not guarantee
+	 	 the selectivity since data distribution may not even.
+	 B. set the selectivity and turn on use_adaptive_range, e.g. selectivity = 0.01 and
+	 	 use_adaptive_range = true. It can guarantee that on each dimension the query will match
+	 	 for at least (selectivity * data size) number of data points.
+	 Note that approach B will overwrite approach A if both are set.
+
+	 Advanced settings:
+	 For num_of_hot_dims and hot_dim_threshold, please contact the author for details.
+
+	 Author: Luan Wenhao
+	 Contact: lwhluan@gmail.com
+	 Date: 24/08/2015
+	                          */
+	/*** END OF NOTE ***/
 
 	std::vector<int> result;
 
