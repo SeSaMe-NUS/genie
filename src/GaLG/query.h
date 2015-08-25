@@ -17,7 +17,8 @@ namespace GaLG
   {
   public:
     struct dim
-    {
+    { 
+      int dim;
       int low;
       int up;
       float weight;
@@ -37,14 +38,14 @@ namespace GaLG
      *          different ranges setting, the attribute saves the
      *          raw range settings.
      */
-    vector<dim> _attr;
+    std::map<int, vector<dim>* > _attr_map;
 
     /**
      * @brief The queried ranges.
      * @details The queried ranges. In matching steps, this vector will
      *          be transferred to device.
      */
-    vector<dim> _dims;
+    std::map<int, vector<dim>* > _dim_map;
 
     /**
      * @brief The top k matches required.
@@ -153,6 +154,9 @@ namespace GaLG
     void
     dump(vector<dim>& vout);
 
+    void
+    print(int limit);
+    
     void
     print();
   };
