@@ -172,6 +172,9 @@ namespace GaLG
 
     int
     index();
+
+    int
+    count_ranges();
   };
 }
 

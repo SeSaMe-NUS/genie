@@ -89,6 +89,54 @@ namespace GaLG
 		}
 		printf("%d queries are created!\n", queries.size());
 	}
+	void
+	load_query_tweets(inv_table& table,
+				std::vector<query>& queries,
+				GaLG_Config& config)
+	{
+
+		printf("Table dim: %d.\n", table.m_size());
+		u32 i,j;
+		int value;
+		int radius = config.query_radius;
+		std::vector<std::vector<int> >& query_points = *config.query_points;
+		for(i = 0; i < query_points.size(); ++i)
+		{
+			query q(table, i);
+
+			for(j = 0; j < query_points[i].size(); ++j){
+
+				value = query_points[i][j];
+				if(value < 0)
+				{
+					continue;
+				}
+				q.attr(0,
+					   value - radius < 0 ? 0 : value - radius,
+					   value + radius,
+					   GALG_DEFAULT_WEIGHT);
+			}
+
+			q.topk(config.num_of_topk);
+			q.selectivity(config.selectivity);
+			if(config.use_adaptive_range)
+			{
+				q.apply_adaptive_query_range();
+			}
+
+			queries.push_back(q);
+		}
+		printf("%d queries are created!\n", queries.size());
+	}
+	void
+	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points)
+	{
+	  inv_list list;
+	  list.invert_tweets(data_points);
+	  table.append(list);
+	  table.build();
+	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+	}
 }
 void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
@@ -125,6 +173,19 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 		config.dim = query_points[0].size();
 
 	knn_search(result, config);
+}
+
+void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
+{
+	inv_table table;
+	std::vector<query> queries;
+	printf("Building table...");
+	load_table_tweets(table, *(config.data_points));
+	printf("Done!\n");
+	printf("Loading queries...");
+	load_query_tweets(table,queries,config);
+	printf("Done!\n");
+	knn_search(table, queries, result, config);
 }
 
 void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
@@ -168,7 +229,7 @@ void GaLG::knn_search(inv_table& table,
 	printf("Starting knn search...\n");
 	//printf("KNN Pre-condition Check: print query 0\n");
 	//queries[0].print();
-	GaLG::topk(table,
+	GaLG::topk_tweets(table,
 			   queries,
 			   d_topk,
 			   hashtable_size,

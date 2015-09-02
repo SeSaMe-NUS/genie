@@ -381,6 +381,8 @@ namespace GaLG
     {
       if(m_size == 0 || i_size == 0) return;
       query::dim& q = d_dims[blockIdx.x];
+//      if(threadIdx.x == 0)
+//    	  printf("block %d: query %d, low %d, up %d.\n", blockIdx.x, q.query, q.low, q.up);
       int query_index = q.query;
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
@@ -680,7 +682,11 @@ try{
 
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
-
+//  host_vector<data_t> h_data(d_data);
+//  for(int i = 0; i < hash_table_size; ++i)
+//  {
+//	  printf("%d %f\n", h_data[i].id, h_data[i].aggregation);
+//  }
 #ifdef DEBUG
   printf("[100%] Matching is done!\n");
 

@@ -80,6 +80,9 @@ namespace GaLG
 					float hashtable,
 					int device);
 
+	void knn_search_tweets(std::vector<int>& result,
+								 GaLG_Config& config);
+
 	void knn_search(std::vector<int>& result,
 					GaLG_Config& config);
 

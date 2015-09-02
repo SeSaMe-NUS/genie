@@ -45,7 +45,40 @@ GaLG::inv_list::size()
 {
   return _size;
 }
+void
+GaLG::inv_list::invert_tweets(vector<vector<int> > & vin)
+{
+	  _size = vin.size();
+	  if (vin.empty())
+	    return;
 
+	  _bound.first = vin[0][0], _bound.second = vin[0][0], _inv.clear();
+
+	  unsigned int i,j;
+	  for (i = 0; i < vin.size(); i++)
+	  {
+		  for(j = 0; j < vin[i].size(); ++j)
+		  {
+		      if (_bound.first > vin[i][j])
+		        _bound.first = vin[i][j];
+		      if (_bound.second < vin[i][j])
+		        _bound.second = vin[i][j];
+		  }
+	  }
+	  unsigned int gap = _bound.second - _bound.first + 1;
+	  _inv.resize(gap);
+	  for (i = 0; i < gap; i++)
+	    _inv[i].clear();
+
+	  for (i = 0; i < vin.size(); i++)
+	  {
+		  for(j = 0; j < vin[i].size(); ++j)
+		  {
+			  _inv[vin[i][j] - _bound.first].push_back(i);
+		  }
+	  }
+	  return;
+}
 void
 GaLG::inv_list::invert(vector<int>& vin)
 {

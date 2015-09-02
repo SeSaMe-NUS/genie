@@ -357,9 +357,26 @@ GaLG::query::dump(vector<dim>& vout)
   {
     std::vector<dim>& ranges = *(di->second);
     count += ranges.size();
-    vout.insert(vout.end(), ranges.begin(), ranges.end());
+    //vout.insert(vout.end(), ranges.begin(), ranges.end());
+    for(int i = 0; i < ranges.size(); ++i)
+    {
+    	vout.push_back(ranges[i]);
+    }
   }
+  printf("Query %d: Total number of dims dumped: %d.\n", _index, count);
   return count;
+}
+
+int
+GaLG::query::count_ranges()
+{
+	  int count = 0;
+	  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
+	  {
+	    std::vector<range>& ranges = *(di->second);
+	    count += ranges.size();
+	  }
+	  return count;
 }
 
 void

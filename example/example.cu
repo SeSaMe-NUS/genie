@@ -65,6 +65,40 @@ int main(int argc, char * argv[])
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
+	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", -1);
+	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", 1000);
+	GaLG::GaLG_Config config;
+	config.dim = 1;
+	config.count_threshold = 0;
+	config.hashtable_size = 1.0f;
+	config.num_of_topk = 100;
+	config.query_radius = 0;
+	config.use_device = 1;
+	config.num_of_hot_dims = 0;
+	config.hot_dim_threshold = 0;
+	config.use_adaptive_range = false;
+	config.selectivity = 0.0f;
+	config.data_points = &data;
+	config.query_points = &queries;
+	std::vector<int> result;
+	printf("Launching knn functions...\n");
+	GaLG::knn_search_tweets(result, config);
+	for(int i = 0; i < 10 && i < queries.size(); ++i)
+	{
+		printf("Query %d result is: \n\t", i);
+		for (int j = 0; j < 10; ++j)
+		{
+			printf("%d, ", result[i * config.num_of_topk + j]);
+		}
+		printf("\n");
+	}
+}
+
+int main2(int argc, char * argv[])
+{
+	std::vector<std::vector<int> > queries;
+	std::vector<std::vector<int> > data;
+	inv_table table;
 
 	//Reading file from the disk. Alternatively, one can simply use vectors generated from other functions
 	//Example vectors:

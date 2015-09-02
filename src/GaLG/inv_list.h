@@ -55,6 +55,9 @@ namespace GaLG
      */
     inv_list(vector<int>* vin);
 
+    void
+    invert_tweets(vector<vector<int> > & vin);
+
     /**
      * @brief Create an inv_list from a string vector.
      * @details Create an inv_list from a string vector.
