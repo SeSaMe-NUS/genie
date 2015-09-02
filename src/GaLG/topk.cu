@@ -324,7 +324,7 @@ GaLG::topk(device_vector<data_t>& d_search,
 
 	if(d_tops.size() == 0)
 	{
-		printf("Error: No query found! Programme aborted...\n");
+		printf("Error: No query found! Program aborted...\n");
 		exit(1);
 	}
   int parts = d_tops.size();
