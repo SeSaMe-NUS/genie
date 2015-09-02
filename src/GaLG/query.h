@@ -16,9 +16,17 @@ namespace GaLG
   class query
   {
   public:
+	struct range
+	{
+		int query;
+		int dim;
+		int low;
+		int up;
+		float weight;
+	};
     struct dim
     { 
-      int dim;
+      int query;
       int low;
       int up;
       float weight;
@@ -38,7 +46,7 @@ namespace GaLG
      *          different ranges setting, the attribute saves the
      *          raw range settings.
      */
-    std::map<int, vector<dim>* > _attr_map;
+    std::map<int, vector<range>* > _attr_map;
 
     /**
      * @brief The queried ranges.
@@ -55,6 +63,8 @@ namespace GaLG
 
     float _selectivity;
 
+    int _index;
+
     inline u64 pack_dim_and_count(u32 dim, u64 count);
 
     inline u32 unpack_dim(u64 packed_data);
@@ -67,7 +77,7 @@ namespace GaLG
      * 
      * @param ref The refrence to the inv_table.
      */
-    query(inv_table* ref);
+    query(inv_table* ref, int index);
 
     /**
      * @brief Create a query based on an inv_table.
@@ -75,7 +85,7 @@ namespace GaLG
      * 
      * @param ref The pointer to the inv_table.
      */
-    query(inv_table& ref);
+    query(inv_table& ref, int index);
 
     /**
      * @brief The refrenced table's pointer.
@@ -151,7 +161,7 @@ namespace GaLG
      * 
      * @param vout The target vector.
      */
-    void
+    int
     dump(vector<dim>& vout);
 
     void
@@ -159,6 +169,9 @@ namespace GaLG
     
     void
     print();
+
+    int
+    index();
   };
 }
 

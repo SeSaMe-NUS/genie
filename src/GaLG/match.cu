@@ -123,7 +123,7 @@ namespace GaLG
     access_kernel(u32 id,
                   T_HASHTABLE* htable,
                   int hash_table_size,
-                  query::dim* q,
+                  query::dim& q,
                   bool * key_found)
     {
       u32 location;
@@ -143,7 +143,7 @@ namespace GaLG
           		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
           		&& get_key_age(out_key) < MAX_AGE){
         	u32 attach_id = get_key_attach_id(out_key);
-            float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
+            float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
 #ifdef DEBUG_VERBOSE
             printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
 #endif
@@ -180,7 +180,7 @@ namespace GaLG
         		&& get_key_age(out_key) < MAX_AGE)
         {
         	u32 attach_id = get_key_attach_id(out_key);
-            float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q->weight;
+            float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
 #ifdef DEBUG_VERBOSE
             printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
 #endif
@@ -215,7 +215,7 @@ namespace GaLG
     hash_kernel(u32 id,
                 T_HASHTABLE* htable,
                 int hash_table_size,
-                query::dim* q)
+                query::dim& q)
     {
 
       //u32 my_value = atomicAdd(value, 1);
@@ -230,7 +230,7 @@ namespace GaLG
       T_HASHTABLE evicted_key, peek_key;
       T_AGE age = KEY_TYPE_NULL_AGE;
       T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
-                                                   *reinterpret_cast<u32*>(&(q->weight)),
+                                                   *reinterpret_cast<u32*>(&(q.weight)),
                                                    KEY_TYPE_INIT_AGE);
 
       //Loop until MAX_AGE
@@ -380,8 +380,8 @@ namespace GaLG
           int hot_dim_threshold)
     {
       if(m_size == 0 || i_size == 0) return;
-      int query_index =blockIdx.x / m_size;
-      query::dim* q = &d_dims[blockIdx.x];
+      query::dim& q = d_dims[blockIdx.x];
+      int query_index = q.query;
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
       u32 * bitmap;
@@ -389,8 +389,8 @@ namespace GaLG
       u32 access_id;
 
       int min, max;
-      min = q->low;
-      max = q->up;
+      min = q.low;
+      max = q.up;
       if (min > max)
         return;
 
@@ -500,21 +500,21 @@ try{
 
 	printf("[Info] Using num of hot dims: %d.\n", num_of_hot_dims);
 
-	if(num_of_hot_dims)
-	{
-		for(int i = 0; i < queries.size(); ++i)
-		{
-			query q(table);
-			q.topk(queries[i].topk());
-			queries[i].split_hot_dims(q, num_of_hot_dims);
-			hot_dims_queries.push_back(q);
-		}
-		build_queries(hot_dims_queries, table, hot_dims);
-	}
-	printf("Host query size: %d.\n", queries.size());
-	//queries[0].print();
-  build_queries(queries, table, dims);
+	//TODO: Modify this to enable hot dim search
+//	if(num_of_hot_dims)
+//	{
+//		for(int i = 0; i < queries.size(); ++i)
+//		{
+//			query q(table);
+//			q.topk(queries[i].topk());
+//			queries[i].split_hot_dims(q, num_of_hot_dims);
+//			hot_dims_queries.push_back(q);
+//		}
+//		build_queries(hot_dims_queries, table, hot_dims);
+//	}
+//	printf("Host query size: %d.\n", queries.size());
 
+  build_queries(queries, table, dims);
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
 
 
@@ -636,27 +636,28 @@ try{
 	printf("[Info] Non-zero of non-hot-dim: %llu.\n", non_zero);
  * */
 
+	//TODO: MODIFY HOT DIM SEARCH TO ADJUST TO MULTIRANGE
 	//HOT-DIM-SEARCH
-	if(num_of_hot_dims)
-	{
-		d_dims.clear();
-		device_vector<query::dim>().swap(d_dims);
-		device_vector<query::dim> d_hot_dims(hot_dims);
-		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
-		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-			(table.m_size(),
-			table.i_size(),
-			hash_table_size,
-			d_ck_p,
-			d_inv_p,
-			d_hot_dims_p,
-			d_hash_table,
-			d_bitmap_p,
-			bitmap_bits,
-			threshold,
-			num_of_hot_dims,
-			hot_dim_threshold);
-	}
+//	if(num_of_hot_dims)
+//	{
+//		d_dims.clear();
+//		device_vector<query::dim>().swap(d_dims);
+//		device_vector<query::dim> d_hot_dims(hot_dims);
+//		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
+//		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+//			(table.m_size(),
+//			table.i_size(),
+//			hash_table_size,
+//			d_ck_p,
+//			d_inv_p,
+//			d_hot_dims_p,
+//			d_hash_table,
+//			d_bitmap_p,
+//			bitmap_bits,
+//			threshold,
+//			num_of_hot_dims,
+//			hot_dim_threshold);
+//	}
 /* The following code snippet is to count the number of points in hash table
 	std::vector<T_HASHTABLE> temp_data2;
 	temp_data2.resize(hash_table_size * sizeof(T_HASHTABLE));

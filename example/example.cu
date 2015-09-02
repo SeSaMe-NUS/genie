@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched
 	//for each dimension.
-	config.use_adaptive_range = false;
+	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 	config.selectivity = 0.004;

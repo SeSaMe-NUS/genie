@@ -63,7 +63,7 @@ namespace GaLG
 		std::vector<std::vector<int> >& query_points = *config.query_points;
 		for(i = 0; i < query_points.size(); ++i)
 		{
-			query q(table);
+			query q(table, i);
 
 			for(j = 0; j < query_points[i].size(); ++j){
 

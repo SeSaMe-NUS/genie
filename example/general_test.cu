@@ -66,7 +66,7 @@ void read_query(inv_table& table,
 
 			vector<string> nstring = split(line, ", ");
 			int i;
-			query q(table);
+			query q(table, j);
 			for(i = 0; i < nstring.size() && i<num_of_query_dims; ++i){
 				string myString = eraseSpace(nstring[i]);
 				//cout<<"my string"<<myString<<endl;
@@ -117,7 +117,6 @@ void match_test(inv_table& table,
 	  totalstart = timestart = getTime();
 	  printf("Start creating query...\n");
 
-	  query q(table);
 	  //printf("filename is %s.\n", dfname);
 	  read_query(table, dfname, queries, num_of_queries, num_of_query_dims, radius, DEFAULT_TOP_K, selectivity);
 

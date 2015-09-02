@@ -6,22 +6,24 @@
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-GaLG::query::query(inv_table* ref)
+GaLG::query::query(inv_table* ref, int index)
 {
   _ref_table = ref;
   _attr_map.clear();
   _dim_map.clear();
   _topk = 1;
   _selectivity = -1.0f;
+  _index = index;
 }
 
-GaLG::query::query(inv_table& ref)
+GaLG::query::query(inv_table& ref, int index)
 {
   _ref_table = &ref;
   _attr_map.clear();
   _dim_map.clear();
   _topk = 1;
   _selectivity = -1.0f;
+  _index = index;
 }
 
 GaLG::inv_table*
@@ -36,19 +38,20 @@ GaLG::query::attr(int index, int low, int up, float weight)
   if (index < 0 || index >= _ref_table->m_size())
     return;
 
-  dim new_dim;
-  new_dim.low = low;
-  new_dim.up = up;
-  new_dim.weight = weight;
-  new_dim.dim = index;
+  range new_attr;
+  new_attr.low = low;
+  new_attr.up = up;
+  new_attr.weight = weight;
+  new_attr.dim = index;
+  new_attr.query = _index;
 
-  if(_attr.find(index) == _attr_map.end())
+  if(_attr_map.find(index) == _attr_map.end())
   {
-    std::vector<dim> new_range_list;
-    _attr_map[index] = &new_range_list;
+    std::vector<range>* new_range_list = new std::vector<range>;
+    _attr_map[index] = new_range_list;
   }
 
-  _attr_map[index]->push_back(new_dim);
+  _attr_map[index]->push_back(new_attr);
 }
 
 inline u64
@@ -165,38 +168,39 @@ GaLG::query::apply_adaptive_query_range()
 	if(_selectivity * table.i_size() - threshold > 0)
 		threshold += 1;
 
-	for(std::map<int, std::vector<dim>*>::iterator di = _attr_map.begin(); di < _attr_map.end(); ++di)
+	for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
 	{
-		std::vector<dim>& ranges = *(di->second);
-    int index = di->first;
-    for(int i = 0; i < ranges.size(); ++i)
-    {
-      dim& d = ranges[i];
-      int count = 0;
-      for(int vi = d.low; vi <= d.up; ++vi)
-      {
-        if(!lists[index].contains(vi)) continue;
-        count += lists[index].index(vi)->size();
-      }
-      while(count < threshold)
-      {
-        if(d.low > 0)
-        {
-          d.low --;
-          if(!lists[index].contains(d.low)) continue;
-          count += lists[index].index(d.low)->size();
-        }
+		std::vector<range>* ranges = di->second;
+		int index = di->first;
 
-        if(!lists[index].contains(d.up + 1))
-        {
-          if(d.low == 0) break;
-        } else
-        {
-          d.up++;
-          count += lists[index].index(d.up)->size();
-        }
-      }      
-    }
+		for(int i = 0; i < ranges->size(); ++i)
+		{
+			range& d = ranges->at(i);
+		  int count = 0;
+		  for(int vi = d.low; vi <= d.up; ++vi)
+		  {
+			if(!lists[index].contains(vi)) continue;
+			count += lists[index].index(vi)->size();
+		  }
+		  while(count < threshold)
+		  {
+			if(d.low > 0)
+			{
+			  d.low --;
+			  if(!lists[index].contains(d.low)) continue;
+			  count += lists[index].index(d.low)->size();
+			}
+
+			if(!lists[index].contains(d.up + 1))
+			{
+			  if(d.low == 0) break;
+			} else
+			{
+			  d.up++;
+			  count += lists[index].index(d.up)->size();
+			}
+		  }
+		}
 
 	}
 
@@ -219,10 +223,13 @@ GaLG::query::build()
 {
   int index, low, up;
   float weight;
-  for(std::map<int, std::vector<dim>*>::iterator di = _attr_map.begin(); di < _attr_map.end(); ++di)
+  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
   {
       int index = di->first;
-      std::vector<dim>& ranges = *(di->second);
+      std::vector<range>& ranges = *(di->second);
+      int d = index << _ref_table->shifter();
+      vector<inv_list>& inv_lists = *_ref_table->inv_lists();
+      inv_list& inv = inv_lists[index];
 
       if(ranges.empty())
       {
@@ -231,29 +238,26 @@ GaLG::query::build()
 
       if(_dim_map.find(index) == _dim_map.end())
       {
-        std::vector<dim> new_list;
-        _dim_map[index] = &new_list;
+        std::vector<dim>* new_list = new std::vector<dim>;
+        _dim_map[index] = new_list;
       }
 
       for(int i = 0; i < ranges.size(); ++i)
       {
-        dim& range = ranges[i];
-        low = range.low;
-        up = range.up;
-        weight = range.weight;
+
+    	range& ran = ranges[i];
+        low = ran.low;
+        up = ran.up;
+        weight = ran.weight;
 
         if (low > up || low > inv.max() || up < inv.min())
         {
           continue;
         }
 
-        int d = index << _ref_table->shifter();
-        vector<inv_list>& inv_lists = *_ref_table->inv_lists();
-        inv_list& inv = inv_lists[index];
-
         dim new_dim;
-        new_dim.dim = index;
         new_dim.weight = weight;
+        new_dim.query = _index;
 
         if (low < inv.min())
           {
@@ -268,7 +272,7 @@ GaLG::query::build()
         new_dim.low = d + low - inv.min();
         new_dim.up = d + up - inv.min();
 
-        _dim_map[index]->push_back(new_dim));
+        _dim_map[index]->push_back(new_dim);
       }
 
     }
@@ -281,10 +285,14 @@ GaLG::query::build_compressed()
   float weight;
   map<int, int>::iterator lower_bound;
 
-  for(std::map<int, std::vector<dim>*>::iterator di = _attr_map.begin(); di < _attr_map.end(); ++di)
+  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
   {
       int index = di->first;
-      std::vector<dim>& ranges = *(di->second);
+      std::vector<range>& ranges = *(di->second);
+
+      int d = index << _ref_table->shifter();
+      vector<inv_list>& inv_lists = *_ref_table->inv_lists();
+      inv_list& inv = inv_lists[index];
 
       if(ranges.empty())
       {
@@ -292,30 +300,25 @@ GaLG::query::build_compressed()
       }
       if(_dim_map.find(index) == _dim_map.end())
       {
-        std::vector<dim> new_list;
-        _dim_map[index] = &new_list;
+    	  std::vector<dim>* new_list = new std::vector<dim>;
+        _dim_map[index] = new_list;
       }
 
       for(int i = 0; i < ranges.size(); ++i)
       {
-        dim& range = ranges[i];            
-        low = range.low;
-        up = range.up;
-        weight = range.weight;
+    	  range& ran= ranges[i];
+        low = ran.low;
+        up = ran.up;
+        weight = ran.weight;
 
         if (low > up || low > inv.max() || up < inv.min())
         {
           continue;
         }
 
-        int d = index << _ref_table->shifter();
-        vector<inv_list>& inv_lists = *_ref_table->inv_lists();
-        inv_list& inv = inv_lists[index];
-
-        //_dims[index].weight = weight;
         dim new_dim;
-        new_dim.dim = index;
-        new_dim.weight = weight;//
+        new_dim.weight = weight;
+        new_dim.query = _index;
 
         if (low < inv.min())
           {
@@ -341,20 +344,22 @@ GaLG::query::build_compressed()
             continue;
           }
 
-        _dim_map[index]->push_back(new_dim));
+        _dim_map[index]->push_back(new_dim);
       }
     }
 }
 
-void
+int
 GaLG::query::dump(vector<dim>& vout)
 {
-  int i;
-  for(std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin(); di < _dim_map.end(); ++di)
+  int count = 0;
+  for(std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin(); di != _dim_map.end(); ++di)
   {
     std::vector<dim>& ranges = *(di->second);
+    count += ranges.size();
     vout.insert(vout.end(), ranges.begin(), ranges.end());
   }
+  return count;
 }
 
 void
@@ -362,16 +367,17 @@ GaLG::query::print(int limit)
 {
 	printf("This query has %d dimensions.\n", _attr_map.size());
   int count = limit;
-  if(count == 0) return;
-  for(std::map<int, std::vector<dim>*>::iterator di = _attr_map.begin(); di < _attr_map.end(); ++di)
+  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
   {
       int index = di->first;
-      std::vector<dim>& ranges = *(di->second);
-      for(int i = 0; i < ranges.size() && count; ++i, --count)
+      std::vector<range>& ranges = *(di->second);
+      for(int i = 0; i < ranges.size(); ++i)
       {
-        dim& d = ranges[i];
-        printf("dim %d: low %d, up %d, weight %.2f.\n",
-                d.dim,  d.low,  d.up,  d.weight);
+    	  if(count == 0) return;
+    	  if(count > 0) count --;
+    	  range& d = ranges[i];
+        printf("dim %d from query %d: low %d, up %d, weight %.2f.\n",
+                d.dim,       d.query,  d.low,  d.up,  d.weight);
       }
   }
 }
