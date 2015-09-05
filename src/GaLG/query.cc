@@ -137,7 +137,7 @@ void
 GaLG::query::selectivity(float s)
 {
 	if(s > 0) _selectivity = s;
-	else printf("Please choose a selectivity greater than 0.\n");
+	//else printf("Please choose a selectivity greater than 0.\n");
 }
 
 float
@@ -363,7 +363,7 @@ GaLG::query::dump(vector<dim>& vout)
     	vout.push_back(ranges[i]);
     }
   }
-  printf("Query %d: Total number of dims dumped: %d.\n", _index, count);
+  //printf("Query %d: Total number of dims dumped: %d.\n", _index, count);
   return count;
 }
 
