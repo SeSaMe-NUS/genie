@@ -470,11 +470,23 @@ GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>
 	  queries[i].dump(dims);
 	}
 }
-
 void
 GaLG::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
+            int hash_table_size,
+            int bitmap_bits,
+            int num_of_hot_dims,
+            int hot_dim_threshold)
+{
+	device_vector<u32> d_bitmap;
+	match(table, queries,d_data,d_bitmap,hash_table_size,bitmap_bits,num_of_hot_dims,hot_dim_threshold);
+}
+void
+GaLG::match(inv_table& table,
+            vector<query>& queries,
+            device_vector<data_t>& d_data,
+            device_vector<u32>& d_bitmap,
             int hash_table_size,
             int bitmap_bits,
             int num_of_hot_dims,
@@ -564,7 +576,7 @@ try{
 	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
 	cudaMemGetInfo(&free_q_after, &total_m);
 
-	device_vector<u32> d_bitmap(bitmap_size);
+	d_bitmap.resize(bitmap_size);
 	cudaMemGetInfo(&free_bitmap_after, &total_m);
 	if(bitmap_size)
 	{
@@ -685,7 +697,7 @@ try{
 //  host_vector<data_t> h_data(d_data);
 //  for(int i = 0; i < hash_table_size; ++i)
 //  {
-//	  printf("%d %f\n", h_data[i].id, h_data[i].aggregation);
+//	  printf("%d %d\n", h_data[i].id, int(h_data[i].aggregation));
 //  }
 #ifdef DEBUG
   printf("[100%] Matching is done!\n");
@@ -715,7 +727,6 @@ try{
 	throw MemException("Unknown error!");
 }
 }
-
 void
 GaLG::match(inv_table& table,
             query& queries,
@@ -727,5 +738,20 @@ GaLG::match(inv_table& table,
 {
   vector<query> _q;
   _q.push_back(queries);
-  match(table, _q, d_data, hash_table_size, bitmap_bits, num_of_hot_dims,hot_dim_threshold);
+  device_vector<u32> d_bitmap;
+  match(table, _q, d_data,d_bitmap, hash_table_size, bitmap_bits, num_of_hot_dims,hot_dim_threshold);
+}
+void
+GaLG::match(inv_table& table,
+            query& queries,
+            device_vector<data_t>& d_data,
+            device_vector<u32>& d_bitmap,
+            int hash_table_size,
+            int bitmap_bits,
+            int num_of_hot_dims,
+            int hot_dim_threshold)
+{
+  vector<query> _q;
+  _q.push_back(queries);
+  match(table, _q, d_data,d_bitmap, hash_table_size, bitmap_bits, num_of_hot_dims,hot_dim_threshold);
 }

@@ -66,7 +66,7 @@ int main(int argc, char * argv[])
 	std::vector<std::vector<int> > data;
 	inv_table table;
 	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", -1);
-	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", 1250);
+	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", 1);
 	GaLG::GaLG_Config config;
 	config.dim = 1;
 	config.count_threshold = 0;

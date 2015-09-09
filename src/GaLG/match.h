@@ -85,10 +85,19 @@ namespace GaLG
    * @throw inv_table::not_builded_exception if the table has not been builded.
    * @throw inv_table::not_matched_exception if the query is not querying the given table.
    */
+	void
+	match(inv_table& table,
+		  vector<query>& queries,
+		  device_vector<data_t>& d_data,
+		  int hash_table_size,
+		  int bitmap_bits,
+		  int num_of_hot_dims,
+		  int hot_dim_threshold);
   void
   match(inv_table& table,
         vector<query>& queries,
         device_vector<data_t>& d_data,
+        device_vector<u32>& d_bitmap,
         int hash_table_size,
         int bitmap_bits,
         int num_of_hot_dims,
@@ -113,11 +122,19 @@ namespace GaLG
   match(inv_table& table,
         query& queries,
         device_vector<data_t>& d_data,
+        device_vector<u32>& d_bitmap,
         int hash_table_size,
         int bitmap_bits,
         int num_of_hot_dims,
         int hot_dim_threshold);
-
+  void
+  match(inv_table& table,
+		query& queries,
+		device_vector<data_t>& d_data,
+		int hash_table_size,
+		int bitmap_bits,
+		int num_of_hot_dims,
+		int hot_dim_threshold);
   void
   build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims);
 

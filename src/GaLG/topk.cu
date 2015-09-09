@@ -188,7 +188,7 @@ GaLG::topk_tweets(GaLG::inv_table& table,
 	  if(count > qmax)
 		  qmax = count;
   }
-  topk(d_data, queries, d_top_indexes, float(qmax));
+  topk(d_data, queries, d_top_indexes, float(qmax+1));
   cudaCheckErrors(cudaDeviceSynchronize());
   printf("Topk Finished! \n");
 
@@ -215,19 +215,18 @@ GaLG::topk(GaLG::inv_table& table,
 
   printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
   device_vector<data_t> d_data;
+  device_vector<u32> d_bitmap;
+  device_vector<u32> d_augmented_bitmap;
   try{
-  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);
-  cudaCheckErrors(cudaDeviceSynchronize());
-
-
-  printf("Start topk....\n");
-  topk(d_data, queries, d_top_indexes, float(dim));
-  cudaCheckErrors(cudaDeviceSynchronize());
-  printf("Topk Finished! \n");
-
-  extract_index<<<d_top_indexes.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
-		  	   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
-  cudaCheckErrors(cudaDeviceSynchronize());
+	  match(table, queries, d_data, d_bitmap, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);
+	  cudaCheckErrors(cudaDeviceSynchronize());
+	  printf("Start topk....\n");
+	  topk(d_data, queries, d_top_indexes, float(dim));
+	  cudaCheckErrors(cudaDeviceSynchronize());
+	  printf("Topk Finished! \n");
+	  extract_index<<<d_top_indexes.size() / GaLG_topk_THREADS_PER_BLOCK + 1, GaLG_topk_THREADS_PER_BLOCK>>>
+				   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
+	  cudaCheckErrors(cudaDeviceSynchronize());
   }catch(MemException& e){
 	  printf("%s.\n", e.what());
 	  printf("Please try again with smaller data/query/hashtable size.\n");
