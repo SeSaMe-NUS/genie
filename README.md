@@ -44,7 +44,6 @@ The exaple also gives an comprehensive description about the parameter.
 
 How to use the library is also shown in the the file /example/makefile
 
-### Author
-Jingbo Zhou
-2015.09.10
+### log
+2015.09.10, add running example
 
