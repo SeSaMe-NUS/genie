@@ -16,3 +16,18 @@ After compiling, you can go to folder "example", and type "make". Some running e
 You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater than version 2.8 and cuda 7.
 
 To install the libGaLG, directlly call the install script, `install.sh`.
+
+
+### Running example
+You can see a running example in the folder "example" 
+In the "example" folder, just command:
+```make'''
+and then command
+``` ./example_bin '''
+You can see the query results based on the data file "sift_1k.csv". 
+The exaple also gives an comprehensive description about the parameter. 
+
+### Author
+Jingbo Zhou
+2015.09.10
+

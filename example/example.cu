@@ -1,3 +1,9 @@
+/**
+*example clean and format by jingbo
+description: create a running example fo the library. 
+2015.09.10
+*/
+
 #include "GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,41 +66,8 @@ void read_file(vector<vector<int> >& dest,
 	ifile.close();
 }
 
-int main(int argc, char * argv[])
-{
-	std::vector<std::vector<int> > queries;
-	std::vector<std::vector<int> > data;
-	inv_table table;
-	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", -1);
-	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/tweets.csv", 1250);
-	GaLG::GaLG_Config config;
-	config.dim = 1;
-	config.count_threshold = 0;
-	config.hashtable_size = 1.0f;
-	config.num_of_topk = 100;
-	config.query_radius = 0;
-	config.use_device = 1;
-	config.num_of_hot_dims = 0;
-	config.hot_dim_threshold = 0;
-	config.use_adaptive_range = false;
-	config.selectivity = 0.0f;
-	config.data_points = &data;
-	config.query_points = &queries;
-	std::vector<int> result;
-	printf("Launching knn functions...\n");
-	GaLG::knn_search_tweets(result, config);
-	for(int i = 0; i < 10 && i < queries.size(); ++i)
-	{
-		printf("Query %d result is: \n\t", i);
-		for (int j = 0; j < 10; ++j)
-		{
-			printf("%d, ", result[i * config.num_of_topk + j]);
-		}
-		printf("\n");
-	}
-}
 
-int main2(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
@@ -103,13 +76,15 @@ int main2(int argc, char * argv[])
 	//Reading file from the disk. Alternatively, one can simply use vectors generated from other functions
 	//Example vectors:
 	//Properties: 10 points, 5 dimensions, value range 0-255, -1 for excluded dimensions.
-	//|index|dim0|dim1|dim2|dim3|dim4|
+	//|id|dim0|dim1|dim2|dim3|dim4|
 	//|0	|2	 |255 |16  |0   |-1  |
 	//|1	|10	 |-1  |52  |62  |0   |
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
-	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", -1);
-	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 100);
+	int queryNum = 5;
+	read_file(data, "sift_1k.csv", -1);
+	//read queries from file, which has the same format 
+	read_file(queries, "sift_1k.csv", queryNum);
 
 	/*** Configuration of KNN Search ***/
 	GaLG::GaLG_Config config;
@@ -130,7 +105,7 @@ int main2(int argc, char * argv[])
 
 	//Number of topk items desired for each query. (NOT GUARANTEED!)
 	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 100;
+	config.num_of_topk = 3;
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
@@ -158,7 +133,7 @@ int main2(int argc, char * argv[])
 	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
-	config.selectivity = 0.004;
+	config.selectivity = 0.04;
 
 	//The pointer to the vector containing the data.
 	config.data_points = &data;
@@ -211,12 +186,12 @@ int main2(int argc, char * argv[])
 	printf("Launching knn functions...\n");
 	GaLG::knn_search(result, config);
 
-	for(int i = 0; i < 10; ++i)
+	for(int i = 0; i < queryNum; ++i)
 	{
 		printf("Query %d result is: \n\t", i);
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < config.num_of_topk; ++j)
 		{
-			printf("%d, ", result[i * 100 + j]);
+			printf("%d, ", result[i * config.num_of_topk + j]);
 		}
 		printf("\n");
 	}
