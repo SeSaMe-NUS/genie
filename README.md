@@ -22,8 +22,12 @@ To install the libGaLG, directlly call the install script, `install.sh`.
 You can see a running example in the folder "example" 
 In the "example" folder, just command:
 ```make'''
+
 and then command
+
 ``` ./example_bin '''
+
+
 You can see the query results based on the data file "sift_1k.csv". 
 The exaple also gives an comprehensive description about the parameter. 
 
