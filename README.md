@@ -23,12 +23,14 @@ You can see a running example in the folder "example"
 In the "example" folder, just command:
 
 ```cpp
-make'''
+make
+```
 
 and then command
 
-```cpp
- ./example_bin '''
+```
+ ./example_bin
+```
 
 
 You can see the query results based on the data file "sift_1k.csv". 
