@@ -9,6 +9,7 @@
 #include <GaLG/topk.h>
 #include <GaLG/parser/parser.h>
 #include <GaLG/interface.h>
+#include <GaLG/knn.h>
 
 extern bool GALG_ERROR;
 extern unsigned long long GALG_TIME;

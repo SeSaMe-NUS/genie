@@ -229,7 +229,7 @@ void GaLG::knn_search(inv_table& table,
 	printf("Starting knn search...\n");
 	//printf("KNN Pre-condition Check: print query 0\n");
 	//queries[0].print();
-	GaLG::topk_tweets(table,
+	GaLG::knn_tweets(table,
 			   queries,
 			   d_topk,
 			   hashtable_size,

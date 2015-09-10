@@ -14,6 +14,7 @@
 #include "query.h"
 #include "match.h"
 #include "topk.h"
+#include "knn.h"
 #include <vector>
 
 #define GALG_DEFAULT_TOPK 10
