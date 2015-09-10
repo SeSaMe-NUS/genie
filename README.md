@@ -7,7 +7,13 @@ libGaLG is a fast GPU inverted list searching library. It builds the database fr
 
 You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater tha nversion 2.8 and cuda 7.
 
-To compile the program, just type "make". The library will be generated within the folder "build"
+To compile the program, just type 
+
+```
+make
+```
+
+The library will be generated within the folder "build"
 
 After compiling, you can go to folder "example", and type "make". Some running examples will be compiled fnd generated for testing.
 
@@ -35,6 +41,8 @@ and then command
 
 You can see the query results based on the data file "sift_1k.csv". 
 The exaple also gives an comprehensive description about the parameter. 
+
+How to use the library is also shown in the the file /example/makefile
 
 ### Author
 Jingbo Zhou
