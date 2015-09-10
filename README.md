@@ -25,10 +25,11 @@ To install the libGaLG, directlly call the install script, `install.sh`.
 
 
 ### Running example
-You can see a running example in the folder "example" 
-In the "example" folder, just command:
+You can see a running example in the folder "example".
+Just command:
 
 ```cpp
+cd example
 make
 ```
 
