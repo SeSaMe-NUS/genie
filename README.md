@@ -21,11 +21,14 @@ To install the libGaLG, directlly call the install script, `install.sh`.
 ### Running example
 You can see a running example in the folder "example" 
 In the "example" folder, just command:
-```make'''
+
+```cpp
+make'''
 
 and then command
 
-``` ./example_bin '''
+```cpp
+ ./example_bin '''
 
 
 You can see the query results based on the data file "sift_1k.csv". 
