@@ -13,6 +13,9 @@ using namespace thrust;
 
 namespace GaLG
 {
+
+	int
+	calculate_bits_per_data(int bitmap_bits);
   /**
    * @brief Find the top k values in given device_vector.
    * @details Find the top k values in given device_vector.
@@ -39,6 +42,12 @@ namespace GaLG
   void
   topk(device_vector<data_t>& d_search, vector<query>& queries,
       device_vector<int>& d_top_indexe, float dim);
+  void
+  topk(device_vector<u32>& d_search,
+       vector<GaLG::query>& queries,
+       device_vector<int>& d_top_indexes,
+       u32 dim);
+
   /**
    * @brief Find the top k values in given device_vector.
    * @details Find the top k values in given device_vector.
@@ -65,6 +74,11 @@ namespace GaLG
   void
   topk(device_vector<data_t>& d_search, device_vector<int>& d_tops,
       device_vector<int>& d_top_indexes, float dim);
+  void
+  topk(device_vector<u32>& d_search,
+       device_vector<int>& d_tops,
+       device_vector<int>& d_top_indexes,
+       u32 dim);
 }
 
 #endif

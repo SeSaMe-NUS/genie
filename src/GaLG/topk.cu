@@ -13,6 +13,14 @@ struct ValueOfFloat
     return (float) max - data;
   }
 };
+struct ValueOfU32
+{
+  u32 max;__host__ __device__ u32
+  valueOf(u32 data)
+  {
+    return (u32) max - data;
+  }
+};
 
 struct ValueOfData
 {
@@ -68,6 +76,22 @@ GaLG::topk(device_vector<data_t>& d_search,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   float dim)
+{
+  host_vector<int> h_tops(queries.size());
+  int i;
+  for (i = 0; i < queries.size(); i++)
+    {
+      h_tops[i] = queries[i].topk();
+    }
+  device_vector<int> d_tops(h_tops);
+  topk(d_search, d_tops, d_top_indexes, dim);
+}
+
+void
+GaLG::topk(device_vector<u32>& d_search,
+       vector<GaLG::query>& queries,
+       device_vector<int>& d_top_indexes,
+       u32 dim)
 {
   host_vector<int> h_tops(queries.size());
   int i;
@@ -177,4 +201,39 @@ GaLG::topk(device_vector<data_t>& d_search,
   bucket_topk<data_t, ValueOfData>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
 }
+void
+GaLG::topk(device_vector<u32>& d_search,
+       device_vector<int>& d_tops,
+       device_vector<int>& d_top_indexes,
+       u32 dim)
+{
 
+  if(d_tops.size() == 0)
+  {
+    printf("Error: No query found! Program aborted...\n");
+    exit(1);
+  }
+  int parts = d_tops.size();
+  int total = 0, i, num;
+  u32 minval = 0u, maxval = dim;
+  for (i = 0; i < parts; i++)
+    {
+      num = d_tops[i];
+      total += num;
+    }
+
+  host_vector<int> h_end_index(parts);
+  device_vector<int> d_end_index(parts);
+
+  int number_of_each = d_search.size() / parts;
+  for (i = 0; i < parts; i++)
+    {
+      h_end_index[i] = (i + 1) * number_of_each;
+    }
+  d_end_index = h_end_index;
+  d_top_indexes.clear(), d_top_indexes.resize(total);
+  ValueOfU32 val;
+  val.max = maxval;
+  bucket_topk<u32, ValueOfU32>(&d_search, val, minval,
+      maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
+}
