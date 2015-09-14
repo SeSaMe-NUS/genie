@@ -142,8 +142,16 @@ GaLG::knn_tweets(GaLG::inv_table& table,
 	  if(count > qmax)
 		  qmax = count;
   }
+#ifdef GALG_DEBUG
+  u64 start = getTime();
+#endif
   knn(table, queries, d_top_indexes, hash_table_size, bitmap_bits,
 		  	  float(qmax+1), num_of_hot_dims, hot_dim_threshold);
+#ifdef GALG_DEBUG
+  u64 end = getTime();
+  double elapsed = getInterval(start, end);
+  printf(">>>>>>> knn takes %fms <<<<<< \n", elapsed);
+#endif
 }
 void
 GaLG::knn(GaLG::inv_table& table,

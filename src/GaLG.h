@@ -4,9 +4,9 @@
 extern bool GALG_ERROR;
 extern unsigned long long GALG_TIME;
 
-//#ifndef GALG_DEBUG
-//#define GALG_DEBUG
-//#endif
+#ifndef GALG_DEBUG
+#define GALG_DEBUG
+#endif
 
 //#if defined(GALG_DEBUG) && !defined(DEBUG_VERBOSE)
 //#define DEBUG_VERBOSE

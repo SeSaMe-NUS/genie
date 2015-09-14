@@ -60,7 +60,7 @@ void read_file(vector<vector<int> >& dest,
 	ifile.close();
 }
 
-int main2(int argc, char * argv[])
+int main_tweets(int argc, char * argv[])
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
@@ -110,7 +110,7 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", -1);
-	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 1000);
+	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 5000);
 //	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/test2.csv", -1);
 //	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/test2.csv", 1);
 	/*** Configuration of KNN Search ***/
@@ -122,17 +122,17 @@ int main(int argc, char * argv[])
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 16;
+	config.count_threshold = 48;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
 	//If set too small, the program will attempt to increase the size by 0.1f as many times
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
-	config.hashtable_size = 0.001f;
+	config.hashtable_size = 0.05f;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 100;
+	config.num_of_topk = 10;
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
@@ -160,7 +160,7 @@ int main(int argc, char * argv[])
 	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
-	config.selectivity = 0.004;
+	config.selectivity = 0.004f;
 
 	//The pointer to the vector containing the data.
 	config.data_points = &data;

@@ -258,9 +258,6 @@ void GaLG::knn_search(inv_table& table,
 		config.use_device = GALG_DEFAULT_DEVICE;
 	}
 	cudaSetDevice(config.use_device);
-	cudaDeviceReset();
-	cudaDeviceSynchronize();
-
 #ifdef GALG_DEBUG
 	printf("Using device %d...\n", config.use_device);
 	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
