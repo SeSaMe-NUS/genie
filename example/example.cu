@@ -110,8 +110,9 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", -1);
-	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 10);
-
+	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/sift/sift_100k.csv", 1000);
+//	read_file(data, "/media/hd1/home/luanwenhao/TestData2Wenhao/test2.csv", -1);
+//	read_file(queries, "/media/hd1/home/luanwenhao/TestData2Wenhao/test2.csv", 1);
 	/*** Configuration of KNN Search ***/
 	GaLG::GaLG_Config config;
 
@@ -121,13 +122,13 @@ int main(int argc, char * argv[])
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 16;
+	config.count_threshold = 0;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
 	//If set too small, the program will attempt to increase the size by 0.1f as many times
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
-	config.hashtable_size = 0.2f;
+	config.hashtable_size = 0.001f;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
@@ -156,7 +157,7 @@ int main(int argc, char * argv[])
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched
 	//for each dimension.
-	config.use_adaptive_range = false;
+	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 	config.selectivity = 0.004;
@@ -210,9 +211,13 @@ int main(int argc, char * argv[])
 	std::vector<int> result;
 
 	printf("Launching knn functions...\n");
+	u64 start = getTime();
 	GaLG::knn_search(result, config);
+	u64 end = getTime();
+	double elapsed = getInterval(start, end);
+	printf(">>>>>>> Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
-	for(int i = 0; i < queries.size(); ++i)
+	for(int i = 0; i < 3 && i < queries.size(); ++i)
 	{
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < config.num_of_topk; ++j)

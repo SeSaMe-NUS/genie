@@ -66,7 +66,7 @@ typedef struct data_{
 } data_t;
 
 u64 getTime();
-float getInterval(u64 t1, u64 t2);
+double getInterval(u64 t1, u64 t2);
 namespace GaLG
 {
 
