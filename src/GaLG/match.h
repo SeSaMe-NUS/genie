@@ -1,8 +1,7 @@
 #ifndef GaLG_match_h
 #define GaLG_match_h
 
-#include "inv_table.h"
-#include "query.h"
+#include "../GaLG.h"
 #include <stdint.h>
 
 #include <thrust/device_vector.h>
@@ -58,12 +57,6 @@ inline cudaError checkAndMalloc(void ** to, u64 bytes)
 	return cudaMalloc(to, bytes);
 }
 
-
-
-typedef struct data_{
-  u32 id;
-  float aggregation;
-} data_t;
 
 u64 getTime();
 double getInterval(u64 t1, u64 t2);

@@ -1,9 +1,7 @@
 #ifndef GaLG_topk_h
 #define GaLG_topk_h
 
-#include "inv_table.h"
-#include "query.h"
-#include "match.h"
+#include "../GaLG.h"
 
 #include <vector>
 #include <thrust/device_vector.h>

@@ -8,13 +8,7 @@
 #ifndef INTERFACE_H_
 #define INTERFACE_H_
 
-#include "raw_data.h"
-#include "inv_list.h"
-#include "inv_table.h"
-#include "query.h"
-#include "match.h"
-#include "topk.h"
-#include "knn.h"
+#include "../GaLG.h"
 #include <vector>
 
 #define GALG_DEFAULT_TOPK 10

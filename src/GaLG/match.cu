@@ -8,22 +8,15 @@
 #include <sstream>
 #include <stdlib.h>
 #include <math.h>
-#ifndef GaLG_device_THREADS_PER_BLOCK_TEST
-#define GaLG_device_THREADS_PER_BLOCK_TEST GaLG_device_THREADS_PER_BLOCK
-#endif
+
 #ifndef GaLG_device_THREADS_PER_BLOCK
 #define GaLG_device_THREADS_PER_BLOCK 256
 #endif
-
-
 
 #define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
 
 #define NULL_AGE 0
 #define MAX_AGE 16u
-
-#define DEBUG
-//#define DEBUG_VERBOSE
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -31,16 +24,16 @@ typedef u32 T_AGE;
 
 u64 getTime()
 {
- struct timeval tv;
+	struct timeval tv;
 
- gettimeofday(&tv, NULL);
+	gettimeofday(&tv, NULL);
 
- u64 ret = tv.tv_usec;
+	u64 ret = tv.tv_usec;
 
- /* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
- ret += (tv.tv_sec * 1000 * 1000);
+	/* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
+	ret += (tv.tv_sec * 1000 * 1000);
 
- return ret;
+	return ret;
 }
 
 double getInterval(u64 start, u64 stop)
@@ -121,7 +114,24 @@ namespace GaLG
         	b[31-i] = ((data >> i) & 1) == 1 ? '1' : '0';
         b[32] = '\0';
     }
-    
+
+    __device__ __host__ __inline__
+    u32
+    get_count(u32 data, int offset, int bits)
+    {
+    	return (data >> offset) & ((1u << bits) - 1u);
+    }
+
+    __device__ __host__ __inline__
+    u32
+    pack_count(u32 data, int offset, int bits, u32 count)
+    {
+    	u32 r;
+    	r = data & (~(((1u << bits) - 1u) << offset));
+    	r |= (count << offset);
+    	return r;
+    }
+
     __inline__ __device__
     void
     access_kernel(u32 id,
@@ -141,15 +151,7 @@ namespace GaLG
 #endif
       while(1)
       {
-
-          if(location >= hash_table_size)
-          {
-        	  //printf("[b%dt%d]a1 Trying to access %u. Denied.\n", blockIdx.x, threadIdx.x,location);
-        	  return;
-          }
-          //printf("[b%dt%d]a2 Trying to access %u.\n", blockIdx.x, threadIdx.x,location);
           out_key = htable[location];
-          //printf("[b%dt%d]a2 Trying to access %u. success\n", blockIdx.x, threadIdx.x,location);
 
           if(get_key_pos(out_key) == id
           		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
@@ -174,22 +176,10 @@ namespace GaLG
           }
       }
 
-      //Key at root location is packed with its max age
-      // in its hashing sequence.
-
-      //Loop until MAX_AGE
       while(age < MAX_AGE){
     	age ++;
         location = hash(id, age, hash_table_size);
-
-        if(location >= hash_table_size)
-        {
-          //printf("[b%dt%d]a3 Trying to access %u. Denied.\n", blockIdx.x, threadIdx.x,location);
-      	  return;
-        }
-        //printf("[b%dt%d]a4 Trying to access %u.\n", blockIdx.x, threadIdx.x,location);
         out_key = htable[location];
-        //printf("[b%dt%d]a4 Trying to access %u. success\n", blockIdx.x, threadIdx.x,location);
 
 #ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
@@ -220,13 +210,10 @@ namespace GaLG
             	continue;
             }
         }
-
-
       }
       
-      //Entry not found. Return NULL key.
+      //Entry not found.
       * key_found = 0;
-      
     }
     
     
@@ -248,36 +235,21 @@ namespace GaLG
       T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
                                                    *reinterpret_cast<u32*>(&(q.weight)),
                                                    KEY_TYPE_INIT_AGE);
-
       //Loop until MAX_AGE
       while(age < MAX_AGE){
-    	//printf(">>>[b%d]0 age %d \n",blockIdx.x, age);
+
         //evict key at current age-location
         //Update it if the to-be-inserted key is of a larger age
         location = hash(get_key_pos(key), age, hash_table_size);
-        if(location >= hash_table_size)
-        {
-        	//printf("[b%dt%d]h1 Trying to access %u. Denied.\n", blockIdx.x, threadIdx.x,location);
-        	return;
-        }
-
         while(1)
         {
         	if(*my_noiih > hash_table_size)
         	{
-        		//printf("[b%dt%d] my_noiih %u. Exited.\n", blockIdx.x, threadIdx.x,*my_noiih);
         		*overflow = true;
         		return;
         	}
-        	if(location >= hash_table_size)
-        	{
-        		//printf("[b%dt%d]h2 Trying to access %u. Denied.\n", blockIdx.x, threadIdx.x,location);
-        		return;
-        	}
-        	 //printf("[b%dt%d]h3 Trying to access %u.\n", blockIdx.x, threadIdx.x,location);
-        	//printf(">>>[b%d]w0 age %d \n", blockIdx.x,age);
+
         	peek_key = htable[location];
-        	// printf("[b%dt%d]h3 Trying to access %u, success.\n", blockIdx.x, threadIdx.x,location);
         	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)
         	{
         		u32 old_value_1 = get_key_attach_id(peek_key);
@@ -289,25 +261,21 @@ namespace GaLG
         		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
         																 *reinterpret_cast<u32*>(&old_value_plus),
         																 get_key_age(peek_key));
-        		//printf(">>>[b%d]w1 age %d, loc %u \n", blockIdx.x,age, location);
         		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
         		{
-        			//printf(">>>[b%d]wA age %d, loc %u \n", blockIdx.x,age, location);
 #ifdef DEBUG_VERBOSE
         			old_value_1 = get_key_attach_id(htable[location]);
         			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
 #endif
         			return;
         		} else {
-        			//printf(">>>[b%d]wB age %d, loc %u \n",blockIdx.x, age, location);
         			continue;
         		}
         	}
-        	//printf(">>>[b%d]w2 age %d \n", blockIdx.x,age);
+
         	if(get_key_age(peek_key) < get_key_age(key))
         	{
         		evicted_key = atomicCAS(&htable[location], peek_key, key);
-        		//printf(">>[b%d]>w3 age %d \n", blockIdx.x,age);
         		if(evicted_key != peek_key)
         			continue;
                 if(get_key_age(evicted_key) > 0u)
@@ -323,12 +291,9 @@ namespace GaLG
                 	{
                 		*overflow = true;
                 		atomicAdd(my_noiih, 1u);
-                		//printf("[b%dt%d] overflow! mynoiih: %u.\n",blockIdx.x, threadIdx.x,*my_noiih);
                 		return;
                 	} else{
-                		//printf(">>>[b%d]w4 age %d \n",blockIdx.x, age);
                 		atomicAdd(my_noiih, 1u);
-                		//printf(">>>[b%d]w5 age %d \n",blockIdx.x, age);
                 	}
 
 #ifdef DEBUG_VERBOSE
@@ -350,7 +315,6 @@ namespace GaLG
         	}
         	else
         	{
-        		//printf(">>>[b%d]w6 age %d \n", blockIdx.x,age);
                 age++;
                 key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
                 break;
@@ -358,28 +322,10 @@ namespace GaLG
         }
 
       }
-      u32 attachid = get_key_attach_id(key);
+      //u32 attachid = get_key_attach_id(key);
       //printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
       *overflow = true;
       return;
-    }
-    
-
-    __device__ __host__ __inline__
-    u32
-    get_count(u32 data, int offset, int bits)
-    {
-    	return (data >> offset) & ((1u << bits) - 1u);
-    }
-
-    __device__ __host__ __inline__
-    u32
-    pack_count(u32 data, int offset, int bits, u32 count)
-    {
-    	u32 r;
-    	r = data & (~(((1u << bits) - 1u) << offset));
-    	r |= (count << offset);
-    	return r;
     }
 
     __device__ __inline__
@@ -438,11 +384,7 @@ namespace GaLG
           bool * overflow)
     {
       if(m_size == 0 || i_size == 0) return;
-
-      //printf("[b%dt%d] Init match...\n", blockIdx.x, threadIdx.x);
       query::dim& q = d_dims[blockIdx.x];
-//      if(threadIdx.x == 0)
-//    	  printf("block %d: query %d, low %d, up %d.\n", blockIdx.x, q.query, q.low, q.up);
       int query_index = q.query;
       u32* my_noiih = &noiih[query_index];
       
@@ -462,13 +404,12 @@ namespace GaLG
 
       bool key_eligible;
 
-      for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK_TEST + 1; i++)
+      for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
         {
-    	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK_TEST + min;
+    	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min;
           if (tmp_id < max)
-            { //printf("[b%dt%d] loop: %d...tmp_id %u before bitmap\n", blockIdx.x, threadIdx.x, i,tmp_id);
+            {
               access_id = d_inv[tmp_id];
-              //printf("[b%dt%d] loop: %d...tmp_id %u id %u before bitmap\n", blockIdx.x, threadIdx.x, i,tmp_id, access_id);
               if(bitmap_bits){
             	  key_eligible = false;
                   bitmap_kernel(access_id,
@@ -481,9 +422,9 @@ namespace GaLG
 
                   if( !key_eligible ) continue;
               }
+
               key_eligible = false;
               //Try to find the entry in hash tables
-              //printf("[b%dt%d] loop: %d...id %u before access\n", blockIdx.x, threadIdx.x, i,access_id);
               access_kernel(access_id,
                             hash_table,
                             hash_table_size,
@@ -494,14 +435,12 @@ namespace GaLG
               {
                 //Insert the key into hash table
                 //access_id and its location are packed into a packed key
-            	 // printf("[b%dt%d] loop: %d...id %u before hash\n", blockIdx.x, threadIdx.x, i,access_id);
                 hash_kernel(access_id,
                             hash_table,
                             hash_table_size,
                             q,
                             my_noiih,
                             overflow);
-                //printf("[b%dt%d] loop: %d...id %u after hash:overflow %s\n", blockIdx.x, threadIdx.x, i, access_id,*overflow?"Yes":"No");
                 if(*overflow)
                 {
                 	return;
@@ -566,10 +505,8 @@ GaLG::match(inv_table& table,
             int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
-
-try{
+#ifdef GALG_DEBUG
 	printf("match.cu version : %s\n", VERSION);
-#ifdef DEBUG
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;
@@ -591,8 +528,9 @@ try{
 	vector<query::dim> hot_dims;
 	vector<query> hot_dims_queries;
 
+#ifdef GALG_DEBUG
 	printf("[Info]hash table size: %d.\n", hash_table_size);
-
+#endif
 	//TODO: Modify this to enable hot dim search
 //	if(num_of_hot_dims)
 //	{
@@ -608,8 +546,10 @@ try{
 //	printf("Host query size: %d.\n", queries.size());
 
   build_queries(queries, table, dims);
-  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
 
+#ifdef GALG_DEBUG
+  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
+#endif
 
   int total = table.i_size() * queries.size();
   int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
@@ -636,7 +576,7 @@ try{
   }
 
 
-#ifdef DEBUG
+#ifdef GALG_DEBUG
     printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
 	printf("[ 20%] Declaring device memory...\n");
 #endif
@@ -663,13 +603,13 @@ try{
 	}
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
+#ifdef GALG_DEBUG
 	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
 		  	free_ck_before - free_ck_after,
 		  	free_ck_after - free_inv_after ,
 		  	free_inv_after - free_q_after,
 		  	free_q_after- free_bitmap_after);
 
-#ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
@@ -680,21 +620,19 @@ try{
 	data_t* d_data_table;
 	d_data.clear();
 
-	d_data.resize(queries.size()*(hash_table_size+2));
+	d_data.resize(queries.size()*hash_table_size);
 	thrust::fill(d_data.begin(), d_data.end(), nulldata);
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
   
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   printf("[ 33%] Copying memory to symbol...\n");
 #endif
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
-  
   cudaCheckErrors(cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   printf("[ 40%] Starting match kernels...\n");
   cudaEventRecord(kernel_start);
 #endif
@@ -707,7 +645,7 @@ try{
 		h_overflow[0] = false;
 		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
 		cudaCheckErrors(cudaDeviceSynchronize());
-		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK_TEST>>>
+		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
 		(table.m_size(),
 		table.i_size(),
 		hash_table_size,
@@ -737,18 +675,17 @@ try{
 			{
 				thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
 			}
-			d_data.resize(queries.size()*(hash_table_size+2));
+			d_data.resize(queries.size()*hash_table_size);
 			thrust::fill(d_data.begin(), d_data.end(), nulldata);
 			d_data_table = thrust::raw_pointer_cast(d_data.data());
 			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 		}
+
+#ifdef GALG_DEBUG
 		printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+#endif
+
 	} while(h_overflow[0]);
-
-
-
-
-
 
 /* The following code snippet is to count the number of points in hash table
 	std::vector<T_HASHTABLE> temp_data;
@@ -798,21 +735,15 @@ try{
 	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
  * */
   
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting data converting......\n");
 #endif
-  cudaGetLastError();
-  //cudaCheckErrors(cudaDeviceSynchronize());
-  printf("before\n");
+
+  cudaCheckErrors(cudaDeviceSynchronize());
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
-  printf("after\n");
-//  host_vector<data_t> h_data(d_data);
-//  for(int i = 0; i < hash_table_size; ++i)
-//  {
-//	  printf("%d %d\n", h_data[i].id, int(h_data[i].aggregation));
-//  }
-#ifdef DEBUG
+
+#ifdef GALG_DEBUG
   printf("[100%] Matching is done!\n");
 
   match_stop = getTime();
@@ -823,20 +754,6 @@ try{
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
   printf("[Info] Match function takes %f ms.\n", getInterval(match_start, match_stop));
   printf("[Info] Match kernel takes %f ms.\n", kernel_elapsed);
-
   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
-} catch(thrust::system::system_error& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(std::bad_alloc& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(std::exception& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(...){
-	printf("Unknown error!\n");
-	throw MemException("Unknown error!");
-}
 }
