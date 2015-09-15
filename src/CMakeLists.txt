@@ -31,6 +31,8 @@ set(LIB_SRC_LIST
   GaLG/topk.cu
   GaLG/interface.h
   GaLG/interface.cu
+  GaLG/knn.h
+  GaLG/knn.cu
 
   GaLG/parser/parser.h
   GaLG/parser/csv.cc)

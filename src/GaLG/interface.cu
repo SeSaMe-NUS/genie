@@ -32,9 +32,9 @@ namespace GaLG
 	{
 		  inv_list list;
 		  u32 i,j;
-
-
+#ifdef GALG_DEBUG
 		  printf("Data row size: %d. Data Row Number: %d.\n", data_points[0].size(), data_points.size());
+#endif
 		  for(i = 0; i < data_points[0].size(); ++i)
 		  {
 			  std::vector<int> col;
@@ -48,7 +48,9 @@ namespace GaLG
 		  }
 
 		  table.build();
+#ifdef GALG_DEBUG
 		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+#endif
 	}
 
 	void
@@ -56,7 +58,9 @@ namespace GaLG
 				std::vector<query>& queries,
 				GaLG_Config& config)
 	{
+#ifdef GALG_DEBUG
 		printf("Table dim: %d.\n", table.m_size());
+#endif
 		u32 i,j;
 		int value;
 		int radius = config.query_radius;
@@ -87,15 +91,18 @@ namespace GaLG
 
 			queries.push_back(q);
 		}
+#ifdef GALG_DEBUG
 		printf("%d queries are created!\n", queries.size());
+#endif
 	}
 	void
 	load_query_tweets(inv_table& table,
 				std::vector<query>& queries,
 				GaLG_Config& config)
 	{
-
+#ifdef GALG_DEBUG
 		printf("Table dim: %d.\n", table.m_size());
+#endif
 		u32 i,j;
 		int value;
 		int radius = config.query_radius;
@@ -126,8 +133,11 @@ namespace GaLG
 
 			queries.push_back(q);
 		}
+#ifdef GALG_DEBUG
 		printf("%d queries are created!\n", queries.size());
+#endif
 	}
+
 	void
 	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points)
 	{
@@ -135,8 +145,11 @@ namespace GaLG
 	  list.invert_tweets(data_points);
 	  table.append(list);
 	  table.build();
+#ifdef GALG_DEBUG
 	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+#endif
 	}
+
 }
 void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
@@ -179,12 +192,24 @@ void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
+
+#ifdef GALG_DEBUG
 	printf("Building table...");
+#endif
+
 	load_table_tweets(table, *(config.data_points));
+
+#ifdef GALG_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
+#endif
+
 	load_query_tweets(table,queries,config);
+
+#ifdef GALG_DEBUG
 	printf("Done!\n");
+#endif
+
 	knn_search(table, queries, result, config);
 }
 
@@ -192,12 +217,24 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
+
+#ifdef GALG_DEBUG
 	printf("Building table...");
+#endif
+
 	load_table(table, *(config.data_points));
+
+#ifdef GALG_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
+#endif
+
 	load_query(table,queries,config);
+
+#ifdef GALG_DEBUG
 	printf("Done!\n");
+#endif
+
 	knn_search(table, queries, result, config);
 }
 
@@ -215,21 +252,25 @@ void GaLG::knn_search(inv_table& table,
 		exit(2);
 	} else if(device_count <= config.use_device)
 	{
+#ifdef GALG_DEBUG
 		printf("[Info] Device %d not found!", config.use_device);
+#endif
 		config.use_device = GALG_DEFAULT_DEVICE;
 	}
 	cudaSetDevice(config.use_device);
-	cudaDeviceReset();
-	cudaDeviceSynchronize();
+#ifdef GALG_DEBUG
 	printf("Using device %d...\n", config.use_device);
 	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
+#endif
+
 	hashtable_size = table.i_size() * config.hashtable_size + 1;
 	thrust::device_vector<int> d_topk;
 
+#ifdef GALG_DEBUG
 	printf("Starting knn search...\n");
-	//printf("KNN Pre-condition Check: print query 0\n");
-	//queries[0].print();
-	GaLG::topk_tweets(table,
+#endif
+
+	GaLG::knn_tweets(table,
 			   queries,
 			   d_topk,
 			   hashtable_size,
@@ -237,11 +278,13 @@ void GaLG::knn_search(inv_table& table,
 			   config.dim,
 			   config.num_of_hot_dims,
 			   config.hot_dim_threshold);
+
+#ifdef GALG_DEBUG
 	printf("knn search is done!\n");
-
 	printf("Topk obtained: %d in total.\n", d_topk.size());
-	h_topk.resize(d_topk.size());
+#endif
 
+	h_topk.resize(d_topk.size());
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
 }
 

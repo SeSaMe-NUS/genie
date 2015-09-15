@@ -18,30 +18,27 @@
 #define NULL_AGE 0
 #define MAX_AGE 16u
 
-#define DEBUG
-//#define DEBUG_VERBOSE
-
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
 
 u64 getTime()
 {
- struct timeval tv;
+	struct timeval tv;
 
- gettimeofday(&tv, NULL);
+	gettimeofday(&tv, NULL);
 
- u64 ret = tv.tv_usec;
+	u64 ret = tv.tv_usec;
 
- /* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
- ret += (tv.tv_sec * 1000 * 1000);
+	/* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
+	ret += (tv.tv_sec * 1000 * 1000);
 
- return ret;
+	return ret;
 }
 
-float getInterval(u64 start, u64 stop)
+double getInterval(u64 start, u64 stop)
 {
-	return ((float)(stop - start)) / 1000;
+	return ((double)(stop - start)) / 1000;
 }
 
 namespace GaLG
@@ -117,7 +114,24 @@ namespace GaLG
         	b[31-i] = ((data >> i) & 1) == 1 ? '1' : '0';
         b[32] = '\0';
     }
-    
+
+    __device__ __host__ __inline__
+    u32
+    get_count(u32 data, int offset, int bits)
+    {
+    	return (data >> offset) & ((1u << bits) - 1u);
+    }
+
+    __device__ __host__ __inline__
+    u32
+    pack_count(u32 data, int offset, int bits, u32 count)
+    {
+    	u32 r;
+    	r = data & (~(((1u << bits) - 1u) << offset));
+    	r |= (count << offset);
+    	return r;
+    }
+
     __inline__ __device__
     void
     access_kernel(u32 id,
@@ -162,15 +176,11 @@ namespace GaLG
           }
       }
 
-      //Key at root location is packed with its max age
-      // in its hashing sequence.
-
-      //Loop until MAX_AGE
       while(age < MAX_AGE){
     	age ++;
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
-        
+
 #ifdef DEBUG_VERBOSE
         printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
 #endif
@@ -200,13 +210,10 @@ namespace GaLG
             	continue;
             }
         }
-
-
       }
       
-      //Entry not found. Return NULL key.
+      //Entry not found.
       * key_found = 0;
-      
     }
     
     
@@ -215,33 +222,33 @@ namespace GaLG
     hash_kernel(u32 id,
                 T_HASHTABLE* htable,
                 int hash_table_size,
-                query::dim& q)
+                query::dim& q,
+                u32 * my_noiih,
+                bool * overflow)
     {
-
-      //u32 my_value = atomicAdd(value, 1);
-
 #ifdef DEBUG_VERBOSE
-      printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q->weight, id);
+      printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q.weight, id);
 #endif
-
-      //*value_index = my_value;
-      
       u32 location;
       T_HASHTABLE evicted_key, peek_key;
       T_AGE age = KEY_TYPE_NULL_AGE;
       T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
                                                    *reinterpret_cast<u32*>(&(q.weight)),
                                                    KEY_TYPE_INIT_AGE);
-
       //Loop until MAX_AGE
       while(age < MAX_AGE){
 
         //evict key at current age-location
         //Update it if the to-be-inserted key is of a larger age
         location = hash(get_key_pos(key), age, hash_table_size);
-
         while(1)
         {
+        	if(*my_noiih > hash_table_size)
+        	{
+        		*overflow = true;
+        		return;
+        	}
+
         	peek_key = htable[location];
         	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)
         	{
@@ -256,8 +263,8 @@ namespace GaLG
         																 get_key_age(peek_key));
         		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
         		{
-        			old_value_1 = get_key_attach_id(htable[location]);
 #ifdef DEBUG_VERBOSE
+        			old_value_1 = get_key_attach_id(htable[location]);
         			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
 #endif
         			return;
@@ -265,6 +272,7 @@ namespace GaLG
         			continue;
         		}
         	}
+
         	if(get_key_age(peek_key) < get_key_age(key))
         	{
         		evicted_key = atomicCAS(&htable[location], peek_key, key);
@@ -278,6 +286,16 @@ namespace GaLG
                 }
                 else
                 {
+
+                	if(*my_noiih >= hash_table_size)
+                	{
+                		*overflow = true;
+                		atomicAdd(my_noiih, 1u);
+                		return;
+                	} else{
+                		atomicAdd(my_noiih, 1u);
+                	}
+
 #ifdef DEBUG_VERBOSE
         			u32 old_value_1 = get_key_attach_id(htable[location]);
         			u64 keykey = htable[location];
@@ -304,26 +322,10 @@ namespace GaLG
         }
 
       }
-      u32 attachid = get_key_attach_id(key);
-      printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(attachid));
-    }
-    
-
-    __device__ __host__ __inline__
-    u32
-    get_count(u32 data, int offset, int bits)
-    {
-    	return (data >> offset) & ((1u << bits) - 1u);
-    }
-
-    __device__ __host__ __inline__
-    u32
-    pack_count(u32 data, int offset, int bits, u32 count)
-    {
-    	u32 r;
-    	r = data & (~(((1u << bits) - 1u) << offset));
-    	r |= (count << offset);
-    	return r;
+      //u32 attachid = get_key_attach_id(key);
+      //printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
+      *overflow = true;
+      return;
     }
 
     __device__ __inline__
@@ -377,13 +379,14 @@ namespace GaLG
           int bitmap_bits,
           int threshold,
           int num_of_hot_dims,
-          int hot_dim_threshold)
+          int hot_dim_threshold,
+          u32 * noiih,
+          bool * overflow)
     {
       if(m_size == 0 || i_size == 0) return;
       query::dim& q = d_dims[blockIdx.x];
-//      if(threadIdx.x == 0)
-//    	  printf("block %d: query %d, low %d, up %d.\n", blockIdx.x, q.query, q.low, q.up);
       int query_index = q.query;
+      u32* my_noiih = &noiih[query_index];
       
       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
       u32 * bitmap;
@@ -403,9 +406,10 @@ namespace GaLG
 
       for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
         {
-          if (threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min < max)
+    	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min;
+          if (tmp_id < max)
             {
-              access_id = d_inv[threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min];
+              access_id = d_inv[tmp_id];
               if(bitmap_bits){
             	  key_eligible = false;
                   bitmap_kernel(access_id,
@@ -418,6 +422,7 @@ namespace GaLG
 
                   if( !key_eligible ) continue;
               }
+
               key_eligible = false;
               //Try to find the entry in hash tables
               access_kernel(access_id,
@@ -433,7 +438,13 @@ namespace GaLG
                 hash_kernel(access_id,
                             hash_table,
                             hash_table_size,
-                            q);
+                            q,
+                            my_noiih,
+                            overflow);
+                if(*overflow)
+                {
+                	return;
+                }
               }
             }
         }
@@ -470,7 +481,6 @@ GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>
 	  queries[i].dump(dims);
 	}
 }
-
 void
 GaLG::match(inv_table& table,
             vector<query>& queries,
@@ -478,12 +488,25 @@ GaLG::match(inv_table& table,
             int hash_table_size,
             int bitmap_bits,
             int num_of_hot_dims,
-            int hot_dim_threshold)
+            int hot_dim_threshold,
+            device_vector<u32>& d_noiih)
 {
-
-try{
+	device_vector<u32> d_bitmap;
+	match(table, queries,d_data,d_bitmap,hash_table_size,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+}
+void
+GaLG::match(inv_table& table,
+            vector<query>& queries,
+            device_vector<data_t>& d_data,
+            device_vector<u32>& d_bitmap,
+            int hash_table_size,
+            int bitmap_bits,
+            int num_of_hot_dims,
+            int hot_dim_threshold,
+            device_vector<u32>& d_noiih)
+{
+#ifdef GALG_DEBUG
 	printf("match.cu version : %s\n", VERSION);
-#ifdef DEBUG
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;
@@ -496,12 +519,18 @@ try{
 	if (table.build_status() == inv_table::not_builded)
 		throw inv_table::not_builded_exception;
 
+	u32 loop_count = 0u;
+	d_noiih.resize(queries.size());
+	thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);
+	u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
+
 	vector<query::dim> dims;
 	vector<query::dim> hot_dims;
 	vector<query> hot_dims_queries;
 
-	printf("[Info] Using num of hot dims: %d.\n", num_of_hot_dims);
-
+#ifdef GALG_DEBUG
+	printf("[Info]hash table size: %d.\n", hash_table_size);
+#endif
 	//TODO: Modify this to enable hot dim search
 //	if(num_of_hot_dims)
 //	{
@@ -517,8 +546,10 @@ try{
 //	printf("Host query size: %d.\n", queries.size());
 
   build_queries(queries, table, dims);
-  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
 
+#ifdef GALG_DEBUG
+  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
+#endif
 
   int total = table.i_size() * queries.size();
   int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
@@ -545,7 +576,7 @@ try{
   }
 
 
-#ifdef DEBUG
+#ifdef GALG_DEBUG
     printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
 	printf("[ 20%] Declaring device memory...\n");
 #endif
@@ -564,7 +595,7 @@ try{
 	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
 	cudaMemGetInfo(&free_q_after, &total_m);
 
-	device_vector<u32> d_bitmap(bitmap_size);
+	d_bitmap.resize(bitmap_size);
 	cudaMemGetInfo(&free_bitmap_after, &total_m);
 	if(bitmap_size)
 	{
@@ -572,13 +603,13 @@ try{
 	}
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
+#ifdef GALG_DEBUG
 	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
 		  	free_ck_before - free_ck_after,
 		  	free_ck_after - free_inv_after ,
 		  	free_inv_after - free_q_after,
 		  	free_q_after- free_bitmap_after);
 
-#ifdef DEBUG
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
 
@@ -590,40 +621,71 @@ try{
 	d_data.clear();
 
 	d_data.resize(queries.size()*hash_table_size);
-
 	thrust::fill(d_data.begin(), d_data.end(), nulldata);
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
   
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   printf("[ 33%] Copying memory to symbol...\n");
 #endif
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
-  
   cudaCheckErrors(cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   printf("[ 40%] Starting match kernels...\n");
   cudaEventRecord(kernel_start);
 #endif
 
-    //NON-HOT-DIM-SEARCH
-	device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-	(table.m_size(),
-	table.i_size(),
-	hash_table_size,
-	d_ck_p,
-	d_inv_p,
-	d_dims_p,
-	d_hash_table,
-	d_bitmap_p,
-	bitmap_bits,
-	threshold,
-	0 /* NUM OF HOT DIM = 0 */,
-	hot_dim_threshold);
+  	bool h_overflow[1]= {false};
+    bool * d_overflow;
+    cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
 
+	do{
+		h_overflow[0] = false;
+		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
+		cudaCheckErrors(cudaDeviceSynchronize());
+		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+		(table.m_size(),
+		table.i_size(),
+		hash_table_size,
+		d_ck_p,
+		d_inv_p,
+		d_dims_p,
+		d_hash_table,
+		d_bitmap_p,
+		bitmap_bits,
+		threshold,
+		0 /* NUM OF HOT DIM = 0 */,
+		hot_dim_threshold,
+		d_noiih_p,
+		d_overflow);
+		cudaCheckErrors(cudaDeviceSynchronize());
+		cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+		loop_count ++;
+		if(h_overflow[0])
+		{
+			hash_table_size += 0.1f * table.i_size();
+			if(hash_table_size > table.i_size())
+			{
+				hash_table_size = table.i_size();
+			}
+			thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);
+			if(bitmap_size)
+			{
+				thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+			}
+			d_data.resize(queries.size()*hash_table_size);
+			thrust::fill(d_data.begin(), d_data.end(), nulldata);
+			d_data_table = thrust::raw_pointer_cast(d_data.data());
+			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+		}
+
+#ifdef GALG_DEBUG
+		printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+#endif
+
+	} while(h_overflow[0]);
 
 /* The following code snippet is to count the number of points in hash table
 	std::vector<T_HASHTABLE> temp_data;
@@ -673,21 +735,15 @@ try{
 	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
  * */
   
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting data converting......\n");
 #endif
 
   cudaCheckErrors(cudaDeviceSynchronize());
-
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
-//  host_vector<data_t> h_data(d_data);
-//  for(int i = 0; i < hash_table_size; ++i)
-//  {
-//	  printf("%d %f\n", h_data[i].id, h_data[i].aggregation);
-//  }
-#ifdef DEBUG
+#ifdef GALG_DEBUG
   printf("[100%] Matching is done!\n");
 
   match_stop = getTime();
@@ -698,34 +754,6 @@ try{
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
   printf("[Info] Match function takes %f ms.\n", getInterval(match_start, match_stop));
   printf("[Info] Match kernel takes %f ms.\n", kernel_elapsed);
-
   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
-} catch(thrust::system_error& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(std::bad_alloc& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(std::exception& e){
-	  printf("Error occurred in match function.\n");
-	  throw MemException(e.what());
-} catch(...){
-	printf("Unknown error!\n");
-	throw MemException("Unknown error!");
-}
-}
-
-void
-GaLG::match(inv_table& table,
-            query& queries,
-            device_vector<data_t>& d_data,
-            int hash_table_size,
-            int bitmap_bits,
-            int num_of_hot_dims,
-            int hot_dim_threshold)
-{
-  vector<query> _q;
-  _q.push_back(queries);
-  match(table, _q, d_data, hash_table_size, bitmap_bits, num_of_hot_dims,hot_dim_threshold);
 }

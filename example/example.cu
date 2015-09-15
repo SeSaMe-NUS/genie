@@ -81,10 +81,12 @@ int main(int argc, char * argv[])
 	//|1	|10	 |-1  |52  |62  |0   |
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
+
 	int queryNum = 5;
 	read_file(data, "sift_1k.csv", -1);
 	//read queries from file, which has the same format 
 	read_file(queries, "sift_1k.csv", queryNum);
+
 
 	/*** Configuration of KNN Search ***/
 	GaLG::GaLG_Config config;
@@ -95,17 +97,19 @@ int main(int argc, char * argv[])
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 0;
+	config.count_threshold = 48;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
-	//Max 1.0f and please set to 1.0f if memory allows.
-	//Please take note that reducing hash table size is at your own risk.
-	config.hashtable_size = 1.0f;
+	//If set too small, the program will attempt to increase the size by 0.1f as many times
+	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
+	config.hashtable_size = 0.05f;
 
-	//Number of topk items desired for each query. (NOT GUARANTEED!)
+	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
+
 	config.num_of_topk = 3;
+
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
@@ -133,7 +137,9 @@ int main(int argc, char * argv[])
 	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
-	config.selectivity = 0.04;
+
+	config.selectivity = 0.04f;
+
 
 	//The pointer to the vector containing the data.
 	config.data_points = &data;
@@ -184,9 +190,15 @@ int main(int argc, char * argv[])
 	std::vector<int> result;
 
 	printf("Launching knn functions...\n");
+	u64 start = getTime();
 	GaLG::knn_search(result, config);
+	u64 end = getTime();
+	double elapsed = getInterval(start, end);
+	printf(">>>>>>> Time Elapsed: %fms. <<<<<<<\n", elapsed);
+
 
 	for(int i = 0; i < queryNum; ++i)
+
 	{
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < config.num_of_topk; ++j)

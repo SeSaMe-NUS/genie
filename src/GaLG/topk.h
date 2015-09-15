@@ -1,9 +1,7 @@
 #ifndef GaLG_topk_h
 #define GaLG_topk_h
 
-#include "inv_table.h"
-#include "query.h"
-#include "match.h"
+#include "../GaLG.h"
 
 #include <vector>
 #include <thrust/device_vector.h>
@@ -13,53 +11,9 @@ using namespace thrust;
 
 namespace GaLG
 {
-void
-topk(inv_table& table, query& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits);
 
-void
-topk(inv_table& table, query& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim);
-
-void
-topk(inv_table& table, query& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim, int num_of_hot_dims,int hot_dim_threshold);
-
-void
-topk(inv_table& table, vector<query>& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits);
-
-void
-topk(inv_table& table, vector<query>& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim);
-
-void
-topk(inv_table& table, vector<query>& queries,
-	      device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits, int dim, int num_of_hot_dims, int hot_dim_threshold);
-  /**
-   * @brief Find the top k values in given inv_table.
-   * @details Find the top k values in given inv_table.
-   *
-   * @param table The given table.
-   * @param queries The queries.
-   * @param d_top_indexes The results' indexes.
-   */
-  void
-  topk(inv_table& table, query& queries,
-      device_vector<int>& d_top_indexes);
-
-  /**
-   * @brief Find the top k values in given inv_table.
-   * @details Find the top k values in given inv_table.
-   *
-   * @param table The given table.
-   * @param queries The queries.
-   * @param d_top_indexes The results' indexes.
-   */
-  void
-  topk(inv_table& table, vector<query>& queries,
-      device_vector<int>& d_top_indexes);
-
+	int
+	calculate_bits_per_data(int bitmap_bits);
   /**
    * @brief Find the top k values in given device_vector.
    * @details Find the top k values in given device_vector.
@@ -87,14 +41,11 @@ topk(inv_table& table, vector<query>& queries,
   topk(device_vector<data_t>& d_search, vector<query>& queries,
       device_vector<int>& d_top_indexe, float dim);
   void
-  topk_tweets(GaLG::inv_table& table,
-  		   vector<GaLG::query>& queries,
-  		   device_vector<int>& d_top_indexes,
-  		   int hash_table_size,
-  		   int bitmap_bits,
-  		   int dim,
-  		   int num_of_hot_dims,
-  		   int hot_dim_threshold);
+  topk(device_vector<u32>& d_search,
+       vector<GaLG::query>& queries,
+       device_vector<int>& d_top_indexes,
+       u32 dim);
+
   /**
    * @brief Find the top k values in given device_vector.
    * @details Find the top k values in given device_vector.
@@ -121,6 +72,11 @@ topk(inv_table& table, vector<query>& queries,
   void
   topk(device_vector<data_t>& d_search, device_vector<int>& d_tops,
       device_vector<int>& d_top_indexes, float dim);
+  void
+  topk(device_vector<u32>& d_search,
+       device_vector<int>& d_tops,
+       device_vector<int>& d_top_indexes,
+       u32 dim);
 }
 
 #endif
