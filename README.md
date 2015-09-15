@@ -50,3 +50,5 @@ How to use the library is also shown in the the file /example/makefile
 
 2015.09.15, merge with branch "fixtopk" 
 
+2015.09.15, change branch "runningDemo" as "master"
+
