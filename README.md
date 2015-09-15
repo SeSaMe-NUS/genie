@@ -47,4 +47,5 @@ How to use the library is also shown in the the file /example/makefile
 
 ### log
 2015.09.10, add running example
+2015.09.15, merge with branch "fixtopk" 
 
