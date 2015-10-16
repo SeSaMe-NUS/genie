@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
 	config.query_radius = 0;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
-	config.use_device = 1;
+	config.use_device = 0;
 
 	//Number of hot dimensions with long posting lists to be avoided.
 	//Once set to n, top n hot dimensions will be split from the query and submit again

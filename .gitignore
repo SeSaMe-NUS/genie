@@ -39,3 +39,4 @@ Release
 .project
 .cproject
 /Debug
+/build
