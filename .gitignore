@@ -8,6 +8,7 @@
 *.d
 Makefile~
 makefile~
+*~
 
 # Libraries
 *.lib
