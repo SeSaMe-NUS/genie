@@ -70,7 +70,7 @@ namespace GaLG
     
     __inline__ __host__ __device__
     T_KEY
-    get_key_pos(T_HASHTABLE key)
+    get_key_pos(T_HASHTABLE key)//for ask: what does this function mean?
     {
       return key & KEY_TYPE_MASK;
     }
@@ -250,10 +250,10 @@ namespace GaLG
         	}
 
         	peek_key = htable[location];
-        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where to insert into empty location?
+        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
         	{
         		u32 old_value_1 = get_key_attach_id(peek_key);
-        		u32 old_value_2 = get_key_attach_id(key);
+        		u32 old_value_2 = get_key_attach_id(key);//for ask: what is old_value_1, and what is old_value_2
         		float old_value_plus = *reinterpret_cast<float*>(&old_value_2) + *reinterpret_cast<float*>(&old_value_1);
 #ifdef DEBUG_VERBOSE
         		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
@@ -273,12 +273,12 @@ namespace GaLG
         		}
         	}
 
-        	if(get_key_age(peek_key) < get_key_age(key))
+        	if(get_key_age(peek_key) < get_key_age(key))//for ask: if this location with smaller age (inclusive empty location, i.e. age 0)
         	{
         		evicted_key = atomicCAS(&htable[location], peek_key, key);
         		if(evicted_key != peek_key)
         			continue;
-                if(get_key_age(evicted_key) > 0u)//for ask: what is 0u, and what is 1u
+                if(get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
                 {
                   key = evicted_key;
                   age = get_key_age(evicted_key);
@@ -290,7 +290,7 @@ namespace GaLG
                 	if(*my_noiih >= hash_table_size)
                 	{
                 		*overflow = true;
-                		atomicAdd(my_noiih, 1u);
+                		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much?
                 		return;
                 	} else{
                 		atomicAdd(my_noiih, 1u);
@@ -310,7 +310,7 @@ namespace GaLG
         					*reinterpret_cast<float*>(&old_value_1),
         					s);
 #endif
-                	return;
+                	return;//for ask: finish insertion for empty location
                 }
         	}
         	else
