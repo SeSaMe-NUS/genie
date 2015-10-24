@@ -270,7 +270,7 @@ void GaLG::knn_search(inv_table& table,
 	printf("Starting knn search...\n");
 #endif
 
-	GaLG::knn_tweets(table,
+	GaLG::knn_tweets(table,//for ask: why knn_tweets, does it mean this is basic API?
 			   queries,
 			   d_topk,
 			   hashtable_size,

@@ -166,7 +166,7 @@ namespace GaLG
             											 get_key_age(out_key));
             if(atomicCAS(&htable[location], out_key, new_key) == out_key)
             {
-            	*key_found =true;
+            	*key_found =true;//for ask: why not combine access and insert?
             	return;
             }
           }
@@ -219,7 +219,7 @@ namespace GaLG
     
     __inline__ __device__
     void
-    hash_kernel(u32 id,
+    hash_kernel(u32 id,//for ask: understand this functoin is important
                 T_HASHTABLE* htable,
                 int hash_table_size,
                 query::dim& q,
@@ -250,7 +250,7 @@ namespace GaLG
         	}
 
         	peek_key = htable[location];
-        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)
+        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where to insert into empty location?
         	{
         		u32 old_value_1 = get_key_attach_id(peek_key);
         		u32 old_value_2 = get_key_attach_id(key);
@@ -278,7 +278,7 @@ namespace GaLG
         		evicted_key = atomicCAS(&htable[location], peek_key, key);
         		if(evicted_key != peek_key)
         			continue;
-                if(get_key_age(evicted_key) > 0u)
+                if(get_key_age(evicted_key) > 0u)//for ask: what is 0u, and what is 1u
                 {
                   key = evicted_key;
                   age = get_key_age(evicted_key);
@@ -402,7 +402,7 @@ namespace GaLG
       min < 1 ? min = 0 : min = d_ck[min - 1];
       max = d_ck[max];
 
-      bool key_eligible;
+      bool key_eligible;//for ask: what does it mean for key_eligible
 
       for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
         {
@@ -425,7 +425,7 @@ namespace GaLG
 
               key_eligible = false;
               //Try to find the entry in hash tables
-              access_kernel(access_id,
+              access_kernel(access_id,//for ask: relation between access_kernel and hash_kernel
                             hash_table,
                             hash_table_size,
                             q,

@@ -127,18 +127,18 @@ GaLG::knn(GaLG::inv_table& table,
 void
 GaLG::knn_tweets(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes,
+		   device_vector<int>& d_top_indexes,//for ask: store the topk ids?
 		   int hash_table_size,
 		   int bitmap_bits,
 		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int num_of_hot_dims,//for ask: not useful?
+		   int hot_dim_threshold)//for ask: not useful?
 {
   int qmax = 0;
 
   for(int i = 0; i < queries.size(); ++i)
   {
-	 int count = queries[i].count_ranges();
+	 int count = queries[i].count_ranges();//for ask: what is count_ranges()?
 	  if(count > qmax)
 		  qmax = count;
   }
@@ -170,9 +170,9 @@ GaLG::knn(GaLG::inv_table& table,
   int bitmap_threshold = bitmap_bits;
   device_vector<data_t> d_data;
   device_vector<u32> d_bitmap;
-  device_vector<u32> d_selected_bitmap;
-  device_vector<u32> d_augmented_bitmap;
-  device_vector<u32> d_num_of_items_in_hashtable(queries.size());
+  device_vector<u32> d_selected_bitmap;//for ask: what is d_selected_bitmap?
+  device_vector<u32> d_augmented_bitmap;//for ask: what is d_augmented_bitmap?
+  device_vector<u32> d_num_of_items_in_hashtable(queries.size());//for ask: what is d_num_of_items_in_hashtable
   std::vector<int> selected_query_index;
   device_vector<int> d_selected_top_indexes;
 
