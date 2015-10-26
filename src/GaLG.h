@@ -30,6 +30,7 @@ typedef struct data_{
 #include "GaLG/parser/parser.h"
 #include "GaLG/interface.h"
 #include "GaLG/knn.h"
+#include "GaLG/FileReader.h"// to read csv file data for simple examples
 
 
 #endif
