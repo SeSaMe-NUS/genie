@@ -1,0 +1,1 @@
+1. In the bitmap, the count is based ++, but in the access_kernel and hash_kernel, the updae is based q.weight. This must be unified.

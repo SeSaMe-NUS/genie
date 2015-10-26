@@ -129,7 +129,7 @@ GaLG::knn_tweets(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,//for ask: store the topk ids?
 		   int hash_table_size,
-		   int bitmap_bits,
+		   int bitmap_bits,//countThreshold
 		   int dim,
 		   int num_of_hot_dims,//for ask: not useful?
 		   int hot_dim_threshold)//for ask: not useful?
@@ -138,7 +138,7 @@ GaLG::knn_tweets(GaLG::inv_table& table,
 
   for(int i = 0; i < queries.size(); ++i)
   {
-	 int count = queries[i].count_ranges();//for ask: what is count_ranges()?
+	 int count = queries[i].count_ranges();//for ask: what is count_ranges()?// to count the maximum value for topk
 	  if(count > qmax)
 		  qmax = count;
   }
@@ -158,7 +158,7 @@ GaLG::knn(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
-		   int bitmap_bits,
+		   int bitmap_bits,//countThreshold
 		   int dim,
 		   int num_of_hot_dims,
 		   int hot_dim_threshold)

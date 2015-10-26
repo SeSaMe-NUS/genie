@@ -70,7 +70,7 @@ namespace GaLG
     
     __inline__ __host__ __device__
     T_KEY
-    get_key_pos(T_HASHTABLE key)//for ask: what does this function mean?
+    get_key_pos(T_HASHTABLE key)//for ask: what does this function mean?//the item id
     {
       return key & KEY_TYPE_MASK;
     }
@@ -84,7 +84,7 @@ namespace GaLG
 
     __host__ __inline__ __device__
     u32
-    get_key_attach_id(T_HASHTABLE key)
+    get_key_attach_id(T_HASHTABLE key)//to get the count of one item
     {
       return ((key) >> (KEY_TYPE_BITS)) & ATTACH_ID_TYPE_MASK;
     }
@@ -216,7 +216,94 @@ namespace GaLG
       * key_found = 0;
     }
     
-    
+    //for AT: for adaptiveThreshold
+    __inline__ __device__
+       void
+       access_kernel_AT(u32 id,
+                     T_HASHTABLE* htable,
+                     int hash_table_size,
+                     query::dim& q,
+                     u32 count,
+                     bool * key_found)
+       {
+         u32 location;
+         T_HASHTABLE out_key, new_key;
+         T_AGE age = KEY_TYPE_NULL_AGE;
+
+         location = hash(id, age, hash_table_size);
+
+   #ifdef DEBUG_VERBOSE
+          printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
+   #endif
+         while(1)
+         {
+             out_key = htable[location];
+
+             if(get_key_pos(out_key) == id
+             		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
+             		&& get_key_age(out_key) < MAX_AGE){
+            	 //u32 attach_id = get_key_attach_id(out_key);//for AT: for adaptiveThreshold
+            	 float old_value_plus =*reinterpret_cast<float*>(&count); //*reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+   #ifdef DEBUG_VERBOSE
+               printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
+   #endif
+               new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+               											 *reinterpret_cast<u32*>(&old_value_plus),
+               											 get_key_age(out_key));
+               if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+               {
+               	*key_found =true;//for ask: why not combine access and insert?
+               	return;
+               }
+             }
+             else
+             {
+           	  break;
+             }
+         }
+
+         while(age < MAX_AGE){
+           age ++;
+           location = hash(id, age, hash_table_size);
+           out_key = htable[location];
+
+   #ifdef DEBUG_VERBOSE
+           printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
+   #endif
+
+           if(get_key_pos(out_key) == id
+           		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
+           		&& get_key_age(out_key) < MAX_AGE)
+           {
+        	   u32 attach_id = get_key_attach_id(out_key);
+               float old_value_plus = *reinterpret_cast<float*>(&count); //*reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+   #ifdef DEBUG_VERBOSE
+               printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
+   #endif
+               new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+               											 *reinterpret_cast<u32*>(&old_value_plus),
+               											 get_key_age(out_key));
+               if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+               {
+               	*key_found =true;
+   #ifdef DEBUG_VERBOSE
+               	attach_id = get_key_attach_id(htable[location]);
+       			printf("[b%dt%d] <Access3> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attach_id));
+   #endif
+               	return;
+               } else {
+               	age --;
+               	continue;
+               }
+           }
+         }
+
+         //Entry not found.
+         * key_found = 0;
+       }
+    //for AT: for adaptiveThreshold
+
+
     __inline__ __device__
     void
     hash_kernel(u32 id,//for ask: understand this functoin is important
@@ -250,6 +337,7 @@ namespace GaLG
         	}
 
         	peek_key = htable[location];
+        	//for parallel race region, item may be inserted by othe threads
         	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
         	{
         		u32 old_value_1 = get_key_attach_id(peek_key);
@@ -284,7 +372,7 @@ namespace GaLG
                   age = get_key_age(evicted_key);
                   break;
                 }
-                else
+                else//if get_key_age(evicted_key) == 0, this is empty insertion
                 {
 
                 	if(*my_noiih >= hash_table_size)
@@ -328,6 +416,128 @@ namespace GaLG
       return;
     }
 
+    //for AT: for adaptiveThreshold
+    __inline__ __device__
+       void
+       hash_kernel_AT(u32 id,//for ask: understand this functoin is important
+                   T_HASHTABLE* htable,
+                   int hash_table_size,
+                   query::dim& q,
+                   u32 count,
+                   u32 my_threshold,//for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
+                   u32 * my_noiih,
+                   bool * overflow)
+       {
+   #ifdef DEBUG_VERBOSE
+         printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q.weight, id);
+   #endif
+         u32 location;
+         T_HASHTABLE evicted_key, peek_key;
+         T_AGE age = KEY_TYPE_NULL_AGE;
+         T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
+                                                      //*reinterpret_cast<u32*>(&(q.weight)),//for AT: for adaptiveThreshold
+        		 	 	 	 	 	 	 	 	 	 *reinterpret_cast<u32*>(&count),//for AT: for adaptiveThreshold, the count is maintained in bitmap
+                                                      KEY_TYPE_INIT_AGE);
+         //Loop until MAX_AGE
+         while(age < MAX_AGE){
+
+           //evict key at current age-location
+           //Update it if the to-be-inserted key is of a larger age
+           location = hash(get_key_pos(key), age, hash_table_size);
+           while(1)
+           {
+           	if(*my_noiih > hash_table_size)
+           	{
+           		*overflow = true;
+           		return;
+           	}
+
+           	peek_key = htable[location];
+           	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
+           	{
+           		u32 old_value_1 = get_key_attach_id(peek_key);//for AT: for adaptiveThreshold
+           		u32 old_value_2 = get_key_attach_id(key);//for AT: for daptiveThreshold for ask: what is old_value_1, and what is old_value_2
+           		float old_value_plus = (old_value_1>old_value_2)? (*reinterpret_cast<float*>(&old_value_1)) : (*reinterpret_cast<float*>(&old_value_2));
+   #ifdef DEBUG_VERBOSE
+           		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
+   #endif
+           		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
+           																 *reinterpret_cast<u32*>(&old_value_plus),
+           																 get_key_age(peek_key));
+           		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
+           		{
+   #ifdef DEBUG_VERBOSE
+           			old_value_1 = get_key_attach_id(htable[location]);
+           			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
+   #endif
+           			return;
+           		} else {
+           			continue;
+           		}
+           	}
+
+           	if((get_key_age(peek_key) < get_key_age(key)) //if this location with smaller age (inclusive empty location, i.e. age 0)
+           			||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+           															//this item is also expired in the hashTable
+           			)
+           	{
+           		evicted_key = atomicCAS(&htable[location], peek_key, key);
+           		if(evicted_key != peek_key)
+           			continue;
+                   if((get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
+                		   &&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+																			//this item is also expired in the hashTable
+                		   )
+                   {
+                     key = evicted_key;
+                     age = get_key_age(evicted_key);
+                     break;
+                   }
+                   else//if get_key_age(evicted_key) == 0, this is empty insertion, nothing need to do
+                   {
+
+                   	if(*my_noiih >= hash_table_size)
+                   	{
+                   		*overflow = true;
+                   		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve:
+                   		return;
+                   	} else{
+                   		atomicAdd(my_noiih, 1u);//for improve:
+                   	}
+
+   #ifdef DEBUG_VERBOSE
+           			u32 old_value_1 = get_key_attach_id(htable[location]);
+           			u64 keykey = htable[location];
+           		    char s[65];
+           		    s[64] = '\0';
+           			for (int i = 63; i >= 0; i--)
+           			    s[63 - i] = (keykey >> i) & 1 == 1? '1' : '0';
+
+           			printf("[b%dt%d] <Hash3> new value: %f. Bit: %s.\n",
+           					blockIdx.x,
+           					threadIdx.x,
+           					*reinterpret_cast<float*>(&old_value_1),
+           					s);
+   #endif
+                   	return;//for ask: finish insertion for empty location
+                   }
+           	}
+           	else
+           	{
+                   age++;
+                   key = pack_key_pos_and_attach_id_and_age(get_key_pos(key), get_key_attach_id(key), age);
+                   break;
+           	}
+           }
+
+         }
+         //u32 attachid = get_key_attach_id(key);
+         //printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
+         *overflow = true;
+         return;
+       }
+    //for AT: for adaptiveThreshold
+
     __device__ __inline__
     void
     bitmap_kernel(u32 access_id,
@@ -366,6 +576,44 @@ namespace GaLG
     	}
 
     }
+
+    //for AT: for adaptiveThreshold, this is function for bitmap
+    __device__ __inline__
+       u32
+       bitmap_kernel_AT(u32 access_id,
+     		  	      u32 * bitmap,
+     		  	      int bits,
+     		  	      int my_threshold,
+     		  	      bool * key_eligible,
+     		  	      int num_of_hot_dims,
+     		  	      int hot_dim_threshold)
+       {
+       	u32 value, count, new_value;
+       	int offset;
+       	while(1)
+       	{
+           	value = bitmap[access_id / (32 / bits)];
+           	offset = (access_id % (32 / bits))*bits;
+           	count = get_count(value, offset, bits);
+           	count ++; //always maintain the count in bitmap
+           	if(count < my_threshold)
+           	{
+           		*key_eligible = false;
+
+           	}else
+           	{
+           		*key_eligible = true;
+
+           	}
+           	new_value = pack_count(value, offset, bits, count);
+           	if(atomicCAS(&bitmap[access_id / (32 / bits)], value, new_value) == value)
+           		return count;
+       	}
+       	return 0;//fail to access the count
+
+       }
+    //for AT: for adaptiveThreshold, this is function for bitmap
+
     __global__
     void
     match(int m_size,
@@ -451,6 +699,114 @@ namespace GaLG
     }
 
 
+    //for AT: for adaptiveThreshold match function for adaptiveThreshold
+    __global__
+     void
+     match_AT(int m_size,
+               int i_size,
+               int hash_table_size,
+               int* d_ck,
+               int* d_inv,
+               query::dim* d_dims,
+               T_HASHTABLE* hash_table_list,
+               u32 * bitmap_list,
+               int bitmap_bits,
+               u32* d_topks,
+               u32* d_threshold,//initialized as 1, and increase gradually
+               u32* d_passCount,//initialized as 0, count the number of items passing one d_threshold
+               int num_of_hot_dims,
+               int hot_dim_threshold,
+               u32 * noiih,
+               bool * overflow)
+     {
+       if(m_size == 0 || i_size == 0) return;
+       query::dim& q = d_dims[blockIdx.x];
+       int query_index = q.query;
+       u32* my_noiih = &noiih[query_index];
+       u32* my_threshold = &d_threshold[query_index];
+       u32* my_passCount = &d_passCount[query_index];
+       u32  my_topk = d_topks[query_index];//for AT
+
+       T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
+       u32 * bitmap;
+       if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 /bitmap_bits) + 1)];
+       u32 access_id;
+
+       int min, max;
+       min = q.low;
+       max = q.up;
+       if (min > max)
+         return;
+
+       min < 1 ? min = 0 : min = d_ck[min - 1];
+       max = d_ck[max];
+
+       bool key_eligible;//for ask: what does it mean for key_eligible
+
+       for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
+         {
+     	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min;
+           if (tmp_id < max)
+             {
+        	   u32 count = 0;//for AT
+               access_id = d_inv[tmp_id];
+               if(bitmap_bits){
+             	  key_eligible = false;
+             	  //all count are store in the bitmap, and access the count
+                  count = bitmap_kernel_AT(access_id,
+                 		  	    bitmap,
+                 		  	    bitmap_bits,
+                 		  	    *my_threshold,
+                 		  	    &key_eligible,
+                 		  	    num_of_hot_dims,
+                 		  	    hot_dim_threshold);
+
+                   if( !key_eligible) continue;
+               }
+
+               if(count>=*my_threshold)
+				   {
+					   key_eligible = false;
+					   //Try to find the entry in hash tables
+					   access_kernel_AT(access_id,//for ask: relation between access_kernel and hash_kernel
+									 hash_table,
+									 hash_table_size,
+									 q,
+									 count,
+									 &key_eligible);
+
+					   if(!key_eligible)
+					   {
+						 //Insert the key into hash table
+						 //access_id and its location are packed into a packed key
+						 hash_kernel_AT(access_id,
+									 hash_table,
+									 hash_table_size,
+									 q,
+									 count,
+									 *my_threshold,
+									 my_noiih,
+									 overflow);
+						 if(*overflow)
+						 {
+							return;
+						 }
+
+						 atomicAdd(my_passCount, 1u);//
+						 if(*my_passCount>=my_topk){//increase for this threshold
+						    atomicAdd(my_threshold, 1u);//
+						    atomicSub(my_passCount,*my_passCount);//set my_passCount as 0 for new threshold
+						 }
+					   }
+
+
+				 }
+
+             }
+         }
+     }
+    //end for AT
+
 	__global__
 	void
 	convert_to_data(T_HASHTABLE* table, u32 size)
@@ -500,7 +856,7 @@ GaLG::match(inv_table& table,
             device_vector<data_t>& d_data,
             device_vector<u32>& d_bitmap,
             int hash_table_size,
-            int bitmap_bits,
+            int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
             int num_of_hot_dims,
             int hot_dim_threshold,
             device_vector<u32>& d_noiih)
@@ -551,6 +907,15 @@ GaLG::match(inv_table& table,
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
 #endif
 
+  //for AT: for adaptiveThreshold, enable adaptiveThreshold
+  bool useAdaptiveThreshold = false;//for AT
+  if(bitmap_bits<0){
+	 bitmap_bits = -bitmap_bits;
+	 useAdaptiveThreshold = true;
+	 //for hash_table_size, still let it determine by users currently
+  }
+  //end for AT
+
   int total = table.i_size() * queries.size();
   int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
   if(bitmap_bits > 1){
@@ -574,6 +939,7 @@ GaLG::match(inv_table& table,
   {
 	  bitmap_bits = threshold = 0;
   }
+
 
 
 #ifdef GALG_DEBUG
@@ -641,6 +1007,8 @@ GaLG::match(inv_table& table,
     bool * d_overflow;
     cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
 
+    if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
+    {
 	do{
 		h_overflow[0] = false;
 		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
@@ -686,6 +1054,53 @@ GaLG::match(inv_table& table,
 #endif
 
 	} while(h_overflow[0]);
+    }else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
+    	cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
+    	cudaCheckErrors(cudaDeviceSynchronize());
+    	//place match_function here!
+
+    	device_vector<u32> d_threshold;
+    	d_threshold.resize(queries.size());
+    	thrust::fill(d_threshold.begin(), d_threshold.end(), 1u);
+    	u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+
+    	device_vector<u32> d_passCount;
+    	d_passCount.resize(queries.size());
+    	thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
+    	u32 * d_passCount_p = thrust::raw_pointer_cast(d_threshold.data());
+
+    	host_vector<u32> h_tops(queries.size());
+
+    	for (u32 i = 0; i < queries.size(); i++)
+    	 {
+    	      h_tops[i] = queries[i].topk();
+    	 }
+    	 device_vector<u32> d_topks(h_tops);
+    	 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+
+    	device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+    	(table.m_size(),
+    					table.i_size(),
+    					hash_table_size,
+    					d_ck_p,
+    					d_inv_p,
+    					d_dims_p,
+    					d_hash_table,
+    					d_bitmap_p,
+    					bitmap_bits,
+    					d_topks_p,
+    	                d_threshold_p,//initialized as 1, and increase gradually
+    	                d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+    	               0 /* NUM OF HOT DIM = 0 */,
+    	               hot_dim_threshold,
+    	               d_noiih_p,
+    	               d_overflow);
+
+    	cudaCheckErrors(cudaDeviceSynchronize());
+    	cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+
+    }//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
 /* The following code snippet is to count the number of points in hash table
 	std::vector<T_HASHTABLE> temp_data;

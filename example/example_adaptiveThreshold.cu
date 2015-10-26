@@ -46,12 +46,15 @@ int main(int argc, char * argv[])
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 48;
+	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
+	config.count_threshold = -1;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
 	//If set too small, the program will attempt to increase the size by 0.1f as many times
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
+	//if config.count_threshold = -1, config.hashtable_size is not necessary to be set, since it is determined
+	// by top-k and dimensions
 	config.hashtable_size = 0.05f;
 
 	//Number of topk items desired for each query.
@@ -77,7 +80,7 @@ int main(int argc, char * argv[])
 	//Threshold for second stage hot dimension scan. Points with counts lower than threshold
 	//will not be processed and they will not be present in the hash table.
 	//The value should be larger than count_threshold.
-	config.hot_dim_threshold = 0;
+	config.hot_dim_threshold = 0;//not useful
 
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
