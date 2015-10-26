@@ -1,4 +1,4 @@
-#include "GaLG.h"
+#include "../src/GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 
 #include <stdio.h>
 #include <stdlib.h>

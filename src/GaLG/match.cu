@@ -290,10 +290,10 @@ namespace GaLG
                 	if(*my_noiih >= hash_table_size)
                 	{
                 		*overflow = true;
-                		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much?
+                		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve:
                 		return;
                 	} else{
-                		atomicAdd(my_noiih, 1u);
+                		atomicAdd(my_noiih, 1u);//for improve:
                 	}
 
 #ifdef DEBUG_VERBOSE

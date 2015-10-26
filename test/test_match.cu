@@ -1,4 +1,4 @@
-#include "GaLG.h"
+#include "../src/GaLG.h" //for sys: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +32,7 @@ main()
   list.invert(v);
   table.append(list);
 
-  query q(table);
+  query q(table);//for ide: comment it
 
   q.attr(0, rand() % 100, rand() % 100, 0.3);
   q.attr(0, rand() % 100, rand() % 100, 0.7);
@@ -42,11 +42,11 @@ main()
 
   table.build();
   int size1 = table.ck()->size();
-  match(table, q, d_c1, d_a1);
+  //match(table, q, d_c1, d_a1);//for ide: comment it
 
   table.build_compressed();
   int size2 = table.ck()->size();
-  match(table, q, d_c2, d_a2);
+  //match(table, q, d_c2, d_a2);//for ide: comment it
 
   for (i = 0; i < 100; i++)
     {
