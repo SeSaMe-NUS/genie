@@ -4,7 +4,7 @@
 
 using namespace GaLG;
 
-int main()
+int main3()//for ide
 {
   raw_data data;
   int lines = parser::csv("../../static/countrylist.csv", data);

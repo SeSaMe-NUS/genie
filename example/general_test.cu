@@ -445,7 +445,7 @@ float stof(std::string str)
 //}
 
 int
-main(int argc, char * argv[])
+main6(int argc, char * argv[])//for ide
 {
 
 	if(argc == 1)

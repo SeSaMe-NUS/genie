@@ -69,7 +69,7 @@ void read_file(vector<vector<int> >& dest,
 	ifile.close();
 }
 
-int main(int argc, char * argv[])
+int main4(int argc, char * argv[])//for ide
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;

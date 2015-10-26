@@ -12,7 +12,7 @@ using namespace thrust;
 #define EQUAL(X, Y) ((X-Y<0.0001) && (Y-X <0.0001))
 
 int
-main()
+main9()//for ide
 {
   srand(time(NULL));
   vector<int> v(100);

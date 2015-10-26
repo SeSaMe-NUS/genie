@@ -10,7 +10,7 @@ using namespace GaLG;
 using namespace thrust;
 
 int
-main()
+main10()//for ide
 {
   raw_data data;
   parser::csv("../../static/t1.csv", data);

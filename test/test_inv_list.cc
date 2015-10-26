@@ -8,7 +8,7 @@
 using namespace GaLG;
 using namespace std;
 
-int main()
+int main8()//for ide
 {
   srand(time(NULL));
   vector<int> v(100);

@@ -6,7 +6,7 @@ using namespace GaLG;
 using namespace std;
 
 int
-main()
+main7()//for ide
 {
   //The raw_data container.
   raw_data data;
