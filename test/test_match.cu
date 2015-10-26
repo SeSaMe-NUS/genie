@@ -32,10 +32,10 @@ main()
   list.invert(v);
   table.append(list);
 
-  query q(table);//for ide: comment it
+  //query q(table);//for ide: comment it
 
-  q.attr(0, rand() % 100, rand() % 100, 0.3);
-  q.attr(0, rand() % 100, rand() % 100, 0.7);
+  //q.attr(0, rand() % 100, rand() % 100, 0.3);//for ide: comment it
+  //q.attr(0, rand() % 100, rand() % 100, 0.7);//for ide: comment it
 
   device_vector<int> d_c1, d_c2;
   device_vector<float> d_a1, d_a2;

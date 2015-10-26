@@ -1,5 +1,5 @@
 #include "topk.h"
-#include "GaLG/lib/bucket_topk/bucket_topk.h"
+#include "lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change "lib/bucket_topk/bucket_topk.h" to "GaLG/lib/bucket_topk/bucket_topk.h"
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
 

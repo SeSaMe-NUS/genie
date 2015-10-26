@@ -22,14 +22,14 @@ main()
   table.append(list);
   table.build_compressed();
 
-  query q(table);
-  q.attr(0, 2, 3, 0.3);
-  q.attr(1, 2, 4, 0.7);
+  //query q(table);//for ide:
+  //q.attr(0, 2, 3, 0.3);//for ide:
+  //q.attr(1, 2, 4, 0.7);//for ide:
 
   device_vector<int> d_c;
   device_vector<float> d_f;
 
-  match(table, q, d_c, d_f);
+  //match(table, q, d_c, d_f);//for ide:
 
   for (int i = 0; i < d_c.size(); i++)
     {
