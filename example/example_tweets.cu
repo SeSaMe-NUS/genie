@@ -7,7 +7,7 @@
  * description: This program is to demonstrate the search on string-like data by the GPU. More description of the parameter configuration please refer to example.cu file
  */
 
-#include "GaLG.h"
+#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

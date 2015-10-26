@@ -1,4 +1,4 @@
-#include <GaLG.h>
+#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <string>
 

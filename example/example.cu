@@ -4,7 +4,7 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include "GaLG.h"
+#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
