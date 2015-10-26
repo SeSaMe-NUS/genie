@@ -20,6 +20,7 @@ using namespace std;
 
 u64 MAX_ITEM_NUM = 0;;
 
+
 void match_test(inv_table& table,
 				const char * dfname,
 				int num_of_queries,

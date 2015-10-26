@@ -74,4 +74,54 @@ void read_file(vector<vector<int> >& dest,
 	ifile.close();
 }
 
+
+void read_query(inv_table& table,
+		        const char* fname,
+		        vector<query>& queries,
+		        int num_of_queries,
+		        int num_of_query_dims,
+		        int radius,
+		        int topk,
+		        float selectivity)
+{
+
+	string line;
+	ifstream ifile(fname);
+
+	queries.clear();
+	queries.reserve(num_of_queries);
+
+	if (ifile.is_open()) {
+		int j = 0;
+		while (getline(ifile, line)&& j < num_of_queries) {
+
+			vector<string> nstring = split(line, ", ");
+			int i;
+			query q(table, j);
+			for(i = 0; i < nstring.size() && i<num_of_query_dims; ++i){
+				string myString = eraseSpace(nstring[i]);
+				//cout<<"my string"<<myString<<endl;
+				int value = atoi(myString.c_str());
+
+				q.attr(i,
+					   value - radius < 0 ? 0 : value - radius,
+					   value + radius,
+					   1);
+			}
+			q.topk(topk);
+			if(selectivity > 0.0f)
+			{
+				q.selectivity(selectivity);
+				q.apply_adaptive_query_range();
+			}
+			queries.push_back(q);
+			++j;
+		}
+	}
+
+	ifile.close();
+
+	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
+}
+
 } /* namespace GaLG */
