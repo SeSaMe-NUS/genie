@@ -595,7 +595,7 @@ namespace GaLG
            	value = bitmap[access_id / (32 / bits)];
            	offset = (access_id % (32 / bits))*bits;
            	count = get_count(value, offset, bits);
-           	count ++; //always maintain the count in bitmap
+           	count =count+1; //always maintain the count in bitmap
            	if(count < my_threshold)
            	{
            		*key_eligible = false;
@@ -723,7 +723,7 @@ namespace GaLG
        query::dim& q = d_dims[blockIdx.x];
        int query_index = q.query;
        u32* my_noiih = &noiih[query_index];
-       u32* my_threshold = &d_threshold[query_index];
+       //u32* my_threshold = &d_threshold[query_index];
        u32* my_passCount = &d_passCount[query_index];
        u32  my_topk = d_topks[query_index];//for AT
 
@@ -750,23 +750,33 @@ namespace GaLG
              {
         	   u32 count = 0;//for AT
                access_id = d_inv[tmp_id];
+               u32 thread_threshold = (*my_passCount)/(my_topk);
                if(bitmap_bits){
+
              	  key_eligible = false;
              	  //all count are store in the bitmap, and access the count
                   count = bitmap_kernel_AT(access_id,
                  		  	    bitmap,
                  		  	    bitmap_bits,
-                 		  	    *my_threshold,
+                 		  	    thread_threshold,
                  		  	    &key_eligible,
                  		  	    num_of_hot_dims,
                  		  	    hot_dim_threshold);
+                  //for debug
+                  //if(count>=0&&blockIdx.x<128){
+                  //        printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
+                  //   }
+                  //end for debug
 
-                   if( !key_eligible) continue;
+                   if( !key_eligible) continue;//i.e. count> thread_threshold
                }
+               //for debug
+               //if(count>=thread_threshold&&blockIdx.x<128){
+               //       printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
+               // }
+               //end for debug
 
-               if(count>=*my_threshold)
-				   {
-					   key_eligible = false;
+						key_eligible = false;
 					   //Try to find the entry in hash tables
 					   access_kernel_AT(access_id,//for ask: relation between access_kernel and hash_kernel
 									 hash_table,
@@ -779,12 +789,34 @@ namespace GaLG
 					   {
 						 //Insert the key into hash table
 						 //access_id and its location are packed into a packed key
+
+						 u32 this_passCount,this_threshold,old_passCount;
+						 do{
+							 this_passCount = *my_passCount;
+							 this_threshold = (this_passCount)/(my_topk);//access the new threshold
+							 if(thread_threshold==this_threshold){//if still remain the same threshold, do increase the passCount, else, ignore this item (do not insert into hashtable)
+								 old_passCount = atomicCAS(my_passCount,this_passCount,(this_passCount+1));
+							 }else{
+								 break;
+							 }
+						 }while(this_passCount!=old_passCount);
+
+
+
+						 if(thread_threshold!=this_threshold){
+							 continue;// if not within the same threshold, this item does not need to be inserted in the hashtable.
+						 }
+
+						 if(count>=thread_threshold&&blockIdx.x<128){
+						        printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
+						 }
+
 						 hash_kernel_AT(access_id,
 									 hash_table,
 									 hash_table_size,
 									 q,
 									 count,
-									 *my_threshold,
+									 0,//thread_threshold,
 									 my_noiih,
 									 overflow);
 						 if(*overflow)
@@ -792,15 +824,8 @@ namespace GaLG
 							return;
 						 }
 
-						 atomicAdd(my_passCount, 1u);//
-						 if(*my_passCount>=my_topk){//increase for this threshold
-						    atomicAdd(my_threshold, 1u);//
-						    atomicSub(my_passCount,*my_passCount);//set my_passCount as 0 for new threshold
-						 }
 					   }
 
-
-				 }
 
              }
          }
@@ -914,6 +939,7 @@ GaLG::match(inv_table& table,
 	 useAdaptiveThreshold = true;
 	 //for hash_table_size, still let it determine by users currently
   }
+  printf("for debug: useAdaptiveThreshold=%d, bitmap_bits=%d \n",useAdaptiveThreshold,bitmap_bits);
   //end for AT
 
   int total = table.i_size() * queries.size();
@@ -1062,7 +1088,7 @@ GaLG::match(inv_table& table,
 
     	device_vector<u32> d_threshold;
     	d_threshold.resize(queries.size());
-    	thrust::fill(d_threshold.begin(), d_threshold.end(), 1u);
+    	thrust::fill(d_threshold.begin(), d_threshold.end(), 0u);
     	u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
     	device_vector<u32> d_passCount;
@@ -1071,7 +1097,6 @@ GaLG::match(inv_table& table,
     	u32 * d_passCount_p = thrust::raw_pointer_cast(d_threshold.data());
 
     	host_vector<u32> h_tops(queries.size());
-
     	for (u32 i = 0; i < queries.size(); i++)
     	 {
     	      h_tops[i] = queries[i].topk();
@@ -1080,7 +1105,7 @@ GaLG::match(inv_table& table,
     	 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
     	device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-    	(table.m_size(),
+    					(table.m_size(),
     					table.i_size(),
     					hash_table_size,
     					d_ck_p,
@@ -1096,6 +1121,14 @@ GaLG::match(inv_table& table,
     	               hot_dim_threshold,
     	               d_noiih_p,
     	               d_overflow);
+
+    	//for debug
+    	printf("for debug\n");
+    	host_vector<u32> h_noiih = d_noiih;
+    	for(int i=0;i<h_noiih.size();i++){
+    		printf("for debug: h_noiih[%d] is:%d \n",i,h_noiih[i]);
+    	}
+    	//end for debug
 
     	cudaCheckErrors(cudaDeviceSynchronize());
     	cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));

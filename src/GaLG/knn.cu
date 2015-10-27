@@ -191,7 +191,8 @@ GaLG::knn(GaLG::inv_table& table,
   /** End of Debug Section **/
 
   //If no bitmap, then no need to collect topk in bitmap
-  if(bitmap_bits > 1){
+  printf("for debug: knn() bitmap_bits=%d \n",bitmap_bits);
+  if(bitmap_bits > 1){//for AT: for adaptiveThreshold, if bitmap_bits<0, using adaptive threshold, then no need to collect topk in bitmap
 
 	  //Calculate how many bits a data point is assigned to
 	  bitmap_bits = calculate_bits_per_data(bitmap_bits);

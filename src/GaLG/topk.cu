@@ -102,6 +102,8 @@ GaLG::topk(device_vector<u32>& d_search,
   topk(d_search, d_tops, d_top_indexes, dim);
 }
 
+
+
 void
 GaLG::topk(device_vector<int>& d_search,
 		   device_vector<int>& d_tops,

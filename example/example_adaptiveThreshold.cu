@@ -32,9 +32,10 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	read_file(data, "sift_1k.csv", -1);
+	char * dataFile = "example/sift_1k.csv";//for AT: for adaptiveThreshold
+	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	read_file(queries, "sift_1k.csv", queryNum);
+	read_file(queries, dataFile, queryNum);
 
 
 	/*** Configuration of KNN Search ***/
@@ -47,7 +48,7 @@ int main(int argc, char * argv[])
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
-	config.count_threshold = -1;
+	config.count_threshold = -128;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
@@ -55,12 +56,12 @@ int main(int argc, char * argv[])
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
 	//if config.count_threshold = -1, config.hashtable_size is not necessary to be set, since it is determined
 	// by top-k and dimensions
-	config.hashtable_size = 0.05f;
+	config.hashtable_size = 1.2f;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
 
-	config.num_of_topk = 3;
+	config.num_of_topk = 5;
 
 
 	//Query radius from the data point bucket expanding to upward and downward.
@@ -86,7 +87,7 @@ int main(int argc, char * argv[])
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched
 	//for each dimension.
-	config.use_adaptive_range = true;
+	config.use_adaptive_range = false;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 
