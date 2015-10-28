@@ -313,7 +313,7 @@ GaLG::knn(GaLG::inv_table& table,
 #ifdef GALG_DEBUG
   printf("Start topk....\n");
 #endif
-
+  printf("for debug: dim=%d \n", dim);
   topk(d_data, queries, d_top_indexes, float(dim));
   cudaCheckErrors(cudaDeviceSynchronize());
 

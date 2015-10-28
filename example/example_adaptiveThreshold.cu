@@ -32,7 +32,8 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	char * dataFile = "example/sift_1k.csv";//for AT: for adaptiveThreshold
+	//char * dataFile = "example/sift_1k.csv";//for AT: for adaptiveThreshold
+	char * dataFile = "example/sift_test_1k.csv";
 	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
 	read_file(queries, dataFile, queryNum);
@@ -69,7 +70,7 @@ int main(int argc, char * argv[])
 	config.query_radius = 0;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
-	config.use_device = 0;
+	config.use_device = 1;
 
 	//Number of hot dimensions with long posting lists to be avoided.
 	//Once set to n, top n hot dimensions will be split from the query and submit again

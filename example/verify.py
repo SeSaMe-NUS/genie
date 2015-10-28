@@ -1,5 +1,6 @@
 
-data_file = open("/media/hd1/home/luanwenhao/TestData2Wenhao/sift_hash/sift_hash_100k.csv", "r")
+#data_file = open("/media/hd1/home/luanwenhao/TestData2Wenhao/sift_hash/sift_hash_100k.csv", "r")
+data_file = open("sift_test_1k.csv", "r")
 
 l = list(data_file)
 

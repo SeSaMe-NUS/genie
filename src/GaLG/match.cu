@@ -242,13 +242,17 @@ namespace GaLG
              if(get_key_pos(out_key) == id
              		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
              		&& get_key_age(out_key) < MAX_AGE){
-            	 //u32 attach_id = get_key_attach_id(out_key);//for AT: for adaptiveThreshold
-            	 float old_value_plus =*reinterpret_cast<float*>(&count); //*reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+            	 u32 attach_id = get_key_attach_id(out_key);//for AT: for adaptiveThreshold
+            	 //float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold;   for improve: update here for weighted distance
+            	 float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
+            	 float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
+
+
    #ifdef DEBUG_VERBOSE
-               printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
+               printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,value_plus);
    #endif
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-               											 *reinterpret_cast<u32*>(&old_value_plus),
+            		   	   	   	   	   	   	   	   	   	*reinterpret_cast<u32*>(&value_plus),
                											 get_key_age(out_key));
                if(atomicCAS(&htable[location], out_key, new_key) == out_key)
                {
@@ -275,13 +279,17 @@ namespace GaLG
            		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
            		&& get_key_age(out_key) < MAX_AGE)
            {
-        	   u32 attach_id = get_key_attach_id(out_key);
-               float old_value_plus = *reinterpret_cast<float*>(&count); //*reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+        	   u32 attach_id = get_key_attach_id(out_key);//for AT: for adaptiveThreshold
+               //float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+
+        	   float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
+        	   float value_plus = (value_1>count)? (value_1) : (count);//for AT:
+
    #ifdef DEBUG_VERBOSE
                printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
    #endif
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-               											 *reinterpret_cast<u32*>(&old_value_plus),
+               											 *reinterpret_cast<u32*>(&value_plus),//for impprove:update here for weighted distance
                											 get_key_age(out_key));
                if(atomicCAS(&htable[location], out_key, new_key) == out_key)
                {
@@ -434,9 +442,10 @@ namespace GaLG
          u32 location;
          T_HASHTABLE evicted_key, peek_key;
          T_AGE age = KEY_TYPE_NULL_AGE;
+         float count_value = count;
          T_HASHTABLE key = pack_key_pos_and_attach_id_and_age(id,
                                                       //*reinterpret_cast<u32*>(&(q.weight)),//for AT: for adaptiveThreshold
-        		 	 	 	 	 	 	 	 	 	 *reinterpret_cast<u32*>(&count),//for AT: for adaptiveThreshold, the count is maintained in bitmap
+        		 	 	 	 	 	 	 	 	 	 *reinterpret_cast<u32*>(&count_value),
                                                       KEY_TYPE_INIT_AGE);
          //Loop until MAX_AGE
          while(age < MAX_AGE){
@@ -455,14 +464,17 @@ namespace GaLG
            	peek_key = htable[location];
            	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
            	{
-           		u32 old_value_1 = get_key_attach_id(peek_key);//for AT: for adaptiveThreshold
-           		u32 old_value_2 = get_key_attach_id(key);//for AT: for daptiveThreshold for ask: what is old_value_1, and what is old_value_2
-           		float old_value_plus = (old_value_1>old_value_2)? (*reinterpret_cast<float*>(&old_value_1)) : (*reinterpret_cast<float*>(&old_value_2));
+           		u32 old_attach_id_1 = get_key_attach_id(peek_key);//for AT: for adaptiveThreshold
+           		u32 old_attach_id_2 = get_key_attach_id(key);//for AT: for daptiveThreshold for ask: what is old_value_1, and what is old_value_2
+           		//float old_value_plus = (old_value_1>old_value_2)? (*reinterpret_cast<float*>(&old_value_1)) : (*reinterpret_cast<float*>(&old_value_2));//for AT: for adaptiveThreshold
+           		float old_value_1 = *reinterpret_cast<float*>(&old_attach_id_1);
+           		float old_value_2 = *reinterpret_cast<float*>(&old_attach_id_2);
+           		float old_value_plus = (old_value_1>old_value_2)? (old_value_1) : (old_value_2);//for AT: for adaptiveThreshold
    #ifdef DEBUG_VERBOSE
            		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
    #endif
            		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
-           																 *reinterpret_cast<u32*>(&old_value_plus),
+           																 *reinterpret_cast<u32*>(&old_value_plus),//for improve: update here for weighted distance
            																 get_key_age(peek_key));
            		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
            		{
@@ -470,6 +482,13 @@ namespace GaLG
            			old_value_1 = get_key_attach_id(htable[location]);
            			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
    #endif
+           			//for debug
+           			//old_attach_id_1 = get_key_attach_id(htable[location]);
+           			//old_value_1 = *reinterpret_cast<float*>(&old_value_1);
+           			//u32 new_attach_id = get_key_attach_id(new_key);
+           			//float new_value = *reinterpret_cast<float*>(&new_attach_id);
+           			//printf("[b%dt%d] <Hash2> new value: %.1f. with count=%d old_value_1=%.1f old_value_plus=%.1f new_value=%.1f\n", blockIdx.x, threadIdx.x, new_value,count,old_value_1, old_value_plus,new_value);
+           			//end for debug
            			return;
            		} else {
            			continue;
@@ -477,16 +496,16 @@ namespace GaLG
            	}
 
            	if((get_key_age(peek_key) < get_key_age(key)) //if this location with smaller age (inclusive empty location, i.e. age 0)
-           			||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
-           															//this item is also expired in the hashTable
+           			//||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+           															//this item is also expired in the hashTable, here !!!, for improve later
            			)
            	{
            		evicted_key = atomicCAS(&htable[location], peek_key, key);
            		if(evicted_key != peek_key)
            			continue;
                    if((get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
-                		   &&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
-																			//this item is also expired in the hashTable
+                		   //&&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+																			//this item is also expired in the hashTable, here !!!, for improve later
                 		   )
                    {
                      key = evicted_key;
@@ -595,7 +614,7 @@ namespace GaLG
            	value = bitmap[access_id / (32 / bits)];
            	offset = (access_id % (32 / bits))*bits;
            	count = get_count(value, offset, bits);
-           	count =count+1; //always maintain the count in bitmap
+           	count =count+1; //always maintain the count in bitmap//for improve: change here for weighted distance
            	if(count < my_threshold)
            	{
            		*key_eligible = false;
@@ -714,6 +733,7 @@ namespace GaLG
                u32* d_topks,
                u32* d_threshold,//initialized as 1, and increase gradually
                u32* d_passCount,//initialized as 0, count the number of items passing one d_threshold
+               u32 num_of_max_count,
                int num_of_hot_dims,
                int hot_dim_threshold,
                u32 * noiih,
@@ -723,8 +743,8 @@ namespace GaLG
        query::dim& q = d_dims[blockIdx.x];
        int query_index = q.query;
        u32* my_noiih = &noiih[query_index];
-       //u32* my_threshold = &d_threshold[query_index];
-       u32* my_passCount = &d_passCount[query_index];
+       u32* my_threshold = &d_threshold[query_index];
+       u32* my_passCount = &d_passCount[query_index*num_of_max_count];//
        u32  my_topk = d_topks[query_index];//for AT
 
        T_HASHTABLE* hash_table = &hash_table_list[query_index*hash_table_size];
@@ -750,7 +770,7 @@ namespace GaLG
              {
         	   u32 count = 0;//for AT
                access_id = d_inv[tmp_id];
-               u32 thread_threshold = (*my_passCount)/(my_topk);
+               u32 thread_threshold = *my_threshold;
                if(bitmap_bits){
 
              	  key_eligible = false;
@@ -785,31 +805,68 @@ namespace GaLG
 									 count,
 									 &key_eligible);
 
+					   //for debug
+					   if(blockIdx.x<128){
+						   if(access_id==4)
+							printf("for debug: after access_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d   my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),access_id);
+					    }
+					   //end for debug
+
+					   if(key_eligible){
+						   atomicAdd(&my_passCount[count],1);//successfully update
+					   }
+
 					   if(!key_eligible)
 					   {
 						 //Insert the key into hash table
 						 //access_id and its location are packed into a packed key
 
-						 u32 this_passCount,this_threshold,old_passCount;
-						 do{
-							 this_passCount = *my_passCount;
-							 this_threshold = (this_passCount)/(my_topk);//access the new threshold
-							 if(thread_threshold==this_threshold){//if still remain the same threshold, do increase the passCount, else, ignore this item (do not insert into hashtable)
-								 old_passCount = atomicCAS(my_passCount,this_passCount,(this_passCount+1));
+//						 u32 this_passCount,this_threshold,old_passCount;
+//						 do{
+//							 this_passCount = *my_passCount;
+//							 this_threshold = (this_passCount)/(my_topk);//access the new threshold
+//							 if(thread_threshold==this_threshold){//if still remain the same threshold, do increase the passCount, else, ignore this item (do not insert into hashtable)
+//								 old_passCount = atomicCAS(my_passCount,this_passCount,(this_passCount+1));
+//							 }else{
+//								 break;
+//							 }
+//						 }while(this_passCount!=old_passCount);
+//
+//
+//
+//						 if(thread_threshold!=this_threshold){
+//							 continue;// if not within the same threshold, this item does not need to be inserted in the hashtable.
+//						 }
+
+						 u32 this_threshold = (*my_threshold);
+
+						 //for debug
+						//if(threadIdx.x==0&&blockIdx.x<128){
+						//	 printf("for debug: before CAS my_passCount[%d]=%d this_threshold=%d  my_threshold=%d \n",this_threshold,my_passCount[this_threshold],this_threshold,*my_threshold);
+						//}
+						//end for debug
+
+						 while(true){
+							 this_threshold = *my_threshold;
+							 if(my_passCount[this_threshold]>=my_topk){
+								 this_threshold = atomicCAS(my_threshold,this_threshold,this_threshold+1);
+
 							 }else{
 								 break;
 							 }
-						 }while(this_passCount!=old_passCount);
-
-
-
-						 if(thread_threshold!=this_threshold){
-							 continue;// if not within the same threshold, this item does not need to be inserted in the hashtable.
 						 }
 
-						 if(count>=thread_threshold&&blockIdx.x<128){
-						        printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
+						if(blockIdx.x<128){
+								if(access_id==4)
+								printf("for debug: after hash_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d  this_threshold=%d my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,this_threshold,(*my_noiih),access_id);
 						 }
+
+
+						 if(thread_threshold != this_threshold){
+							 break;
+						 }
+
+
 
 						 hash_kernel_AT(access_id,
 									 hash_table,
@@ -823,6 +880,7 @@ namespace GaLG
 						 {
 							return;
 						 }
+						 atomicAdd(&my_passCount[count],1);//successfully update
 
 					   }
 
@@ -1088,13 +1146,14 @@ GaLG::match(inv_table& table,
 
     	device_vector<u32> d_threshold;
     	d_threshold.resize(queries.size());
-    	thrust::fill(d_threshold.begin(), d_threshold.end(), 0u);
+    	thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
     	u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
     	device_vector<u32> d_passCount;
-    	d_passCount.resize(queries.size());
+    	u32 num_of_max_count = dims.size();
+    	d_passCount.resize(queries.size()*num_of_max_count);//
     	thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
-    	u32 * d_passCount_p = thrust::raw_pointer_cast(d_threshold.data());
+    	u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
 
     	host_vector<u32> h_tops(queries.size());
     	for (u32 i = 0; i < queries.size(); i++)
@@ -1117,6 +1176,7 @@ GaLG::match(inv_table& table,
     					d_topks_p,
     	                d_threshold_p,//initialized as 1, and increase gradually
     	                d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+    	                num_of_max_count,//number of maximum count per query
     	               0 /* NUM OF HOT DIM = 0 */,
     	               hot_dim_threshold,
     	               d_noiih_p,
