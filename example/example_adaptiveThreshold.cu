@@ -66,7 +66,6 @@ int main(int argc, char * argv[])
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
-
 	config.num_of_topk = 10;
 
 
