@@ -496,7 +496,7 @@ namespace GaLG
            	}
 
            	if((get_key_age(peek_key) < get_key_age(key)) //if this location with smaller age (inclusive empty location, i.e. age 0)
-           			//||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+           			||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
            															//this item is also expired in the hashTable, here !!!, for improve later
            			)
            	{
@@ -504,7 +504,7 @@ namespace GaLG
            		if(evicted_key != peek_key)
            			continue;
                    if((get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
-                		   //&&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+                		   &&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
 																			//this item is also expired in the hashTable, here !!!, for improve later
                 		   )
                    {
@@ -718,7 +718,9 @@ namespace GaLG
     }
 
 	__device__ inline void updateThreshold(u32* my_passCount,u32* my_threshold,u32  my_topk, u32 count) {
-
+		if(count< *my_threshold){
+			 return;//threshold has been increased, no need to update
+		}
 		atomicAdd(&my_passCount[count], 1);                //successfully update
 
 		u32 this_threshold = (*my_threshold);
@@ -812,6 +814,9 @@ namespace GaLG
                //end for debug
 
 						key_eligible = false;
+						if(count< *my_threshold){
+							continue;//threshold has been increased, no need to insert
+						}
 					   //Try to find the entry in hash tables
 					   access_kernel_AT(access_id,//for ask: relation between access_kernel and hash_kernel
 									 hash_table,
@@ -821,13 +826,14 @@ namespace GaLG
 									 &key_eligible);
 
 					   //for debug
-					   if(blockIdx.x<128){
-						   if(access_id==4)
-							printf("for debug: after access_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d   my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),access_id);
-					    }
+					   //if(blockIdx.x<128){
+						//   if(access_id==10)
+						//	printf("for debug: after access_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d   my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),access_id);
+					    //}
 					   //end for debug
 
 					   if(key_eligible){
+
 						   updateThreshold(my_passCount,my_threshold, my_topk,count);
 
 						   continue;
@@ -879,8 +885,8 @@ namespace GaLG
 						// }
 
 
-						 if(thread_threshold != *my_threshold){
-							 continue;//threshold has been updated, no need to insert
+						 if(count< *my_threshold){
+							 continue;//threshold has been increased, no need to insert
 						 }
 
 
@@ -890,13 +896,14 @@ namespace GaLG
 									 hash_table_size,
 									 q,
 									 count,
-									 0,//thread_threshold,
+									 *my_threshold,
 									 my_noiih,
 									 overflow);
 						 if(*overflow)
 						 {
 							return;
 						 }
+
 						 updateThreshold(my_passCount,my_threshold, my_topk,count);
 
 					   }
@@ -1200,11 +1207,11 @@ GaLG::match(inv_table& table,
     	               d_overflow);
 
     	//for debug
-    	printf("for debug\n");
-    	host_vector<u32> h_noiih = d_noiih;
-    	for(int i=0;i<h_noiih.size();i++){
-    		printf("for debug: h_noiih[%d] is:%d \n",i,h_noiih[i]);
-    	}
+    	//printf("for debug\n");
+    	//host_vector<u32> h_noiih = d_noiih;
+    	//for(int i=0;i<h_noiih.size();i++){
+    	//	printf("for debug: h_noiih[%d] is:%d \n",i,h_noiih[i]);
+    	//}
     	//end for debug
 
     	cudaCheckErrors(cudaDeviceSynchronize());
