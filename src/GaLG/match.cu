@@ -245,8 +245,11 @@ namespace GaLG
             	 u32 attach_id = get_key_attach_id(out_key);//for AT: for adaptiveThreshold
             	 //float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold;   for improve: update here for weighted distance
             	 float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
-            	 float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
-
+            	 //float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
+            	 float value_plus = count;//for AT: for adaptiveThreshold
+            	 if(value_plus <=value_1){//for AT: for adaptiveThreshold
+            		 break;
+            	 }
 
    #ifdef DEBUG_VERBOSE
                printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,value_plus);
@@ -283,7 +286,11 @@ namespace GaLG
                //float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
 
         	   float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
-        	   float value_plus = (value_1>count)? (value_1) : (count);//for AT:
+        	   //float value_plus = (value_1>count)? (value_1) : (count);//for AT:
+        	   float value_plus = count;//for AT: for adaptiveThreshold
+        	   if(value_plus <=value_1){//for AT: for adaptiveThreshold
+        	      break;
+        	   }
 
    #ifdef DEBUG_VERBOSE
                printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
