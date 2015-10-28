@@ -717,7 +717,22 @@ namespace GaLG
         }
     }
 
+	__device__ inline void updateThreshold(u32* my_passCount,u32* my_threshold,u32  my_topk, u32 count) {
 
+		atomicAdd(&my_passCount[count], 1);                //successfully update
+
+		u32 this_threshold = (*my_threshold);
+
+		while (true) {
+			this_threshold = *my_threshold;
+			if (my_passCount[this_threshold] >= my_topk) {
+				this_threshold = atomicCAS(my_threshold, this_threshold,
+						this_threshold + 1);
+			} else {
+				break;
+			}
+		}
+	}
     //for AT: for adaptiveThreshold match function for adaptiveThreshold
     __global__
      void
@@ -788,7 +803,7 @@ namespace GaLG
                   //   }
                   //end for debug
 
-                   if( !key_eligible) continue;//i.e. count> thread_threshold
+                   if( !key_eligible) continue;//i.e. count< thread_threshold
                }
                //for debug
                //if(count>=thread_threshold&&blockIdx.x<128){
@@ -813,7 +828,9 @@ namespace GaLG
 					   //end for debug
 
 					   if(key_eligible){
-						   atomicAdd(&my_passCount[count],1);//successfully update
+						   updateThreshold(my_passCount,my_threshold, my_topk,count);
+
+						   continue;
 					   }
 
 					   if(!key_eligible)
@@ -838,7 +855,7 @@ namespace GaLG
 //							 continue;// if not within the same threshold, this item does not need to be inserted in the hashtable.
 //						 }
 
-						 u32 this_threshold = (*my_threshold);
+						 //u32 this_threshold = (*my_threshold);
 
 						 //for debug
 						//if(threadIdx.x==0&&blockIdx.x<128){
@@ -846,24 +863,24 @@ namespace GaLG
 						//}
 						//end for debug
 
-						 while(true){
-							 this_threshold = *my_threshold;
-							 if(my_passCount[this_threshold]>=my_topk){
-								 this_threshold = atomicCAS(my_threshold,this_threshold,this_threshold+1);
+//						 while(true){
+//							 this_threshold = *my_threshold;
+//							 if(my_passCount[this_threshold]>=my_topk){
+//								 this_threshold = atomicCAS(my_threshold,this_threshold,this_threshold+1);
+//
+//							 }else{
+//								 break;
+//							 }
+//						 }
 
-							 }else{
-								 break;
-							 }
-						 }
-
-						if(blockIdx.x<128){
-								if(access_id==4)
-								printf("for debug: after hash_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d  this_threshold=%d my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,this_threshold,(*my_noiih),access_id);
-						 }
+						//if(blockIdx.x<128){
+						//		if(access_id==4)
+						//		printf("for debug: after hash_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d  this_threshold=%d my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,this_threshold,(*my_noiih),access_id);
+						// }
 
 
-						 if(thread_threshold != this_threshold){
-							 break;
+						 if(thread_threshold != *my_threshold){
+							 continue;//threshold has been updated, no need to insert
 						 }
 
 
@@ -880,7 +897,7 @@ namespace GaLG
 						 {
 							return;
 						 }
-						 atomicAdd(&my_passCount[count],1);//successfully update
+						 updateThreshold(my_passCount,my_threshold, my_topk,count);
 
 					   }
 
