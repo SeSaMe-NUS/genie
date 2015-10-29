@@ -20,7 +20,7 @@ typedef struct data_{
   float aggregation;
 } data_t;
 
-
+//for ide: to revert it as system file later, change <> to ""
 #include <GaLG/raw_data.h>
 #include <GaLG/inv_list.h>
 #include <GaLG/inv_table.h>
@@ -30,6 +30,7 @@ typedef struct data_{
 #include <GaLG/parser/parser.h>
 #include <GaLG/interface.h>
 #include <GaLG/knn.h>
+#include <GaLG/FileReader.h>// to read csv file data for simple examples
 
 
 #endif

@@ -1,5 +1,5 @@
+data_file = open("sift_1k.csv", "r")
 
-data_file = open("/media/hd1/home/luanwenhao/TestData2Wenhao/sift_hash/sift_hash_100k.csv", "r")
 
 l = list(data_file)
 
@@ -16,6 +16,7 @@ while(True):
 		count = 0
 		index = data_list[i]
 		data = l[index + 1].split(",")
+		data = l[index ].split(",")
 		del data[-1]
 		for j in range(len(query_data)):
 			if(len(query_data[j])<1 or len(data[j])<1) :

@@ -1,4 +1,4 @@
-#include "GaLG.h"
+#include <GaLG.h> //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -20,78 +20,6 @@ using namespace std;
 
 u64 MAX_ITEM_NUM = 0;;
 
-vector<string> split(string& str, const char* c) {
-	char *cstr, *p;
-	vector<string> res;
-	cstr = new char[str.size() + 1];
-	strcpy(cstr, str.c_str());
-	p = strtok(cstr, c);
-	while (p != NULL) {
-		res.push_back(p);
-		p = strtok(NULL, c);
-	}
-	delete[] cstr;
-	return res;
-}
-
-string eraseSpace(string origin) {
-	int start = 0;
-	while (origin[start] == ' ')
-		start++;
-	int end = origin.length() - 1;
-	while (origin[end] == ' ')
-		end--;
-	return origin.substr(start, end - start + 1);
-}
-
-void read_query(inv_table& table,
-		        const char* fname,
-		        vector<query>& queries,
-		        int num_of_queries,
-		        int num_of_query_dims,
-		        int radius,
-		        int topk,
-		        float selectivity)
-{
-
-	string line;
-	ifstream ifile(fname);
-
-	queries.clear();
-	queries.reserve(num_of_queries);
-
-	if (ifile.is_open()) {
-		int j = 0;
-		while (getline(ifile, line)&& j < num_of_queries) {
-
-			vector<string> nstring = split(line, ", ");
-			int i;
-			query q(table, j);
-			for(i = 0; i < nstring.size() && i<num_of_query_dims; ++i){
-				string myString = eraseSpace(nstring[i]);
-				//cout<<"my string"<<myString<<endl;
-				int value = atoi(myString.c_str());
-
-				q.attr(i,
-					   value - radius < 0 ? 0 : value - radius,
-					   value + radius,
-					   1);
-			}
-			q.topk(topk);
-			if(selectivity > 0.0f)
-			{
-				q.selectivity(selectivity);
-				q.apply_adaptive_query_range();
-			}
-			queries.push_back(q);
-			++j;
-		}
-	}
-
-	ifile.close();
-
-	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
-}
 
 void match_test(inv_table& table,
 				const char * dfname,
@@ -125,7 +53,7 @@ void match_test(inv_table& table,
 
 	  device_vector<data_t> d_data;
 	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
-	  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);
+	  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);// for ide: commented it
 	  if(GALG_ERROR){
 		  GALG_ERROR = false;
 		  cudaDeviceReset();
@@ -246,7 +174,7 @@ void topk_test( inv_table& table,
 	  printf("hash table size: %d\n", hash_table_size);
 
 	  timestart = getTime();
-	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);
+	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);//for ide: comment it
 	  if(GALG_ERROR){
 		  cudaDeviceReset();
 		  return;
@@ -445,7 +373,7 @@ float stof(std::string str)
 //}
 
 int
-main(int argc, char * argv[])
+main(int argc, char * argv[])//for ide: from main to main6
 {
 
 	if(argc == 1)

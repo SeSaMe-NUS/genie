@@ -6,6 +6,7 @@
 *.elf
 *.*~
 *.d
+*.test
 Makefile~
 makefile~
 *~
@@ -41,3 +42,4 @@ Release
 .cproject
 /Debug
 /build
+/Release

@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-int main(int argc, char * argv[])//for ide: from main to main5
+int main(int argc, char * argv[])
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
@@ -32,9 +32,12 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	GaLG::read_file(data, "sift_1k.csv", -1);
+	//char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+
+
+	read_file(data, "sift_1k.csv", -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	GaLG::read_file(queries, "sift_1k.csv", queryNum);
+	read_file(queries, "sift_1k.csv", queryNum);
 
 
 	/*** Configuration of KNN Search ***/
@@ -46,23 +49,29 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 3;
-
-	//Hash Table size ratio against data size.
-	//Topk items will be generated from the hash table so it must be sufficiently large.
-	//If set too small, the program will attempt to increase the size by 0.1f as many times
-	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
-	config.hashtable_size = 0.5f;
+	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
+	config.count_threshold = -128;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
+	config.num_of_topk = 5;
 
-	config.num_of_topk = 3;
+	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
+		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
+		//Topk items will be generated from the hash table so it must be sufficiently large.
+		//If set too small, the program will attempt to increase the size by 0.1f as many times
+		//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
+	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
+		//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
+		//hash_table size is usually set as: config.dimXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
+	config.hashtable_size = config.dim*config.num_of_topk*1.5;//960
+
+
 
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
-	config.query_radius = 0;
+	config.query_radius = 7;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;
@@ -77,13 +86,13 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	//Threshold for second stage hot dimension scan. Points with counts lower than threshold
 	//will not be processed and they will not be present in the hash table.
 	//The value should be larger than count_threshold.
-	config.hot_dim_threshold = 0;
+	config.hot_dim_threshold = 0;//not useful
 
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched
 	//for each dimension.
-	config.use_adaptive_range = true;
+	config.use_adaptive_range = false;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 
@@ -146,7 +155,7 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	printf(">>>>>>> Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
 
-	for(int i = 0; i < queryNum; ++i)
+	for(int i = 0; i < 5; ++i)
 
 	{
 		printf("Query %d result is: \n\t", i);

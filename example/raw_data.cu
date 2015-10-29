@@ -1,4 +1,4 @@
-#include <GaLG.h>
+#include <GaLG.h> //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <string>
 
@@ -6,7 +6,7 @@ using namespace GaLG;
 using namespace std;
 
 int
-main()
+main()//for ide: from main to main7
 {
   //The raw_data container.
   raw_data data;

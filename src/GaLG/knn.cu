@@ -127,18 +127,18 @@ GaLG::knn(GaLG::inv_table& table,
 void
 GaLG::knn_tweets(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes,
+		   device_vector<int>& d_top_indexes,//for ask: store the topk ids?
 		   int hash_table_size,
-		   int bitmap_bits,
+		   int bitmap_bits,//countThreshold
 		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int num_of_hot_dims,//for ask: not useful?
+		   int hot_dim_threshold)//for ask: not useful?
 {
   int qmax = 0;
 
   for(int i = 0; i < queries.size(); ++i)
   {
-	 int count = queries[i].count_ranges();
+	 int count = queries[i].count_ranges();//for ask: what is count_ranges()?// to count the maximum value for topk
 	  if(count > qmax)
 		  qmax = count;
   }
@@ -158,21 +158,21 @@ GaLG::knn(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
-		   int bitmap_bits,
+		   int bitmap_bits,//countThreshold
 		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int num_of_hot_dims,//not useful
+		   int hot_dim_threshold)//not useful
 {
 #ifdef GALG_DEBUG
-  printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
+  printf("Parameters: hash_table_size:%d, bitmap_bits:%d,dim:%d,num_of_hot_dims:%d,hot_dim_threshold:%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
 #endif
 
   int bitmap_threshold = bitmap_bits;
   device_vector<data_t> d_data;
   device_vector<u32> d_bitmap;
-  device_vector<u32> d_selected_bitmap;
-  device_vector<u32> d_augmented_bitmap;
-  device_vector<u32> d_num_of_items_in_hashtable(queries.size());
+  device_vector<u32> d_selected_bitmap;//for ask: what is d_selected_bitmap?
+  device_vector<u32> d_augmented_bitmap;//for ask: what is d_augmented_bitmap?
+  device_vector<u32> d_num_of_items_in_hashtable(queries.size());//for ask: what is d_num_of_items_in_hashtable
   std::vector<int> selected_query_index;
   device_vector<int> d_selected_top_indexes;
 
@@ -191,7 +191,7 @@ GaLG::knn(GaLG::inv_table& table,
   /** End of Debug Section **/
 
   //If no bitmap, then no need to collect topk in bitmap
-  if(bitmap_bits > 1){
+  if(bitmap_bits > 1){//for AT: for adaptiveThreshold, if bitmap_bits<0, using adaptive threshold, then no need to collect topk in bitmap
 
 	  //Calculate how many bits a data point is assigned to
 	  bitmap_bits = calculate_bits_per_data(bitmap_bits);

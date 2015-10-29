@@ -1,7 +1,7 @@
 #ifndef GaLG_parser_h
 #define GaLG_parser_h
 
-#include "GaLG/raw_data.h"
+#include "../raw_data.h"//for ide: to revert it as system file later, change "GaLG/raw_data.h" to "../raw_data.h"
 
 namespace GaLG
 {

@@ -1,5 +1,5 @@
 #include "topk.h"
-#include "GaLG/lib/bucket_topk/bucket_topk.h"
+#include "GaLG/lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change  "GaLG/lib/bucket_topk/bucket_topk.h" to "lib/bucket_topk/bucket_topk.h"
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
 
@@ -101,6 +101,8 @@ GaLG::topk(device_vector<u32>& d_search,
   device_vector<int> d_tops(h_tops);
   topk(d_search, d_tops, d_top_indexes, dim);
 }
+
+
 
 void
 GaLG::topk(device_vector<int>& d_search,

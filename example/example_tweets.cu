@@ -7,7 +7,7 @@
  * description: This program is to demonstrate the search on string-like data by the GPU. More description of the parameter configuration please refer to example.cu file
  */
 
-#include "GaLG.h"
+#include "GaLG.h" //for ide: change from "GaLG.h" to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -17,59 +17,8 @@
 using namespace GaLG;
 using namespace std;
 
-vector<string> split(string& str, const char* c) {
-	char *cstr, *p;
-	vector<string> res;
-	cstr = new char[str.size() + 1];
-	strcpy(cstr, str.c_str());
-	p = strtok(cstr, c);
-	while (p != NULL) {
-		res.push_back(p);
-		p = strtok(NULL, c);
-	}
-	delete[] cstr;
-	return res;
-}
 
-string eraseSpace(string origin) {
-	int start = 0;
-	while (origin[start] == ' ')
-		start++;
-	int end = origin.length() - 1;
-	while (origin[end] == ' ')
-		end--;
-	return origin.substr(start, end - start + 1);
-}
-
-void read_file(vector<vector<int> >& dest,
-		        const char* fname,
-		        int num)
-{
-	string line;
-	ifstream ifile(fname);
-
-	dest.clear();
-
-	if (ifile.is_open()) {
-		int count = 0;
-		while (getline(ifile, line) && (count < num || num < 0)) {
-			vector<int> row;
-			vector<string> nstring = split(line, ", ");
-			int i;
-			for(i = 0; i < nstring.size(); ++i){
-				int int_value = atoi(eraseSpace(nstring[i]).c_str());
-				row.push_back(int_value);
-			}
-			dest.push_back(row);
-			count ++;
-		}
-		printf("%d rows are read into memory!\n", dest.size());
-	}
-
-	ifile.close();
-}
-
-int main(int argc, char * argv[])
+int main(int argc, char * argv[])//for ide: from main to main4
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;

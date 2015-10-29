@@ -1,0 +1,53 @@
+1. In the bitmap, the count is based count++, but in the access_kernel and hash_kernel, the updae is based q.weight. This must be unified.
+2. problem report : for the fixed threshold method, if the the setting is likes: 
+//=================================
+	int queryNum = 5;
+	GaLG::read_file(data, "sift_1k.csv", -1);
+	GaLG::read_file(queries, "sift_1k.csv", queryNum);
+
+	/*** Configuration of KNN Search ***/
+	GaLG::GaLG_Config config;
+
+	config.dim = 128;
+	config.count_threshold = 48;//the main setting causes the reported problem
+
+	
+	config.hashtable_size = 0.5f;
+	config.num_of_topk = 3;
+
+	config.query_radius = 0;
+	config.use_device = 0;
+
+	config.use_adaptive_range = true;
+	config.selectivity = 0.04f;
+
+//=================================
+  The result is like this: 
+//===========================
+Topk obtained: 15 in total.
+>>>>>>> Time Elapsed: 2030.382000ms. <<<<<<<
+Query 0 result is: 
+	0, 4, 30, 
+Query 1 result is: 
+	5, 9, 35, 
+Query 2 result is: 
+	10, 12, 8, 
+Query 3 result is: 
+	15, 17, 19, 
+Query 4 result is: 
+	16, 20, 27,  
+//=======================
+
+The result is not correct since the maximum count for query 1 should be 1, for query 2 should be 2...
+
+
+
+3. In the cmakelist.txt we have:
+SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-lcudadevrt —relocatable-device-code=true) -gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35)
+However, it is reported that #-gencode arch=compute_35,code=compute_35 -gencode arch=compute_35,code=sm_35) should be commented, otherwise, there may be 
+"cudaFuncGetAttributes: invalid device function" error. If commented the arch and code setting, how will this affect the performance?
+
+
+
+
+

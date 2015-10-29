@@ -52,3 +52,5 @@ How to use the library is also shown in the the file /example/makefile
 
 2015.09.15, change branch "runningDemo" as "master"
 
+2015.10.29, add adaptive threshold method for topk search
+

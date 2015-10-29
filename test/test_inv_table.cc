@@ -1,4 +1,4 @@
-#include <GaLG.h>
+#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 #include <assert.h>
 #include <vector>
 
@@ -6,7 +6,7 @@ using namespace GaLG;
 using namespace std;
 
 int
-main()
+main()//for ide:from main to main1
 {
   raw_data data;
   parser::csv("../../static/t1.csv", data);
