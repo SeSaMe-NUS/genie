@@ -31,16 +31,9 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 
-	int queryNum = 1000;
-	//char * dataFile = "example/sift_1k.csv";//for AT: for adaptiveThreshold
-	//char * dataFile = "example/sift_test_1k.csv.test";
-	char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_dataSize-3400000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
-	char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
-	//char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_1k.csv";
-	//char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
+	int queryNum = 5;
+	char * dataFile = "example/sift_1k.csv";
 
-	//char * dataFile = "/media/hd1/home/zhoujingbo/data/sift/vivo_sift_wulifu/data/vivo_first_try/train/train.csv";
-	//char * queryFile = "/media/hd1/home/zhoujingbo/data/sift/vivo_sift_wulifu/data/vivo_first_try/query/630.csv";
 
 	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
@@ -51,30 +44,34 @@ int main(int argc, char * argv[])
 	GaLG::GaLG_Config config;
 
 	//Data dimension
-	config.dim = 25;
+	config.dim = 128;
 
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
-	config.count_threshold = -25;
-
-	//Hash Table size ratio against data size.
-	//Topk items will be generated from the hash table so it must be sufficiently large.
-	//If set too small, the program will attempt to increase the size by 0.1f as many times
-	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
-	//if config.count_threshold = -1, config.hashtable_size is not necessary to be set, since it is determined
-	// by top-k and dimensions
-	config.hashtable_size = 0.001;
+	config.count_threshold = -128;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
 	config.num_of_topk = 5;
 
+	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
+		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
+		//Topk items will be generated from the hash table so it must be sufficiently large.
+		//If set too small, the program will attempt to increase the size by 0.1f as many times
+		//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
+	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
+		//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
+		//hash_table size is usually set as: config.dimXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
+	config.hashtable_size = config.dim*config.num_of_topk*1.5;//960
+
+
+
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
-	config.query_radius = 160;
+	config.query_radius = 7;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;

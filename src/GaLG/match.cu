@@ -1200,6 +1200,7 @@ GaLG::match(inv_table& table,
 		 device_vector<u32> d_topks(h_tops);
 		 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
+
 		device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
 						(table.m_size(),
 						table.i_size(),

@@ -262,8 +262,11 @@ void GaLG::knn_search(inv_table& table,
 	printf("Using device %d...\n", config.use_device);
 	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
 #endif
-
-	hashtable_size = table.i_size() * config.hashtable_size + 1;
+	if(config.hashtable_size<=2){
+		hashtable_size = table.i_size() * config.hashtable_size + 1;
+	}else{
+		hashtable_size =  config.hashtable_size;
+	}
 	thrust::device_vector<int> d_topk;
 
 #ifdef GALG_DEBUG
