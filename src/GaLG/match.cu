@@ -612,7 +612,7 @@ namespace GaLG
                    	if(*my_noiih >= hash_table_size)
                    	{
                    		*overflow = true;//here!!!, not allow to overflow
-                   		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve:
+                   		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve://for debug
                    		return;
                    	} else{
                    		atomicAdd(my_noiih, 1u);//for improve:
@@ -633,7 +633,7 @@ namespace GaLG
            					s);
    #endif
            			*pass_threshold = true;//after updating the hashtable, increase the pass_count and my_threshold
-           		     return;//
+
            			return;//finish insertion for empty location
                    }
            	}
@@ -1005,7 +1005,7 @@ namespace GaLG
 									 &pass_threshold);
 						 if(*overflow)
 						 {
-							printf("for debug: here overflow!!!\n");
+
 							return;
 						 }
 						 if(pass_threshold){
@@ -1220,33 +1220,94 @@ GaLG::match(inv_table& table,
     bool * d_overflow;
     cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
 
-    if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
-    {
+
 	do{
 		h_overflow[0] = false;
 		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
 		cudaCheckErrors(cudaDeviceSynchronize());
+		u32 num_of_max_count=0,max_topk=0;
+		if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
+		{
 		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-		(table.m_size(),
-		table.i_size(),
-		hash_table_size,
-		d_ck_p,
-		d_inv_p,
-		d_dims_p,
-		d_hash_table,
-		d_bitmap_p,
-		bitmap_bits,
-		threshold,
-		0 /* NUM OF HOT DIM = 0 */,
-		hot_dim_threshold,
-		d_noiih_p,
-		d_overflow);
+					(table.m_size(),
+					table.i_size(),
+					hash_table_size,
+					d_ck_p,
+					d_inv_p,
+					d_dims_p,
+					d_hash_table,
+					d_bitmap_p,
+					bitmap_bits,
+					threshold,
+					0 /* NUM OF HOT DIM = 0 */,
+					hot_dim_threshold,
+					d_noiih_p,
+					d_overflow);
+	}else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
+
+
+		device_vector<u32> d_threshold;
+		d_threshold.resize(queries.size());
+		thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
+		u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+
+		device_vector<u32> d_passCount;
+		num_of_max_count = dims.size();
+		d_passCount.resize(queries.size()*num_of_max_count);//
+		thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
+		u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
+
+		host_vector<u32> h_tops(queries.size());
+		max_topk = 0;
+		for (u32 i = 0; i < queries.size(); i++)
+		 {
+			  h_tops[i] = queries[i].topk();
+			  if(h_tops[i]>max_topk){
+				  max_topk = h_tops[i];
+			  }
+		 }
+		 device_vector<u32> d_topks(h_tops);
+		 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+
+		device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+						(table.m_size(),
+						table.i_size(),
+						hash_table_size,
+						d_ck_p,
+						d_inv_p,
+						d_dims_p,
+						d_hash_table,
+						d_bitmap_p,
+						bitmap_bits,
+						d_topks_p,
+						d_threshold_p,//initialized as 1, and increase gradually
+						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+						num_of_max_count,//number of maximum count per query
+					   0 /* NUM OF HOT DIM = 0 */,
+					   hot_dim_threshold,
+					   d_noiih_p,
+					   d_overflow);
+
+		//for debug
+		//printf("for debug\n");
+		//host_vector<u32> h_noiih = d_noiih;
+		//for(int i=0;i<h_noiih.size();i++){
+		//	printf("for debug: h_noiih[%d] is:%d \n",i,h_noiih[i]);
+		//}
+		//end for debug
+	}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
 		cudaCheckErrors(cudaDeviceSynchronize());
 		cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
-		loop_count ++;
+
 		if(h_overflow[0])
-		{
-			hash_table_size += 0.1f * table.i_size();
+		{	loop_count ++;
+			if(!useAdaptiveThreshold){
+				hash_table_size += 0.1f * table.i_size();
+			}else{
+				hash_table_size +=  num_of_max_count*max_topk;
+			}
 			if(hash_table_size > table.i_size())
 			{
 				hash_table_size = table.i_size();
@@ -1263,66 +1324,12 @@ GaLG::match(inv_table& table,
 		}
 
 #ifdef GALG_DEBUG
-		printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+		if (loop_count>0){
+			printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+		}
 #endif
 
 	} while(h_overflow[0]);
-    }else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
-
-    	cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-    	cudaCheckErrors(cudaDeviceSynchronize());
-    	//place match_function here!
-
-    	device_vector<u32> d_threshold;
-    	d_threshold.resize(queries.size());
-    	thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
-    	u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
-
-    	device_vector<u32> d_passCount;
-    	u32 num_of_max_count = dims.size();
-    	d_passCount.resize(queries.size()*num_of_max_count);//
-    	thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
-    	u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
-
-    	host_vector<u32> h_tops(queries.size());
-    	for (u32 i = 0; i < queries.size(); i++)
-    	 {
-    	      h_tops[i] = queries[i].topk();
-    	 }
-    	 device_vector<u32> d_topks(h_tops);
-    	 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
-
-    	device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
-    					(table.m_size(),
-    					table.i_size(),
-    					hash_table_size,
-    					d_ck_p,
-    					d_inv_p,
-    					d_dims_p,
-    					d_hash_table,
-    					d_bitmap_p,
-    					bitmap_bits,
-    					d_topks_p,
-    	                d_threshold_p,//initialized as 1, and increase gradually
-    	                d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
-    	                num_of_max_count,//number of maximum count per query
-    	               0 /* NUM OF HOT DIM = 0 */,
-    	               hot_dim_threshold,
-    	               d_noiih_p,
-    	               d_overflow);
-
-    	//for debug
-    	//printf("for debug\n");
-    	//host_vector<u32> h_noiih = d_noiih;
-    	//for(int i=0;i<h_noiih.size();i++){
-    	//	printf("for debug: h_noiih[%d] is:%d \n",i,h_noiih[i]);
-    	//}
-    	//end for debug
-
-    	cudaCheckErrors(cudaDeviceSynchronize());
-    	cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
-
-    }//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
 /* The following code snippet is to count the number of points in hash table
 	std::vector<T_HASHTABLE> temp_data;

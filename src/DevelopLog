@@ -1,1 +1,38 @@
 1. In the bitmap, the count is based count++, but in the access_kernel and hash_kernel, the updae is based q.weight. This must be unified.
+2. problem report : for the ocr data, if the the setting is likes: 
+//=================================
+	int queryNum = 100;
+	char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_dataSize-3400000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
+	char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
+	read_file(data, dataFile, -1);
+	read_file(queries, dataFile, queryNum);
+	/*** Configuration of KNN Search ***/
+	GaLG::GaLG_Config config;
+	//Data dimension
+	config.dim = 25;
+	config.count_threshold = 7;
+	config.hashtable_size = 0.01;
+	config.num_of_topk = 5;
+	config.query_radius = 0;
+//=================================
+  The result is like this: 
+//===========================
+Topk obtained: 500 in total.
+>>>>>>> Time Elapsed: 6111.776000ms. <<<<<<<
+Query 0 result is: 
+	0, 1711875, 2526726, 2971399, 412188, 
+Query 1 result is: 
+	9, 2283523, 706565, 136459, 196116, 
+Query 2 result is: 
+	18, 334085, 935173, 129545, 2273563, 
+Query 3 result is: 
+	27, 155220, 817764, 3219308, 2766007, 
+Query 4 result is: 
+	36, 2826245, 2770193, 54549, 894229, 
+//=======================
+
+The result is not correct since the maximum count for query 1 should be 1, for query 2 should be 2...
+
+
+
+
