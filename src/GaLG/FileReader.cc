@@ -14,39 +14,38 @@
 #include <string>
 #include <cstring>
 
-
+using namespace GaLG;
 using namespace std;
 
 
 
 namespace GaLG {
-
-
-vector<string> split(string& str, const char* c) {
-	char *cstr, *p;
-	vector<string> res;
-	cstr = new char[str.size() + 1];
-	strcpy(cstr, str.c_str());
-	p = strtok(cstr, c);
-	while (p != NULL) {
-		res.push_back(p);
-		p = strtok(NULL, c);
+	vector<string> split(string& str, const char* c) {
+		char *cstr, *p;
+		vector<string> res;
+		cstr = new char[str.size() + 1];
+		strcpy(cstr, str.c_str());
+		p = strtok(cstr, c);
+		while (p != NULL) {
+			res.push_back(p);
+			p = strtok(NULL, c);
+		}
+		delete[] cstr;
+		return res;
 	}
-	delete[] cstr;
-	return res;
+
+	string eraseSpace(string origin) {
+		int start = 0;
+		while (origin[start] == ' ')
+			start++;
+		int end = origin.length() - 1;
+		while (origin[end] == ' ')
+			end--;
+		return origin.substr(start, end - start + 1);
+	}
 }
 
-string eraseSpace(string origin) {
-	int start = 0;
-	while (origin[start] == ' ')
-		start++;
-	int end = origin.length() - 1;
-	while (origin[end] == ' ')
-		end--;
-	return origin.substr(start, end - start + 1);
-}
-
-void read_file(vector<vector<int> >& dest,
+void GaLG::read_file(vector<vector<int> >& dest,
 		        const char* fname,
 		        int num)
 {
@@ -75,7 +74,7 @@ void read_file(vector<vector<int> >& dest,
 }
 
 
-void read_query(inv_table& table,
+void GaLG::read_query(inv_table& table,
 		        const char* fname,
 		        vector<query>& queries,
 		        int num_of_queries,
@@ -124,4 +123,4 @@ void read_query(inv_table& table,
 	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
 }
 
-} /* namespace GaLG */
+/* namespace GaLG */

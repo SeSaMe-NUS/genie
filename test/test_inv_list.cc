@@ -1,4 +1,4 @@
-#include "../src/GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
+#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 using namespace GaLG;
 using namespace std;
 
-int main8()//for ide
+int main()//for ide: from main to main8
 {
   srand(time(NULL));
   vector<int> v(100);

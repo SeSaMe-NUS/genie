@@ -1,4 +1,4 @@
-#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
+#include <GaLG.h> //for ide: change from <GaLG.h> to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -53,7 +53,7 @@ void match_test(inv_table& table,
 
 	  device_vector<data_t> d_data;
 	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
-	  //match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);// for ide:
+	  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);// for ide: commented it
 	  if(GALG_ERROR){
 		  GALG_ERROR = false;
 		  cudaDeviceReset();
@@ -174,7 +174,7 @@ void topk_test( inv_table& table,
 	  printf("hash table size: %d\n", hash_table_size);
 
 	  timestart = getTime();
-	  //GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);//for ide:
+	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);//for ide: comment it
 	  if(GALG_ERROR){
 		  cudaDeviceReset();
 		  return;
@@ -373,7 +373,7 @@ float stof(std::string str)
 //}
 
 int
-main6(int argc, char * argv[])//for ide
+main(int argc, char * argv[])//for ide: from main to main6
 {
 
 	if(argc == 1)

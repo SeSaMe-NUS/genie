@@ -1,4 +1,4 @@
-#include "../src/GaLG.h" //for sys: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
+#include "GaLG.h" //for sys: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@ using namespace thrust;
 #define EQUAL(X, Y) ((X-Y<0.0001) && (Y-X <0.0001))
 
 int
-main9()//for ide
+main()//for ide: main to main9
 {
   srand(time(NULL));
   vector<int> v(100);
@@ -32,10 +32,10 @@ main9()//for ide
   list.invert(v);
   table.append(list);
 
-  //query q(table);//for ide: comment it
+  query q(table);//for ide: comment it
 
-  //q.attr(0, rand() % 100, rand() % 100, 0.3);//for ide: comment it
-  //q.attr(0, rand() % 100, rand() % 100, 0.7);//for ide: comment it
+  q.attr(0, rand() % 100, rand() % 100, 0.3);//for ide: comment it
+  q.attr(0, rand() % 100, rand() % 100, 0.7);//for ide: comment it
 
   device_vector<int> d_c1, d_c2;
   device_vector<float> d_a1, d_a2;
@@ -46,7 +46,7 @@ main9()//for ide
 
   table.build_compressed();
   int size2 = table.ck()->size();
-  //match(table, q, d_c2, d_a2);//for ide: comment it
+  match(table, q, d_c2, d_a2);//for ide: comment it
 
   for (i = 0; i < 100; i++)
     {

@@ -1,10 +1,10 @@
-#include "../../src/GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../../src/GaLG.h"
+#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../../src/GaLG.h"
 
 #include <assert.h>
 
 using namespace GaLG;
 
-int main3()//for ide
+int main()//for ide: from main to main3
 {
   raw_data data;
   int lines = parser::csv("../../static/countrylist.csv", data);

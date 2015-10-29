@@ -1,4 +1,4 @@
-#include "../src/GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
+#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@ using namespace GaLG;
 using namespace thrust;
 
 int
-main10()//for ide
+main()//for ide: from main to main10
 {
   raw_data data;
   parser::csv("../../static/t1.csv", data);
@@ -22,14 +22,14 @@ main10()//for ide
   table.append(list);
   table.build_compressed();
 
-  //query q(table);//for ide:
-  //q.attr(0, 2, 3, 0.3);//for ide:
-  //q.attr(1, 2, 4, 0.7);//for ide:
+  query q(table);//for ide: comment it
+  q.attr(0, 2, 3, 0.3);//for ide:  comment it
+  q.attr(1, 2, 4, 0.7);//for ide:  comment it
 
   device_vector<int> d_c;
   device_vector<float> d_f;
 
-  //match(table, q, d_c, d_f);//for ide:
+  match(table, q, d_c, d_f);//for ide:  comment it
 
   for (int i = 0; i < d_c.size(); i++)
     {

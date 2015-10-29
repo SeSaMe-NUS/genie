@@ -4,7 +4,7 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
+#include "GaLG.h" //for ide: change from "GaLG.h" to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	char * dataFile = "example/sift_1k.csv";
+	char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
 
 
 	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold

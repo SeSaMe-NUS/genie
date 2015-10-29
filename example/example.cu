@@ -4,7 +4,7 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include "../src/GaLG.h" //for ide: change from <GaLG.h> to "../src/GaLG.h"
+#include "GaLG.h" //for ide: change from "GaLG.h" to "../src/GaLG.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-int main5(int argc, char * argv[])//for ide
+int main(int argc, char * argv[])//for ide: from main to main5
 {
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
@@ -32,9 +32,9 @@ int main5(int argc, char * argv[])//for ide
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	read_file(data, "sift_1k.csv", -1);
+	GaLG::read_file(data, "sift_1k.csv", -1);
 	//read queries from file, which has the same format 
-	read_file(queries, "sift_1k.csv", queryNum);
+	GaLG::read_file(queries, "sift_1k.csv", queryNum);
 
 
 	/*** Configuration of KNN Search ***/
@@ -46,7 +46,7 @@ int main5(int argc, char * argv[])//for ide
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 48;
+	config.count_threshold = 3;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
