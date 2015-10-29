@@ -160,11 +160,11 @@ GaLG::knn(GaLG::inv_table& table,
 		   int hash_table_size,
 		   int bitmap_bits,//countThreshold
 		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int num_of_hot_dims,//not useful
+		   int hot_dim_threshold)//not useful
 {
 #ifdef GALG_DEBUG
-  printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
+  printf("Parameters: hash_table_size:%d, bitmap_bits:%d,dim:%d,num_of_hot_dims:%d,hot_dim_threshold:%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
 #endif
 
   int bitmap_threshold = bitmap_bits;
@@ -191,7 +191,6 @@ GaLG::knn(GaLG::inv_table& table,
   /** End of Debug Section **/
 
   //If no bitmap, then no need to collect topk in bitmap
-  printf("for debug: knn() bitmap_bits=%d \n",bitmap_bits);
   if(bitmap_bits > 1){//for AT: for adaptiveThreshold, if bitmap_bits<0, using adaptive threshold, then no need to collect topk in bitmap
 
 	  //Calculate how many bits a data point is assigned to
@@ -313,7 +312,7 @@ GaLG::knn(GaLG::inv_table& table,
 #ifdef GALG_DEBUG
   printf("Start topk....\n");
 #endif
-  printf("for debug: dim=%d \n", dim);
+
   topk(d_data, queries, d_top_indexes, float(dim));
   cudaCheckErrors(cudaDeviceSynchronize());
 

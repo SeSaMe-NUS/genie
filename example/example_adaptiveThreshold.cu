@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 
 	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	read_file(queries, queryFile, queryNum);
+	read_file(queries, dataFile, queryNum);
 
 
 	/*** Configuration of KNN Search ***/
