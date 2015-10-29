@@ -224,7 +224,10 @@ namespace GaLG
                      int hash_table_size,
                      query::dim& q,
                      u32 count,
-                     bool * key_found)
+                     bool * key_found,
+                     u32* my_threshold,
+                     bool * pass_threshold // if the count smaller that my_threshold, do not insert
+                     )
        {
          u32 location;
          T_HASHTABLE out_key, new_key;
@@ -247,8 +250,10 @@ namespace GaLG
             	 float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
             	 //float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
             	 float value_plus = count;//for AT: for adaptiveThreshold
-            	 if(value_plus <=value_1){//for AT: for adaptiveThreshold
-            		 break;
+            	 if(value_plus <value_1){//for AT: for adaptiveThreshold
+            		 *pass_threshold = true;// still need to update the my_threshold and passCount
+            		 *key_found =true;//already find the key, but do not update
+            		 return;
             	 }
 
    #ifdef DEBUG_VERBOSE
@@ -257,8 +262,13 @@ namespace GaLG
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
             		   	   	   	   	   	   	   	   	   	*reinterpret_cast<u32*>(&value_plus),
                											 get_key_age(out_key));
+               if(value_plus<*my_threshold){
+               	*pass_threshold = false;// if my_threshold is updated, no need to update hash_table and threshold
+               	*key_found =true;//already find the key, but do not update
+                 return;//
+               }
                if(atomicCAS(&htable[location], out_key, new_key) == out_key)
-               {
+               {*pass_threshold = true;//high possible that pass the threshold, must update the threshold
                	*key_found =true;//for ask: why not combine access and insert?
                	return;
                }
@@ -288,8 +298,10 @@ namespace GaLG
         	   float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
         	   //float value_plus = (value_1>count)? (value_1) : (count);//for AT:
         	   float value_plus = count;//for AT: for adaptiveThreshold
-        	   if(value_plus <=value_1){//for AT: for adaptiveThreshold
-        	      break;
+        	   if(value_plus <value_1){//for AT: for adaptiveThreshold
+        		  *pass_threshold = true;// still need to update the my_threshold and passCount
+        		  *key_found =true;//already find the key, but do not update
+        	      return;
         	   }
 
    #ifdef DEBUG_VERBOSE
@@ -298,8 +310,14 @@ namespace GaLG
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
                											 *reinterpret_cast<u32*>(&value_plus),//for impprove:update here for weighted distance
                											 get_key_age(out_key));
+               if(value_plus<*my_threshold){
+                  *pass_threshold = false;// if my_threshold is updated, no need to update hash_table and threshold
+                  *key_found =true;//already find the key, but do not update
+                  return;//
+               }
                if(atomicCAS(&htable[location], out_key, new_key) == out_key)
                {
+            	*pass_threshold = true;
                	*key_found =true;
    #ifdef DEBUG_VERBOSE
                	attach_id = get_key_attach_id(htable[location]);
@@ -314,7 +332,9 @@ namespace GaLG
          }
 
          //Entry not found.
-         * key_found = 0;
+         * key_found = false;
+         //key not found, no need to update my_threshold
+         *pass_threshold = false;
        }
     //for AT: for adaptiveThreshold
 
@@ -439,13 +459,21 @@ namespace GaLG
                    int hash_table_size,
                    query::dim& q,
                    u32 count,
-                   u32 my_threshold,//for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
+                   u32* my_threshold,//for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
                    u32 * my_noiih,
-                   bool * overflow)
+                   bool * overflow,
+                   bool* pass_threshold
+                   )
        {
    #ifdef DEBUG_VERBOSE
          printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q.weight, id);
    #endif
+
+         //for debug
+         if(blockIdx.x<25&&id==0)
+         printf("for debug: hash_kernel_AT() here 0 count=%d Id is %d.\n",count, id);
+         //end for debug
+
          u32 location;
          T_HASHTABLE evicted_key, peek_key;
          T_AGE age = KEY_TYPE_NULL_AGE;
@@ -459,6 +487,17 @@ namespace GaLG
 
            //evict key at current age-location
            //Update it if the to-be-inserted key is of a larger age
+           u32 key_attach_id = get_key_attach_id(key);//for AT: for daptiveThreshold for ask: what is old_value_1, and what is old_value_2
+           float key_value = *reinterpret_cast<float*>(&key_attach_id);
+           if(key_value<*my_threshold){//no need to update
+        	   if(get_key_pos(key)==id){
+        		   *pass_threshold = false;//  if the item is expired because my_threshold is increased, no need to update hash_table and threshold by this data item
+        	   }else{
+        		   *pass_threshold = true;//the id has been inserted into hashtable, this key_attach_id is from the evicted_key
+        	   }
+               return;
+           }
+
            location = hash(get_key_pos(key), age, hash_table_size);
            while(1)
            {
@@ -469,20 +508,36 @@ namespace GaLG
            	}
 
            	peek_key = htable[location];
-           	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
+           	u32 peek_key_attach_id = get_key_attach_id(peek_key);//for AT: for adaptiveThreshold
+           	float peek_key_value = *reinterpret_cast<float*>(&peek_key_attach_id);
+           	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//even previously key_eligible ==0, the key may be inserted by other threads
            	{
-           		u32 old_attach_id_1 = get_key_attach_id(peek_key);//for AT: for adaptiveThreshold
-           		u32 old_attach_id_2 = get_key_attach_id(key);//for AT: for daptiveThreshold for ask: what is old_value_1, and what is old_value_2
+
+
            		//float old_value_plus = (old_value_1>old_value_2)? (*reinterpret_cast<float*>(&old_value_1)) : (*reinterpret_cast<float*>(&old_value_2));//for AT: for adaptiveThreshold
-           		float old_value_1 = *reinterpret_cast<float*>(&old_attach_id_1);
-           		float old_value_2 = *reinterpret_cast<float*>(&old_attach_id_2);
-           		float old_value_plus = (old_value_1>old_value_2)? (old_value_1) : (old_value_2);//for AT: for adaptiveThreshold
+
+
+           		//float old_value_plus = (old_value_1>old_value_2)? (old_value_1) : (old_value_2);//for AT: for adaptiveThreshold
+           		if(key_value<peek_key_value){//no need to update
+           			*pass_threshold = true;// still need to update the my_threshold and passCount
+           		     return;
+           		}
+
    #ifdef DEBUG_VERBOSE
            		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
    #endif
            		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
-           																 *reinterpret_cast<u32*>(&old_value_plus),//for improve: update here for weighted distance
+           																 *reinterpret_cast<u32*>(&key_value),//for improve: update here for weighted distance
            																 get_key_age(peek_key));
+
+           		if(key_value<*my_threshold){//no need to update
+           		 if(get_key_pos(key)==id){
+           		      *pass_threshold = false;//  if the item is expired because my_threshold is increased, no need to update hash_table and threshold by this data item
+           		  }else{
+           		      *pass_threshold = true;//the id has been inserted into hashtable, this key_attach_id is from the evicted_key
+           		 }
+           		    return;
+           		}
            		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
            		{
    #ifdef DEBUG_VERBOSE
@@ -490,33 +545,65 @@ namespace GaLG
            			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
    #endif
            			//for debug
-           			//old_attach_id_1 = get_key_attach_id(htable[location]);
-           			//old_value_1 = *reinterpret_cast<float*>(&old_value_1);
-           			//u32 new_attach_id = get_key_attach_id(new_key);
-           			//float new_value = *reinterpret_cast<float*>(&new_attach_id);
-           			//printf("[b%dt%d] <Hash2> new value: %.1f. with count=%d old_value_1=%.1f old_value_plus=%.1f new_value=%.1f\n", blockIdx.x, threadIdx.x, new_value,count,old_value_1, old_value_plus,new_value);
+           			if(blockIdx.x<25&&id==0){
+           			u32 old_attach_id_1 = get_key_attach_id(htable[location]);
+           			u32 old_value_1 = *reinterpret_cast<float*>(&old_attach_id_1);
+           			u32 new_attach_id = get_key_attach_id(new_key);
+           			float new_value = *reinterpret_cast<float*>(&new_attach_id);
+           			printf("or debug: hash_kernel_AT() here 1 new value: %.1f. with count=%d peak_value=%.1f key_value=%.1f new_value=%.1f\n", blockIdx.x, threadIdx.x, new_value,count,peek_key_value, key_value,new_value);
+           			}
            			//end for debug
+           			*pass_threshold = true;//after updat the hashtable, increase the pass_count and my_threshold
            			return;
            		} else {
            			continue;
            		}
            	}
 
-           	if((get_key_age(peek_key) < get_key_age(key)) //if this location with smaller age (inclusive empty location, i.e. age 0)
-           			||(get_key_attach_id(peek_key)<my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
-           															//this item is also expired in the hashTable, here !!!, for improve later
+           	if((get_key_age(peek_key) < get_key_age(key) //if this location with smaller age (inclusive empty location, i.e. age 0)
+           			||(get_key_age(peek_key)!= KEY_TYPE_NULL_AGE&&peek_key_value<*my_threshold))//for debug: for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+           															//this item is also expired in the hashTable,
            			)
            	{
+           		if(key_value<*my_threshold){//no need to update
+           		    if(get_key_pos(key)==id){
+           		       *pass_threshold = false;//  if the item is expired because my_threshold is increased, no need to update hash_table and threshold by this data item
+           		     }else{
+           		       *pass_threshold = true;//the id has been inserted into hashtable, this key_attach_id is from the evicted_key
+           		     }
+           		       return;
+           		  }
+
            		evicted_key = atomicCAS(&htable[location], peek_key, key);
+
+           		//for debug
+           		  if(blockIdx.x<25&&id==0){
+           		          u32 old_attach_id_1 = get_key_attach_id(htable[location]);
+           		          u32 old_value_1 = *reinterpret_cast<float*>(&old_attach_id_1);
+           		          u32 new_attach_id = get_key_attach_id(key);
+           		          float new_value = *reinterpret_cast<float*>(&new_attach_id);
+           		          printf("or debug: hash_kernel_AT() here 2 new value: %.1f. with count=%d old_value_1=%.1f new_value=%.1f\n", blockIdx.x, threadIdx.x, new_value,count,old_value_1, new_value);
+           		   }
+           		 //end for debug
+
+
            		if(evicted_key != peek_key)
            			continue;
+
+
                    if((get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
-                		   &&(get_key_attach_id(peek_key)>=my_threshold)//for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
-																			//this item is also expired in the hashTable, here !!!, for improve later
                 		   )
                    {
+                	 if(peek_key_value<*my_threshold){//for debug for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
+													//this item is also expired in the hashTable,
+                		 *pass_threshold = true;//after updating the hashtable, increase the pass_count and my_threshold
+                		 return;//
+                	 }
+
+
                      key = evicted_key;
                      age = get_key_age(evicted_key);
+
                      break;
                    }
                    else//if get_key_age(evicted_key) == 0, this is empty insertion, nothing need to do
@@ -524,7 +611,7 @@ namespace GaLG
 
                    	if(*my_noiih >= hash_table_size)
                    	{
-                   		*overflow = true;
+                   		*overflow = true;//here!!!, not allow to overflow
                    		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve:
                    		return;
                    	} else{
@@ -545,7 +632,9 @@ namespace GaLG
            					*reinterpret_cast<float*>(&old_value_1),
            					s);
    #endif
-                   	return;//for ask: finish insertion for empty location
+           			*pass_threshold = true;//after updating the hashtable, increase the pass_count and my_threshold
+           		     return;//
+           			return;//finish insertion for empty location
                    }
            	}
            	else
@@ -560,6 +649,7 @@ namespace GaLG
          //u32 attachid = get_key_attach_id(key);
          //printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
          *overflow = true;
+         *pass_threshold = true;
          return;
        }
     //for AT: for adaptiveThreshold
@@ -786,6 +876,7 @@ namespace GaLG
        max = d_ck[max];
 
        bool key_eligible;//for ask: what does it mean for key_eligible
+       bool pass_threshold;//to determine whether pass the check of my_theshold
 
        for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
          {
@@ -807,41 +898,46 @@ namespace GaLG
                  		  	    num_of_hot_dims,
                  		  	    hot_dim_threshold);
                   //for debug
-                  //if(count>=0&&blockIdx.x<128){
-                  //        printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
-                  //   }
+                  if(count>=0&&blockIdx.x<25&&access_id==0){
+                          printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
+                  }
                   //end for debug
 
                    if( !key_eligible) continue;//i.e. count< thread_threshold
                }
-               //for debug
-               //if(count>=thread_threshold&&blockIdx.x<128){
-               //       printf("for debug: my_passCount=%d threshold=%d  item count=%d access_id=%d\n",*my_passCount,*my_passCount/my_topk,count,access_id);
-               // }
-               //end for debug
+
 
 						key_eligible = false;
 						if(count< *my_threshold){
 							continue;//threshold has been increased, no need to insert
 						}
+						//for debug
+						if(count>=thread_threshold&&blockIdx.x<25&&access_id==0){
+						       printf("for debug: before access_kernel_AT thread_threshold=%d  *my_threshold=%d  item count=%d access_id=%d\n",thread_threshold, *my_threshold,count,access_id);
+						}
+						               //end for debug
 					   //Try to find the entry in hash tables
 					   access_kernel_AT(access_id,//for ask: relation between access_kernel and hash_kernel
 									 hash_table,
 									 hash_table_size,
 									 q,
 									 count,
-									 &key_eligible);
+									 &key_eligible,
+									 my_threshold,
+									 &pass_threshold
+									 );
 
 					   //for debug
-					   //if(blockIdx.x<128){
-						//   if(access_id==10)
-						//	printf("for debug: after access_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d   my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),access_id);
-					    //}
+					   if(blockIdx.x<25&&access_id==0){
+						   if(access_id==0)
+							printf("for debug: after access_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d   my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),access_id);
+					    }
 					   //end for debug
 
 					   if(key_eligible){
-
-						   updateThreshold(my_passCount,my_threshold, my_topk,count);
+						   if(pass_threshold){
+							   updateThreshold(my_passCount,my_threshold, my_topk,count);
+						   }
 
 						   continue;
 					   }
@@ -886,10 +982,10 @@ namespace GaLG
 //							 }
 //						 }
 
-						//if(blockIdx.x<128){
-						//		if(access_id==4)
-						//		printf("for debug: after hash_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d  this_threshold=%d my_noiih=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,this_threshold,(*my_noiih),access_id);
-						// }
+						   if(blockIdx.x<25){
+								if(access_id==0)
+								printf("for debug: before hash_kernel_AT: CAS my_passCount=%d *my_threshold=%d  item count=%d thread_threshold=%d  my_noiih=%d key_eligible=%d access_id=%d \n",my_passCount[count],*my_threshold,count,thread_threshold,(*my_noiih),key_eligible,access_id);
+						 }
 
 
 						 if(count< *my_threshold){
@@ -903,11 +999,13 @@ namespace GaLG
 									 hash_table_size,
 									 q,
 									 count,
-									 *my_threshold,
+									 0,//*my_threshold,
 									 my_noiih,
-									 overflow);
+									 overflow,
+									 &pass_threshold);
 						 if(*overflow)
 						 {
+							printf("for debug: here overflow!!!\n");
 							return;
 						 }
 
