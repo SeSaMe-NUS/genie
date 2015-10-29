@@ -32,12 +32,12 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+	//char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
 
 
-	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
+	read_file(data, "sift_1k.csv", -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	read_file(queries, dataFile, queryNum);
+	read_file(queries, "sift_1k.csv", queryNum);
 
 
 	/*** Configuration of KNN Search ***/
