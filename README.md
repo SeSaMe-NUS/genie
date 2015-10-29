@@ -45,12 +45,12 @@ The exaple also gives an comprehensive description about the parameter.
 
 How to use the library is also shown in the the file /example/makefile
 
+
 ### log
-2015.09.10, add running example
+2015.09.10, add running example.
 
-2015.09.15, merge with branch "fixtopk" 
+2015.09.15, merge with branch "fixtopk" ,change branch "runningDemo" as "master", change previous "master" as "yiwei_old_master".
 
-2015.09.15, change branch "runningDemo" as "master"
+2015.10.29, add adaptive threshold method for topk search, (and merge "adaptiveThreshold" into "master").
 
-2015.10.29, add adaptive threshold method for topk search
 
