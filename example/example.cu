@@ -46,13 +46,13 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
-	config.count_threshold = 3;
+	config.count_threshold = 48;
 
 	//Hash Table size ratio against data size.
 	//Topk items will be generated from the hash table so it must be sufficiently large.
 	//If set too small, the program will attempt to increase the size by 0.1f as many times
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
-	config.hashtable_size = 0.05f;
+	config.hashtable_size = 0.5f;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
