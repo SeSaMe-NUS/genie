@@ -31,12 +31,12 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 
-	int queryNum = 100;
+	int queryNum = 1000;
 	//char * dataFile = "example/sift_1k.csv";//for AT: for adaptiveThreshold
 	//char * dataFile = "example/sift_test_1k.csv.test";
-	//char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_dataSize-3400000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
-	//char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
-	char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_1k.csv";
+	char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_dataSize-3400000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
+	char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
+	//char * dataFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_trn_1k.csv";
 	//char* queryFile = "/media/hd1/home/zhoujingbo/workspace/python/LazySVM/data/ocr/hashed/numCF25/ocr_tst_dataSize-100000_numCF-25_numDim-1155_r-2.65_domainBits-13.csv";
 
 	//char * dataFile = "/media/hd1/home/zhoujingbo/data/sift/vivo_sift_wulifu/data/vivo_first_try/train/train.csv";
@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 
 	read_file(data, dataFile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	read_file(queries, dataFile, queryNum);
+	read_file(queries, queryFile, queryNum);
 
 
 	/*** Configuration of KNN Search ***/
@@ -65,16 +65,16 @@ int main(int argc, char * argv[])
 	//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
 	//if config.count_threshold = -1, config.hashtable_size is not necessary to be set, since it is determined
 	// by top-k and dimensions
-	config.hashtable_size = 0.01f;
+	config.hashtable_size = 0.001f;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 3;
+	config.num_of_topk = 5;
 
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
-	config.query_radius = 640;
+	config.query_radius = 320;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;
