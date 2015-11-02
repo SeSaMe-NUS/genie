@@ -63,8 +63,8 @@ int main(int argc, char * argv[])
 		//as possible. So to reduce the attempt time waste, please set to 1.0f if memory allows.
 	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
 		//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
-		//hash_table size is usually set as: config.dimXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
-	config.hashtable_size = config.dim*config.num_of_topk*1.5;//960
+		//hash_table size is usually set as: maximum_countXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
+	config.hashtable_size = 128*config.num_of_topk*1.5;//960
 
 
 
