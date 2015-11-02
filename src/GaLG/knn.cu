@@ -150,7 +150,7 @@ GaLG::knn_tweets(GaLG::inv_table& table,
 #ifdef GALG_DEBUG
   u64 end = getTime();
   double elapsed = getInterval(start, end);
-  printf(">>>>>>> knn takes %fms <<<<<< \n", elapsed);
+  printf(">>>>>>> [time profiling]: kNN takes %fms (i.e. match + selection) <<<<<< \n", elapsed);
 #endif
 }
 void

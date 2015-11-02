@@ -143,7 +143,7 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	GaLG::knn_search(result, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
-	printf(">>>>>>> Time Elapsed: %fms. <<<<<<<\n", elapsed);
+	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
 
 	for(int i = 0; i < queryNum; ++i)

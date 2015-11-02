@@ -50,7 +50,12 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.query_points = &queries;
 	std::vector<int> result;
 	printf("Launching knn functions...\n");
+	u64 start = getTime();
 	GaLG::knn_search_tweets(result, config);
+	u64 end = getTime();
+	double elapsed = getInterval(start, end);
+	printf(">>>>>>>[time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
+
 	for(int i = 0; i < 10 && i < queries.size(); ++i)
 	{
 		printf("Query %d result is: \n\t", i);

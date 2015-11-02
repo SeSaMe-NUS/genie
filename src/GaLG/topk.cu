@@ -142,7 +142,7 @@ GaLG::topk(device_vector<int>& d_search,
       parts, &d_top_indexes);
 #ifdef GALG_DEGBUG
   u64 endtime = getTime();
-  cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+  cout<<">>>>[time profiling]: Selection  takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
 #endif
 
 }
@@ -181,7 +181,7 @@ u64 starttime = getTime();
       *minmax.second, &d_tops, &d_end_index, parts, &d_top_indexes);
 #ifdef GALD_DEBUG
 u64 endtime = getTime();
-cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
 #endif
 
 }
@@ -227,7 +227,7 @@ GaLG::topk(device_vector<data_t>& d_search,
 
 #ifdef GALG_DEBUG
   u64 endtime = getTime();
-  cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+  cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
 #endif
 
 }
@@ -272,7 +272,7 @@ u64 starttime = getTime();
 
 #ifdef GALG_DEBUG
 u64 endtime = getTime();
-cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms ((GPU k selection)<<<<"<<endl;
 #endif
 
 }

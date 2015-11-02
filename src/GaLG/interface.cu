@@ -53,7 +53,7 @@ namespace GaLG
 		  u64 endtime = getTime();
 		  double timeInterval = getInterval(starttime, endtime);
 		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
-		  cout<<">>>>loading index takes "<<timeInterval<<" ms<<<<"<<endl;
+		  cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 
@@ -100,7 +100,7 @@ namespace GaLG
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime,endtime);
 		printf("%d queries are created!\n", queries.size());
-		cout<<">>>>loading query takes "<<timeInterval<<" ms<<<<"<<endl;
+		cout<<">>>>[time profiling]: loading query takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 	void
@@ -146,7 +146,7 @@ namespace GaLG
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime, endtime);
 		printf("%d queries are created!\n", queries.size());
-		cout<<">>>>loading query (for one dim multi-values) takes "<<timeInterval<<" ms<<<<"<<endl;
+		cout<<">>>>[time profiling]: loading query takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
 #endif
 	}
 
@@ -166,7 +166,7 @@ namespace GaLG
 	  u64 endtime = getTime();
 	  double timeInterval = getInterval(starttime,endtime);
 	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
-	  cout<<">>>>loading index (for one dim multi-values) takes "<<timeInterval<<" ms<<<<"<<endl;
+	  cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
 #endif
 	}
 
