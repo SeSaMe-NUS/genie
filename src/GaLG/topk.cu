@@ -109,6 +109,12 @@ GaLG::topk(device_vector<int>& d_search,
 		   device_vector<int>& d_tops,
 		   device_vector<int>& d_top_indexes)
 {
+
+
+#ifdef GALG_DEBUG
+  u64 starttime = getTime();
+
+#endif
   int parts = d_tops.size();
   int total = 0, i, num;
   for (i = 0; i < parts; i++)
@@ -134,6 +140,11 @@ GaLG::topk(device_vector<int>& d_search,
   float max = *minmax.second;
   bucket_topk<int, ValueOfInt>(&d_search, val, min, max, &d_tops, &d_end_index,
       parts, &d_top_indexes);
+#ifdef GALG_DEGBUG
+  u64 endtime = getTime();
+  cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+#endif
+
 }
 
 void
@@ -141,6 +152,10 @@ GaLG::topk(device_vector<float>& d_search,
 		   device_vector<int>& d_tops,
 		   device_vector<int>& d_top_indexes)
 {
+#ifdef GALG_DEBUG
+u64 starttime = getTime();
+#endif
+
   int parts = d_tops.size();
   int total = 0, i, num;
   for (i = 0; i < parts; i++)
@@ -164,6 +179,11 @@ GaLG::topk(device_vector<float>& d_search,
   val.max = *minmax.second;
   bucket_topk<float, ValueOfFloat>(&d_search, val, *minmax.first,
       *minmax.second, &d_tops, &d_end_index, parts, &d_top_indexes);
+#ifdef GALD_DEBUG
+u64 endtime = getTime();
+cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+#endif
+
 }
 
 void
@@ -172,7 +192,10 @@ GaLG::topk(device_vector<data_t>& d_search,
 		   device_vector<int>& d_top_indexes,
 		   float dim)
 {
+#ifdef GALG_DEBUG
+	u64 starttime = getTime();
 
+#endif
 	if(d_tops.size() == 0)
 	{
 		printf("Error: No query found! Program aborted...\n");
@@ -201,6 +224,12 @@ GaLG::topk(device_vector<data_t>& d_search,
   val.max = maxval;
   bucket_topk<data_t, ValueOfData>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
+
+#ifdef GALG_DEBUG
+  u64 endtime = getTime();
+  cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+#endif
+
 }
 void
 GaLG::topk(device_vector<u32>& d_search,
@@ -208,6 +237,9 @@ GaLG::topk(device_vector<u32>& d_search,
        device_vector<int>& d_top_indexes,
        u32 dim)
 {
+#ifdef GALG_DEBUG
+u64 starttime = getTime();
+#endif
 
   if(d_tops.size() == 0)
   {
@@ -237,4 +269,10 @@ GaLG::topk(device_vector<u32>& d_search,
   val.max = maxval;
   bucket_topk<u32, ValueOfU32>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
+
+#ifdef GALG_DEBUG
+u64 endtime = getTime();
+cout<<">>>>Selection (GPU k selection) takes "<<getInterval(starttime,endtime)<<" ms<<<<"<<endl;
+#endif
+
 }

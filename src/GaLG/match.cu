@@ -1321,8 +1321,9 @@ GaLG::match(inv_table& table,
   cudaEventSynchronize(kernel_stop);
   kernel_elapsed = 0.0f;
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
-  printf("[Info] Match function takes %f ms.\n", getInterval(match_start, match_stop));
-  printf("[Info] Match kernel takes %f ms.\n", kernel_elapsed);
+  printf(">>>> [Info] Match kernel (GPU running) takes %f ms.\n", kernel_elapsed);
+  printf(">>>> [Info] Match function (including Match kernel, GPU+CPU part) takes %f ms.\n", getInterval(match_start, match_stop));
+
   printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 #endif
 }

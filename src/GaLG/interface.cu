@@ -34,6 +34,7 @@ namespace GaLG
 		  u32 i,j;
 #ifdef GALG_DEBUG
 		  printf("Data row size: %d. Data Row Number: %d.\n", data_points[0].size(), data_points.size());
+		  u64 starttime = getTime();
 #endif
 		  for(i = 0; i < data_points[0].size(); ++i)
 		  {
@@ -49,7 +50,10 @@ namespace GaLG
 
 		  table.build();
 #ifdef GALG_DEBUG
+		  u64 endtime = getTime();
+		  double timeInterval = getInterval(starttime, endtime);
 		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+		  cout<<">>>>loading index takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 
@@ -60,6 +64,7 @@ namespace GaLG
 	{
 #ifdef GALG_DEBUG
 		printf("Table dim: %d.\n", table.m_size());
+		u64 starttime = getTime();
 #endif
 		u32 i,j;
 		int value;
@@ -92,7 +97,10 @@ namespace GaLG
 			queries.push_back(q);
 		}
 #ifdef GALG_DEBUG
+		u64 endtime = getTime();
+		double timeInterval = getInterval(starttime,endtime);
 		printf("%d queries are created!\n", queries.size());
+		cout<<">>>>loading query takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 	void
@@ -101,6 +109,7 @@ namespace GaLG
 				GaLG_Config& config)
 	{
 #ifdef GALG_DEBUG
+		u64 starttime = getTime();
 		printf("Table dim: %d.\n", table.m_size());
 #endif
 		u32 i,j;
@@ -134,19 +143,30 @@ namespace GaLG
 			queries.push_back(q);
 		}
 #ifdef GALG_DEBUG
+		u64 endtime = getTime();
+		double timeInterval = getInterval(starttime, endtime);
 		printf("%d queries are created!\n", queries.size());
+		cout<<">>>>loading query (for one dim multi-values) takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 
 	void
 	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points)
 	{
+
+#ifdef GALG_DEBUG
+	  u64 starttime = getTime();
+
+#endif
 	  inv_list list;
 	  list.invert_tweets(data_points);
 	  table.append(list);
 	  table.build();
 #ifdef GALG_DEBUG
+	  u64 endtime = getTime();
+	  double timeInterval = getInterval(starttime,endtime);
 	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+	  cout<<">>>>loading index (for one dim multi-values) takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
 
