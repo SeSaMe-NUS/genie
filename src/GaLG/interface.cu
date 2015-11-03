@@ -224,6 +224,10 @@ void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
 	printf("Loading queries...");
 #endif
 
+#ifdef GALG_DEBUG
+	u64 starttime = getTime();
+#endif
+
 	load_query_tweets(table,queries,config);
 
 #ifdef GALG_DEBUG
@@ -231,6 +235,11 @@ void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
 #endif
 
 	knn_search(table, queries, result, config);
+#ifdef GALG_DEBUG
+	u64 endtime = getTime();
+	double elapsed = getInterval(starttime, endtime);
+	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
+#endif
 }
 
 void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
@@ -247,6 +256,7 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 #ifdef GALG_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
+    u64 starttime = getTime();
 #endif
 
 	load_query(table,queries,config);
@@ -256,6 +266,13 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 #endif
 
 	knn_search(table, queries, result, config);
+
+
+#ifdef GALG_DEBUG
+	u64 endtime = getTime();
+	double elapsed = getInterval(starttime, endtime);
+	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
+#endif
 }
 
 
