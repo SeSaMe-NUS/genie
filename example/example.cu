@@ -95,6 +95,9 @@ int main(int argc, char * argv[])//for ide: from main to main5
 
 	//The pointer to the vector containing the queries.
 	config.query_points = &queries;
+	config.multiplier = 2.5f;
+	config.posting_list_max_length = 500;
+	config.use_load_balance = true;
 
 	/*** End of Configuration ***/
 

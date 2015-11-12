@@ -716,6 +716,8 @@ namespace GaLG
           int hash_table_size,
           int* d_ck,
           int* d_inv,
+          int* d_inv_index,
+          int* d_inv_pos,
           query::dim* d_dims,
           T_HASHTABLE* hash_table_list,
           u32 * bitmap_list,
@@ -736,14 +738,16 @@ namespace GaLG
       if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 /bitmap_bits) + 1)];
       u32 access_id;
 
-      int min, max;
+      int min, max, min_offset, max_offset;
       min = q.low;
+      min_offset = q.low_offset;
       max = q.up;
+      max_offset = q.up_offset;
       if (min > max)
         return;
 
-      min < 1 ? min = 0 : min = d_ck[min - 1];
-      max = d_ck[max];
+      min = d_inv_pos[d_inv_index[min]+min_offset];
+      max = d_inv_pos[d_inv_index[max]+max_offset+1];
 
       bool key_eligible;//for ask: what does it mean for key_eligible
 
@@ -819,6 +823,8 @@ namespace GaLG
                int hash_table_size,
                int* d_ck,
                int* d_inv,
+               int* d_inv_index,
+               int* d_inv_pos,
                query::dim* d_dims,
                T_HASHTABLE* hash_table_list,
                u32 * bitmap_list,
@@ -845,14 +851,16 @@ namespace GaLG
        if(bitmap_bits) bitmap = &bitmap_list[query_index * (i_size / (32 /bitmap_bits) + 1)];
        u32 access_id;
 
-       int min, max;
+       int min, max, min_offset, max_offset;
        min = q.low;
+       min_offset = q.low_offset;
        max = q.up;
+       max_offset = q.up_offset;
        if (min > max)
          return;
 
-       min < 1 ? min = 0 : min = d_ck[min - 1];
-       max = d_ck[max];
+       min = d_inv_pos[d_inv_index[min]+min_offset];
+       max = d_inv_pos[d_inv_index[max]+max_offset+1];
 
        bool key_eligible;//for ask: what does it mean for key_eligible
        bool pass_threshold;//to determine whether pass the check of my_theshold
@@ -963,17 +971,27 @@ namespace GaLG
 }
 
 void
-GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims)
+GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load)
 {
 	for (int i = 0; i < queries.size(); ++i)
 	{
 	  if (queries[i].ref_table() != &table)
 		throw inv_table::not_matched_exception;
 	  if (table.build_status() == inv_table::builded)
-		queries[i].build();
+		  if(queries[i].use_load_balance)
+		  {
+			  queries[i].build_and_apply_load_balance(max_load);
+
+		  } else {
+			  queries[i].build();
+		  }
+
 	  else if (table.build_status() == inv_table::builded_compressed)
 		queries[i].build_compressed();
+
 	  queries[i].dump(dims);
+	  //int load_balance_count = queries[i].dump(dims);
+	  //printf("query %d: previous %d, load balance %d.\n", i, queries[i].count_ranges(), load_balance_count);
 	}
 }
 void
@@ -981,13 +999,14 @@ GaLG::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
             int hash_table_size,
+            int max_load,
             int bitmap_bits,
             int num_of_hot_dims,
             int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
 	device_vector<u32> d_bitmap;
-	match(table, queries,d_data,d_bitmap,hash_table_size,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+	match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
 }
 void
 GaLG::match(inv_table& table,
@@ -995,6 +1014,7 @@ GaLG::match(inv_table& table,
             device_vector<data_t>& d_data,
             device_vector<u32>& d_bitmap,
             int hash_table_size,
+            int max_load,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
             int num_of_hot_dims,
             int hot_dim_threshold,
@@ -1040,7 +1060,7 @@ GaLG::match(inv_table& table,
 //	}
 //	printf("Host query size: %d.\n", queries.size());
 
-  build_queries(queries, table, dims);
+  build_queries(queries, table, dims, max_load);
 
 #ifdef GALG_DEBUG
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
@@ -1090,7 +1110,8 @@ GaLG::match(inv_table& table,
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
-	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after, total_m;
+	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after,
+		   free_inv_index_after, free_inv_pos_after, total_m;
 	cudaMemGetInfo(&free_ck_before, &total_m);
 	device_vector<int> d_ck(*table.ck());
 	cudaMemGetInfo(&free_ck_after, &total_m);
@@ -1106,6 +1127,15 @@ GaLG::match(inv_table& table,
 
 	d_bitmap.resize(bitmap_size);
 	cudaMemGetInfo(&free_bitmap_after, &total_m);
+
+	device_vector<int> d_inv_index(*table.inv_index());
+	int* d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+	cudaMemGetInfo(&free_inv_index_after, &total_m);
+
+	device_vector<int> d_inv_pos(*table.inv_pos());
+	int* d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+	cudaMemGetInfo(&free_inv_pos_after, &total_m);
+
 	if(bitmap_size)
 	{
 		thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
@@ -1113,11 +1143,13 @@ GaLG::match(inv_table& table,
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
 #ifdef GALG_DEBUG
-	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u.\n",
+	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u\nd_inv_index size: %u\nd_inv_pos size: %d\n",
 		  	free_ck_before - free_ck_after,
 		  	free_ck_after - free_inv_after ,
 		  	free_inv_after - free_q_after,
-		  	free_q_after- free_bitmap_after);
+		  	free_q_after- free_bitmap_after,
+		  	free_bitmap_after - free_inv_index_after,
+		  	free_inv_index_after - free_inv_pos_after);
 
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
@@ -1154,7 +1186,7 @@ GaLG::match(inv_table& table,
 	do{
 		h_overflow[0] = false;
 		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-		cudaCheckErrors(cudaDeviceSynchronize());
+		//cudaCheckErrors(cudaDeviceSynchronize());
 		u32 num_of_max_count=0,max_topk=0;
 		if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
 		{
@@ -1164,6 +1196,8 @@ GaLG::match(inv_table& table,
 					hash_table_size,
 					d_ck_p,
 					d_inv_p,
+					d_inv_index_p,
+					d_inv_pos_p,
 					d_dims_p,
 					d_hash_table,
 					d_bitmap_p,
@@ -1207,6 +1241,8 @@ GaLG::match(inv_table& table,
 						hash_table_size,
 						d_ck_p,
 						d_inv_p,
+						d_inv_index_p,
+						d_inv_pos_p,
 						d_dims_p,
 						d_hash_table,
 						d_bitmap_p,
@@ -1223,7 +1259,7 @@ GaLG::match(inv_table& table,
 
 	}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
-		cudaCheckErrors(cudaDeviceSynchronize());
+		//cudaCheckErrors(cudaDeviceSynchronize());
 		cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
 		if(h_overflow[0])
@@ -1309,7 +1345,7 @@ GaLG::match(inv_table& table,
   printf("[ 90%] Starting data converting......\n");
 #endif
 
-  cudaCheckErrors(cudaDeviceSynchronize());
+  //cudaCheckErrors(cudaDeviceSynchronize());
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
 #ifdef GALG_DEBUG

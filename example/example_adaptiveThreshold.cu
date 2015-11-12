@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 
-	config.selectivity = 0.04f;
+	config.selectivity = 0.2f;
 
 
 	//The pointer to the vector containing the data.
@@ -105,6 +105,9 @@ int main(int argc, char * argv[])
 	//The pointer to the vector containing the queries.
 	config.query_points = &queries;
 
+	config.multiplier = 2.5f;
+	config.posting_list_max_length = 500;
+	config.use_load_balance = true;
 	/*** End of Configuration ***/
 
 	/*** NOTE TO DEVELOPERS ***/

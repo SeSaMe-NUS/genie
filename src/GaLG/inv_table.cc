@@ -1,5 +1,5 @@
 #include "inv_table.h"
-
+#include "stdio.h"
 #include "inv_list.h"
 
 using namespace GaLG;
@@ -82,6 +82,18 @@ GaLG::inv_table::inv()
   return &_inv;
 }
 
+vector<int>*
+GaLG::inv_table::inv_index()
+{
+	return &_inv_index;
+}
+
+vector<int>*
+GaLG::inv_table::inv_pos()
+{
+	return &_inv_pos;
+}
+
 map<int, int>*
 GaLG::inv_table::ck_map()
 {
@@ -89,9 +101,10 @@ GaLG::inv_table::ck_map()
 }
 
 void
-GaLG::inv_table::build()
+GaLG::inv_table::build(u64 max_length)
 {
   _ck.clear(), _inv.clear();
+  _inv_index.clear(); _inv_pos.clear();
   int i, j, key, dim, value, last;
   for (i = 0; i < _inv_lists.size(); i++)
     {
@@ -105,18 +118,70 @@ GaLG::inv_table::build()
             {
               last = _ck.size();
               _ck.resize(key + 1);
+              _inv_index.resize(key+1);
               for (; last < _ck.size(); last++)
-                _ck[last] = _inv.size();
+              {
+            	  _ck[last] = _inv.size();
+            	  _inv_index[last] = _inv_pos.size();
+              }
             }
           for (j = 0; j < index.size(); j++)
             {
+        	  if(j % max_length == 0){
+        		  _inv_pos.push_back(_inv.size());
+        	  }
               _inv.push_back(index[j]);
               _ck[key] = _inv.size();
             }
+
         }
 
     }
+  _inv_index.push_back(_inv_pos.size());
+  _inv_pos.push_back(_inv.size());
+
   _build_status = builded;
+  printf("inv_index size %d:\n", _inv_index.size());
+//  for(i = 0; i < _inv_index.size(); ++i)
+//  {
+//	  printf("%d, ", _inv_index[i]);
+//  }
+//  printf("\n");
+  printf("inv_pos size %d:\n", _inv_pos.size());
+//  for(i = 0; i < _inv_pos.size(); ++i)
+//  {
+//	  printf("%d, ", _inv_pos[i]);
+//  }
+//  printf("\n");
+  printf("inv size %d:\n", _inv.size());
+//  for(i = 0; i < _inv.size(); ++i)
+//  {
+//	  printf("%d, ", _inv[i]);
+//  }
+//  printf("\n");
+//  for(i = 0; i<= 4; ++i)
+//  {
+//	  dim = i << _shifter;
+//	  for(j = 0; j <= 4; ++j)
+//	  {
+//		  key = dim + j;
+//		  printf("dim %d value %d: \n", i, j+10+i*10);
+//		  int index_begin = _inv_index[key];
+//		  int index_end = _inv_index[key+1];
+//		  for(int x = index_begin; x < index_end; ++x)
+//		  {
+//			  int pos_begin = _inv_pos[x];
+//			  int pos_end = _inv_pos[x + 1];
+//			  printf("postlist->%d, begin->%d, end->%d.\n", x-index_begin, pos_begin, pos_end);
+//			  for(int z = pos_begin; z < pos_end; ++z)
+//			  {
+//				  printf("%d, ", _inv[z]);
+//			  }
+//			  printf("\n");
+//		  }
+//
+//	  }
+//  }
 }
 
 void

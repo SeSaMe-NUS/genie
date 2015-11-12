@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+typedef unsigned long long u64;
 
 using namespace std;
 
@@ -56,7 +57,15 @@ namespace GaLG
      * @brief The inverted indexes' vector.
      */
     vector<int> _inv;
+    /**
+     * @brief The first level index lists of posting lists vector
+     */
+    vector<int> _inv_index;
 
+    /**
+     * @brief The second level posting lists vector
+     */
+    vector<int> _inv_pos;
     /**
      * @brief The map used in compressed array.
      */
@@ -171,7 +180,10 @@ namespace GaLG
      */
     vector<int>*
     inv();
-
+    vector<int>*
+    inv_index();
+    vector<int>*
+    inv_pos();
     /**
      * @brief The _ck_map's pointer.
      * @details The _ck_map's pointer.
@@ -188,7 +200,7 @@ namespace GaLG
      *          only be done after the inv_table has been builded.
      */
     void
-    build();
+    build(u64 max_length);
 
     /**
      * @brief Build the inv_table as a compressed array.

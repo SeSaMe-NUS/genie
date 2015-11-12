@@ -23,6 +23,8 @@ namespace GaLG
 		int low;
 		int up;
 		float weight;
+		int low_offset;
+		int up_offset;
 	};
     struct dim
     { 
@@ -30,6 +32,8 @@ namespace GaLG
       int low;
       int up;
       float weight;
+	  int low_offset;
+	  int up_offset;
     };
 
   private:
@@ -65,12 +69,19 @@ namespace GaLG
 
     int _index;
 
+    int _count;
+
     inline u64 pack_dim_and_count(u32 dim, u64 count);
 
     inline u32 unpack_dim(u64 packed_data);
 
     inline u64 unpack_count(u64 packed_data);
   public:
+
+    bool is_load_balanced;
+    bool use_load_balance;
+    vector<dim> _dims;
+
     /**
      * @brief Create a query based on an inv_table.
      * @details Create a query based on an inv_table.
@@ -121,6 +132,9 @@ namespace GaLG
 
     void
     apply_adaptive_query_range();
+
+    void
+    build_and_apply_load_balance(int max_load);
 
     /**
      * @brief Set top k matches.

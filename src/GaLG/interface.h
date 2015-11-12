@@ -21,6 +21,9 @@
 #define GALG_DEFAULT_HOT_DIM_THRESHOLD GALG_DEFAULT_THRESHOLD
 #define GALG_DEFAULT_USE_ADAPTIVE_RANGE false
 #define GALG_DEFAULT_SELECTIVITY -1.0f
+#define GALG_DEFAULT_POSTING_LIST_LENGTH 100000
+#define GALG_DEFAULT_LOAD_MULTIPLIER 3.0f
+#define GALG_DEFAULT_USE_LOAD_BALANCE false
 
 namespace GaLG
 {
@@ -37,6 +40,9 @@ namespace GaLG
 		float selectivity;
 		std::vector<std::vector<int> > * data_points;
 		std::vector<std::vector<int> > * query_points;
+		int posting_list_max_length;
+		float multiplier;
+		bool use_load_balance;
 		_GaLG_Config():
 			num_of_topk(GALG_DEFAULT_TOPK),
 			query_radius(GALG_DEFAULT_RADIUS),
@@ -49,7 +55,10 @@ namespace GaLG
 			num_of_hot_dims(GALG_DEFAULT_NUM_OF_HOT_DIMS),
 			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD),
 			use_adaptive_range(GALG_DEFAULT_USE_ADAPTIVE_RANGE),
-			selectivity(GALG_DEFAULT_SELECTIVITY)
+			selectivity(GALG_DEFAULT_SELECTIVITY),
+			posting_list_max_length(GALG_DEFAULT_POSTING_LIST_LENGTH),
+			multiplier(GALG_DEFAULT_LOAD_MULTIPLIER),
+			use_load_balance(GALG_DEFAULT_USE_LOAD_BALANCE)
 		{}
 	} GaLG_Config;
 

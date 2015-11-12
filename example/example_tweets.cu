@@ -70,6 +70,9 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	config.data_points = &data;
 	config.query_points = &queries;
+	config.multiplier = 1.5f;
+	config.posting_list_max_length = 20000;
+	config.use_load_balance = true;
 	std::vector<int> result;
 	printf("Launching knn functions...\n");
 	u64 start = getTime();

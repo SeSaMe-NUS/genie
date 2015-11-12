@@ -100,17 +100,18 @@ GaLG::calculate_bits_per_data(int bitmap_bits)
 void
 GaLG::knn(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes)
+		   device_vector<int>& d_top_indexes,
+		   int max_load)
 {
 	int hash_table_size = GaLG_knn_DEFAULT_HASH_TABLE_SIZE * table.i_size() + 1;
-	knn(table, queries, d_top_indexes, hash_table_size, GaLG_knn_DEFAULT_BITMAP_BITS);
+	knn(table, queries, d_top_indexes, hash_table_size, max_load,GaLG_knn_DEFAULT_BITMAP_BITS);
 }
 
 void
 GaLG::knn(GaLG::inv_table& table, vector<GaLG::query>& queries,
-    device_vector<int>& d_top_indexes, int hash_table_size, int bitmap_bits)
+    device_vector<int>& d_top_indexes, int hash_table_size, int max_load,int bitmap_bits)
 {
-	knn(table, queries, d_top_indexes, hash_table_size, bitmap_bits, table.m_size(), 0, 0);
+	knn(table, queries, d_top_indexes, hash_table_size,max_load, bitmap_bits, table.m_size(), 0, 0);
 }
 
 
@@ -119,38 +120,40 @@ GaLG::knn(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
+		   int max_load,
 		   int bitmap_bits,
 		   int dim)
 {
-	knn(table, queries, d_top_indexes, hash_table_size, bitmap_bits, dim, 0,0);
+	knn(table, queries, d_top_indexes, hash_table_size, max_load,bitmap_bits, dim, 0,0);
 }
 void
 GaLG::knn_tweets(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
-		   device_vector<int>& d_top_indexes,//for ask: store the topk ids?
+		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
-		   int bitmap_bits,//countThreshold
+		   int max_load,
+		   int bitmap_bits,
 		   int dim,
-		   int num_of_hot_dims,//for ask: not useful?
-		   int hot_dim_threshold)//for ask: not useful?
+		   int num_of_hot_dims,
+		   int hot_dim_threshold)
 {
   int qmax = 0;
 
   for(int i = 0; i < queries.size(); ++i)
   {
-	 int count = queries[i].count_ranges();//for ask: what is count_ranges()?// to count the maximum value for topk
+	 int count = queries[i].count_ranges();
 	  if(count > qmax)
 		  qmax = count;
   }
 #ifdef GALG_DEBUG
   u64 start = getTime();
 #endif
-  knn(table, queries, d_top_indexes, hash_table_size, bitmap_bits,
+  knn(table, queries, d_top_indexes, hash_table_size,max_load, bitmap_bits,
 		  	  float(qmax+1), num_of_hot_dims, hot_dim_threshold);
 #ifdef GALG_DEBUG
   u64 end = getTime();
   double elapsed = getInterval(start, end);
-  printf(">>>>>>> [time profiling]: kNN takes %fms (i.e. match + selection) <<<<<< \n", elapsed);
+  printf(">>>>>>> knn takes %fms <<<<<< \n", elapsed);
 #endif
 }
 void
@@ -158,27 +161,38 @@ GaLG::knn(GaLG::inv_table& table,
 		   vector<GaLG::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
-		   int bitmap_bits,//countThreshold
+		   int max_load,
+		   int bitmap_bits,
 		   int dim,
-		   int num_of_hot_dims,//not useful
-		   int hot_dim_threshold)//not useful
+		   int num_of_hot_dims,
+		   int hot_dim_threshold)
 {
 #ifdef GALG_DEBUG
-  printf("Parameters: hash_table_size:%d, bitmap_bits:%d,dim:%d,num_of_hot_dims:%d,hot_dim_threshold:%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
+  printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
 #endif
+
+  int qmax = 0;
+  for(int i = 0; i < queries.size(); ++i)
+  {
+	 int count = queries[i].count_ranges();
+	  if(count > qmax)
+		  qmax = count;
+  }
+  dim = qmax;
 
   int bitmap_threshold = bitmap_bits;
   device_vector<data_t> d_data;
   device_vector<u32> d_bitmap;
-  device_vector<u32> d_selected_bitmap;//for ask: what is d_selected_bitmap?
-  device_vector<u32> d_augmented_bitmap;//for ask: what is d_augmented_bitmap?
-  device_vector<u32> d_num_of_items_in_hashtable(queries.size());//for ask: what is d_num_of_items_in_hashtable
+  device_vector<u32> d_selected_bitmap;
+  device_vector<u32> d_augmented_bitmap;
+  device_vector<u32> d_num_of_items_in_hashtable(queries.size());
   std::vector<int> selected_query_index;
   device_vector<int> d_selected_top_indexes;
 
-  match(table, queries, d_data, d_bitmap, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold, d_num_of_items_in_hashtable);
+  printf("[knn] max_load is %d.\n", max_load);
+  match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, num_of_hot_dims, hot_dim_threshold, d_num_of_items_in_hashtable);
 
-  cudaCheckErrors(cudaDeviceSynchronize());
+  //cudaCheckErrors(cudaDeviceSynchronize());
 
   host_vector<u32> h_num_of_items_in_hashtable(d_num_of_items_in_hashtable);
   /**   Debug Section  **/
@@ -191,7 +205,10 @@ GaLG::knn(GaLG::inv_table& table,
   /** End of Debug Section **/
 
   //If no bitmap, then no need to collect topk in bitmap
-  if(bitmap_bits > 1){//for AT: for adaptiveThreshold, if bitmap_bits<0, using adaptive threshold, then no need to collect topk in bitmap
+  if(bitmap_bits > 1){
+#ifdef GALG_DEBUG
+	  u64 start = getTime();
+#endif
 
 	  //Calculate how many bits a data point is assigned to
 	  bitmap_bits = calculate_bits_per_data(bitmap_bits);
@@ -215,11 +232,16 @@ GaLG::knn(GaLG::inv_table& table,
 	  device_vector<u32>().swap(d_bitmap);
 
 #ifdef GALG_DEBUG
+	  u64 end = getTime();
 	  printf("size of selected bitmap: %d\n", d_selected_bitmap.size());
+	  printf(">>>>> extract selected bitmaps takes %fms <<<<<\n", getInterval(start, end));
 #endif
 
 	  if(selected_query_index.size() > 0)
 	  {
+#ifdef GALG_DEBUG
+		  start = getTime();
+#endif
 		  //Augment the selected bitmap
 		  u32 augmented_size = selected_query_index.size() * table.i_size();
 		  d_augmented_bitmap.resize(augmented_size);
@@ -230,8 +252,12 @@ GaLG::knn(GaLG::inv_table& table,
 
 		  augment_bitmap<<<total_threads/GaLG_knn_THREADS_PER_BLOCK + 1,GaLG_knn_THREADS_PER_BLOCK>>>
 				  (d_augmented_bitmap_p, d_selected_bitmap_p, d_selected_bitmap.size(), augmented_size, num_per_u32);
-		  cudaCheckErrors(cudaDeviceSynchronize());
-
+		  //cudaCheckErrors(cudaDeviceSynchronize());
+#ifdef GALG_DEBUG
+		  end = getTime();
+		  printf(">>>>> augment bitmap takes %fms <<<<<\n", getInterval(start, end));
+		  start = getTime();
+#endif
 		  /**   Debug Section  **/
 		  // host_vector<u32> h_augmented_bitmap(d_augmented_bitmap);
 		  // printf("The first 2048 items in augmented bitmap are:\n");
@@ -263,7 +289,7 @@ GaLG::knn(GaLG::inv_table& table,
 		  }
 
 		  topk(d_augmented_bitmap, selected_queries, d_selected_top_indexes, u32(bitmap_threshold));
-		  cudaCheckErrors(cudaDeviceSynchronize());
+		  //cudaCheckErrors(cudaDeviceSynchronize());
 
 		  d_augmented_bitmap.clear();
 		  device_vector<u32>().swap(d_augmented_bitmap);
@@ -287,12 +313,19 @@ GaLG::knn(GaLG::inv_table& table,
  //				 h_selected_top_indexes[i * selected_queries[i].topk() + j] -= table.i_size()*i;
  //			  }
  //		  }
-
+#ifdef GALG_DEBUG
+		  end = getTime();
+		  printf(">>>>> selected bitmap topk takes %fms <<<<<\n", getInterval(start, end));
+		  start =getTime();
+#endif
 		  int * d_selected_top_indexes_p = thrust::raw_pointer_cast(d_selected_top_indexes.data());
 		  correct_index<<<d_selected_top_indexes.size() / GaLG_knn_THREADS_PER_BLOCK + 1, GaLG_knn_THREADS_PER_BLOCK>>>
 					   (d_selected_top_indexes_p, d_selected_top_indexes.size(), queries[0].topk(), table.i_size());
-		  cudaCheckErrors(cudaDeviceSynchronize());
-
+		  //cudaCheckErrors(cudaDeviceSynchronize());
+#ifdef GALG_DEBUG
+		  end = getTime();
+		  printf(">>>>>correct selected bitmap index takes %fms <<<<<\n", getInterval(start, end));
+#endif
 		  /**   Debug Section  **/
  //		   printf("The items in d_selected_top_indexes are:\n");
  //		   for(u32 i = 0; i < selected_query_index.size(); ++i)
@@ -311,18 +344,22 @@ GaLG::knn(GaLG::inv_table& table,
 
 #ifdef GALG_DEBUG
   printf("Start topk....\n");
+  u64 start = getTime();
 #endif
 
   topk(d_data, queries, d_top_indexes, float(dim));
-  cudaCheckErrors(cudaDeviceSynchronize());
+  //cudaCheckErrors(cudaDeviceSynchronize());
 
 #ifdef GALG_DEBUG
+  u64 end = getTime();
   printf("Topk Finished! \n");
+  printf(">>>>> main topk takes %fms <<<<<\n", getInterval(start, end));
+  start=getTime();
 #endif
 
   extract_index<<<d_top_indexes.size() / GaLG_knn_THREADS_PER_BLOCK + 1, GaLG_knn_THREADS_PER_BLOCK>>>
 			   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
-  cudaCheckErrors(cudaDeviceSynchronize());
+  //cudaCheckErrors(cudaDeviceSynchronize());
 
   // If has selected topk results, then overwrite the main vector d_top_indexes with the selected results
   if(d_selected_top_indexes.size() != 0 && selected_query_index.size() != 0)
@@ -338,6 +375,8 @@ GaLG::knn(GaLG::inv_table& table,
   }
 
 #ifdef GALG_DEBUG
+  end=getTime();
   printf("Finish topk search!\n");
+  printf(">>>>> extract index and copy selected topk results takes %fms <<<<<\n", getInterval(start, end));
 #endif
 }

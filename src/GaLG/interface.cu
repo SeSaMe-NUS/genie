@@ -28,7 +28,7 @@ using namespace std;
 namespace GaLG
 {
 	void
-	load_table(inv_table& table, std::vector<std::vector<int> >& data_points)
+	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
 	{
 		  inv_list list;
 		  u32 i,j;
@@ -48,7 +48,7 @@ namespace GaLG
 			  table.append(list);
 		  }
 
-		  table.build();
+		  table.build(max_length);
 #ifdef GALG_DEBUG
 		  u64 endtime = getTime();
 		  double timeInterval = getInterval(starttime, endtime);
@@ -74,7 +74,7 @@ namespace GaLG
 		{
 			query q(table, i);
 
-			for(j = 0; j < query_points[i].size(); ++j){
+			for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
 
 				value = query_points[i][j];
 				if(value < 0)
@@ -92,6 +92,10 @@ namespace GaLG
 			if(config.use_adaptive_range)
 			{
 				q.apply_adaptive_query_range();
+			}
+			if(config.use_load_balance)
+			{
+				q.use_load_balance = true;
 			}
 
 			queries.push_back(q);
@@ -139,6 +143,10 @@ namespace GaLG
 			{
 				q.apply_adaptive_query_range();
 			}
+			if(config.use_load_balance)
+			{
+				q.use_load_balance = true;
+			}
 
 			queries.push_back(q);
 		}
@@ -151,7 +159,7 @@ namespace GaLG
 	}
 
 	void
-	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points)
+	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
 	{
 
 #ifdef GALG_DEBUG
@@ -161,7 +169,7 @@ namespace GaLG
 	  inv_list list;
 	  list.invert_tweets(data_points);
 	  table.append(list);
-	  table.build();
+	  table.build(max_length);
 #ifdef GALG_DEBUG
 	  u64 endtime = getTime();
 	  double timeInterval = getInterval(starttime,endtime);
@@ -217,7 +225,7 @@ void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
 	printf("Building table...");
 #endif
 
-	load_table_tweets(table, *(config.data_points));
+	load_table_tweets(table, *(config.data_points), config.posting_list_max_length);
 
 #ifdef GALG_DEBUG
 	printf("Done!\n");
@@ -251,7 +259,7 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 	printf("Building table...");
 #endif
 
-	load_table(table, *(config.data_points));
+	load_table(table, *(config.data_points), config.posting_list_max_length);
 
 #ifdef GALG_DEBUG
 	printf("Done!\n");
@@ -309,11 +317,13 @@ void GaLG::knn_search(inv_table& table,
 #ifdef GALG_DEBUG
 	printf("Starting knn search...\n");
 #endif
-
+	int max_load = config.multiplier * config.posting_list_max_length + 1;
+	printf("max_load is %d\n", max_load);
 	GaLG::knn_tweets(table,//for ask: why knn_tweets, does it mean this is basic API?
 			   queries,
 			   d_topk,
 			   hashtable_size,
+			   max_load,
 			   config.count_threshold,
 			   config.dim,
 			   config.num_of_hot_dims,

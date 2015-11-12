@@ -83,6 +83,7 @@ namespace GaLG
 		  vector<query>& queries,
 		  device_vector<data_t>& d_data,
 		  int hash_table_size,
+		  int max_load,
 		  int bitmap_bits,
 		  int num_of_hot_dims,
 		  int hot_dim_threshold,
@@ -93,12 +94,13 @@ namespace GaLG
         device_vector<data_t>& d_data,
         device_vector<u32>& d_bitmap,
         int hash_table_size,
+        int max_load,
         int bitmap_bits,
         int num_of_hot_dims,
         int hot_dim_threshold,
         device_vector<u32>& d_noiih);
   void
-  build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims);
+  build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load);
 
 }
 
