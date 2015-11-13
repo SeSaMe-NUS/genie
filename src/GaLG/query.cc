@@ -161,9 +161,10 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 {
 	inv_table& table = *_ref_table;
 	this->build();
-	vector<int> inv = *table.inv();
-	vector<int> inv_index = *table.inv_index();
-	vector<int> inv_pos = *table.inv_pos();
+
+	vector<int>& inv = *table.inv();
+	vector<int>& inv_index = *table.inv_index();
+	vector<int>& inv_pos = *table.inv_pos();
 	int mask = (1 << 16) -1;
 
 	if(max_load <= 0)
@@ -171,12 +172,14 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 		printf("Please set a valid max_load.\n");
 		return;
 	}
+
 	_dims.clear();
-	printf("Query %d processing...\n", _index);
+	//printf("Query %d processing...\n", _index);
 	for(std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin(); di != _dim_map.end(); ++di)
 	{
 		std::vector<dim>& dims = *(di->second);
 		int orginal_size = dims.size();
+
 
 		for(int i = 0; i < orginal_size; ++i)
 		{
@@ -186,6 +189,7 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 			int low = d.low, up = d.up;
 			int vi, pi;
 			int count = 0;
+
 			for(vi = low; vi <= up; ++vi)
 			{
 				pi = inv_index[vi];
@@ -197,9 +201,10 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 						d.low_offset = pi - inv_index[vi];
 					}
 					count += inv_pos[pi+1]-inv_pos[pi];
+
 					if(count >= max_load)
 					{
-						//printf("query %d split list!\n", d.query);
+						//printf(" query %d split list pi=%d inv_pos[%d]=%d  count=%d! \n", d.query,pi,pi,inv_pos[pi],count);
 						dim new_dim;
 						new_dim.weight = d.weight;
 						new_dim.query = d.query;
@@ -212,8 +217,10 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 
 						d.low = -1;
 					}
+
 				}
 			}
+
 			if(d.low != -1)
 			{
 				dim new_dim;
@@ -226,8 +233,10 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 				_dims.push_back(new_dim);
 			}
 		}
+
 	}
-	printf("query %d _dims size is %d\n",_index,_dims.size());
+
+	//printf("query %d _dims size is %d\n",_index,_dims.size());
 //	for(int i = 0; i < _dims.size(); ++i)
 //	{
 //		dim& d = _dims[i];

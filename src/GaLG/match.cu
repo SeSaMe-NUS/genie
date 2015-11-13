@@ -1060,7 +1060,19 @@ GaLG::match(inv_table& table,
 //	}
 //	printf("Host query size: %d.\n", queries.size());
 
+
+
+#ifdef GALG_DEBUG
+  u64 match_query_start,match_query_end;
+  match_query_start=getTime();
+#endif
+
   build_queries(queries, table, dims, max_load);
+
+#ifdef GALG_DEBUG
+  match_query_end=getTime();
+  printf(">>>>[time profiling]: match: build_queries function takes %f ms. \n", getInterval(match_query_start, match_query_end));
+#endif
 
 #ifdef GALG_DEBUG
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
