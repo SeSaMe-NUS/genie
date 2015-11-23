@@ -17,20 +17,22 @@ build:
 
 #Building file: example.cu
 #Invoking: NVCC Compiler
-	nvcc -I../src -include ../src/GaLG.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example.d" "example.cu"
-	nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GaLG.h  -x cu -o  "example.o" "example.cu"
+#for debug
+	#nvcc -I../src -include ../src/GaLG.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example.d" "example.cu"
+	#nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GaLG.h  -x cu -o  "example.o" "example.cu"
 
-	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_bin"  example.o   -lGaLG -lpthread
+	#nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_bin"  example.o   -lGaLG -lpthread
 
 
 
 
 #Building file: example_tweets.cu
 #Invoking: NVCC Compiler
-	nvcc -I../src -include ../src/GaLG.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -M -o "example_tweets.d" "example_tweets.cu"
-	nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GaLG.h  -x cu -o  "example_tweets.o" "example_tweets.cu"
+#for debug
+	#nvcc -I../src -include ../src/GaLG.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -M -o "example_tweets.d" "example_tweets.cu"
+	#nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GaLG.h  -x cu -o  "example_tweets.o" "example_tweets.cu"
 
-	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_tweets_bin"  example_tweets.o   -lGaLG -lpthread
+	#nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_tweets_bin"  example_tweets.o   -lGaLG -lpthread
 
 
 #Building file: example_adaptiveThreshold.cu

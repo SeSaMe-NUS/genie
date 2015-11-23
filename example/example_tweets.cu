@@ -23,8 +23,13 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
-	read_file(data, "tweets_4k.csv", -1);
-	read_file(queries, "tweets_4k.csv", 100);
+	//char* datafile ="/media/hd2/zhoujingbo_data/OCR/hashed/numCF237/ocr_trn_dataSize-3412500_numCF-237_numDim-1155_r-18244.17_domainBits-13.csv";//for debug
+	//char* queryFiel="/media/hd2/zhoujingbo_data/OCR/hashed/numCF237/ocr_tst_dataSize-87500_numCF-237_numDim-1155_r-18244.17_domainBits-13.csv";
+	//read_file(data, "tweets_4k.csv", -1);//for debug
+	//read_file(queries, "tweets_4k.csv", 100);//for debug
+	char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
+	read_file(data, datafile, -1);//for debug
+	read_file(queries, datafile, 256);//for debug
 	GaLG::GaLG_Config config;
 
 	//Data dimension
@@ -32,13 +37,13 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	// i.e. there is only one dimension, all words are considered as the values. 
 	//given a query, there can be multiple values for this dimension. 
 	//This is like a bag-of-word model for string search
-	config.dim = 1;
+	config.dim = 14;
 
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
-	config.count_threshold = -144;
+	config.count_threshold = -14;
 
 	//Number of topk items desired for each query.
 	config.num_of_topk = 100;
@@ -51,7 +56,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
 			//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
 			//hash_table size is usually set as: maximum_countXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
-		config.hashtable_size = 144*config.num_of_topk*1.5;//960
+	config.hashtable_size = 14*config.num_of_topk*1.5;//960
 
 	//Query radius from the data point bucket expanding to upward and downward.
 		//For tweets data, set it as 0, which means exact match
@@ -72,9 +77,9 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.query_points = &queries;
 
 	//if use_load_balance=false, config.multiplier and config.posting_list_max_length are not useful
-	config.use_load_balance = false;
+	config.use_load_balance = true;
 	//maximum number per posting list, if a keyword has a long posting list, we break it into sublists, and this parameter defines the maximum length of sub-list
-	config.posting_list_max_length = 16000;
+	config.posting_list_max_length = 64000;
 	config.multiplier = 1.5f;//config.multiplier*config.posting_list_max_length is  maximum number of elements processed by one block
 
 	std::vector<int> result;

@@ -19,7 +19,7 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 	std::vector<std::vector<int> > queries;
-	std::vector<std::vector<int> > data;
+	std::vector<std::vector<int> > dataRead;
 	inv_table table;
 
 	//Reading file from the disk. Alternatively, one can simply use vectors generated from other functions
@@ -31,30 +31,42 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 
-	int queryNum = 5;
+	int queryNum = 1;
 	//char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+        //  char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
+	char* datafile = "/media/hd2/zhoujingbo_data/adult.csv";
 
-
-	read_file(data, "sift_1k.csv", -1);//for AT: for adaptiveThreshold
+	read_file(dataRead, datafile, 1000000);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
-	read_file(queries, "sift_1k.csv", queryNum);
+	read_file(queries, datafile, queryNum);
 
+	//duplicate data
+	int dup = 100;
+	std::vector<std::vector<int> > data;
+	data.reserve((dataRead.size()*dup));
+
+	for(int i=0;i<dup;i++){
+		for (int j=0;j<dataRead.size();j++){
+			data.push_back(dataRead[j]);
+		}
+	}
+	//duplicate data
 
 	/*** Configuration of KNN Search ***/
 	GaLG::GaLG_Config config;
 
 	//Data dimension
-	config.dim = 128;
+	config.dim = 14;
 
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
-	config.count_threshold = -128;
+	config.count_threshold = -14;
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 5;
+	config.num_of_topk = 100;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
@@ -64,17 +76,17 @@ int main(int argc, char * argv[])
 	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
 		//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
 		//hash_table size is usually set as: maximum_countXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
-	config.hashtable_size = 128*config.num_of_topk*1.5;//960
+	config.hashtable_size = 14*config.num_of_topk*1.5;//960
 
 
 
 
 	//Query radius from the data point bucket expanding to upward and downward.
 	//Will be overwritten by selectivity if use_adaptive_range is set.
-	config.query_radius = 7;
+	config.query_radius = 1;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
-	config.use_device = 0;
+	config.use_device = 1;
 
 	//Number of hot dimensions with long posting lists to be avoided.
 	//Once set to n, top n hot dimensions will be split from the query and submit again
@@ -105,9 +117,9 @@ int main(int argc, char * argv[])
 	//The pointer to the vector containing the queries.
 	config.query_points = &queries;
 
-	config.multiplier = 2.5f;
-	config.posting_list_max_length = 500;
-	config.use_load_balance = true;
+	config.multiplier = 1.5f;
+	config.posting_list_max_length = 6400;
+	config.use_load_balance = false;
 	/*** End of Configuration ***/
 
 	/*** NOTE TO DEVELOPERS ***/
@@ -162,7 +174,7 @@ int main(int argc, char * argv[])
 
 	{
 		printf("Query %d result is: \n\t", i);
-		for (int j = 0; j < config.num_of_topk; ++j)
+		for (int j = 0; j < 5; ++j)
 		{
 			printf("%d, ", result[i * config.num_of_topk + j]);
 		}

@@ -170,31 +170,47 @@ GaLG::knn(GaLG::inv_table& table,
 #ifdef GALG_DEBUG
   printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
 #endif
+  //for improve
+//  int qmax = 0;
+//  for(int i = 0; i < queries.size(); ++i)
+//  {
+//	 int count = queries[i].count_ranges();
+//	  if(count > qmax)
+//		  qmax = count;
+//  }
+  //end for improve
+  dim = 2;
+#ifdef GALG_DEBUG  //for improve
+  u64 startKnn = getTime();
+#endif
 
-  int qmax = 0;
-  for(int i = 0; i < queries.size(); ++i)
-  {
-	 int count = queries[i].count_ranges();
-	  if(count > qmax)
-		  qmax = count;
-  }
-  dim = qmax;
+#ifdef GALG_DEBUG  //for improve
+  u64 end3Knn = getTime();
+  printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end3Knn));
+#endif
 
   int bitmap_threshold = bitmap_bits;
   device_vector<data_t> d_data;
   device_vector<u32> d_bitmap;
-  device_vector<u32> d_selected_bitmap;
-  device_vector<u32> d_augmented_bitmap;
-  device_vector<u32> d_num_of_items_in_hashtable(queries.size());
-  std::vector<int> selected_query_index;
-  device_vector<int> d_selected_top_indexes;
+  //device_vector<u32> d_selected_bitmap;//for improve
+  //device_vector<u32> d_augmented_bitmap;//for improve
 
+ // std::vector<int> selected_query_index;//for improve
+  //device_vector<int> d_selected_top_indexes;//for improve
+#ifdef GALG_DEBUG  //for improve
+  u64 end2Knn = getTime();
+  printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end2Knn));
+#endif
+  device_vector<u32> d_num_of_items_in_hashtable(queries.size());
   printf("[knn] max_load is %d.\n", max_load);
   match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, num_of_hot_dims, hot_dim_threshold, d_num_of_items_in_hashtable);
-
+#ifdef GALG_DEBUG  //for improve
+  u64 end1Knn = getTime();
+  printf(">>>>> knn() after match() %f ms <<<<<\n", getInterval(startKnn, end1Knn));
+#endif
   //cudaCheckErrors(cudaDeviceSynchronize());
 
-  host_vector<u32> h_num_of_items_in_hashtable(d_num_of_items_in_hashtable);
+  //host_vector<u32> h_num_of_items_in_hashtable(d_num_of_items_in_hashtable);//for improve
   /**   Debug Section  **/
   // printf("The item count in hash map is:\n");
   // for(int i = 0; i < h_num_of_items_in_hashtable.size(); ++i)
@@ -206,6 +222,11 @@ GaLG::knn(GaLG::inv_table& table,
 
   //If no bitmap, then no need to collect topk in bitmap
   if(bitmap_bits > 1){
+	  device_vector<u32> d_augmented_bitmap;//for improve
+	  device_vector<u32> d_selected_bitmap;//for improve
+	  std::vector<int> selected_query_index;//for improve
+	  device_vector<int> d_selected_top_indexes;//for improve
+	  host_vector<u32> h_num_of_items_in_hashtable(d_num_of_items_in_hashtable);//for improve
 #ifdef GALG_DEBUG
 	  u64 start = getTime();
 #endif
@@ -342,6 +363,11 @@ GaLG::knn(GaLG::inv_table& table,
 
   }
 
+#ifdef GALG_DEBUG  //for improve
+  u64 endKnn = getTime();
+  printf(">>>>> knn() before topk and extractIndex %f ms <<<<<\n", getInterval(startKnn, endKnn));
+#endif
+
 #ifdef GALG_DEBUG
   printf("Start topk....\n");
   u64 start = getTime();
@@ -362,17 +388,17 @@ GaLG::knn(GaLG::inv_table& table,
   //cudaCheckErrors(cudaDeviceSynchronize());
 
   // If has selected topk results, then overwrite the main vector d_top_indexes with the selected results
-  if(d_selected_top_indexes.size() != 0 && selected_query_index.size() != 0)
-  {
-	  int qid;
-	  for(u32 i = 0; i < selected_query_index.size(); ++i)
-	  {
-		  qid = selected_query_index[i];
-		  thrust::copy(d_selected_top_indexes.begin()+i*queries[qid].topk(),
-					   d_selected_top_indexes.begin()+(i+1)*queries[qid].topk(),
-					   d_top_indexes.begin()+qid*queries[qid].topk());
-	  }
-  }
+//  if(d_selected_top_indexes.size() != 0 && selected_query_index.size() != 0)//for improve
+//  {
+//	  int qid;
+//	  for(u32 i = 0; i < selected_query_index.size(); ++i)
+//	  {
+//		  qid = selected_query_index[i];
+//		  thrust::copy(d_selected_top_indexes.begin()+i*queries[qid].topk(),
+//					   d_selected_top_indexes.begin()+(i+1)*queries[qid].topk(),
+//					   d_top_indexes.begin()+qid*queries[qid].topk());
+//	  }
+//  }
 
 #ifdef GALG_DEBUG
   end=getTime();

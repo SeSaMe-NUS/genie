@@ -76,6 +76,8 @@ namespace GaLG
 
 			for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
 
+				//for debug
+				if(j>=12){
 				value = query_points[i][j];
 				if(value < 0)
 				{
@@ -85,6 +87,7 @@ namespace GaLG
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
 					   GALG_DEFAULT_WEIGHT);
+				}//end for debug
 			}
 
 			q.topk(config.num_of_topk);

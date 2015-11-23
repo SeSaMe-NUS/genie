@@ -4,5 +4,7 @@ example.cu: This is an exapmle for the kNN search on the SIFT feature data, one 
 
 example_tweets.cu: This is an exaple for kNN search on the tweets data, one line is for one tweet. The interger of each line represents a encoded word
 
+example_adaptiveThreshold.cu: This is an exaple for kNN search with adaptiveThreshold. A Count Heap method is use to support large number of queries for top-k query
+
 to run:
 first type make, and then run ./example_bin or ./example_tweets_bin

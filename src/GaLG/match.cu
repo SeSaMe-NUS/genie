@@ -1035,8 +1035,8 @@ GaLG::match(inv_table& table,
 		throw inv_table::not_builded_exception;
 
 	u32 loop_count = 0u;
-	d_noiih.resize(queries.size());
-	thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);
+	d_noiih.resize(queries.size(),0);
+	//thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);//for improve
 	u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
 
 	vector<query::dim> dims;
@@ -1124,29 +1124,29 @@ GaLG::match(inv_table& table,
 
 	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after,
 		   free_inv_index_after, free_inv_pos_after, total_m;
-	cudaMemGetInfo(&free_ck_before, &total_m);
+	//cudaMemGetInfo(&free_ck_before, &total_m);//for imp
 	device_vector<int> d_ck(*table.ck());
-	cudaMemGetInfo(&free_ck_after, &total_m);
+	//cudaMemGetInfo(&free_ck_after, &total_m);//for imp
 	int* d_ck_p = raw_pointer_cast(d_ck.data());
 
 	device_vector<int> d_inv(*table.inv());
 	int* d_inv_p = raw_pointer_cast(d_inv.data());
-	cudaMemGetInfo(&free_inv_after, &total_m);
+	//cudaMemGetInfo(&free_inv_after, &total_m);//for imp
 
 	device_vector<query::dim> d_dims(dims);
 	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
-	cudaMemGetInfo(&free_q_after, &total_m);
+	//cudaMemGetInfo(&free_q_after, &total_m);//for imp
 
 	d_bitmap.resize(bitmap_size);
-	cudaMemGetInfo(&free_bitmap_after, &total_m);
+	//cudaMemGetInfo(&free_bitmap_after, &total_m);//for imp
 
 	device_vector<int> d_inv_index(*table.inv_index());
 	int* d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-	cudaMemGetInfo(&free_inv_index_after, &total_m);
+	//cudaMemGetInfo(&free_inv_index_after, &total_m);//for imp
 
 	device_vector<int> d_inv_pos(*table.inv_pos());
 	int* d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-	cudaMemGetInfo(&free_inv_pos_after, &total_m);
+	//cudaMemGetInfo(&free_inv_pos_after, &total_m);//for imp
 
 	if(bitmap_size)
 	{
@@ -1173,8 +1173,8 @@ GaLG::match(inv_table& table,
 	data_t* d_data_table;
 	d_data.clear();
 
-	d_data.resize(queries.size()*hash_table_size);
-	thrust::fill(d_data.begin(), d_data.end(), nulldata);
+	d_data.resize(queries.size()*hash_table_size,nulldata);
+	//thrust::fill(d_data.begin(), d_data.end(), nulldata);//for imp
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
   
@@ -1224,27 +1224,31 @@ GaLG::match(inv_table& table,
 
 
 		device_vector<u32> d_threshold;
-		d_threshold.resize(queries.size());
-		thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
+		d_threshold.resize(queries.size(),1);
+		//thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
 		u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
 		device_vector<u32> d_passCount;
 		num_of_max_count = dims.size();
-		d_passCount.resize(queries.size()*num_of_max_count);//
-		thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
+		d_passCount.resize(queries.size()*num_of_max_count,0u);//
+		//thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
 		u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
 
-		host_vector<u32> h_tops(queries.size());
-		max_topk = 0;
-		for (u32 i = 0; i < queries.size(); i++)
-		 {
-			  h_tops[i] = queries[i].topk();
-			  if(h_tops[i]>max_topk){
-				  max_topk = h_tops[i];
-			  }
-		 }
-		 device_vector<u32> d_topks(h_tops);
-		 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+		//host_vector<u32> h_tops(queries.size());
+		//max_topk = 100;
+		//for (u32 i = 0; i < queries.size(); i++)
+		// {
+		//	  h_tops[i] = queries[i].topk();
+		//	  if(h_tops[i]>max_topk){
+		//		  max_topk = h_tops[i];
+		//	  }
+		//}
+		// device_vector<u32> d_topks(h_tops);
+		// u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+		max_topk = 100;
+		device_vector<u32> d_topks;
+		d_topks.resize(queries.size(),max_topk);
+		u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
 		device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
