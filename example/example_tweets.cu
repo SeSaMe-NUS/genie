@@ -23,13 +23,10 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<std::vector<int> > queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
-	//char* datafile ="/media/hd2/zhoujingbo_data/OCR/hashed/numCF237/ocr_trn_dataSize-3412500_numCF-237_numDim-1155_r-18244.17_domainBits-13.csv";//for debug
-	//char* queryFiel="/media/hd2/zhoujingbo_data/OCR/hashed/numCF237/ocr_tst_dataSize-87500_numCF-237_numDim-1155_r-18244.17_domainBits-13.csv";
-	//read_file(data, "tweets_4k.csv", -1);//for debug
-	//read_file(queries, "tweets_4k.csv", 100);//for debug
+	
+	read_file(data, "tweets_4k.csv", -1);//for debug
+	read_file(queries, "tweets_4k.csv", 100);//for debug
 	char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
-	read_file(data, datafile, -1);//for debug
-	read_file(queries, datafile, 256);//for debug
 	GaLG::GaLG_Config config;
 
 	//Data dimension

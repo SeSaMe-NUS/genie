@@ -32,11 +32,10 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 1;
-	//char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
-        //  char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
-	char* datafile = "/media/hd2/zhoujingbo_data/adult.csv";
+	char * dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+       
 
-	read_file(dataRead, datafile, 1000000);//for AT: for adaptiveThreshold
+	read_file(dataRead, datafile, -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
 	read_file(queries, datafile, queryNum);
 
