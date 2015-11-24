@@ -84,9 +84,21 @@ namespace GPUGenie
 					float hashtable,
 					int device);
 
+	/**
+	* @brief Search on the inverted index and save the result in result
+	*        Please refer to /example/example_tweets.cu to see an example about using it
+	* 
+	*/
 	void knn_search_tweets(std::vector<int>& result,
-								 GPUGenie_Config& config);
+				GPUGenie_Config& config);
+	
 
+
+	/**
+	* @brief Search on the inverted index and save the result in result
+	*        Please refer to /example/example_sift.cu to see an example about using it
+	* 
+	*/
 	void knn_search(std::vector<int>& result,
 					GPUGenie_Config& config);
 
