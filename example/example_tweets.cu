@@ -26,7 +26,6 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	
 	read_file(data, "tweets_4k.csv", -1);//for debug
 	read_file(queries, "tweets_4k.csv", 100);//for debug
-	char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
 	GPUGenie::GPUGenie_Config config;
 
 	//Data dimension
