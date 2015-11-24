@@ -1,8 +1,8 @@
-#include <GaLG.h> //for ide: change from <GaLG.h> to "../src/GaLG.h"
+#include <GPUGenie.h> //for ide: change from <GPUGenie.h> to "../src/GPUGenie.h"
 #include <stdio.h>
 #include <string>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
 int

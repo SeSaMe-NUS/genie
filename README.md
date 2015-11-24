@@ -1,6 +1,6 @@
-libGaLG
+libGPUGenie
 ===
-libGaLG is a fast GPU inverted list searching library. It builds the database from a csv file or a vector of instances. Then libGaLG will consturct the inverted list table and transfer it to the device. libGaLG provides a simple way to perform the k match queries. User may define queries and their matching ranges, then directly call the matching funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k search can also be simply perfromed. libGaLG uses parallel searching to determine the top k values in a vector. It is much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not required to configure the device function call.
+libGPUGenie is a fast GPU inverted list searching library. It builds the database from a csv file or a vector of instances. Then libGPUGenie will consturct the inverted list table and transfer it to the device. libGPUGenie provides a simple way to perform the k match queries. User may define queries and their matching ranges, then directly call the matching funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k search can also be simply perfromed. libGPUGenie uses parallel searching to determine the top k values in a vector. It is much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not required to configure the device function call.
 
 
 ### Compiler and development
@@ -21,7 +21,7 @@ After compiling, you can go to folder "example", and type "make". Some running e
 
 You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater than version 2.8 and cuda 7.
 
-To install the libGaLG, directlly call the install script, `install.sh`.
+To install the libGPUGenie, directlly call the install script, `install.sh`.
 
 
 ### Running example

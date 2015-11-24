@@ -8,7 +8,7 @@
 #include "query.h"
 #include "raw_data.h"
 
-namespace GaLG{
+namespace GPUGenie{
 	/**
 	 * @brief Find the top k values in given inv_table.
 	 * @details Find the top k values in given inv_table.

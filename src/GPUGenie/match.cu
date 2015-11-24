@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef GaLG_device_THREADS_PER_BLOCK
-#define GaLG_device_THREADS_PER_BLOCK 256
+#ifndef GPUGenie_device_THREADS_PER_BLOCK
+#define GPUGenie_device_THREADS_PER_BLOCK 256
 #endif
 
 #define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
@@ -41,7 +41,7 @@ double getInterval(u64 start, u64 stop)
 	return ((double)(stop - start)) / 1000;
 }
 
-namespace GaLG
+namespace GPUGenie
 {
   namespace device
   {
@@ -751,9 +751,9 @@ namespace GaLG
 
       bool key_eligible;//for ask: what does it mean for key_eligible
 
-      for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
+      for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
         {
-    	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min;
+    	  int tmp_id = threadIdx.x + i * GPUGenie_device_THREADS_PER_BLOCK + min;
           if (tmp_id < max)
             {
               access_id = d_inv[tmp_id];
@@ -865,9 +865,9 @@ namespace GaLG
        bool key_eligible;//for ask: what does it mean for key_eligible
        bool pass_threshold;//to determine whether pass the check of my_theshold
 
-       for (int i = 0; i < (max - min) / GaLG_device_THREADS_PER_BLOCK + 1; i++)
+       for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
          {
-     	  int tmp_id = threadIdx.x + i * GaLG_device_THREADS_PER_BLOCK + min;
+     	  int tmp_id = threadIdx.x + i * GPUGenie_device_THREADS_PER_BLOCK + min;
            if (tmp_id < max)
              {
         	   u32 count = 0;//for AT
@@ -971,7 +971,7 @@ namespace GaLG
 }
 
 void
-GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load)
+GPUGenie::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load)
 {
 	for (int i = 0; i < queries.size(); ++i)
 	{
@@ -995,7 +995,7 @@ GaLG::build_queries(vector<query>& queries, inv_table& table, vector<query::dim>
 	}
 }
 void
-GaLG::match(inv_table& table,
+GPUGenie::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
             int hash_table_size,
@@ -1009,7 +1009,7 @@ GaLG::match(inv_table& table,
 	match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
 }
 void
-GaLG::match(inv_table& table,
+GPUGenie::match(inv_table& table,
             vector<query>& queries,
             device_vector<data_t>& d_data,
             device_vector<u32>& d_bitmap,
@@ -1020,7 +1020,7 @@ GaLG::match(inv_table& table,
             int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("match.cu version : %s\n", VERSION);
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
@@ -1043,7 +1043,7 @@ GaLG::match(inv_table& table,
 	vector<query::dim> hot_dims;
 	vector<query> hot_dims_queries;
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("[Info]hash table size: %d.\n", hash_table_size);
 #endif
 	//TODO: Modify this to enable hot dim search
@@ -1062,19 +1062,19 @@ GaLG::match(inv_table& table,
 
 
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 match_query_start,match_query_end;
   match_query_start=getTime();
 #endif
 
   build_queries(queries, table, dims, max_load);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   match_query_end=getTime();
   printf(">>>>[time profiling]: match: build_queries function takes %f ms. \n", getInterval(match_query_start, match_query_end));
 #endif
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
 #endif
 
@@ -1086,7 +1086,7 @@ GaLG::match(inv_table& table,
 	 //for hash_table_size, still let it determine by users currently
   }
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
     printf("[info] useAdaptiveThreshold: %d, bitmap_bits:%d.\n", useAdaptiveThreshold, bitmap_bits);
 #endif
   //end for AT
@@ -1117,7 +1117,7 @@ GaLG::match(inv_table& table,
 
 
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
     printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
 	printf("[ 20%] Declaring device memory...\n");
 #endif
@@ -1154,7 +1154,7 @@ GaLG::match(inv_table& table,
 	}
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u\nd_inv_index size: %u\nd_inv_pos size: %d\n",
 		  	free_ck_before - free_ck_after,
 		  	free_ck_after - free_inv_after ,
@@ -1178,14 +1178,14 @@ GaLG::match(inv_table& table,
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
   
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("[ 33%] Copying memory to symbol...\n");
 #endif
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
-  cudaCheckErrors(cudaMemcpyToSymbol(GaLG::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+  cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("[ 40%] Starting match kernels...\n");
   cudaEventRecord(kernel_start);
 #endif
@@ -1202,7 +1202,7 @@ GaLG::match(inv_table& table,
 		u32 num_of_max_count=0,max_topk=0;
 		if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
 		{
-		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
 					(table.m_size(),
 					table.i_size(),
 					hash_table_size,
@@ -1251,7 +1251,7 @@ GaLG::match(inv_table& table,
 		u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
-		device::match_AT<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+		device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
 						(table.m_size(),
 						table.i_size(),
 						hash_table_size,
@@ -1300,7 +1300,7 @@ GaLG::match(inv_table& table,
 			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 		}
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		if (loop_count>0){
 			printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
 		}
@@ -1329,7 +1329,7 @@ GaLG::match(inv_table& table,
 //		device_vector<query::dim>().swap(d_dims);
 //		device_vector<query::dim> d_hot_dims(hot_dims);
 //		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
-//		device::match<<<dims.size(), GaLG_device_THREADS_PER_BLOCK>>>
+//		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
 //			(table.m_size(),
 //			table.i_size(),
 //			hash_table_size,
@@ -1356,7 +1356,7 @@ GaLG::match(inv_table& table,
 	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
  * */
   
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting data converting......\n");
 #endif
@@ -1364,7 +1364,7 @@ GaLG::match(inv_table& table,
   //cudaCheckErrors(cudaDeviceSynchronize());
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("[100%] Matching is done!\n");
 
   match_stop = getTime();

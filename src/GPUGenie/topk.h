@@ -1,7 +1,7 @@
-#ifndef GaLG_topk_h
-#define GaLG_topk_h
+#ifndef GPUGenie_topk_h
+#define GPUGenie_topk_h
 
-#include "../GaLG.h"
+#include "../GPUGenie.h"
 
 #include <vector>
 #include <thrust/device_vector.h>
@@ -9,7 +9,7 @@
 using namespace std;
 using namespace thrust;
 
-namespace GaLG
+namespace GPUGenie
 {
 
 	int
@@ -42,7 +42,7 @@ namespace GaLG
       device_vector<int>& d_top_indexe, float dim);
   void
   topk(device_vector<u32>& d_search,
-       vector<GaLG::query>& queries,
+       vector<GPUGenie::query>& queries,
        device_vector<int>& d_top_indexes,
        u32 dim);
 

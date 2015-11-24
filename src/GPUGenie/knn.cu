@@ -3,23 +3,23 @@
 #include <assert.h>
 #include <thrust/copy.h>
 
-bool GALG_ERROR = false;
-unsigned long long GALG_TIME = 0ull;
+bool GPUGENIE_ERROR = false;
+unsigned long long GPUGENIE_TIME = 0ull;
 
-#ifndef GaLG_knn_THREADS_PER_BLOCK
-#define GaLG_knn_THREADS_PER_BLOCK 1024
+#ifndef GPUGenie_knn_THREADS_PER_BLOCK
+#define GPUGenie_knn_THREADS_PER_BLOCK 1024
 #endif
 
-#ifndef GaLG_knn_DEFAULT_HASH_TABLE_SIZE
-#define GaLG_knn_DEFAULT_HASH_TABLE_SIZE 1
+#ifndef GPUGenie_knn_DEFAULT_HASH_TABLE_SIZE
+#define GPUGenie_knn_DEFAULT_HASH_TABLE_SIZE 1
 #endif
 
-#ifndef GaLG_knn_DEFAULT_BITMAP_BITS
-#define GaLG_knn_DEFAULT_BITMAP_BITS 2
+#ifndef GPUGenie_knn_DEFAULT_BITMAP_BITS
+#define GPUGenie_knn_DEFAULT_BITMAP_BITS 2
 #endif
 
-#ifndef GaLG_knn_DEFAULT_DATA_PER_THREAD
-#define GaLG_knn_DEFAULT_DATA_PER_THREAD 256
+#ifndef GPUGenie_knn_DEFAULT_DATA_PER_THREAD
+#define GPUGenie_knn_DEFAULT_DATA_PER_THREAD 256
 #endif
 
 __global__
@@ -52,11 +52,11 @@ augment_bitmap(u32 * augmented,
 {
 	u32 id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id >= selected_size) return;
-	u32 begin = id * GaLG_knn_DEFAULT_DATA_PER_THREAD;
+	u32 begin = id * GPUGenie_knn_DEFAULT_DATA_PER_THREAD;
 	u32 data;
 	u32 aug_id;
 	u32 offset;
-	for(u32 i = begin; i < begin+GaLG_knn_DEFAULT_DATA_PER_THREAD; ++i)
+	for(u32 i = begin; i < begin+GPUGenie_knn_DEFAULT_DATA_PER_THREAD; ++i)
 	{
 		data = selected[i];
 		aug_id = i * num_per_u32;
@@ -79,7 +79,7 @@ correct_index(int * index, int size, int k, int offset)
 	index[id] -= offset * (id / k);
 }
 int
-GaLG::calculate_bits_per_data(int bitmap_bits)
+GPUGenie::calculate_bits_per_data(int bitmap_bits)
 {
 	  float logresult = log2((float) bitmap_bits);
 	  bitmap_bits = (int) logresult;
@@ -98,17 +98,17 @@ GaLG::calculate_bits_per_data(int bitmap_bits)
 }
 
 void
-GaLG::knn(GaLG::inv_table& table,
-		   vector<GaLG::query>& queries,
+GPUGenie::knn(GPUGenie::inv_table& table,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int max_load)
 {
-	int hash_table_size = GaLG_knn_DEFAULT_HASH_TABLE_SIZE * table.i_size() + 1;
-	knn(table, queries, d_top_indexes, hash_table_size, max_load,GaLG_knn_DEFAULT_BITMAP_BITS);
+	int hash_table_size = GPUGenie_knn_DEFAULT_HASH_TABLE_SIZE * table.i_size() + 1;
+	knn(table, queries, d_top_indexes, hash_table_size, max_load,GPUGenie_knn_DEFAULT_BITMAP_BITS);
 }
 
 void
-GaLG::knn(GaLG::inv_table& table, vector<GaLG::query>& queries,
+GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
     device_vector<int>& d_top_indexes, int hash_table_size, int max_load,int bitmap_bits)
 {
 	knn(table, queries, d_top_indexes, hash_table_size,max_load, bitmap_bits, table.m_size(), 0, 0);
@@ -116,8 +116,8 @@ GaLG::knn(GaLG::inv_table& table, vector<GaLG::query>& queries,
 
 
 void
-GaLG::knn(GaLG::inv_table& table,
-		   vector<GaLG::query>& queries,
+GPUGenie::knn(GPUGenie::inv_table& table,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
 		   int max_load,
@@ -127,8 +127,8 @@ GaLG::knn(GaLG::inv_table& table,
 	knn(table, queries, d_top_indexes, hash_table_size, max_load,bitmap_bits, dim, 0,0);
 }
 void
-GaLG::knn_tweets(GaLG::inv_table& table,
-		   vector<GaLG::query>& queries,
+GPUGenie::knn_tweets(GPUGenie::inv_table& table,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
 		   int max_load,
@@ -145,20 +145,20 @@ GaLG::knn_tweets(GaLG::inv_table& table,
 	  if(count > qmax)
 		  qmax = count;
   }
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 start = getTime();
 #endif
   knn(table, queries, d_top_indexes, hash_table_size,max_load, bitmap_bits,
 		  	  float(qmax+1), num_of_hot_dims, hot_dim_threshold);
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 end = getTime();
   double elapsed = getInterval(start, end);
   printf(">>>>>>> knn takes %fms <<<<<< \n", elapsed);
 #endif
 }
 void
-GaLG::knn(GaLG::inv_table& table,
-		   vector<GaLG::query>& queries,
+GPUGenie::knn(GPUGenie::inv_table& table,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,
 		   int max_load,
@@ -167,7 +167,7 @@ GaLG::knn(GaLG::inv_table& table,
 		   int num_of_hot_dims,
 		   int hot_dim_threshold)
 {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
 #endif
   //for improve
@@ -180,11 +180,11 @@ GaLG::knn(GaLG::inv_table& table,
 //  }
   //end for improve
   dim = 2;
-#ifdef GALG_DEBUG  //for improve
+#ifdef GPUGENIE_DEBUG  //for improve
   u64 startKnn = getTime();
 #endif
 
-#ifdef GALG_DEBUG  //for improve
+#ifdef GPUGENIE_DEBUG  //for improve
   u64 end3Knn = getTime();
   printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end3Knn));
 #endif
@@ -197,14 +197,14 @@ GaLG::knn(GaLG::inv_table& table,
 
  // std::vector<int> selected_query_index;//for improve
   //device_vector<int> d_selected_top_indexes;//for improve
-#ifdef GALG_DEBUG  //for improve
+#ifdef GPUGENIE_DEBUG  //for improve
   u64 end2Knn = getTime();
   printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end2Knn));
 #endif
   device_vector<u32> d_num_of_items_in_hashtable(queries.size());
   printf("[knn] max_load is %d.\n", max_load);
   match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, num_of_hot_dims, hot_dim_threshold, d_num_of_items_in_hashtable);
-#ifdef GALG_DEBUG  //for improve
+#ifdef GPUGENIE_DEBUG  //for improve
   u64 end1Knn = getTime();
   printf(">>>>> knn() after match() %f ms <<<<<\n", getInterval(startKnn, end1Knn));
 #endif
@@ -227,7 +227,7 @@ GaLG::knn(GaLG::inv_table& table,
 	  std::vector<int> selected_query_index;//for improve
 	  device_vector<int> d_selected_top_indexes;//for improve
 	  host_vector<u32> h_num_of_items_in_hashtable(d_num_of_items_in_hashtable);//for improve
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	  u64 start = getTime();
 #endif
 
@@ -252,7 +252,7 @@ GaLG::knn(GaLG::inv_table& table,
 	  d_bitmap.clear();
 	  device_vector<u32>().swap(d_bitmap);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	  u64 end = getTime();
 	  printf("size of selected bitmap: %d\n", d_selected_bitmap.size());
 	  printf(">>>>> extract selected bitmaps takes %fms <<<<<\n", getInterval(start, end));
@@ -260,7 +260,7 @@ GaLG::knn(GaLG::inv_table& table,
 
 	  if(selected_query_index.size() > 0)
 	  {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  start = getTime();
 #endif
 		  //Augment the selected bitmap
@@ -268,13 +268,13 @@ GaLG::knn(GaLG::inv_table& table,
 		  d_augmented_bitmap.resize(augmented_size);
 		  u32 * d_selected_bitmap_p = thrust::raw_pointer_cast(d_selected_bitmap.data());
 		  u32 * d_augmented_bitmap_p = thrust::raw_pointer_cast(d_augmented_bitmap.data());
-		  assert(GaLG_knn_DEFAULT_DATA_PER_THREAD % num_per_u32 == 0);
-		  u32 total_threads =  d_selected_bitmap.size() / (GaLG_knn_DEFAULT_DATA_PER_THREAD / num_per_u32) + 1;
+		  assert(GPUGenie_knn_DEFAULT_DATA_PER_THREAD % num_per_u32 == 0);
+		  u32 total_threads =  d_selected_bitmap.size() / (GPUGenie_knn_DEFAULT_DATA_PER_THREAD / num_per_u32) + 1;
 
-		  augment_bitmap<<<total_threads/GaLG_knn_THREADS_PER_BLOCK + 1,GaLG_knn_THREADS_PER_BLOCK>>>
+		  augment_bitmap<<<total_threads/GPUGenie_knn_THREADS_PER_BLOCK + 1,GPUGenie_knn_THREADS_PER_BLOCK>>>
 				  (d_augmented_bitmap_p, d_selected_bitmap_p, d_selected_bitmap.size(), augmented_size, num_per_u32);
 		  //cudaCheckErrors(cudaDeviceSynchronize());
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  end = getTime();
 		  printf(">>>>> augment bitmap takes %fms <<<<<\n", getInterval(start, end));
 		  start = getTime();
@@ -299,7 +299,7 @@ GaLG::knn(GaLG::inv_table& table,
 		  d_selected_bitmap.clear();
 		  device_vector<u32>().swap(d_selected_bitmap);
 
-		  std::vector<GaLG::query> selected_queries;
+		  std::vector<GPUGenie::query> selected_queries;
 
 		  //In case queries have different topk settings
 		  u32 index_size = 0u;
@@ -334,16 +334,16 @@ GaLG::knn(GaLG::inv_table& table,
  //				 h_selected_top_indexes[i * selected_queries[i].topk() + j] -= table.i_size()*i;
  //			  }
  //		  }
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  end = getTime();
 		  printf(">>>>> selected bitmap topk takes %fms <<<<<\n", getInterval(start, end));
 		  start =getTime();
 #endif
 		  int * d_selected_top_indexes_p = thrust::raw_pointer_cast(d_selected_top_indexes.data());
-		  correct_index<<<d_selected_top_indexes.size() / GaLG_knn_THREADS_PER_BLOCK + 1, GaLG_knn_THREADS_PER_BLOCK>>>
+		  correct_index<<<d_selected_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1, GPUGenie_knn_THREADS_PER_BLOCK>>>
 					   (d_selected_top_indexes_p, d_selected_top_indexes.size(), queries[0].topk(), table.i_size());
 		  //cudaCheckErrors(cudaDeviceSynchronize());
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  end = getTime();
 		  printf(">>>>>correct selected bitmap index takes %fms <<<<<\n", getInterval(start, end));
 #endif
@@ -363,12 +363,12 @@ GaLG::knn(GaLG::inv_table& table,
 
   }
 
-#ifdef GALG_DEBUG  //for improve
+#ifdef GPUGENIE_DEBUG  //for improve
   u64 endKnn = getTime();
   printf(">>>>> knn() before topk and extractIndex %f ms <<<<<\n", getInterval(startKnn, endKnn));
 #endif
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   printf("Start topk....\n");
   u64 start = getTime();
 #endif
@@ -376,14 +376,14 @@ GaLG::knn(GaLG::inv_table& table,
   topk(d_data, queries, d_top_indexes, float(dim));
   //cudaCheckErrors(cudaDeviceSynchronize());
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 end = getTime();
   printf("Topk Finished! \n");
   printf(">>>>> main topk takes %fms <<<<<\n", getInterval(start, end));
   start=getTime();
 #endif
 
-  extract_index<<<d_top_indexes.size() / GaLG_knn_THREADS_PER_BLOCK + 1, GaLG_knn_THREADS_PER_BLOCK>>>
+  extract_index<<<d_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1, GPUGenie_knn_THREADS_PER_BLOCK>>>
 			   (thrust::raw_pointer_cast(d_top_indexes.data()), thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
   //cudaCheckErrors(cudaDeviceSynchronize());
 
@@ -400,7 +400,7 @@ GaLG::knn(GaLG::inv_table& table,
 //	  }
 //  }
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   end=getTime();
   printf("Finish topk search!\n");
   printf(">>>>> extract index and copy selected topk results takes %fms <<<<<\n", getInterval(start, end));

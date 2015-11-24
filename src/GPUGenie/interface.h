@@ -8,26 +8,26 @@
 #ifndef INTERFACE_H_
 #define INTERFACE_H_
 
-#include "../GaLG.h"
+#include "../GPUGenie.h"
 #include <vector>
 
-#define GALG_DEFAULT_TOPK 10
-#define GALG_DEFAULT_RADIUS 0
-#define GALG_DEFAULT_THRESHOLD 0
-#define GALG_DEFAULT_HASHTABLE_SIZE 1.0f
-#define GALG_DEFAULT_WEIGHT 1
-#define GALG_DEFAULT_DEVICE 0
-#define GALG_DEFAULT_NUM_OF_HOT_DIMS 0
-#define GALG_DEFAULT_HOT_DIM_THRESHOLD GALG_DEFAULT_THRESHOLD
-#define GALG_DEFAULT_USE_ADAPTIVE_RANGE false
-#define GALG_DEFAULT_SELECTIVITY -1.0f
-#define GALG_DEFAULT_POSTING_LIST_LENGTH 100000
-#define GALG_DEFAULT_LOAD_MULTIPLIER 3.0f
-#define GALG_DEFAULT_USE_LOAD_BALANCE false
+#define GPUGENIE_DEFAULT_TOPK 10
+#define GPUGENIE_DEFAULT_RADIUS 0
+#define GPUGENIE_DEFAULT_THRESHOLD 0
+#define GPUGENIE_DEFAULT_HASHTABLE_SIZE 1.0f
+#define GPUGENIE_DEFAULT_WEIGHT 1
+#define GPUGENIE_DEFAULT_DEVICE 0
+#define GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS 0
+#define GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD GPUGENIE_DEFAULT_THRESHOLD
+#define GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE false
+#define GPUGENIE_DEFAULT_SELECTIVITY -1.0f
+#define GPUGENIE_DEFAULT_POSTING_LIST_LENGTH 100000
+#define GPUGENIE_DEFAULT_LOAD_MULTIPLIER 3.0f
+#define GPUGENIE_DEFAULT_USE_LOAD_BALANCE false
 
-namespace GaLG
+namespace GPUGenie
 {
-	typedef struct _GaLG_Config{
+	typedef struct _GPUGenie_Config{
 		int num_of_topk;
 		int query_radius;
 		int count_threshold;
@@ -43,24 +43,24 @@ namespace GaLG
 		int posting_list_max_length;
 		float multiplier;
 		bool use_load_balance;
-		_GaLG_Config():
-			num_of_topk(GALG_DEFAULT_TOPK),
-			query_radius(GALG_DEFAULT_RADIUS),
-			count_threshold(GALG_DEFAULT_THRESHOLD),
-			hashtable_size(GALG_DEFAULT_HASHTABLE_SIZE),
-			use_device(GALG_DEFAULT_DEVICE),
+		_GPUGenie_Config():
+			num_of_topk(GPUGENIE_DEFAULT_TOPK),
+			query_radius(GPUGENIE_DEFAULT_RADIUS),
+			count_threshold(GPUGENIE_DEFAULT_THRESHOLD),
+			hashtable_size(GPUGENIE_DEFAULT_HASHTABLE_SIZE),
+			use_device(GPUGENIE_DEFAULT_DEVICE),
 			data_points(NULL),
 			query_points(NULL),
 			dim(0),
-			num_of_hot_dims(GALG_DEFAULT_NUM_OF_HOT_DIMS),
-			hot_dim_threshold(GALG_DEFAULT_HOT_DIM_THRESHOLD),
-			use_adaptive_range(GALG_DEFAULT_USE_ADAPTIVE_RANGE),
-			selectivity(GALG_DEFAULT_SELECTIVITY),
-			posting_list_max_length(GALG_DEFAULT_POSTING_LIST_LENGTH),
-			multiplier(GALG_DEFAULT_LOAD_MULTIPLIER),
-			use_load_balance(GALG_DEFAULT_USE_LOAD_BALANCE)
+			num_of_hot_dims(GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS),
+			hot_dim_threshold(GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD),
+			use_adaptive_range(GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE),
+			selectivity(GPUGENIE_DEFAULT_SELECTIVITY),
+			posting_list_max_length(GPUGENIE_DEFAULT_POSTING_LIST_LENGTH),
+			multiplier(GPUGENIE_DEFAULT_LOAD_MULTIPLIER),
+			use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE)
 		{}
-	} GaLG_Config;
+	} GPUGenie_Config;
 
 	void knn_search(std::vector<std::vector<int> >& data_points,
 					std::vector<std::vector<int> >& query_points,
@@ -85,15 +85,15 @@ namespace GaLG
 					int device);
 
 	void knn_search_tweets(std::vector<int>& result,
-								 GaLG_Config& config);
+								 GPUGenie_Config& config);
 
 	void knn_search(std::vector<int>& result,
-					GaLG_Config& config);
+					GPUGenie_Config& config);
 
 	void knn_search(inv_table& table,
 					std::vector<query>& queries,
 					std::vector<int>& h_topk,
-					GaLG_Config& config);
+					GPUGenie_Config& config);
 }
 
 

@@ -22,17 +22,17 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
-namespace GaLG
+namespace GPUGenie
 {
 	void
 	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
 	{
 		  inv_list list;
 		  u32 i,j;
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  printf("Data row size: %d. Data Row Number: %d.\n", data_points[0].size(), data_points.size());
 		  u64 starttime = getTime();
 #endif
@@ -49,7 +49,7 @@ namespace GaLG
 		  }
 
 		  table.build(max_length);
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		  u64 endtime = getTime();
 		  double timeInterval = getInterval(starttime, endtime);
 		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
@@ -60,9 +60,9 @@ namespace GaLG
 	void
 	load_query(inv_table& table,
 				std::vector<query>& queries,
-				GaLG_Config& config)
+				GPUGenie_Config& config)
 	{
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		printf("Table dim: %d.\n", table.m_size());
 		u64 starttime = getTime();
 #endif
@@ -86,7 +86,7 @@ namespace GaLG
 				q.attr(j,
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
-					   GALG_DEFAULT_WEIGHT);
+					   GPUGENIE_DEFAULT_WEIGHT);
 				}//end for debug
 			}
 
@@ -103,7 +103,7 @@ namespace GaLG
 
 			queries.push_back(q);
 		}
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime,endtime);
 		printf("%d queries are created!\n", queries.size());
@@ -113,9 +113,9 @@ namespace GaLG
 	void
 	load_query_tweets(inv_table& table,
 				std::vector<query>& queries,
-				GaLG_Config& config)
+				GPUGenie_Config& config)
 	{
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		u64 starttime = getTime();
 		printf("Table dim: %d.\n", table.m_size());
 #endif
@@ -137,7 +137,7 @@ namespace GaLG
 				q.attr(0,
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
-					   GALG_DEFAULT_WEIGHT);
+					   GPUGENIE_DEFAULT_WEIGHT);
 			}
 
 			q.topk(config.num_of_topk);
@@ -153,7 +153,7 @@ namespace GaLG
 
 			queries.push_back(q);
 		}
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime, endtime);
 		printf("%d queries are created!\n", queries.size());
@@ -165,7 +165,7 @@ namespace GaLG
 	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
 	{
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	  u64 starttime = getTime();
 
 #endif
@@ -173,7 +173,7 @@ namespace GaLG
 	  list.invert_tweets(data_points);
 	  table.append(list);
 	  table.build(max_length);
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	  u64 endtime = getTime();
 	  double timeInterval = getInterval(starttime,endtime);
 	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
@@ -182,7 +182,7 @@ namespace GaLG
 	}
 
 }
-void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
+void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
 					  std::vector<int>& result,
 					  int num_of_topk)
@@ -191,12 +191,12 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 			   query_points,
 			   result,
 			   num_of_topk,
-			   GALG_DEFAULT_RADIUS,
-			   GALG_DEFAULT_THRESHOLD,
-			   GALG_DEFAULT_HASHTABLE_SIZE,
-			   GALG_DEFAULT_DEVICE);
+			   GPUGENIE_DEFAULT_RADIUS,
+			   GPUGENIE_DEFAULT_THRESHOLD,
+			   GPUGENIE_DEFAULT_HASHTABLE_SIZE,
+			   GPUGENIE_DEFAULT_DEVICE);
 }
-void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
+void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
 					  std::vector<int>& result,
 					  int num_of_topk,
@@ -205,7 +205,7 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 					  float hashtable,
 					  int device)
 {
-	GaLG_Config config;
+	GPUGenie_Config config;
 	config.count_threshold = threshold;
 	config.data_points = &data_points;
 	config.hashtable_size = hashtable;
@@ -219,52 +219,52 @@ void GaLG::knn_search(std::vector<std::vector<int> >& data_points,
 	knn_search(result, config);
 }
 
-void GaLG::knn_search_tweets(std::vector<int>& result, GaLG_Config& config)
+void GPUGenie::knn_search_tweets(std::vector<int>& result, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Building table...");
 #endif
 
 	load_table_tweets(table, *(config.data_points), config.posting_list_max_length);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
 #endif
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	u64 starttime = getTime();
 #endif
 
 	load_query_tweets(table,queries,config);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 #endif
 
 	knn_search(table, queries, result, config);
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);
 	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
 #endif
 }
 
-void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
+void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Building table...");
 #endif
 
 	load_table(table, *(config.data_points), config.posting_list_max_length);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
     u64 starttime = getTime();
@@ -272,14 +272,14 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 
 	load_query(table,queries,config);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 #endif
 
 	knn_search(table, queries, result, config);
 
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);
 	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
@@ -287,10 +287,10 @@ void GaLG::knn_search(std::vector<int>& result, GaLG_Config& config)
 }
 
 
-void GaLG::knn_search(inv_table& table,
+void GPUGenie::knn_search(inv_table& table,
 					  std::vector<query>& queries,
 					  std::vector<int>& h_topk,
-					  GaLG_Config& config)
+					  GPUGenie_Config& config)
 {
 	int device_count, hashtable_size;
 	cudaGetDeviceCount(&device_count);
@@ -300,13 +300,13 @@ void GaLG::knn_search(inv_table& table,
 		exit(2);
 	} else if(device_count <= config.use_device)
 	{
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 		printf("[Info] Device %d not found!", config.use_device);
 #endif
-		config.use_device = GALG_DEFAULT_DEVICE;
+		config.use_device = GPUGENIE_DEFAULT_DEVICE;
 	}
 	cudaSetDevice(config.use_device);
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Using device %d...\n", config.use_device);
 	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
 #endif
@@ -317,12 +317,12 @@ void GaLG::knn_search(inv_table& table,
 	}
 	thrust::device_vector<int> d_topk;
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("Starting knn search...\n");
 #endif
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
 	printf("max_load is %d\n", max_load);
-	GaLG::knn_tweets(table,//for ask: why knn_tweets, does it mean this is basic API?
+	GPUGenie::knn_tweets(table,//for ask: why knn_tweets, does it mean this is basic API?
 			   queries,
 			   d_topk,
 			   hashtable_size,
@@ -332,7 +332,7 @@ void GaLG::knn_search(inv_table& table,
 			   config.num_of_hot_dims,
 			   config.hot_dim_threshold);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	printf("knn search is done!\n");
 	printf("Topk obtained: %d in total.\n", d_topk.size());
 #endif

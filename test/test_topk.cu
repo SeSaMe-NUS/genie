@@ -1,4 +1,4 @@
-#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../src/GaLG.h"
+#include "GPUGenie.h" //for ide: to revert it as system file later, change "GPUGenie.h" to "../src/GPUGenie.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +6,7 @@
 #include <time.h>
 #include <thrust/device_vector.h>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace thrust;
 
 int

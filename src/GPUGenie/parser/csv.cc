@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <stdio.h>
-#include "../lib/libcsv/csv.h" //for ide: to revert it as system file later, change "GaLG/lib/libcsv/csv.h" to "../lib/libcsv/csv.h"
+#include "../lib/libcsv/csv.h" //for ide: to revert it as system file later, change "GPUGenie/lib/libcsv/csv.h" to "../lib/libcsv/csv.h"
 
 using namespace std;
 
@@ -47,7 +47,7 @@ is_term(unsigned char c)
 }
 
 int
-GaLG::parser::csv(string file, raw_data& data)
+GPUGenie::parser::csv(string file, raw_data& data)
 {
   const char* f = file.c_str();
   vector<string> raw_meta;
@@ -93,7 +93,7 @@ GaLG::parser::csv(string file, raw_data& data)
 }
 
 int
-GaLG::parser::csv(string file, raw_data& data, bool include_meta)
+GPUGenie::parser::csv(string file, raw_data& data, bool include_meta)
 {
   int rows = csv(file, data);
   if (!include_meta)

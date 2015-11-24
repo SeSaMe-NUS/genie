@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJECT_NAME GaLG)
+set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
 set(PROJECT_MINOR_VERSION 0.0)
 

@@ -8,12 +8,12 @@
 #ifndef FILEREADER_H_
 #define FILEREADER_H_
 
-#include "../GaLG.h"
+#include "../GPUGenie.h"
 
 #include <vector>
 #include <string>
 
-namespace GaLG {
+namespace GPUGenie {
 
 	void read_file(std::vector<std::vector<int> >& dest,
 					const char* fname,
@@ -28,7 +28,7 @@ namespace GaLG {
 					int topk,
 					float selectivity);
 
-} /* namespace GaLG */
+} /* namespace GPUGenie */
 
 
 #endif /* FILEREADER_H_ */

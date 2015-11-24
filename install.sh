@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# libGaLG
+# libGPUGenie
 
 INSTALL_PATH="/usr/local"
 REQUIRE_SUDO=false
@@ -18,20 +18,20 @@ SKIP_TEST=false
 function echoerr {
   red="\033[00;31m"
   restore='\033[0m'
-  echo -e "${red}GaLG:Error: ${restore}$@${restore}" 1>&2
+  echo -e "${red}GPUGenie:Error: ${restore}$@${restore}" 1>&2
   exit 1
 }
 
 function echowarn {
   yellow="\033[00;33m"
   restore='\033[0m'
-  echo -e "${yellow}GaLG:Warn: ${restore}$@${restore}"
+  echo -e "${yellow}GPUGenie:Warn: ${restore}$@${restore}"
 }
 
 function echoinfo {
   green="\033[00;32m"
   restore='\033[0m'
-  echo -e "${green}GaLG:Info: ${restore}$@${restore}"
+  echo -e "${green}GPUGenie:Info: ${restore}$@${restore}"
 }
 
 function echolog {
@@ -114,7 +114,7 @@ function bootstrap {
   echoinfo "check permission"
   check_permission
 
-  echoinfo "bootstrapping libGaLG build system"
+  echoinfo "bootstrapping libGPUGenie build system"
   check_version
 
   echoinfo "check build tools"

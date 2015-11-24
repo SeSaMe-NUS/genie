@@ -1,7 +1,7 @@
-#ifndef GaLG_match_h
-#define GaLG_match_h
+#ifndef GPUGenie_match_h
+#define GPUGenie_match_h
 
-#include "../GaLG.h"
+#include "../GPUGenie.h"
 #include <stdint.h>
 
 #include <thrust/device_vector.h>
@@ -60,7 +60,7 @@ inline cudaError checkAndMalloc(void ** to, u64 bytes)
 
 u64 getTime();
 double getInterval(u64 t1, u64 t2);
-namespace GaLG
+namespace GPUGenie
 {
 
   /**

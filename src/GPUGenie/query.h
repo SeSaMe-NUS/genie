@@ -1,5 +1,5 @@
-#ifndef GaLG_query_h
-#define GaLG_query_h
+#ifndef GPUGenie_query_h
+#define GPUGenie_query_h
 
 #include "inv_table.h"
 #include "inv_list.h"
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace GaLG
+namespace GPUGenie
 {
 
 	typedef unsigned int u32;

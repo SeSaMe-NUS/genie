@@ -6,7 +6,7 @@
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-GaLG::query::query(inv_table* ref, int index)
+GPUGenie::query::query(inv_table* ref, int index)
 {
   _ref_table = ref;
   _attr_map.clear();
@@ -19,7 +19,7 @@ GaLG::query::query(inv_table* ref, int index)
   use_load_balance = false;
 }
 
-GaLG::query::query(inv_table& ref, int index)
+GPUGenie::query::query(inv_table& ref, int index)
 {
   _ref_table = &ref;
   _attr_map.clear();
@@ -32,14 +32,14 @@ GaLG::query::query(inv_table& ref, int index)
   use_load_balance = false;
 }
 
-GaLG::inv_table*
-GaLG::query::ref_table()
+GPUGenie::inv_table*
+GPUGenie::query::ref_table()
 {
   return _ref_table;
 }
 
 void
-GaLG::query::attr(int index, int low, int up, float weight)
+GPUGenie::query::attr(int index, int low, int up, float weight)
 {
   if (index < 0 || index >= _ref_table->m_size())
     return;
@@ -64,25 +64,25 @@ GaLG::query::attr(int index, int low, int up, float weight)
 }
 
 inline u64
-GaLG::query::pack_dim_and_count(u32 dim, u64 count)
+GPUGenie::query::pack_dim_and_count(u32 dim, u64 count)
 {
 	u64 mask = u64((1u << 16) - 1u);
 	return (u64(count) << 16) + (mask & u64(dim));
 }
 inline u32
-GaLG::query::unpack_dim(u64 packed_data)
+GPUGenie::query::unpack_dim(u64 packed_data)
 {
 	u64 mask = u64((1u << 16) - 1u);
 	return packed_data & mask;
 }
 inline u64
-GaLG::query::unpack_count(u64 packed_data)
+GPUGenie::query::unpack_count(u64 packed_data)
 {
 	return packed_data >> 16;
 }
 
 void
-GaLG::query::clear_dim(int index)
+GPUGenie::query::clear_dim(int index)
 {
   if(_attr_map.find(index) == _attr_map.end())
   {
@@ -97,7 +97,7 @@ GaLG::query::clear_dim(int index)
 
 //TODO: split_hot_dims must be rewritten!!!!!!
 // void
-// GaLG::query::split_hot_dims(GaLG::query& hot_dims_query, int num)
+// GPUGenie::query::split_hot_dims(GPUGenie::query& hot_dims_query, int num)
 // {
 // 	std::vector<inv_list>& inv_lists = *((*_ref_table).inv_lists());
 // 	std::vector<u64> counts;
@@ -144,20 +144,20 @@ GaLG::query::clear_dim(int index)
 // }
 
 void
-GaLG::query::selectivity(float s)
+GPUGenie::query::selectivity(float s)
 {
 	if(s > 0) _selectivity = s;
 	//else printf("Please choose a selectivity greater than 0.\n");
 }
 
 float
-GaLG::query::selectivity()
+GPUGenie::query::selectivity()
 {
 	return _selectivity;
 }
 
 void
-GaLG::query::build_and_apply_load_balance(int max_load)
+GPUGenie::query::build_and_apply_load_balance(int max_load)
 {
 	inv_table& table = *_ref_table;
 	this->build();
@@ -247,7 +247,7 @@ GaLG::query::build_and_apply_load_balance(int max_load)
 }
 
 void
-GaLG::query::apply_adaptive_query_range()
+GPUGenie::query::apply_adaptive_query_range()
 {
 	inv_table& table = *_ref_table;
 	std::vector<inv_list>& lists = *table.inv_lists();
@@ -307,19 +307,19 @@ GaLG::query::apply_adaptive_query_range()
 }
 
 void
-GaLG::query::topk(int k)
+GPUGenie::query::topk(int k)
 {
   _topk = k;
 }
 
 int
-GaLG::query::topk()
+GPUGenie::query::topk()
 {
   return _topk;
 }
 
 void
-GaLG::query::build()
+GPUGenie::query::build()
 {
   int index, low, up;
   float weight;
@@ -381,7 +381,7 @@ GaLG::query::build()
 }
 
 void
-GaLG::query::build_compressed()
+GPUGenie::query::build_compressed()
 {
   int index, low, up;
   float weight;
@@ -453,7 +453,7 @@ GaLG::query::build_compressed()
 }
 
 int
-GaLG::query::dump(vector<dim>& vout)
+GPUGenie::query::dump(vector<dim>& vout)
 {
   if(is_load_balanced)
   {
@@ -479,7 +479,7 @@ GaLG::query::dump(vector<dim>& vout)
 }
 
 int
-GaLG::query::count_ranges()
+GPUGenie::query::count_ranges()
 {
 //	  int count = 0;
 //	  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
@@ -491,7 +491,7 @@ GaLG::query::count_ranges()
 }
 
 void
-GaLG::query::print(int limit)
+GPUGenie::query::print(int limit)
 {
 	printf("This query has %d dimensions.\n", _attr_map.size());
   int count = limit;
@@ -510,7 +510,7 @@ GaLG::query::print(int limit)
   }
 }
 
-void GaLG::query::print()
+void GPUGenie::query::print()
 {
   print(-1);
 }

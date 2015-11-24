@@ -2,10 +2,10 @@
 #include "stdio.h"
 #include "inv_list.h"
 
-using namespace GaLG;
+using namespace GPUGenie;
 
 void
-GaLG::inv_table::clear()
+GPUGenie::inv_table::clear()
 {
   _build_status = not_builded;
   _inv_lists.clear();
@@ -15,31 +15,31 @@ GaLG::inv_table::clear()
 }
 
 bool
-GaLG::inv_table::empty()
+GPUGenie::inv_table::empty()
 {
   return _size == -1;
 }
 
 int
-GaLG::inv_table::m_size()
+GPUGenie::inv_table::m_size()
 {
   return _inv_lists.size();
 }
 
 int
-GaLG::inv_table::i_size()
+GPUGenie::inv_table::i_size()
 {
   return _size <= -1 ? 0 : _size;
 }
 
 int
-GaLG::inv_table::shifter()
+GPUGenie::inv_table::shifter()
 {
   return _shifter;
 }
 
 void
-GaLG::inv_table::append(inv_list& inv)
+GPUGenie::inv_table::append(inv_list& inv)
 {
   if (_size == -1 || _size == inv.size())
     {
@@ -50,7 +50,7 @@ GaLG::inv_table::append(inv_list& inv)
 }
 
 void
-GaLG::inv_table::append(inv_list* inv)
+GPUGenie::inv_table::append(inv_list* inv)
 {
   if (inv != NULL)
     {
@@ -58,50 +58,50 @@ GaLG::inv_table::append(inv_list* inv)
     }
 }
 
-GaLG::inv_table::status
-GaLG::inv_table::build_status()
+GPUGenie::inv_table::status
+GPUGenie::inv_table::build_status()
 {
   return _build_status;
 }
 
 vector<inv_list>*
-GaLG::inv_table::inv_lists()
+GPUGenie::inv_table::inv_lists()
 {
   return &_inv_lists;
 }
 
 vector<int>*
-GaLG::inv_table::ck()
+GPUGenie::inv_table::ck()
 {
   return &_ck;
 }
 
 vector<int>*
-GaLG::inv_table::inv()
+GPUGenie::inv_table::inv()
 {
   return &_inv;
 }
 
 vector<int>*
-GaLG::inv_table::inv_index()
+GPUGenie::inv_table::inv_index()
 {
 	return &_inv_index;
 }
 
 vector<int>*
-GaLG::inv_table::inv_pos()
+GPUGenie::inv_table::inv_pos()
 {
 	return &_inv_pos;
 }
 
 map<int, int>*
-GaLG::inv_table::ck_map()
+GPUGenie::inv_table::ck_map()
 {
   return &_ck_map;
 }
 
 void
-GaLG::inv_table::build(u64 max_length)
+GPUGenie::inv_table::build(u64 max_length)
 {
   _ck.clear(), _inv.clear();
   _inv_index.clear(); _inv_pos.clear();
@@ -185,7 +185,7 @@ GaLG::inv_table::build(u64 max_length)
 }
 
 void
-GaLG::inv_table::build_compressed()
+GPUGenie::inv_table::build_compressed()
 {
   _ck.clear(), _inv.clear(), _ck_map.clear();
   int i, j, key, dim, value;

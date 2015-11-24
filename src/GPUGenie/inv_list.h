@@ -1,12 +1,12 @@
-#ifndef GaLG_inv_list_h
-#define GaLG_inv_list_h
+#ifndef GPUGenie_inv_list_h
+#define GPUGenie_inv_list_h
 
 #include <vector>
 #include <string>
 
 using namespace std;
 
-namespace GaLG
+namespace GPUGenie
 {
   class inv_list
   {

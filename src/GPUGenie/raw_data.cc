@@ -6,26 +6,26 @@
 using namespace std;
 
 void
-GaLG::raw_data::clear()
+GPUGenie::raw_data::clear()
 {
   _meta.clear();
   _instance.clear();
 }
 
 int
-GaLG::raw_data::m_size()
+GPUGenie::raw_data::m_size()
 {
   return _meta.size();
 }
 
 int
-GaLG::raw_data::i_size()
+GPUGenie::raw_data::i_size()
 {
   return _instance.size();
 }
 
 string*
-GaLG::raw_data::meta(int index)
+GPUGenie::raw_data::meta(int index)
 {
   if (index >= m_size() || index < 0)
     return NULL;
@@ -34,7 +34,7 @@ GaLG::raw_data::meta(int index)
 }
 
 int
-GaLG::raw_data::meta(string attr)
+GPUGenie::raw_data::meta(string attr)
 {
   int attr_number;
   for (attr_number = 0; attr_number < m_size(); attr_number++)
@@ -46,7 +46,7 @@ GaLG::raw_data::meta(string attr)
 }
 
 vector<string>*
-GaLG::raw_data::row(int index)
+GPUGenie::raw_data::row(int index)
 {
   if (index >= i_size() || index < 0)
     return NULL;
@@ -54,7 +54,7 @@ GaLG::raw_data::row(int index)
 }
 
 vector<string>*
-GaLG::raw_data::col(string attr)
+GPUGenie::raw_data::col(string attr)
 {
   int attr_number;
   for (attr_number = 0; attr_number < m_size(); attr_number++)
@@ -64,7 +64,7 @@ GaLG::raw_data::col(string attr)
 }
 
 vector<string>*
-GaLG::raw_data::col(int attr_index)
+GPUGenie::raw_data::col(int attr_index)
 {
   if (attr_index >= m_size() || attr_index < 0)
     return NULL;

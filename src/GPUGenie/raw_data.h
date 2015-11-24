@@ -1,12 +1,12 @@
-#ifndef GaLG_raw_data_h
-#define GaLG_raw_data_h
+#ifndef GPUGenie_raw_data_h
+#define GPUGenie_raw_data_h
 
 #include <vector>
 #include <string>
 
 using namespace std;
 
-namespace GaLG
+namespace GPUGenie
 {
   struct raw_data
   {

@@ -1,4 +1,4 @@
-#include <GaLG.h> //for ide: change from <GaLG.h> to "../src/GaLG.h"
+#include <GPUGenie.h> //for ide: change from <GPUGenie.h> to "../src/GPUGenie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -15,7 +15,7 @@
 
 #define DEFAULT_TOP_K 5
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
 u64 MAX_ITEM_NUM = 0;;
@@ -54,8 +54,8 @@ void match_test(inv_table& table,
 	  device_vector<data_t> d_data;
 	  int hash_table_size = hash_table_size_ * table.i_size() + 1;
 	  match(table, queries, d_data, hash_table_size, bitmap_bits, num_of_hot_dims, hot_dim_threshold);// for ide: commented it
-	  if(GALG_ERROR){
-		  GALG_ERROR = false;
+	  if(GPUGENIE_ERROR){
+		  GPUGENIE_ERROR = false;
 		  cudaDeviceReset();
 		  return;
 	  }
@@ -174,13 +174,13 @@ void topk_test( inv_table& table,
 	  printf("hash table size: %d\n", hash_table_size);
 
 	  timestart = getTime();
-	  GaLG::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);//for ide: comment it
-	  if(GALG_ERROR){
+	  GPUGenie::topk(table, queries, d_topk, hash_table_size, bitmap_bits, num_of_query_dims, num_of_hot_dims, hot_dim_threshold);//for ide: comment it
+	  if(GPUGENIE_ERROR){
 		  cudaDeviceReset();
 		  return;
 	  }
 	  timestop = getTime();
-	  GALG_TIME += (timestop - timestart);
+	  GPUGENIE_TIME += (timestop - timestart);
 	  printf("Topk takes %f ms.\n", getInterval(timestart, timestop));
 
 	  printf("Starting copying device result to host...\n");
@@ -348,7 +348,7 @@ float stof(std::string str)
 //	build_table(table, "/media/hd1/home/luanwenhao/TestData2Wenhao/random/tst_d128_n100k.csv", 128);
 //	read_query(table, "/media/hd1/home/luanwenhao/TestData2Wenhao/random/tst_d128_n100k.csv", queries, 100, 128, 0, 100);
 //
-//	GaLG::GaLG_Config config;
+//	GPUGenie::GPUGenie_Config config;
 //	config.count_threshold = 4;
 //	config.dim = 128;
 //	config.hashtable_size = 0.2;
@@ -359,7 +359,7 @@ float stof(std::string str)
 //	std::vector<int> result;
 //
 //	printf("Launching knn functions...\n");
-//	GaLG::knn_search(table, queries, result, config);
+//	GPUGenie::knn_search(table, queries, result, config);
 //
 //	for(int i = 0; i < 10; ++i)
 //	{
@@ -571,8 +571,8 @@ main(int argc, char * argv[])//for ide: from main to main6
 	  	  printf("Using last function - %s.\n", function == 0? "match" : "topk");
 	    }
 	    try{
-	    	GALG_TIME = 0ull;
-	    	GALG_ERROR= false;
+	    	GPUGENIE_TIME = 0ull;
+	    	GPUGENIE_ERROR= false;
 		    if(function == 0 && !error)
 		    {
 		    	MAX_ITEM_NUM = 0ull;
@@ -591,7 +591,7 @@ main(int argc, char * argv[])//for ide: from main to main6
 		    else if(function == 1 && !error)
 		    {
 
-		      for(int i = 0; i < num_of_tests && !GALG_ERROR; ++i){
+		      for(int i = 0; i < num_of_tests && !GPUGENIE_ERROR; ++i){
 		    	  topk_test(table,
 		    			    qfname.c_str(),
 		    			    num_of_query,
@@ -605,9 +605,9 @@ main(int argc, char * argv[])//for ide: from main to main6
 		    			    hot_dim_safe_threshold,
 		    			    selectivity);
 		      }
-		      if(num_of_tests != 1 && !GALG_ERROR)
+		      if(num_of_tests != 1 && !GPUGENIE_ERROR)
 		      {
-		    	  printf("Average topk time is %f for %d tests.\n", GALG_TIME / (double)(num_of_tests*1000), num_of_tests);
+		    	  printf("Average topk time is %f for %d tests.\n", GPUGENIE_TIME / (double)(num_of_tests*1000), num_of_tests);
 		      }
 
 

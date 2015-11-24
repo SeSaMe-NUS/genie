@@ -7,14 +7,14 @@
  * description: This program is to demonstrate the search on string-like data by the GPU. More description of the parameter configuration please refer to example.cu file
  */
 
-#include "GaLG.h" //for ide: change from "GaLG.h" to "../src/GaLG.h"
+#include "GPUGenie.h" //for ide: change from "GPUGenie.h" to "../src/GPUGenie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 #include <fstream>
 #include <string>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
 
@@ -27,7 +27,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	read_file(data, "tweets_4k.csv", -1);//for debug
 	read_file(queries, "tweets_4k.csv", 100);//for debug
 	char* datafile = "/media/hd2/zhoujingbo_data/tweets/tweets_7m/tweets.csv";
-	GaLG::GaLG_Config config;
+	GPUGenie::GPUGenie_Config config;
 
 	//Data dimension
 	//For string search, we use one-dimension-mulitple-values method,
@@ -82,7 +82,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<int> result;
 	printf("Launching knn functions...\n");
 	u64 start = getTime();
-	GaLG::knn_search_tweets(result, config);
+	GPUGenie::knn_search_tweets(result, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 	printf(">>>>>>>[time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);

@@ -14,12 +14,12 @@
 #include <string>
 #include <cstring>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
 
 
-namespace GaLG {
+namespace GPUGenie {
 	vector<string> split(string& str, const char* c) {
 		char *cstr, *p;
 		vector<string> res;
@@ -45,7 +45,7 @@ namespace GaLG {
 	}
 }
 
-void GaLG::read_file(vector<vector<int> >& dest,
+void GPUGenie::read_file(vector<vector<int> >& dest,
 		        const char* fname,
 		        int num)
 {
@@ -74,7 +74,7 @@ void GaLG::read_file(vector<vector<int> >& dest,
 }
 
 
-void GaLG::read_query(inv_table& table,
+void GPUGenie::read_query(inv_table& table,
 		        const char* fname,
 		        vector<query>& queries,
 		        int num_of_queries,
@@ -123,4 +123,4 @@ void GaLG::read_query(inv_table& table,
 	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
 }
 
-/* namespace GaLG */
+/* namespace GPUGenie */

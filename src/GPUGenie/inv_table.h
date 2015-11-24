@@ -1,5 +1,5 @@
-#ifndef GaLG_inv_table_h
-#define GaLG_inv_table_h
+#ifndef GPUGenie_inv_table_h
+#define GPUGenie_inv_table_h
 
 #include "raw_data.h"
 #include "inv_list.h"
@@ -10,7 +10,7 @@ typedef unsigned long long u64;
 
 using namespace std;
 
-namespace GaLG
+namespace GPUGenie
 {
   class inv_table
   {

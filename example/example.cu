@@ -4,14 +4,14 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include "GaLG.h" //for ide: change from "GaLG.h" to "../src/GaLG.h"
+#include "GPUGenie.h" //for ide: change from "GPUGenie.h" to "../src/GPUGenie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 #include <fstream>
 #include <string>
 
-using namespace GaLG;
+using namespace GPUGenie;
 using namespace std;
 
 
@@ -32,13 +32,13 @@ int main(int argc, char * argv[])//for ide: from main to main5
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 5;
-	GaLG::read_file(data, "sift_1k.csv", -1);
+	GPUGenie::read_file(data, "sift_1k.csv", -1);
 	//read queries from file, which has the same format 
-	GaLG::read_file(queries, "sift_1k.csv", queryNum);
+	GPUGenie::read_file(queries, "sift_1k.csv", queryNum);
 
 
 	/*** Configuration of KNN Search ***/
-	GaLG::GaLG_Config config;
+	GPUGenie::GPUGenie_Config config;
 
 	//Data dimension
 	config.dim = 128;
@@ -143,7 +143,7 @@ int main(int argc, char * argv[])//for ide: from main to main5
 
 	printf("Launching knn functions...\n");
 	u64 start = getTime();
-	GaLG::knn_search(result, config);
+	GPUGenie::knn_search(result, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);

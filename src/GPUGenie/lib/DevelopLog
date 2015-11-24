@@ -2,11 +2,11 @@
 2. problem report : for the fixed threshold method, if the the setting is likes: 
 //=================================
 	int queryNum = 5;
-	GaLG::read_file(data, "sift_1k.csv", -1);
-	GaLG::read_file(queries, "sift_1k.csv", queryNum);
+	GPUGenie::read_file(data, "sift_1k.csv", -1);
+	GPUGenie::read_file(queries, "sift_1k.csv", queryNum);
 
 	/*** Configuration of KNN Search ***/
-	GaLG::GaLG_Config config;
+	GPUGenie::GPUGenie_Config config;
 
 	config.dim = 128;
 	config.count_threshold = 48;//the main setting causes the reported problem

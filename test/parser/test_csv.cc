@@ -1,8 +1,8 @@
-#include "GaLG.h" //for ide: to revert it as system file later, change "GaLG.h" to "../../src/GaLG.h"
+#include "GPUGenie.h" //for ide: to revert it as system file later, change "GPUGenie.h" to "../../src/GPUGenie.h"
 
 #include <assert.h>
 
-using namespace GaLG;
+using namespace GPUGenie;
 
 int main()//for ide: from main to main3
 {

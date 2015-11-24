@@ -1,5 +1,5 @@
 #include "topk.h"
-#include "GaLG/lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change  "GaLG/lib/bucket_topk/bucket_topk.h" to "lib/bucket_topk/bucket_topk.h"
+#include "GPUGenie/lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change  "GPUGenie/lib/bucket_topk/bucket_topk.h" to "lib/bucket_topk/bucket_topk.h"
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
 
@@ -41,8 +41,8 @@ struct ValueOfInt
 };
 
 void
-GaLG::topk(device_vector<int>& d_search,
-		   vector<GaLG::query>& queries,
+GPUGenie::topk(device_vector<int>& d_search,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes)
 {
   host_vector<int> h_tops(queries.size());
@@ -56,8 +56,8 @@ GaLG::topk(device_vector<int>& d_search,
 }
 
 void
-GaLG::topk(device_vector<float>& d_search,
-		   vector<GaLG::query>& queries,
+GPUGenie::topk(device_vector<float>& d_search,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes)
 {
   host_vector<int> h_tops(queries.size());
@@ -71,8 +71,8 @@ GaLG::topk(device_vector<float>& d_search,
 }
 
 void
-GaLG::topk(device_vector<data_t>& d_search,
-		   vector<GaLG::query>& queries,
+GPUGenie::topk(device_vector<data_t>& d_search,
+		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   float dim)
 {
@@ -87,8 +87,8 @@ GaLG::topk(device_vector<data_t>& d_search,
 }
 
 void
-GaLG::topk(device_vector<u32>& d_search,
-       vector<GaLG::query>& queries,
+GPUGenie::topk(device_vector<u32>& d_search,
+       vector<GPUGenie::query>& queries,
        device_vector<int>& d_top_indexes,
        u32 dim)
 {
@@ -105,13 +105,13 @@ GaLG::topk(device_vector<u32>& d_search,
 
 
 void
-GaLG::topk(device_vector<int>& d_search,
+GPUGenie::topk(device_vector<int>& d_search,
 		   device_vector<int>& d_tops,
 		   device_vector<int>& d_top_indexes)
 {
 
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 starttime = getTime();
 
 #endif
@@ -140,7 +140,7 @@ GaLG::topk(device_vector<int>& d_search,
   float max = *minmax.second;
   bucket_topk<int, ValueOfInt>(&d_search, val, min, max, &d_tops, &d_end_index,
       parts, &d_top_indexes);
-#ifdef GALG_DEGBUG
+#ifdef GPUGENIE_DEGBUG
   u64 endtime = getTime();
   cout<<">>>>[time profiling]: Selection  takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
 #endif
@@ -148,11 +148,11 @@ GaLG::topk(device_vector<int>& d_search,
 }
 
 void
-GaLG::topk(device_vector<float>& d_search,
+GPUGenie::topk(device_vector<float>& d_search,
 		   device_vector<int>& d_tops,
 		   device_vector<int>& d_top_indexes)
 {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 u64 starttime = getTime();
 #endif
 
@@ -187,12 +187,12 @@ cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<
 }
 
 void
-GaLG::topk(device_vector<data_t>& d_search,
+GPUGenie::topk(device_vector<data_t>& d_search,
 		   device_vector<int>& d_tops,
 		   device_vector<int>& d_top_indexes,
 		   float dim)
 {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 	u64 starttime = getTime();
 
 #endif
@@ -225,19 +225,19 @@ GaLG::topk(device_vector<data_t>& d_search,
   bucket_topk<data_t, ValueOfData>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
   u64 endtime = getTime();
   cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
 #endif
 
 }
 void
-GaLG::topk(device_vector<u32>& d_search,
+GPUGenie::topk(device_vector<u32>& d_search,
        device_vector<int>& d_tops,
        device_vector<int>& d_top_indexes,
        u32 dim)
 {
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 u64 starttime = getTime();
 #endif
 
@@ -270,7 +270,7 @@ u64 starttime = getTime();
   bucket_topk<u32, ValueOfU32>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
 
-#ifdef GALG_DEBUG
+#ifdef GPUGENIE_DEBUG
 u64 endtime = getTime();
 cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms ((GPU k selection)<<<<"<<endl;
 #endif

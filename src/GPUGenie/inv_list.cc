@@ -8,45 +8,45 @@ cv(string& s, void* d)
   return atoi(s.c_str());
 }
 
-GaLG::inv_list::inv_list(vector<int>& vin)
+GPUGenie::inv_list::inv_list(vector<int>& vin)
 {
   invert(vin);
 }
 
-GaLG::inv_list::inv_list(vector<int>* vin)
+GPUGenie::inv_list::inv_list(vector<int>* vin)
 {
   invert(vin);
 }
 
-GaLG::inv_list::inv_list(vector<string>& vin)
+GPUGenie::inv_list::inv_list(vector<string>& vin)
 {
   invert(vin);
 }
 
-GaLG::inv_list::inv_list(vector<string>* vin)
+GPUGenie::inv_list::inv_list(vector<string>* vin)
 {
   invert(vin);
 }
 
 int
-GaLG::inv_list::min()
+GPUGenie::inv_list::min()
 {
   return _bound.first;
 }
 
 int
-GaLG::inv_list::max()
+GPUGenie::inv_list::max()
 {
   return _bound.second;
 }
 
 int
-GaLG::inv_list::size()
+GPUGenie::inv_list::size()
 {
   return _size;
 }
 void
-GaLG::inv_list::invert_tweets(vector<vector<int> > & vin)
+GPUGenie::inv_list::invert_tweets(vector<vector<int> > & vin)
 {
 	  _size = vin.size();
 	  if (vin.empty())
@@ -80,7 +80,7 @@ GaLG::inv_list::invert_tweets(vector<vector<int> > & vin)
 	  return;
 }
 void
-GaLG::inv_list::invert(vector<int>& vin)
+GPUGenie::inv_list::invert(vector<int>& vin)
 {
   _size = vin.size();
   if (vin.empty())
@@ -108,25 +108,25 @@ GaLG::inv_list::invert(vector<int>& vin)
 }
 
 void
-GaLG::inv_list::invert(vector<int>* vin)
+GPUGenie::inv_list::invert(vector<int>* vin)
 {
   invert(*vin);
 }
 
 void
-GaLG::inv_list::invert(vector<string>& vin)
+GPUGenie::inv_list::invert(vector<string>& vin)
 {
   invert(vin, &cv, NULL);
 }
 
 void
-GaLG::inv_list::invert(vector<string>* vin)
+GPUGenie::inv_list::invert(vector<string>* vin)
 {
   invert(*vin);
 }
 
 void
-GaLG::inv_list::invert(vector<string>& vin, int
+GPUGenie::inv_list::invert(vector<string>& vin, int
 (*stoi)(string&, void*), void* d)
 {
   _size = vin.size();
@@ -158,14 +158,14 @@ GaLG::inv_list::invert(vector<string>& vin, int
 
 
 void
-GaLG::inv_list::invert(vector<string>* vin, int
+GPUGenie::inv_list::invert(vector<string>* vin, int
 (*stoi)(string&, void*), void* d)
 {
   invert(*vin, stoi, d);
 }
 
 bool
-GaLG::inv_list::contains(int value)
+GPUGenie::inv_list::contains(int value)
 {
   if (value > _bound.second || value < _bound.first)
     return false;
@@ -173,7 +173,7 @@ GaLG::inv_list::contains(int value)
 }
 
 vector<int>*
-GaLG::inv_list::index(int value)
+GPUGenie::inv_list::index(int value)
 {
   if (!contains(value))
     return NULL;

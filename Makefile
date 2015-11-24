@@ -8,8 +8,8 @@ test:
 
 doc:
 	doxygen
-	rm -rf /tmp/libGaLG_doc
-	cp -rf doc/html/ /tmp/libGaLG_doc/
+	rm -rf /tmp/libGPUGenie_doc
+	cp -rf doc/html/ /tmp/libGPUGenie_doc/
 
 clean:
 	rm -rf build
