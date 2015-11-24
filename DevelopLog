@@ -5,3 +5,4 @@
 
 2015.10.29, add adaptive threshold method for topk search, (and merge "adaptiveThreshold" into "master").
 
+2015.11.24, rename libGaLG as GPUGenie
