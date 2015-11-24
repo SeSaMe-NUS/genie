@@ -21,6 +21,15 @@ The library will be generated within the folder "build"
 
 After compiling, you can go to folder "example", and type "make". Some running examples will be compiled fnd generated for testing.
 
+To generate the documents of the project, just type
+
+
+```
+make doc
+```
+
+The documents (with html format and latex format) will be generated whinin the folder "doc"
+
 ### Install
 
 You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater than version 2.8 and cuda 7.
