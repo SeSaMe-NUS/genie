@@ -56,7 +56,7 @@ namespace GPUGenie
     inv_list(vector<int>* vin);
 
     void
-    invert_tweets(vector<vector<int> > & vin);
+    invert_bijectMap(vector<vector<int> > & vin);
 
     /**
      * @brief Create an inv_list from a string vector.

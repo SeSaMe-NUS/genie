@@ -40,7 +40,7 @@ namespace GPUGenie{
 		int num_of_hot_dims,
 		int hot_dim_threshold);
 	void
-	knn_tweets(inv_table& table,
+	knn_bijectMap(inv_table& table,
 		   vector<query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,

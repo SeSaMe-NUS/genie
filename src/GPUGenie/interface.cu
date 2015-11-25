@@ -111,7 +111,7 @@ namespace GPUGenie
 #endif
 	}
 	void
-	load_query_tweets(inv_table& table,
+	load_query_bijectMap(inv_table& table,
 				std::vector<query>& queries,
 				GPUGenie_Config& config)
 	{
@@ -162,7 +162,7 @@ namespace GPUGenie
 	}
 
 	void
-	load_table_tweets(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
+	load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
 	{
 
 #ifdef GPUGENIE_DEBUG
@@ -170,7 +170,7 @@ namespace GPUGenie
 
 #endif
 	  inv_list list;
-	  list.invert_tweets(data_points);
+	  list.invert_bijectMap(data_points);
 	  table.append(list);
 	  table.build(max_length);
 #ifdef GPUGENIE_DEBUG
@@ -219,7 +219,7 @@ void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
 	knn_search(result, config);
 }
 
-void GPUGenie::knn_search_tweets(std::vector<int>& result, GPUGenie_Config& config)
+void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
@@ -228,7 +228,7 @@ void GPUGenie::knn_search_tweets(std::vector<int>& result, GPUGenie_Config& conf
 	printf("Building table...");
 #endif
 
-	load_table_tweets(table, *(config.data_points), config.posting_list_max_length);
+	load_table_bijectMap(table, *(config.data_points), config.posting_list_max_length);
 
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
@@ -239,7 +239,7 @@ void GPUGenie::knn_search_tweets(std::vector<int>& result, GPUGenie_Config& conf
 	u64 starttime = getTime();
 #endif
 
-	load_query_tweets(table,queries,config);
+	load_query_bijectMap(table,queries,config);
 
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
@@ -322,7 +322,7 @@ void GPUGenie::knn_search(inv_table& table,
 #endif
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
 	printf("max_load is %d\n", max_load);
-	GPUGenie::knn_tweets(table,//for ask: why knn_tweets, does it mean this is basic API?
+	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
 			   queries,
 			   d_topk,
 			   hashtable_size,

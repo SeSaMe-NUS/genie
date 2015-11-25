@@ -127,7 +127,7 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 	knn(table, queries, d_top_indexes, hash_table_size, max_load,bitmap_bits, dim, 0,0);
 }
 void
-GPUGenie::knn_tweets(GPUGenie::inv_table& table,
+GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 		   vector<GPUGenie::query>& queries,
 		   device_vector<int>& d_top_indexes,
 		   int hash_table_size,

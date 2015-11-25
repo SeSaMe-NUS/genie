@@ -81,7 +81,15 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<int> result;
 	printf("Launching knn functions...\n");
 	u64 start = getTime();
-	GPUGenie::knn_search_tweets(result, config);
+
+	/**
+	* @brief Search on the inverted index and save the result in result
+	* bijectMap means building each ordered pair/keyword is also transformed by a bijection map. (Different from the default method, where the
+	* keyword is a combination of dimension and value
+	* Previous name: knn_search_tweets()
+	*
+	*/
+	GPUGenie::knn_search_bijectMap(result, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 	printf(">>>>>>>[time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);

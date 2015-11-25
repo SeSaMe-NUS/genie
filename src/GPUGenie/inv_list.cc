@@ -46,7 +46,7 @@ GPUGenie::inv_list::size()
   return _size;
 }
 void
-GPUGenie::inv_list::invert_tweets(vector<vector<int> > & vin)
+GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 {
 	  _size = vin.size();
 	  if (vin.empty())

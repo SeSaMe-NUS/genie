@@ -68,9 +68,12 @@ namespace GPUGenie
     
     __device__ __constant__ u32 offsets[16];
     
+    /**
+     *  @brief get the item id
+     */
     __inline__ __host__ __device__
     T_KEY
-    get_key_pos(T_HASHTABLE key)//for ask: what does this function mean?//the item id
+    get_key_pos(T_HASHTABLE key)
     {
       return key & KEY_TYPE_MASK;
     }
@@ -166,7 +169,7 @@ namespace GPUGenie
             											 get_key_age(out_key));
             if(atomicCAS(&htable[location], out_key, new_key) == out_key)
             {
-            	*key_found =true;//for ask: why not combine access and insert?
+            	*key_found =true;//
             	return;
             }
           }
@@ -269,7 +272,7 @@ namespace GPUGenie
                }
                if(atomicCAS(&htable[location], out_key, new_key) == out_key)
                {*pass_threshold = true;//high possible that pass the threshold, must update the threshold
-               	*key_found =true;//for ask: why not combine access and insert?
+               	*key_found =true;//
                	return;
                }
              }
@@ -341,7 +344,7 @@ namespace GPUGenie
 
     __inline__ __device__
     void
-    hash_kernel(u32 id,//for ask: understand this functoin is important
+    hash_kernel(u32 id,//
                 T_HASHTABLE* htable,
                 int hash_table_size,
                 query::dim& q,
@@ -373,10 +376,10 @@ namespace GPUGenie
 
         	peek_key = htable[location];
         	//for parallel race region, item may be inserted by othe threads
-        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//for ask: where insert here? It seems it is impossible to satisfy this condition if key_eligible ==0
+        	if(get_key_pos(peek_key) == get_key_pos(key) && get_key_age(peek_key) != 0u)//
         	{
         		u32 old_value_1 = get_key_attach_id(peek_key);
-        		u32 old_value_2 = get_key_attach_id(key);//for ask: what is old_value_1, and what is old_value_2
+        		u32 old_value_2 = get_key_attach_id(key);//
         		float old_value_plus = *reinterpret_cast<float*>(&old_value_2) + *reinterpret_cast<float*>(&old_value_1);
 #ifdef DEBUG_VERBOSE
         		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
@@ -396,12 +399,12 @@ namespace GPUGenie
         		}
         	}
 
-        	if(get_key_age(peek_key) < get_key_age(key))//for ask: if this location with smaller age (inclusive empty location, i.e. age 0)
+        	if(get_key_age(peek_key) < get_key_age(key))//
         	{
         		evicted_key = atomicCAS(&htable[location], peek_key, key);
         		if(evicted_key != peek_key)
         			continue;
-                if(get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
+                if(get_key_age(evicted_key) > 0u)//
                 {
                   key = evicted_key;
                   age = get_key_age(evicted_key);
@@ -413,7 +416,7 @@ namespace GPUGenie
                 	if(*my_noiih >= hash_table_size)
                 	{
                 		*overflow = true;
-                		atomicAdd(my_noiih, 1u);//for ask: this will affect the performance very much? //for improve:
+                		atomicAdd(my_noiih, 1u);//for improve: it can be improved: but it seems not delayed the performance too much
                 		return;
                 	} else{
                 		atomicAdd(my_noiih, 1u);//for improve:
@@ -433,7 +436,7 @@ namespace GPUGenie
         					*reinterpret_cast<float*>(&old_value_1),
         					s);
 #endif
-                	return;//for ask: finish insertion for empty location
+                	return;// finish insertion for empty location
                 }
         	}
         	else
@@ -451,10 +454,10 @@ namespace GPUGenie
       return;
     }
 
-    //for AT: for adaptiveThreshold
+    //for AT: for countHeap (with adaptiveThreshold)
     __inline__ __device__
        void
-       hash_kernel_AT(u32 id,//for ask: understand this functoin is important
+       hash_kernel_AT(u32 id,//
                    T_HASHTABLE* htable,
                    int hash_table_size,
                    query::dim& q,
@@ -570,7 +573,7 @@ namespace GPUGenie
            			continue;
 
 
-                   if((get_key_age(evicted_key) > 0u)//for ask: if this not an empty location
+                   if((get_key_age(evicted_key) > 0u)//if this not an empty location
                 		   )
                    {
                 	 if(peek_key_value<*my_threshold){// for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
@@ -749,7 +752,7 @@ namespace GPUGenie
       min = d_inv_pos[d_inv_index[min]+min_offset];
       max = d_inv_pos[d_inv_index[max]+max_offset+1];
 
-      bool key_eligible;//for ask: what does it mean for key_eligible
+      bool key_eligible;//
 
       for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
         {
@@ -772,7 +775,7 @@ namespace GPUGenie
 
               key_eligible = false;
               //Try to find the entry in hash tables
-              access_kernel(access_id,//for ask: relation between access_kernel and hash_kernel
+              access_kernel(access_id,//
                             hash_table,
                             hash_table_size,
                             q,
@@ -862,7 +865,7 @@ namespace GPUGenie
        min = d_inv_pos[d_inv_index[min]+min_offset];
        max = d_inv_pos[d_inv_index[max]+max_offset+1];
 
-       bool key_eligible;//for ask: what does it mean for key_eligible
+       bool key_eligible;//
        bool pass_threshold;//to determine whether pass the check of my_theshold
 
        for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
@@ -895,7 +898,7 @@ namespace GPUGenie
 						}
 
 					   //Try to find the entry in hash tables
-					   access_kernel_AT(access_id,//for ask: relation between access_kernel and hash_kernel
+					   access_kernel_AT(access_id,//
 									 hash_table,
 									 hash_table_size,
 									 q,

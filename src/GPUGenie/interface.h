@@ -86,10 +86,13 @@ namespace GPUGenie
 
 	/**
 	* @brief Search on the inverted index and save the result in result
+	* bijectMap means building each ordered pair/keyword is also transformed by a bijection map. (Different from the default method, where the
+	* keyword is a combination of dimension and value
+	* Previous name: knn_search_tweets()
 	*        Please refer to /example/example_tweets.cu to see an example about using it
 	* 
 	*/
-	void knn_search_tweets(std::vector<int>& result,
+	void knn_search_bijectMap(std::vector<int>& result,
 				GPUGenie_Config& config);
 	
 
