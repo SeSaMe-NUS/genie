@@ -28,6 +28,19 @@ namespace GPUGenie {
 					int topk,
 					float selectivity);
 
+
+    //convert a csv file to a binaryfile, the third arg determines write style(override or append)
+    void csv2binary(const char* csvfile, const char* binaryfile, bool app_write = false);
+
+    //read from a binary style file
+    //_data points to a one-dimensional array, data_len is the number of elements
+    //_index points to a one-dimensional array, storing beginning poision of each row in data_len[]
+    //row_num equals the size of _index[]
+    void read_file(const char* fname, int **_data,
+                    unsigned int& item_num, unsigned int **_index,
+                    unsigned int& row_num);
+
+
 } /* namespace GPUGenie */
 
 

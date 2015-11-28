@@ -56,6 +56,34 @@ namespace GPUGenie
 		  cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms<<<<"<<endl;
 #endif
 	}
+    
+    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, int max_length)
+    {
+          inv_list list;
+          u32 i,j;
+#ifdef GPUGENIE_DEBUG
+          printf("Data row size: %d. Data Row Number: %d. \n", index[1], row_num);
+          u64 starttime = getTime();
+#endif
+          for(i = 0; i<index[1]; ++i){
+              std::vector<int> col;
+	      col.reserve(row_num);
+              for(j = 0; j<row_num; ++j){
+                col.push_back(data[index[j]+i]);
+             }
+	      list.invert(col);
+              table.append(list);
+          }
+          table.build(max_length);
+
+#ifdef GPUGENIE_DEBUG
+          u64 endtime = getTime();
+          double timeInterval = getInterval(starttime, endtime);
+          printf("Before finishing loading. i_size() : %d, m_size() : %d.\n", table.i_size(), table.m_size());
+          cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms<<<<"<<endl;
+#endif
+    }
+
 
 	void
 	load_query(inv_table& table,
@@ -181,6 +209,40 @@ namespace GPUGenie
 #endif
 	}
 
+    void
+    load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index, 
+                        unsigned int row_num, int max_length)
+    {
+#ifdef GPUGENIE_DEBUG
+        u64 starttime = getTime();
+#endif
+        std::vector<std::vector<int> > data_points;
+        for(u32 i = 0; i< row_num-1; ++i){
+            std::vector<int> row;
+            for(u32 j=0; j+index[i]<index[i+1] ; ++j)
+                row.push_back(data[j+index[i]]);
+
+            data_points.push_back(row);
+        }
+        
+        vector<int> last_row;
+        for(u32 i=0; i+index[row_num-1]<item_num; ++i)
+            last_row.push_back(data[i+index[row_num-1]]);
+        
+        data_points.push_back(last_row);
+
+        inv_list list;
+        list.invert_bijectMap(data_points);
+        table.append(list);
+        table.build(max_length);
+#ifdef GPUGENIE_DEBUG
+        u64 endtime = getTime();
+        double timeInterval = getInterval(starttime, endtime);
+        printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
+        cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
+#endif
+    }
+
 }
 void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
 					  std::vector<std::vector<int> >& query_points,
@@ -227,9 +289,14 @@ void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& c
 #ifdef GPUGENIE_DEBUG
 	printf("Building table...");
 #endif
-
+    if(config.item_num ==0){
 	load_table_bijectMap(table, *(config.data_points), config.posting_list_max_length);
-
+    }else if(config.data != NULL && config.index != NULL && config.item_num!=0 && config.row_num!=0){
+        load_table_bijectMap(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
+    }else{
+        printf("no data input!\n");
+        return;
+    }
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 	printf("Loading queries...");
@@ -257,12 +324,20 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
-
-#ifdef GPUGENIE_DEBUG
+	#ifdef GPUGENIE_DEBUG
 	printf("Building table...");
 #endif
-
-	load_table(table, *(config.data_points), config.posting_list_max_length);
+    
+    if(config.item_num == 0){
+	    cout<<"build from data_points..."<<endl;
+	    load_table(table, *(config.data_points), config.posting_list_max_length);
+    }else if(config.data != NULL&&config.index!=NULL && config.item_num!=0&& config.row_num!=0){
+	cout<<"build from data array..."<<endl;
+        load_table(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
+    }else{
+        printf("no data input!\n");
+        return;
+    }
 
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");

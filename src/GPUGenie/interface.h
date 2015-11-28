@@ -39,6 +39,12 @@ namespace GPUGenie
 		bool use_adaptive_range;
 		float selectivity;
 		std::vector<std::vector<int> > * data_points;
+
+        int *data;//one way to represent data in 1-D array
+        unsigned int *index;// preserve the beginning of each row
+        unsigned int item_num;
+        unsigned int row_num;
+
 		std::vector<std::vector<int> > * query_points;
 		int posting_list_max_length;
 		float multiplier;
@@ -50,6 +56,12 @@ namespace GPUGenie
 			hashtable_size(GPUGENIE_DEFAULT_HASHTABLE_SIZE),
 			use_device(GPUGENIE_DEFAULT_DEVICE),
 			data_points(NULL),
+
+            data(NULL),
+            index(NULL),
+            item_num(0),
+            row_num(0),
+
 			query_points(NULL),
 			dim(0),
 			num_of_hot_dims(GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS),
@@ -90,17 +102,17 @@ namespace GPUGenie
 	* keyword is a combination of dimension and value
 	* Previous name: knn_search_tweets()
 	*        Please refer to /example/example_tweets.cu to see an example about using it
-	* 
+	*
 	*/
 	void knn_search_bijectMap(std::vector<int>& result,
 				GPUGenie_Config& config);
-	
+
 
 
 	/**
 	* @brief Search on the inverted index and save the result in result
 	*        Please refer to /example/example_sift.cu to see an example about using it
-	* 
+	*
 	*/
 	void knn_search(std::vector<int>& result,
 					GPUGenie_Config& config);
@@ -109,6 +121,21 @@ namespace GPUGenie
 					std::vector<query>& queries,
 					std::vector<int>& h_topk,
 					GPUGenie_Config& config);
+
+    //to provide the load_table function interface, we can make programs more flexible and more adaptive
+    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length);
+    void load_query(inv_table& table, std::vector<std::vector<int> >& queries, GPUGenie_Config& config);
+    void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length);
+
+    //below are corresponding functions woring on binary reading results
+
+    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num,int max_length);
+    void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
+                                unsigned int row_num, int max_length);
+
+
+
 }
 
 

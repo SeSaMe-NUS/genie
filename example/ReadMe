@@ -6,5 +6,21 @@ example_tweets.cu: This is an exaple for kNN search on the tweets data, one line
 
 example_adaptiveThreshold.cu: This is an exaple for kNN search with adaptiveThreshold. A Count Heap method is use to support large number of queries for top-k query
 
+*_binary.cu: All files whose name end like this are merely different from above files on the input. The data input is from binary files.
+
+convert_csv2binary.cu: This file can be compiled to an executable file whose name is convert. Use convert to turn csv files to binary files.
+                        Convert usage:  ./convert [-a|-t] csvfilename binaryfilename
+                                -a: append writing
+                                -t: trunc writing
+                                default: trunc writing
+
+
+The binary file: Every binary file consists of 4 consecutive parts. 
+                The first part: item_num, length = sizeof(unsigned int) ------ hold the number of data item
+                The second part: row_num, length = sizeof(unsigned int) ------ hold the number of row of data
+                The third part: data, length = sizeof(int) * item_num ------ hold actual data array
+                The fourth part: index, length = sizeof(unsigned int) * row_num ----- hold row index array, which help determine the beginning of each row
+
+
 to run:
 first type make, and then run ./example_bin or ./example_tweets_bin

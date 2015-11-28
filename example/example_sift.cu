@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	//read queries from file, which has the same format 
 	read_file(queries, dataFile.c_str(), queryNum);
-
+	
 
 	/*** Configuration of KNN Search ***/
 	GPUGenie::GPUGenie_Config config;

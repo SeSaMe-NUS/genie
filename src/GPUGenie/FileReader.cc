@@ -123,4 +123,102 @@ void GPUGenie::read_query(inv_table& table,
 	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
 }
 
+void
+GPUGenie::csv2binary(const char* csvfile, const char* binaryfile, bool app_write)
+{
+     vector<vector<int> > data;
+     GPUGenie::read_file(data, csvfile, -1);
+     if(data.size()<=0||data[0].size()<=0)
+     {
+          printf("In processsing csv2binary: cannot read data from csv:%s \n",csvfile);
+          return;
+     }
+     unsigned int row_num = data.size();
+     unsigned int item_num =0 ;
+     unsigned int *index;
+     int *_data;
+
+     index = (unsigned int*)malloc(row_num*sizeof(unsigned int));
+
+     index[0] = 0;
+     for(unsigned int i=0 ; i<data.size()-1 ; ++i)
+     {
+         index[i+1] = index[i] + data[i].size();
+	          item_num += data[i].size();
+     }
+       item_num += data[data.size()-1].size();
+    cout<<"item: "<<item_num<<endl;
+    _data = (int*)malloc(sizeof(int)*item_num);
+    unsigned int k=0;
+    for(unsigned int i=0; i<data.size(); ++i)
+    {
+   	for(unsigned int j=0; j<data[i].size(); ++j)
+	{
+		_data[k] = data[i][j];
+		k++;
+	}
+    } 
+    cout<<"Written item_num: "<<item_num<<endl;
+    cout<<"Written row_num: "<<row_num<<endl;
+    ofstream ofs(binaryfile, ios::trunc | ios::binary);
+    if(app_write){
+        ofs.close();
+        ofstream ofs(binaryfile, ios::app | ios::binary );
+    }
+
+    if(!ofs.is_open())
+    {
+         printf("In processing csv2binary: cannot open binary file: %s\n",binaryfile);
+         return;
+    }
+
+    ofs.write((char*)&item_num, sizeof(unsigned int));
+    ofs.write((char*)&row_num, sizeof(unsigned int));
+    ofs.write((char*)_data, sizeof(int)*item_num);
+    ofs.write((char*)index, sizeof(unsigned int)*row_num);
+
+    ofs.close();
+
+    free(_data);
+    free(index);
+
+    return;
+
+}
+
+
+void
+GPUGenie::read_file(const char* fname, int **_data, unsigned int& item_num,
+                    unsigned int **_index, unsigned int& row_num)
+{
+     ifstream ifs(fname, ios::binary);
+     if(!ifs.is_open())
+     {
+         printf("In read_file from binary: cannot open file: %s\n", fname);
+         return;
+     }
+     ifs.read((char*)&item_num, sizeof(unsigned int));
+     ifs.read((char*)&row_num, sizeof(unsigned int));
+     *_data = (int*)malloc(sizeof(int)*item_num);
+     *_index = (unsigned int*)malloc(sizeof(unsigned int)*row_num);
+     ifs.read((char*)*_data, sizeof(int)*item_num);
+     ifs.read((char*)*_index, sizeof(unsigned int)*row_num);
+     ifs.close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* namespace GPUGenie */
