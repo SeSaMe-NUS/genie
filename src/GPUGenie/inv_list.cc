@@ -103,7 +103,7 @@ GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num, unsigned 
 
     for(i=index[row_num-1]; i<item_num; ++i)
         _inv[data[i]-_bound.first].push_back(row_num-1);
-    cout<<"p6"<<endl;
+
     return;
 }
 
