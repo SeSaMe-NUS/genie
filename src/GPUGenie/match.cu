@@ -1024,7 +1024,7 @@ GPUGenie::match(inv_table& table,
             device_vector<u32>& d_noiih)
 {
 #ifdef GPUGENIE_DEBUG
-	printf("match.cu version : %s\n", VERSION);
+	printf("match.cu version : %s\n", MATCH_VERSION);
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;

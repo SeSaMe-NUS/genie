@@ -10,7 +10,8 @@
 using namespace std;
 using namespace thrust;
 
-const char VERSION[] = "0.2.5";
+#define MATCH_VERSION "0.2.5"
+
 typedef unsigned char u8;
 typedef uint32_t u32;
 typedef unsigned long long u64;
@@ -68,7 +69,7 @@ namespace GPUGenie
    *        result into d_count and d_aggregation.
    * @details Search the inv_table and save the match
    *          result into d_count and d_aggregation.
-   * 
+   *
    * @param table The inv_table which will be searched.
    * @param queries The quries.
    * @param d_data The output data consisting of count, aggregation
