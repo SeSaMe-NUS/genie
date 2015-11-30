@@ -218,8 +218,11 @@ namespace GPUGenie
 #endif
         inv_list list;
         //list.invert_bijectMap(data_points);
+        cout<<"s1"<<endl;
         list.invert_bijectMap(data, item_num, index, row_num);
+        cout<<"s2"<<endl;
         table.append(list);
+        cout<<"s3"<<endl;
         table.build(max_length);
 #ifdef GPUGENIE_DEBUG
         u64 endtime = getTime();
