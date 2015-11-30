@@ -42,7 +42,7 @@ namespace GPUGenie
     /**
      * @brief Create an inv_list from an int vector.
      * @details Create an inv_list from an int vector.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     inv_list(vector<int>& vin);
@@ -50,7 +50,7 @@ namespace GPUGenie
     /**
      * @brief Create an inv_list from an int vector.
      * @details Create an inv_list from an int vector.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     inv_list(vector<int>* vin);
@@ -59,11 +59,18 @@ namespace GPUGenie
     invert_bijectMap(vector<vector<int> > & vin);
 
     /**
+     * @brief Handle input from binary file
+     */
+    void
+    invert_bijectMap(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num);
+
+
+    /**
      * @brief Create an inv_list from a string vector.
      * @details Create an inv_list from a string vector.
-     *          The default converter atoi will be invoked to 
+     *          The default converter atoi will be invoked to
      *          convert the string value to int value.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     inv_list(vector<string>& vin);
@@ -71,9 +78,9 @@ namespace GPUGenie
     /**
      * @brief Create an inv_list from a string vector.
      * @details Create an inv_list from a string vector.
-     *          The default converter atoi will be invoked to 
+     *          The default converter atoi will be invoked to
      *          convert the string value to int value.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     inv_list(vector<string>* vin);
@@ -105,7 +112,7 @@ namespace GPUGenie
     /**
      * @brief Create an inverted list from an int vector.
      * @details Create an inverted list from an int vector.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     void
@@ -114,7 +121,7 @@ namespace GPUGenie
     /**
      * @brief Create an inverted list from an int vector.
      * @details Create an inverted list from an int vector.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     void
@@ -123,9 +130,9 @@ namespace GPUGenie
     /**
      * @brief Create an inverted list from a string vector.
      * @details Create an inverted list from a string vector.
-     *          The default converter atoi will be invoked to 
+     *          The default converter atoi will be invoked to
      *          convert the string value to int value.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     void
@@ -134,9 +141,9 @@ namespace GPUGenie
     /**
      * @brief Create an inverted list from a string vector.
      * @details Create an inverted list from a string vector.
-     *          The default converter atoi will be invoked to 
+     *          The default converter atoi will be invoked to
      *          convert the string value to int value.
-     * 
+     *
      * @param vin The vector which will be inverted.
      */
     void
@@ -149,7 +156,7 @@ namespace GPUGenie
      *          For example, if the converter converts the string to int based on
      *          the min max value, the void pointer shall point to the structure which contains min max
      *          then in the converter function stoi, downcast the void pointer to the min max structure.
-     * 
+     *
      * @param vin The vector which will be inverted.
      * @param stoi The converter function pointer.
      * @param d Anyother things that will be passed to the stoi function.
@@ -165,7 +172,7 @@ namespace GPUGenie
      *          For example, if the converter converts the string to int based on
      *          the min max value, the void pointer shall point to the structure which contains min max
      *          then in the converter function stoi, downcast the void pointer to the min max structure.
-     * 
+     *
      * @param vin The vector which will be inverted.
      * @param stoi The converter function pointer.
      * @param d Anyother things that will be passed to the stoi function.
@@ -177,7 +184,7 @@ namespace GPUGenie
     /**
      * @brief Check whether the vaule is in the inv_list.
      * @details Check whether the vaule is in the inv_list.
-     * 
+     *
      * @param  value The given value.
      * @return Whether the vaule is in the inv_list.
      */
@@ -188,7 +195,7 @@ namespace GPUGenie
      * @brief The indexes of the value.
      * @details The value's indexes in the original vector. Return NULL if the given
      *          value does not appear in the original vector.
-     * 
+     *
      * @param value The given value.
      * @return Pointer points to the indexes vector. NULL if the value does not appear
      *         in the original vector.

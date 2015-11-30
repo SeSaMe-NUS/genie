@@ -79,6 +79,40 @@ GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 	  }
 	  return;
 }
+
+void
+GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num)
+{
+    _size = row_num;
+    if(item_num == 0)
+        return;
+    unsigned int i,j;
+    for(i=0 ; i<item_num; ++i){
+        if(_bound.first > data[i])
+            _bound.first = data[i];
+        if(_bound.second < data[i]);
+            _bound.second = data[i];
+    }
+
+    unsigned int gap = _bound.second - _bound.first + 1;
+    _inv.resize(gap);
+    for( i=0 ; i<gap ; ++i)
+        _inv[i].clear();
+
+    for(i=0; i<row_num-1 ; ++i)
+        for(j=index[i]; j<index[i+1]; ++j)
+            _inv[data[j]-_bound.first].push_back(i);
+
+    for(i=index[row_num-1]; i<item_num; ++i)
+        _inv[data[i]-_bound.first].push_back(row_num-1);
+
+    return;
+}
+
+
+
+
+
 void
 GPUGenie::inv_list::invert(vector<int>& vin)
 {
