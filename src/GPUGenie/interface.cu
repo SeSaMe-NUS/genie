@@ -216,22 +216,6 @@ namespace GPUGenie
 #ifdef GPUGENIE_DEBUG
         u64 starttime = getTime();
 #endif
-        /*
-        std::vector<std::vector<int> > data_points;
-        for(u32 i = 0; i< row_num-1; ++i){
-            std::vector<int> row;
-            for(u32 j=0; j+index[i]<index[i+1] ; ++j)
-                row.push_back(data[j+index[i]]);
-
-            data_points.push_back(row);
-        }
-        
-        vector<int> last_row;
-        for(u32 i=0; i+index[row_num-1]<item_num; ++i)
-            last_row.push_back(data[i+index[row_num-1]]);
-        
-        data_points.push_back(last_row);
-    */
         inv_list list;
         //list.invert_bijectMap(data_points);
         list.invert_bijectMap(data, item_num, index, row_num);

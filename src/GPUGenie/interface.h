@@ -124,7 +124,7 @@ namespace GPUGenie
 
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
     void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length);
-    void load_query(inv_table& table, std::vector<std::vector<int> >& queries, GPUGenie_Config& config);
+    void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length);
 
