@@ -28,7 +28,7 @@ using namespace std;
 namespace GPUGenie
 {
 	void
-	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
+	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
 	{
 		  inv_list list;
 		  u32 i,j;
@@ -49,6 +49,22 @@ namespace GPUGenie
 		  }
 
 		  table.build(max_length);
+          if(save_to_gpu == true)
+          {
+             device_vector<int> d_ck(*table.ck());
+             table.d_ck_p = raw_pointer_cast(d_ck.data());
+             
+             device_vector<int> d_inv(*table.inv());
+             table.d_inv_p = raw_pointer_cast(d_inv.data());
+             
+             device_vector<int> d_inv_index(*table.inv_index());
+             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+             
+             device_vector<int> d_inv_pos(*table.inv_pos());
+             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+
+          }
+          table.is_stored_in_gpu = save_to_gpu;
 #ifdef GPUGENIE_DEBUG
 		  u64 endtime = getTime();
 		  double timeInterval = getInterval(starttime, endtime);
@@ -57,7 +73,7 @@ namespace GPUGenie
 #endif
 	}
     
-    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, int max_length)
+    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, int max_length, bool save_to_gpu)
     {
           inv_list list;
           u32 i,j;
@@ -76,6 +92,22 @@ namespace GPUGenie
           }
           table.build(max_length);
 
+          if(save_to_gpu == true)
+          {
+             device_vector<int> d_ck(*table.ck());
+             table.d_ck_p = raw_pointer_cast(d_ck.data());
+             
+             device_vector<int> d_inv(*table.inv());
+             table.d_inv_p = raw_pointer_cast(d_inv.data());
+             
+             device_vector<int> d_inv_index(*table.inv_index());
+             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+             
+             device_vector<int> d_inv_pos(*table.inv_pos());
+             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+
+          }
+          table.is_stored_in_gpu = save_to_gpu;
 #ifdef GPUGENIE_DEBUG
           u64 endtime = getTime();
           double timeInterval = getInterval(starttime, endtime);
@@ -190,7 +222,7 @@ namespace GPUGenie
 	}
 
 	void
-	load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length)
+	load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
 	{
 
 #ifdef GPUGENIE_DEBUG
@@ -201,6 +233,23 @@ namespace GPUGenie
 	  list.invert_bijectMap(data_points);
 	  table.append(list);
 	  table.build(max_length);
+
+
+      if(save_to_gpu == true)
+      {
+          device_vector<int> d_ck(*table.ck());
+          table.d_ck_p = raw_pointer_cast(d_ck.data());
+             
+          device_vector<int> d_inv(*table.inv());
+          table.d_inv_p = raw_pointer_cast(d_inv.data());
+             
+          device_vector<int> d_inv_index(*table.inv_index());
+          table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+             
+          device_vector<int> d_inv_pos(*table.inv_pos());
+          table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+      }
+      table.is_stored_in_gpu = save_to_gpu;
 #ifdef GPUGENIE_DEBUG
 	  u64 endtime = getTime();
 	  double timeInterval = getInterval(starttime,endtime);
@@ -211,7 +260,7 @@ namespace GPUGenie
 
     void
     load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index, 
-                        unsigned int row_num, int max_length)
+                        unsigned int row_num, int max_length, bool save_to_gpu)
     {
 #ifdef GPUGENIE_DEBUG
         u64 starttime = getTime();
@@ -221,6 +270,23 @@ namespace GPUGenie
 
         table.append(list);
         table.build(max_length);
+
+
+        if(save_to_gpu == true)
+        {
+             device_vector<int> d_ck(*table.ck());
+             table.d_ck_p = raw_pointer_cast(d_ck.data());
+             
+             device_vector<int> d_inv(*table.inv());
+             table.d_inv_p = raw_pointer_cast(d_inv.data());
+             
+             device_vector<int> d_inv_index(*table.inv_index());
+             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+             
+             device_vector<int> d_inv_pos(*table.inv_pos());
+             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+        }
+        table.is_stored_in_gpu = save_to_gpu;
 #ifdef GPUGENIE_DEBUG
         u64 endtime = getTime();
         double timeInterval = getInterval(starttime, endtime);

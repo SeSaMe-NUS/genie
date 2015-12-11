@@ -123,16 +123,16 @@ namespace GPUGenie
 					GPUGenie_Config& config);
 
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
-    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length);
+    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length, bool save_to_gpu=false);
     void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length);
+    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu=false);
 
     //below are corresponding functions woring on binary reading results
 
-    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num,int max_length);
+    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num,int max_length, bool save_to_gpu = false);
     void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
-                                unsigned int row_num, int max_length);
+                                unsigned int row_num, int max_length, bool save_to_gpu = false);
 
 
 

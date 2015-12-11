@@ -25,10 +25,16 @@ namespace GPUGenie
       not_builded_exception, not_matched_exception
     };
 
+    //device pointer for some members
+    int *d_inv_p;//_inv
+    int *d_inv_index_p;//_inv_index
+    int *d_inv_pos_p;//_inv_pos
+    int *d_ck_p;//_ck
+    bool is_stored_in_gpu;//just a flag
   private:
     /**
      * @brief Building status of the inv_table.
-     *        Any modification will make the 
+     *        Any modification will make the
      *        inv_table not_builded.
      */
     status _build_status;

@@ -54,6 +54,14 @@ build:
 
 
 
+#Building file: example_sift_multi_table.cu
+#Invoking: NVCC Compiler
+	nvcc -I../src -include ../src/GPUGenie.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -M -o "example_sift_multi_table.d" "example_sift_multi_table.cu"
+	nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GPUGenie.h  -x cu -o  "example_sift_multi_table.o" "example_sift_multi_table.cu"
+
+	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_sift_multi_table_bin"  example_sift_multi_table.o   -lGPUGenie -lpthread
+
+
 clean:
 	rm -rf *.o 
 	rm -rf *.d

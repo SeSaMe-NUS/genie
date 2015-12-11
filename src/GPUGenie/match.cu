@@ -1009,8 +1009,389 @@ GPUGenie::match(inv_table& table,
             device_vector<u32>& d_noiih)
 {
 	device_vector<u32> d_bitmap;
-	match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+    if(table.is_stored_in_gpu==false)
+	    match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+    else
+	    match_for_table_in_gpu(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
 }
+
+
+void
+GPUGenie::match_for_table_in_gpu(inv_table& table,
+            vector<query>& queries,
+            device_vector<data_t>& d_data,
+            device_vector<u32>& d_bitmap,
+            int hash_table_size,
+            int max_load,
+            int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
+            int num_of_hot_dims,
+            int hot_dim_threshold,
+            device_vector<u32>& d_noiih)
+{
+    using namespace GPUGenie;
+#ifdef GPUGENIE_DEBUG
+	printf("match.cu version : %s\n", MATCH_VERSION);
+	u64 match_stop, match_elapsed, match_start;
+	cudaEvent_t kernel_start, kernel_stop;
+	float kernel_elapsed;
+	cudaEventCreate(&kernel_start);
+	cudaEventCreate(&kernel_stop);
+	match_start = getTime();
+	printf("[  0%] Starting matching...\n");
+	printf("[ 10%] Fetching and packing data...\n");
+#endif
+	if (table.build_status() == inv_table::not_builded)
+		throw inv_table::not_builded_exception;
+
+	u32 loop_count = 0u;
+	d_noiih.resize(queries.size(),0);
+	//thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);//for improve
+	u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
+
+	vector<query::dim> dims;
+	vector<query::dim> hot_dims;
+	vector<query> hot_dims_queries;
+
+#ifdef GPUGENIE_DEBUG
+	printf("[Info]hash table size: %d.\n", hash_table_size);
+#endif
+	//TODO: Modify this to enable hot dim search
+//	if(num_of_hot_dims)
+//	{
+//		for(int i = 0; i < queries.size(); ++i)
+//		{
+//			query q(table);
+//			q.topk(queries[i].topk());
+//			queries[i].split_hot_dims(q, num_of_hot_dims);
+//			hot_dims_queries.push_back(q);
+//		}
+//		build_queries(hot_dims_queries, table, hot_dims);
+//	}
+//	printf("Host query size: %d.\n", queries.size());
+
+
+
+#ifdef GPUGENIE_DEBUG
+  u64 match_query_start,match_query_end;
+  match_query_start=getTime();
+#endif
+
+  build_queries(queries, table, dims, max_load);
+
+#ifdef GPUGENIE_DEBUG
+  match_query_end=getTime();
+  printf(">>>>[time profiling]: match: build_queries function takes %f ms. \n", getInterval(match_query_start, match_query_end));
+#endif
+
+#ifdef GPUGENIE_DEBUG
+  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
+#endif
+
+  //for AT: for adaptiveThreshold, enable adaptiveThreshold
+  bool useAdaptiveThreshold = false;//for AT
+  if(bitmap_bits<0){
+	 bitmap_bits = -bitmap_bits;
+	 useAdaptiveThreshold = true;
+	 //for hash_table_size, still let it determine by users currently
+  }
+
+#ifdef GPUGENIE_DEBUG
+    printf("[info] useAdaptiveThreshold: %d, bitmap_bits:%d.\n", useAdaptiveThreshold, bitmap_bits);
+#endif
+  //end for AT
+
+  int total = table.i_size() * queries.size();
+  int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
+  if(bitmap_bits > 1){
+	  float logresult = log2((float) bitmap_bits);
+	  bitmap_bits = (int) logresult;
+	  if(logresult - bitmap_bits > 0)
+	  {
+		 bitmap_bits += 1;
+	  }
+	  logresult = log2((float)bitmap_bits);
+	  bitmap_bits = (int) logresult;
+	  if(logresult - bitmap_bits > 0)
+	  {
+		 bitmap_bits += 1;
+	  }
+	  bitmap_bits = pow(2, bitmap_bits);
+	  bitmap_size = (table.i_size() / (32/bitmap_bits) + 1)* queries.size();
+	  bitmap_bytes = bitmap_size * sizeof(u32);
+  }
+  else
+  {
+	  bitmap_bits = threshold = 0;
+  }
+
+
+
+#ifdef GPUGENIE_DEBUG
+    printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
+	printf("[ 20%] Declaring device memory...\n");
+#endif
+
+	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after,
+		   free_inv_index_after, free_inv_pos_after, total_m;
+	//cudaMemGetInfo(&free_ck_before, &total_m);//for imp
+	//device_vector<int> d_ck(*table.ck());
+	//cudaMemGetInfo(&free_ck_after, &total_m);//for imp
+	//int* d_ck_p = raw_pointer_cast(d_ck.data());
+
+	//device_vector<int> d_inv(*table.inv());
+	//int* d_inv_p = raw_pointer_cast(d_inv.data());
+	//cudaMemGetInfo(&free_inv_after, &total_m);//for imp
+
+	device_vector<query::dim> d_dims(dims);
+	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+	//cudaMemGetInfo(&free_q_after, &total_m);//for imp
+
+	d_bitmap.resize(bitmap_size);
+	//cudaMemGetInfo(&free_bitmap_after, &total_m);//for imp
+
+	//device_vector<int> d_inv_index(*table.inv_index());
+	//int* d_inv_index_p = raw_pointer_cast(d_inv_index.data());
+	//cudaMemGetInfo(&free_inv_index_after, &total_m);//for imp
+
+	//device_vector<int> d_inv_pos(*table.inv_pos());
+	//int* d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+	//cudaMemGetInfo(&free_inv_pos_after, &total_m);//for imp
+
+	if(bitmap_size)
+	{
+		thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+	}
+	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
+
+#ifdef GPUGENIE_DEBUG
+	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u\nd_inv_index size: %u\nd_inv_pos size: %d\n",
+		  	free_ck_before - free_ck_after,
+		  	free_ck_after - free_inv_after ,
+		  	free_inv_after - free_q_after,
+		  	free_q_after- free_bitmap_after,
+		  	free_bitmap_after - free_inv_index_after,
+		  	free_inv_index_after - free_inv_pos_after);
+
+  printf("[ 30%] Allocating device memory to tables...\n");
+#endif
+
+	data_t nulldata;
+	nulldata.id = 0u;
+	nulldata.aggregation = 0.0f;
+	T_HASHTABLE* d_hash_table;
+	data_t* d_data_table;
+	d_data.clear();
+
+	d_data.resize(queries.size()*hash_table_size,nulldata);
+	//thrust::fill(d_data.begin(), d_data.end(), nulldata);//for imp
+	d_data_table = thrust::raw_pointer_cast(d_data.data());
+	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+  
+#ifdef GPUGENIE_DEBUG
+  printf("[ 33%] Copying memory to symbol...\n");
+#endif
+
+  u32 h_offsets[16] = OFFSETS_TABLE_16;
+  cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+
+#ifdef GPUGENIE_DEBUG
+  printf("[ 40%] Starting match kernels...\n");
+  cudaEventRecord(kernel_start);
+#endif
+
+  	bool h_overflow[1]= {false};
+    bool * d_overflow;
+    cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
+
+
+	do{
+		h_overflow[0] = false;
+		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
+		//cudaCheckErrors(cudaDeviceSynchronize());
+		u32 num_of_max_count=0,max_topk=0;
+		if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
+		{
+		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
+					(table.m_size(),
+					table.i_size(),
+					hash_table_size,
+					table.d_ck_p,
+					table.d_inv_p,
+					table.d_inv_index_p,
+					table.d_inv_pos_p,
+					d_dims_p,
+					d_hash_table,
+					d_bitmap_p,
+					bitmap_bits,
+					threshold,
+					0 ,// NUM OF HOT DIM = 0
+					hot_dim_threshold,
+					d_noiih_p,
+					d_overflow);
+	}else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
+
+
+		device_vector<u32> d_threshold;
+		d_threshold.resize(queries.size(),1);
+		//thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
+		u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+
+		device_vector<u32> d_passCount;
+		num_of_max_count = dims.size();
+		d_passCount.resize(queries.size()*num_of_max_count,0u);//
+		//thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
+		u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
+
+		//host_vector<u32> h_tops(queries.size());
+		//max_topk = 100;
+		//for (u32 i = 0; i < queries.size(); i++)
+		// {
+		//	  h_tops[i] = queries[i].topk();
+		//	  if(h_tops[i]>max_topk){
+		//		  max_topk = h_tops[i];
+		//	  }
+		//}
+		// device_vector<u32> d_topks(h_tops);
+		// u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+		max_topk = 100;
+		device_vector<u32> d_topks;
+		d_topks.resize(queries.size(),max_topk);
+		u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+
+
+		device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
+						(table.m_size(),
+						table.i_size(),
+						hash_table_size,
+						table.d_ck_p,
+						table.d_inv_p,
+						table.d_inv_index_p,
+						table.d_inv_pos_p,
+						d_dims_p,
+						d_hash_table,
+						d_bitmap_p,
+						bitmap_bits,
+						d_topks_p,
+						d_threshold_p,//initialized as 1, and increase gradually
+						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+						num_of_max_count,//number of maximum count per query
+					   0 /* NUM OF HOT DIM = 0 */,
+					   hot_dim_threshold,
+					   d_noiih_p,
+					   d_overflow);
+
+
+	}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
+		//cudaCheckErrors(cudaDeviceSynchronize());
+		cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+
+		if(h_overflow[0])
+		{	loop_count ++;
+			if(!useAdaptiveThreshold){
+				hash_table_size += 0.1f * table.i_size();
+			}else{
+				hash_table_size +=  num_of_max_count*max_topk;
+			}
+			if(hash_table_size > table.i_size())
+			{
+				hash_table_size = table.i_size();
+			}
+			thrust::fill(d_noiih.begin(), d_noiih.end(), 0u);
+			if(bitmap_size)
+			{
+				thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+			}
+			d_data.resize(queries.size()*hash_table_size);
+			thrust::fill(d_data.begin(), d_data.end(), nulldata);
+			d_data_table = thrust::raw_pointer_cast(d_data.data());
+			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+		}
+
+#ifdef GPUGENIE_DEBUG
+		if (loop_count>0){
+			printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+		}
+#endif
+
+	} while(h_overflow[0]);
+
+/* The following code snippet is to count the number of points in hash table
+	std::vector<T_HASHTABLE> temp_data;
+	temp_data.resize(hash_table_size * sizeof(T_HASHTABLE));
+	cudaCheckErrors(cudaMemcpy(&temp_data.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
+	u64 non_zero = 0ull;
+	for(int i = 0; i < temp_data.size();++i)
+	{
+		if(temp_data[i] != 0ull) non_zero += 1;
+	}
+	temp_data.clear();
+	printf("[Info] Non-zero of non-hot-dim: %llu.\n", non_zero);
+ * */
+
+	//TODO: MODIFY HOT DIM SEARCH TO ADJUST TO MULTIRANGE
+	//HOT-DIM-SEARCH
+//	if(num_of_hot_dims)
+//	{
+//		d_dims.clear();
+//		device_vector<query::dim>().swap(d_dims);
+//		device_vector<query::dim> d_hot_dims(hot_dims);
+//		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
+//		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
+//			(table.m_size(),
+//			table.i_size(),
+//			hash_table_size,
+//			d_ck_p,
+//			d_inv_p,
+//			d_hot_dims_p,
+//			d_hash_table,
+//			d_bitmap_p,
+//			bitmap_bits,
+//			threshold,
+//			num_of_hot_dims,
+//			hot_dim_threshold);
+//	}
+/* The following code snippet is to count the number of points in hash table
+	std::vector<T_HASHTABLE> temp_data2;
+	temp_data2.resize(hash_table_size * sizeof(T_HASHTABLE));
+	cudaCheckErrors(cudaMemcpy(&temp_data2.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
+	u64 non_zero2 = 0ull;
+	for(int i = 0; i < temp_data2.size();++i)
+	{
+		if(temp_data2[i] != 0ull) non_zero2 += 1;
+	}
+	temp_data2.clear();
+	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
+ * */
+  
+#ifdef GPUGENIE_DEBUG
+  cudaEventRecord(kernel_stop);
+  printf("[ 90%] Starting data converting......\n");
+#endif
+
+  //cudaCheckErrors(cudaDeviceSynchronize());
+  device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
+
+#ifdef GPUGENIE_DEBUG
+  printf("[100%] Matching is done!\n");
+
+  match_stop = getTime();
+  match_elapsed = match_stop - match_start;
+
+  cudaEventSynchronize(kernel_stop);
+  kernel_elapsed = 0.0f;
+  cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
+  printf(">>>>[time profiling]: Match kernel takes %f ms. (GPU running) \n", kernel_elapsed);
+  printf(">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)\n", getInterval(match_start, match_stop));
+
+  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+#endif
+}
+
+
+
+
 void
 GPUGenie::match(inv_table& table,
             vector<query>& queries,
@@ -1023,6 +1404,7 @@ GPUGenie::match(inv_table& table,
             int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
+    using namespace GPUGenie;
 #ifdef GPUGENIE_DEBUG
 	printf("match.cu version : %s\n", MATCH_VERSION);
 	u64 match_stop, match_elapsed, match_start;
