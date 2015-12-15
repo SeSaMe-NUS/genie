@@ -50,7 +50,7 @@ build:
 
 #Building file: convert_csv2binary.cu
 #Invoking: NVCC Compiler
-	nvcc -I../src -include ../src/GPUGenie.h -L../build/lib convert_csv2binary.cu -o convert -lGPUGenie
+#	nvcc -I../src -include ../src/GPUGenie.h -L../build/lib convert_csv2binary.cu -o convert -L../lib
 
 
 
