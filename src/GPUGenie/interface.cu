@@ -296,44 +296,13 @@ namespace GPUGenie
     }
 
 }
-void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
-					  std::vector<std::vector<int> >& query_points,
-					  std::vector<int>& result,
-					  int num_of_topk)
-{
-	knn_search(data_points,
-			   query_points,
-			   result,
-			   num_of_topk,
-			   GPUGENIE_DEFAULT_RADIUS,
-			   GPUGENIE_DEFAULT_THRESHOLD,
-			   GPUGENIE_DEFAULT_HASHTABLE_SIZE,
-			   GPUGENIE_DEFAULT_DEVICE);
-}
-void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
-					  std::vector<std::vector<int> >& query_points,
-					  std::vector<int>& result,
-					  int num_of_topk,
-					  int radius,
-					  int threshold,
-					  float hashtable,
-					  int device)
-{
-	GPUGenie_Config config;
-	config.count_threshold = threshold;
-	config.data_points = &data_points;
-	config.hashtable_size = hashtable;
-	config.num_of_topk = num_of_topk;
-	config.query_points = &query_points;
-	config.query_radius = radius;
-	config.use_device = device;
-	if(!query_points.empty())
-		config.dim = query_points[0].size();
-
-	knn_search(result, config);
-}
-
 void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& config)
+{
+	std::vector<int> result_count;
+	knn_search_bijectMap(result, result_count, config);
+}
+
+void GPUGenie::knn_search_bijectMap(std::vector<int>& result, std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
@@ -372,7 +341,16 @@ void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& c
 #endif
 }
 
-void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
+void GPUGenie::knn_search(std::vector<int>& result,
+						  GPUGenie_Config& config)
+{
+	std::vector<int> result_count;
+	knn_search(result, result_count, config);
+}
+
+void GPUGenie::knn_search(std::vector<int>& result,
+						  std::vector<int>& result_count,
+						  GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
@@ -403,7 +381,7 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 	printf("Done!\n");
 #endif
 
-	knn_search(table, queries, result, config);
+	knn_search(table, queries, result, result_count, config);
 
 
 #ifdef GPUGENIE_DEBUG
@@ -413,10 +391,18 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 #endif
 }
 
-
 void GPUGenie::knn_search(inv_table& table,
 					  std::vector<query>& queries,
 					  std::vector<int>& h_topk,
+					  GPUGenie_Config& config)
+{
+	std::vector<int> h_topk_count;
+	knn_search(table, queries, h_topk, h_topk_count, config);
+}
+void GPUGenie::knn_search(inv_table& table,
+					  std::vector<query>& queries,
+					  std::vector<int>& h_topk,
+					  std::vector<int>& h_topk_count,
 					  GPUGenie_Config& config)
 {
 	int device_count, hashtable_size;
@@ -442,7 +428,7 @@ void GPUGenie::knn_search(inv_table& table,
 	}else{
 		hashtable_size =  config.hashtable_size;
 	}
-	thrust::device_vector<int> d_topk;
+	thrust::device_vector<int> d_topk, d_topk_count;
 
 #ifdef GPUGENIE_DEBUG
 	printf("Starting knn search...\n");
@@ -452,6 +438,7 @@ void GPUGenie::knn_search(inv_table& table,
 	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
 			   queries,
 			   d_topk,
+			   d_topk_count,
 			   hashtable_size,
 			   max_load,
 			   config.count_threshold,
@@ -465,7 +452,9 @@ void GPUGenie::knn_search(inv_table& table,
 #endif
 
 	h_topk.resize(d_topk.size());
+	h_topk_count.resize(d_topk_count.size());
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
+	thrust::copy(d_topk_count.begin(), d_topk_count.end(), h_topk_count.begin());
 }
 
 

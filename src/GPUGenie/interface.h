@@ -74,28 +74,6 @@ namespace GPUGenie
 		{}
 	} GPUGenie_Config;
 
-	void knn_search(std::vector<std::vector<int> >& data_points,
-					std::vector<std::vector<int> >& query_points,
-					std::vector<int>& result,
-					int num_of_topk);
-
-	void knn_search(std::vector<std::vector<int> >& data_points,
-					std::vector<std::vector<int> >& query_points,
-					std::vector<int>& result,
-					int num_of_topk,
-					int radius,
-					int threshold,
-					float hashtable,
-					int device);
-
-	void knn_search(inv_table& table,
-					std::vector<query>& queries,
-					std::vector<int>& result,
-					int radius,
-					int threshold,
-					float hashtable,
-					int device);
-
 	/**
 	* @brief Search on the inverted index and save the result in result
 	* bijectMap means building each ordered pair/keyword is also transformed by a bijection map. (Different from the default method, where the
@@ -105,7 +83,11 @@ namespace GPUGenie
 	*
 	*/
 	void knn_search_bijectMap(std::vector<int>& result,
-				GPUGenie_Config& config);
+							  std::vector<int>& result_count,
+							  GPUGenie_Config& config);
+	//For backward compatibility: result_count not included in parameters
+	void knn_search_bijectMap(std::vector<int>& result,
+							  GPUGenie_Config& config);
 
 
 
@@ -115,8 +97,18 @@ namespace GPUGenie
 	*
 	*/
 	void knn_search(std::vector<int>& result,
+					std::vector<int>& result_count,
 					GPUGenie_Config& config);
 
+	void knn_search(inv_table& table,
+					std::vector<query>& queries,
+					std::vector<int>& h_topk,
+					std::vector<int>& h_topk_count,
+					GPUGenie_Config& config);
+
+	//For backward compatibility: result_count not included in parameters
+	void knn_search(std::vector<int>& result,
+					GPUGenie_Config& config);
 	void knn_search(inv_table& table,
 					std::vector<query>& queries,
 					std::vector<int>& h_topk,

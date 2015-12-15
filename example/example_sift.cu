@@ -148,11 +148,11 @@ int main(int argc, char * argv[])
 	                          */
 	/*** END OF NOTE ***/
 
-	std::vector<int> result;
+	std::vector<int> result, result_count;
 
 	printf("Launching knn functions...\n");
 	u64 start = getTime();
-	GPUGenie::knn_search(result, config);
+	GPUGenie::knn_search(result,result_count, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
@@ -164,7 +164,7 @@ int main(int argc, char * argv[])
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < 5; ++j)
 		{
-			printf("%d, ", result[i * config.num_of_topk + j]);
+			printf("%d:%d, ", result[i * config.num_of_topk + j], result_count[i * config.num_of_topk + j]);
 		}
 		printf("\n");
 	}
