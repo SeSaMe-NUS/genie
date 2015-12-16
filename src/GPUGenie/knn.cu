@@ -41,9 +41,7 @@ GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 		   int hash_table_size,
 		   int max_load,
 		   int bitmap_bits,
-		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int dim)
 {
   int qmax = 0;
 
@@ -57,7 +55,7 @@ GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
   u64 start = getTime();
 #endif
   knn(table, queries, d_top_indexes,d_top_count, hash_table_size,max_load, bitmap_bits,
-		  	  float(qmax+1), num_of_hot_dims, hot_dim_threshold);
+		  	  float(qmax+1));
 #ifdef GPUGENIE_DEBUG
   u64 end = getTime();
   double elapsed = getInterval(start, end);
@@ -72,12 +70,10 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 		   int hash_table_size,
 		   int max_load,
 		   int bitmap_bits,
-		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold)
+		   int dim)
 {
 #ifdef GPUGENIE_DEBUG
-  printf("Parameters: %d,%d,%d,%d,%d\n", hash_table_size, bitmap_bits, dim, num_of_hot_dims, hot_dim_threshold);
+  printf("Parameters: %d,%d,%d\n", hash_table_size, bitmap_bits, dim);
 #endif
   //for improve
 //  int qmax = 0;
@@ -107,7 +103,7 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 #endif
   device_vector<u32> d_num_of_items_in_hashtable(queries.size());
   printf("[knn] max_load is %d.\n", max_load);
-  match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, num_of_hot_dims, hot_dim_threshold, d_num_of_items_in_hashtable);
+  match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, d_num_of_items_in_hashtable);
 #ifdef GPUGENIE_DEBUG  //for improve
   u64 end1Knn = getTime();
   printf(">>>>> knn() after match() %f ms <<<<<\n", getInterval(startKnn, end1Knn));

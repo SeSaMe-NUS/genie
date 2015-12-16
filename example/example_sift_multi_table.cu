@@ -76,18 +76,6 @@ int main(int argc, char * argv[])
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;
 
-	//Number of hot dimensions with long posting lists to be avoided.
-	//Once set to n, top n hot dimensions will be split from the query and submit again
-	//at the second stage. Set to 0 to disable the feature.
-	//May reduce hash table usage and memory usage.
-	//Will increase time consumption.
-	config.num_of_hot_dims = 0;
-
-	//Threshold for second stage hot dimension scan. Points with counts lower than threshold
-	//will not be processed and they will not be present in the hash table.
-	//The value should be larger than count_threshold.
-	config.hot_dim_threshold = 0;//not useful
-
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched

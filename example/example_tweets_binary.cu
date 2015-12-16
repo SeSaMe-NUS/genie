@@ -61,9 +61,6 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;
 
-	config.num_of_hot_dims = 0;//not useful
-	config.hot_dim_threshold = 0;//not useful
-
 	//use_adaptive_range is not suitable for string search
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;

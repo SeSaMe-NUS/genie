@@ -25,9 +25,7 @@ namespace GPUGenie{
 		int hash_table_size,
 		int max_load,
 		int bitmap_bits,
-		int dim,
-		int num_of_hot_dims,
-		int hot_dim_threshold);
+		int dim);
 	void
 	knn_bijectMap(inv_table& table,
 		   vector<query>& queries,
@@ -36,9 +34,7 @@ namespace GPUGenie{
 		   int hash_table_size,
 		   int max_load,
 		   int bitmap_bits,
-		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold);
+		   int dim);
 }
 
 #endif //ifndef KNN_H_

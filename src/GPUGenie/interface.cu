@@ -442,9 +442,7 @@ void GPUGenie::knn_search(inv_table& table,
 			   hashtable_size,
 			   max_load,
 			   config.count_threshold,
-			   config.dim,
-			   config.num_of_hot_dims,
-			   config.hot_dim_threshold);
+			   config.dim);
 
 #ifdef GPUGENIE_DEBUG
 	printf("knn search is done!\n");

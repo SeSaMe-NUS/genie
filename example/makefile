@@ -11,10 +11,6 @@ build:
 
 	#nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "general_test_bin"  general_test.o   -lGPUGenie -lpthread
 
-
-
-
-
 #Building file: example_tweets.cu
 #Invoking: NVCC Compiler
 	nvcc -I../src -include ../src/GPUGenie.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -M -o "example_tweets.d" "example_tweets.cu"

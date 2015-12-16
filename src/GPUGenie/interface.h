@@ -17,8 +17,6 @@
 #define GPUGENIE_DEFAULT_HASHTABLE_SIZE 1.0f
 #define GPUGENIE_DEFAULT_WEIGHT 1
 #define GPUGENIE_DEFAULT_DEVICE 0
-#define GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS 0
-#define GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD GPUGENIE_DEFAULT_THRESHOLD
 #define GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE false
 #define GPUGENIE_DEFAULT_SELECTIVITY -1.0f
 #define GPUGENIE_DEFAULT_POSTING_LIST_LENGTH 100000
@@ -34,8 +32,6 @@ namespace GPUGenie
 		float hashtable_size;
 		int use_device;
 		int dim;
-		int num_of_hot_dims;
-		int hot_dim_threshold;
 		bool use_adaptive_range;
 		float selectivity;
 		std::vector<std::vector<int> > * data_points;
@@ -64,8 +60,6 @@ namespace GPUGenie
 
 			query_points(NULL),
 			dim(0),
-			num_of_hot_dims(GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS),
-			hot_dim_threshold(GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD),
 			use_adaptive_range(GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE),
 			selectivity(GPUGENIE_DEFAULT_SELECTIVITY),
 			posting_list_max_length(GPUGENIE_DEFAULT_POSTING_LIST_LENGTH),
