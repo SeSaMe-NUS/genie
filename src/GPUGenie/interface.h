@@ -22,9 +22,18 @@
 #define GPUGENIE_DEFAULT_POSTING_LIST_LENGTH 100000
 #define GPUGENIE_DEFAULT_LOAD_MULTIPLIER 3.0f
 #define GPUGENIE_DEFAULT_USE_LOAD_BALANCE false
+#define GPUGENIE_DEFAULT_USE_MULTIRANGE true
 
 namespace GPUGenie
 {
+
+	const int GPUGENIE_QUERY_QID_INDEX = 0;
+	const int GPUGENIE_QUERY_DIM_INDEX = 1;
+	const int GPUGENIE_QUERY_VALUE_INDEX = 2;
+	const int GPUGENIE_QUERY_SELECTIVITY_INDEX =3;
+	const int GPUGENIE_QUERY_WEIGHT_INDEX = 4;
+	const int GPUGENIE_QUERY_NUM_OF_FIELDS = 5;
+
 	typedef struct _GPUGenie_Config{
 		int num_of_topk;
 		int query_radius;
@@ -45,6 +54,7 @@ namespace GPUGenie
 		int posting_list_max_length;
 		float multiplier;
 		bool use_load_balance;
+		bool use_multirange;
 		_GPUGenie_Config():
 			num_of_topk(GPUGENIE_DEFAULT_TOPK),
 			query_radius(GPUGENIE_DEFAULT_RADIUS),
@@ -64,7 +74,8 @@ namespace GPUGenie
 			selectivity(GPUGENIE_DEFAULT_SELECTIVITY),
 			posting_list_max_length(GPUGENIE_DEFAULT_POSTING_LIST_LENGTH),
 			multiplier(GPUGENIE_DEFAULT_LOAD_MULTIPLIER),
-			use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE)
+			use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE),
+			use_multirange(GPUGENIE_DEFAULT_USE_MULTIRANGE)
 		{}
 	} GPUGenie_Config;
 
@@ -111,6 +122,7 @@ namespace GPUGenie
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
     void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length, bool save_to_gpu=false);
     void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+    void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu=false);
 

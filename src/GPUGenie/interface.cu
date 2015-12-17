@@ -116,7 +116,59 @@ namespace GPUGenie
 #endif
     }
 
+    //Read new format query data
+    //Sample data format
+    //qid dim value selectivity weight
+    // 0   0   15     0.04        1
+    // 0   1   6      0.04        1
+    // ....
+	void load_query_multirange(inv_table& table,
+							   std::vector<query>& queries,
+							   GPUGenie_Config& config)
+    {
+		queries.clear();
+		map<int, query*> query_map;
+		int qid,dim,val;
+		float sel, weight;
+		for (int iq = 0; iq < config.query_points->size(); ++iq) {
+			vector<int>& attr = (*config.query_points)[iq];
 
+			if(attr.size() == GPUGENIE_QUERY_NUM_OF_FIELDS){
+				qid = attr[GPUGENIE_QUERY_QID_INDEX];
+				dim = attr[GPUGENIE_QUERY_DIM_INDEX];
+				val = attr[GPUGENIE_QUERY_VALUE_INDEX];
+				weight = attr[GPUGENIE_QUERY_WEIGHT_INDEX];
+				sel = attr[GPUGENIE_QUERY_SELECTIVITY_INDEX];
+				if(query_map.find(qid) == query_map.end()){
+					query q(table, qid);
+					q.topk(config.num_of_topk);
+					if(config.selectivity > 0.0f)
+					{
+						q.selectivity(config.selectivity);
+					}
+					if(config.use_load_balance)
+					{
+						q.use_load_balance = true;
+					}
+					query_map[qid]= &q;
+				}
+				query q = *(query_map[qid]);
+				q.attr(dim,
+					   val,
+					   weight,
+					   sel);
+			}
+		}
+		for(std::map<int, query*>::iterator it = query_map.begin(); it != query_map.end(); ++it)
+		{
+			query q = *(it->second);
+			q.apply_adaptive_query_range();
+			queries.push_back(q);
+		}
+#ifdef GPUGENIE_DEBUG
+		printf("Finish loading queries! %d queries are loaded.\n", queries.size());
+#endif
+    }
 	void
 	load_query(inv_table& table,
 				std::vector<query>& queries,
@@ -135,9 +187,6 @@ namespace GPUGenie
 			query q(table, i);
 
 			for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
-
-				//for debug
-				if(j>=12){
 				value = query_points[i][j];
 				if(value < 0)
 				{
@@ -147,7 +196,6 @@ namespace GPUGenie
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
 					   GPUGENIE_DEFAULT_WEIGHT);
-				}//end for debug
 			}
 
 			q.topk(config.num_of_topk);
@@ -374,8 +422,12 @@ void GPUGenie::knn_search(std::vector<int>& result,
 	printf("Loading queries...");
     u64 starttime = getTime();
 #endif
+    if(config.use_multirange){
+    	load_query_multirange(table,queries,config);
+    } else {
+    	load_query(table,queries,config);
+    }
 
-	load_query(table,queries,config);
 
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
