@@ -13,6 +13,8 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <stdexcept>
+#include <map>
 
 using namespace GPUGenie;
 using namespace std;
@@ -73,7 +75,80 @@ void GPUGenie::read_file(vector<vector<int> >& dest,
 	ifile.close();
 }
 
+//Read new format query data
+//Sample data format
+//qid dim value selectivity weight
+// 0   0   15     0.04        1
+// 0   1   6      0.04        1
+// ....
+void GPUGenie::read_query(inv_table& table,
+		                  const char* fname,
+		                  std::vector<query>& queries,
+		                  int num_of_queries,
+		                  int topk,
+		                  float selectivity)
+{
 
+	string line;
+	ifstream ifile(fname);
+
+	queries.clear();
+	map<int, query*> query_map;
+
+	if (ifile.is_open()) {
+		int qid,dim,val,weight;
+		float sel;
+		while (getline(ifile, line)) {
+
+			vector<string> nstring = split(line, ", ");
+			int i;
+
+			if(nstring.size() == GPUGENIE_QUERY_NUM_OF_FIELDS){
+				for(i = 0;i < GPUGENIE_QUERY_NUM_OF_FIELDS; ++i)
+				{
+					string str = eraseSpace(nstring[i]);
+					int field_value = atoi(str.c_str());
+					switch(i)
+					{
+						case GPUGENIE_QUERY_QID_INDEX: qid = field_value;break;
+						case GPUGENIE_QUERY_DIM_INDEX: dim = field_value;break;
+						case GPUGENIE_QUERY_VALUE_INDEX: val = field_value;break;
+						case GPUGENIE_QUERY_SELECTIVITY_INDEX: sel = atof(str.c_str());break;
+						case GPUGENIE_QUERY_WEIGHT_INDEX: weight = atof(str.c_str());break;
+					}
+				}
+				if(query_map.find(qid) == query_map.end()){
+					query q(table, qid);
+					q.topk(topk);
+					if(selectivity > 0.0f)
+					{
+						q.selectivity(selectivity);
+					}
+					query_map[qid] = &q;;
+				}
+				query q = *(query_map[qid]);
+				q.attr(dim,
+					   val,
+					   weight,
+					   sel);
+			}
+		}
+		int i =0;
+		for(std::map<int, query*>::iterator it = query_map.begin(); it != query_map.end() && i < num_of_queries; ++it, ++i)
+		{
+			query q = *(it->second);
+			q.apply_adaptive_query_range();
+			queries.push_back(q);
+		}
+
+	}
+
+	ifile.close();
+
+	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
+}
+
+//Read old format query data: same format as data files
 void GPUGenie::read_query(inv_table& table,
 		        const char* fname,
 		        vector<query>& queries,

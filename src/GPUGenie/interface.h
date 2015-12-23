@@ -17,16 +17,23 @@
 #define GPUGENIE_DEFAULT_HASHTABLE_SIZE 1.0f
 #define GPUGENIE_DEFAULT_WEIGHT 1
 #define GPUGENIE_DEFAULT_DEVICE 0
-#define GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS 0
-#define GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD GPUGENIE_DEFAULT_THRESHOLD
 #define GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE false
 #define GPUGENIE_DEFAULT_SELECTIVITY -1.0f
 #define GPUGENIE_DEFAULT_POSTING_LIST_LENGTH 100000
 #define GPUGENIE_DEFAULT_LOAD_MULTIPLIER 3.0f
 #define GPUGENIE_DEFAULT_USE_LOAD_BALANCE false
+#define GPUGENIE_DEFAULT_USE_MULTIRANGE true
 
 namespace GPUGenie
 {
+
+	const int GPUGENIE_QUERY_QID_INDEX = 0;
+	const int GPUGENIE_QUERY_DIM_INDEX = 1;
+	const int GPUGENIE_QUERY_VALUE_INDEX = 2;
+	const int GPUGENIE_QUERY_SELECTIVITY_INDEX =3;
+	const int GPUGENIE_QUERY_WEIGHT_INDEX = 4;
+	const int GPUGENIE_QUERY_NUM_OF_FIELDS = 5;
+
 	typedef struct _GPUGenie_Config{
 		int num_of_topk;
 		int query_radius;
@@ -34,8 +41,6 @@ namespace GPUGenie
 		float hashtable_size;
 		int use_device;
 		int dim;
-		int num_of_hot_dims;
-		int hot_dim_threshold;
 		bool use_adaptive_range;
 		float selectivity;
 		std::vector<std::vector<int> > * data_points;
@@ -49,6 +54,7 @@ namespace GPUGenie
 		int posting_list_max_length;
 		float multiplier;
 		bool use_load_balance;
+		bool use_multirange;
 		_GPUGenie_Config():
 			num_of_topk(GPUGENIE_DEFAULT_TOPK),
 			query_radius(GPUGENIE_DEFAULT_RADIUS),
@@ -64,37 +70,14 @@ namespace GPUGenie
 
 			query_points(NULL),
 			dim(0),
-			num_of_hot_dims(GPUGENIE_DEFAULT_NUM_OF_HOT_DIMS),
-			hot_dim_threshold(GPUGENIE_DEFAULT_HOT_DIM_THRESHOLD),
 			use_adaptive_range(GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE),
 			selectivity(GPUGENIE_DEFAULT_SELECTIVITY),
 			posting_list_max_length(GPUGENIE_DEFAULT_POSTING_LIST_LENGTH),
 			multiplier(GPUGENIE_DEFAULT_LOAD_MULTIPLIER),
-			use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE)
+			use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE),
+			use_multirange(GPUGENIE_DEFAULT_USE_MULTIRANGE)
 		{}
 	} GPUGenie_Config;
-
-	void knn_search(std::vector<std::vector<int> >& data_points,
-					std::vector<std::vector<int> >& query_points,
-					std::vector<int>& result,
-					int num_of_topk);
-
-	void knn_search(std::vector<std::vector<int> >& data_points,
-					std::vector<std::vector<int> >& query_points,
-					std::vector<int>& result,
-					int num_of_topk,
-					int radius,
-					int threshold,
-					float hashtable,
-					int device);
-
-	void knn_search(inv_table& table,
-					std::vector<query>& queries,
-					std::vector<int>& result,
-					int radius,
-					int threshold,
-					float hashtable,
-					int device);
 
 	/**
 	* @brief Search on the inverted index and save the result in result
@@ -105,7 +88,11 @@ namespace GPUGenie
 	*
 	*/
 	void knn_search_bijectMap(std::vector<int>& result,
-				GPUGenie_Config& config);
+							  std::vector<int>& result_count,
+							  GPUGenie_Config& config);
+	//For backward compatibility: result_count not included in parameters
+	void knn_search_bijectMap(std::vector<int>& result,
+							  GPUGenie_Config& config);
 
 
 
@@ -115,8 +102,18 @@ namespace GPUGenie
 	*
 	*/
 	void knn_search(std::vector<int>& result,
+					std::vector<int>& result_count,
 					GPUGenie_Config& config);
 
+	void knn_search(inv_table& table,
+					std::vector<query>& queries,
+					std::vector<int>& h_topk,
+					std::vector<int>& h_topk_count,
+					GPUGenie_Config& config);
+
+	//For backward compatibility: result_count not included in parameters
+	void knn_search(std::vector<int>& result,
+					GPUGenie_Config& config);
 	void knn_search(inv_table& table,
 					std::vector<query>& queries,
 					std::vector<int>& h_topk,
@@ -125,6 +122,7 @@ namespace GPUGenie
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
     void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length, bool save_to_gpu=false);
     void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+    void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu=false);
 

@@ -76,17 +76,6 @@ int main(int argc, char * argv[])
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
 	config.use_device = 0;
 
-	//Number of hot dimensions with long posting lists to be avoided.
-	//Once set to n, top n hot dimensions will be split from the query and submit again
-	//at the second stage. Set to 0 to disable the feature.
-	//May reduce hash table usage and memory usage.
-	//Will increase time consumption.
-	config.num_of_hot_dims = 0;
-
-	//Threshold for second stage hot dimension scan. Points with counts lower than threshold
-	//will not be processed and they will not be present in the hash table.
-	//The value should be larger than count_threshold.
-	config.hot_dim_threshold = 0;//not useful
 
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
@@ -148,11 +137,11 @@ int main(int argc, char * argv[])
 	                          */
 	/*** END OF NOTE ***/
 
-	std::vector<int> result;
+	std::vector<int> result, result_count;
 
 	printf("Launching knn functions...\n");
 	u64 start = getTime();
-	GPUGenie::knn_search(result, config);
+	GPUGenie::knn_search(result,result_count, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
@@ -164,7 +153,7 @@ int main(int argc, char * argv[])
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < 5; ++j)
 		{
-			printf("%d, ", result[i * config.num_of_topk + j]);
+			printf("%d:%d, ", result[i * config.num_of_topk + j], result_count[i * config.num_of_topk + j]);
 		}
 		printf("\n");
 	}

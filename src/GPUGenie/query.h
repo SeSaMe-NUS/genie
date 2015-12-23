@@ -25,6 +25,7 @@ namespace GPUGenie
 		float weight;
 		int low_offset;
 		int up_offset;
+		float selectivity;
 	};
     struct dim
     { 
@@ -115,8 +116,13 @@ namespace GPUGenie
      * @param up Upper bound (included)
      * @param weight The weight
      */
+
     void
     attr(int index, int low, int up, float weight);
+    void
+    attr(int index, int value, float weight, float selectivity);
+    void
+    attr(int index, int low, int up, float weight, float selectivity);
 
     void
     split_hot_dims(query& hot_dims_query, int num);

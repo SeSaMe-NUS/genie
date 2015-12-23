@@ -18,37 +18,23 @@ namespace GPUGenie{
 	 * @param d_top_indexes The results' indexes.
 	 */
 	void
-	knn(inv_table& table, vector<query>& queries,
-		device_vector<int>& d_top_indexes,int max_load);
-
-	void
-	knn(inv_table& table, vector<query>& queries,
-			  device_vector<int>& d_top_indexes, int hash_table_size, int max_load,int bitmap_bits);
-
-	void
-	knn(inv_table& table, vector<query>& queries,
-			  device_vector<int>& d_top_indexes, int hash_table_size, int max_load,int bitmap_bits, int dim);
-
-	void
 	knn(inv_table& table,
 		vector<query>& queries,
 		device_vector<int>& d_top_indexes,
+		device_vector<int>& d_top_count,
 		int hash_table_size,
 		int max_load,
 		int bitmap_bits,
-		int dim,
-		int num_of_hot_dims,
-		int hot_dim_threshold);
+		int dim);
 	void
 	knn_bijectMap(inv_table& table,
 		   vector<query>& queries,
 		   device_vector<int>& d_top_indexes,
+		   device_vector<int>& d_top_count,
 		   int hash_table_size,
 		   int max_load,
 		   int bitmap_bits,
-		   int dim,
-		   int num_of_hot_dims,
-		   int hot_dim_threshold);
+		   int dim);
 }
 
 #endif //ifndef KNN_H_

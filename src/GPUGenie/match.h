@@ -86,8 +86,6 @@ namespace GPUGenie
 		  int hash_table_size,
 		  int max_load,
 		  int bitmap_bits,
-		  int num_of_hot_dims,
-		  int hot_dim_threshold,
 		  device_vector<u32>& d_noiih);
   void
   match(inv_table& table,
@@ -97,8 +95,6 @@ namespace GPUGenie
         int hash_table_size,
         int max_load,
         int bitmap_bits,
-        int num_of_hot_dims,
-        int hot_dim_threshold,
         device_vector<u32>& d_noiih);
   void
   build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load);
@@ -113,8 +109,6 @@ namespace GPUGenie
             int hash_table_size,
             int max_load,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
-            int num_of_hot_dims,
-            int hot_dim_threshold,
             device_vector<u32>& d_noiih);
 
 }

@@ -642,9 +642,7 @@ namespace GPUGenie
   		  	      u32 * bitmap,
   		  	      int bits,
   		  	      int threshold,
-  		  	      bool * key_eligible,
-  		  	      int num_of_hot_dims,
-  		  	      int hot_dim_threshold)
+  		  	      bool * key_eligible)
     {
     	u32 value, count, new_value;
     	int offset;
@@ -656,13 +654,8 @@ namespace GPUGenie
         	if(count < threshold)
         	{
         		*key_eligible = false;
-        		if(num_of_hot_dims == 0 || count + num_of_hot_dims >= hot_dim_threshold)
-        		{
-        			count ++;
-        		} else
-        		{
-        			return;
-        		}
+        		count ++;
+
         	}else
         	{
         		*key_eligible = true;
@@ -682,9 +675,7 @@ namespace GPUGenie
      		  	      u32 * bitmap,
      		  	      int bits,
      		  	      int my_threshold,
-     		  	      bool * key_eligible,
-     		  	      int num_of_hot_dims,
-     		  	      int hot_dim_threshold)
+     		  	      bool * key_eligible)
        {
        	u32 value, count, new_value;
        	int offset;
@@ -726,8 +717,6 @@ namespace GPUGenie
           u32 * bitmap_list,
           int bitmap_bits,
           int threshold,
-          int num_of_hot_dims,
-          int hot_dim_threshold,
           u32 * noiih,
           bool * overflow)
     {
@@ -752,7 +741,7 @@ namespace GPUGenie
       min = d_inv_pos[d_inv_index[min]+min_offset];
       max = d_inv_pos[d_inv_index[max]+max_offset+1];
 
-      bool key_eligible;//
+      bool key_eligible;
 
       for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
         {
@@ -766,9 +755,7 @@ namespace GPUGenie
                 		  	    bitmap,
                 		  	    bitmap_bits,
                 		  	    threshold,
-                		  	    &key_eligible,
-                		  	    num_of_hot_dims,
-                		  	    hot_dim_threshold);
+                		  	    &key_eligible);
 
                   if( !key_eligible ) continue;
               }
@@ -836,8 +823,6 @@ namespace GPUGenie
                u32* d_threshold,//initialized as 1, and increase gradually
                u32* d_passCount,//initialized as 0, count the number of items passing one d_threshold
                u32 num_of_max_count,
-               int num_of_hot_dims,
-               int hot_dim_threshold,
                u32 * noiih,
                bool * overflow)
      {
@@ -884,9 +869,7 @@ namespace GPUGenie
                  		  	    bitmap,
                  		  	    bitmap_bits,
                  		  	    thread_threshold,
-                 		  	    &key_eligible,
-                 		  	    num_of_hot_dims,
-                 		  	    hot_dim_threshold);
+                 		  	    &key_eligible);
 
                    if( !key_eligible) continue;//i.e. count< thread_threshold
                }
@@ -1004,15 +987,14 @@ GPUGenie::match(inv_table& table,
             int hash_table_size,
             int max_load,
             int bitmap_bits,
-            int num_of_hot_dims,
-            int hot_dim_threshold,
+
             device_vector<u32>& d_noiih)
 {
 	device_vector<u32> d_bitmap;
     if(table.is_stored_in_gpu==false)
-	    match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+	    match(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits, d_noiih);
     else
-	    match_for_table_in_gpu(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits,num_of_hot_dims,hot_dim_threshold, d_noiih);
+	    match_for_table_in_gpu(table, queries,d_data,d_bitmap,hash_table_size,max_load,bitmap_bits, d_noiih);
 }
 
 
@@ -1024,8 +1006,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
             int hash_table_size,
             int max_load,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
-            int num_of_hot_dims,
-            int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
     using namespace GPUGenie;
@@ -1055,21 +1035,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 #ifdef GPUGENIE_DEBUG
 	printf("[Info]hash table size: %d.\n", hash_table_size);
 #endif
-	//TODO: Modify this to enable hot dim search
-//	if(num_of_hot_dims)
-//	{
-//		for(int i = 0; i < queries.size(); ++i)
-//		{
-//			query q(table);
-//			q.topk(queries[i].topk());
-//			queries[i].split_hot_dims(q, num_of_hot_dims);
-//			hot_dims_queries.push_back(q);
-//		}
-//		build_queries(hot_dims_queries, table, hot_dims);
-//	}
-//	printf("Host query size: %d.\n", queries.size());
-
-
 
 #ifdef GPUGENIE_DEBUG
   u64 match_query_start,match_query_end;
@@ -1131,31 +1096,23 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
-	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after,
-		   free_inv_index_after, free_inv_pos_after, total_m;
-	//cudaMemGetInfo(&free_ck_before, &total_m);//for imp
+
 	//device_vector<int> d_ck(*table.ck());
-	//cudaMemGetInfo(&free_ck_after, &total_m);//for imp
 	//int* d_ck_p = raw_pointer_cast(d_ck.data());
 
 	//device_vector<int> d_inv(*table.inv());
 	//int* d_inv_p = raw_pointer_cast(d_inv.data());
-	//cudaMemGetInfo(&free_inv_after, &total_m);//for imp
 
 	device_vector<query::dim> d_dims(dims);
 	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
-	//cudaMemGetInfo(&free_q_after, &total_m);//for imp
 
 	d_bitmap.resize(bitmap_size);
-	//cudaMemGetInfo(&free_bitmap_after, &total_m);//for imp
 
 	//device_vector<int> d_inv_index(*table.inv_index());
 	//int* d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-	//cudaMemGetInfo(&free_inv_index_after, &total_m);//for imp
 
 	//device_vector<int> d_inv_pos(*table.inv_pos());
 	//int* d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-	//cudaMemGetInfo(&free_inv_pos_after, &total_m);//for imp
 
 	if(bitmap_size)
 	{
@@ -1164,13 +1121,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
 #ifdef GPUGENIE_DEBUG
-	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u\nd_inv_index size: %u\nd_inv_pos size: %d\n",
-		  	free_ck_before - free_ck_after,
-		  	free_ck_after - free_inv_after ,
-		  	free_inv_after - free_q_after,
-		  	free_q_after- free_bitmap_after,
-		  	free_bitmap_after - free_inv_index_after,
-		  	free_inv_index_after - free_inv_pos_after);
 
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
@@ -1224,8 +1174,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 					d_bitmap_p,
 					bitmap_bits,
 					threshold,
-					0 ,// NUM OF HOT DIM = 0
-					hot_dim_threshold,
 					d_noiih_p,
 					d_overflow);
 	}else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
@@ -1276,8 +1224,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 						d_threshold_p,//initialized as 1, and increase gradually
 						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
 						num_of_max_count,//number of maximum count per query
-					   0 /* NUM OF HOT DIM = 0 */,
-					   hot_dim_threshold,
 					   d_noiih_p,
 					   d_overflow);
 
@@ -1316,61 +1262,12 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 #endif
 
 	} while(h_overflow[0]);
-
-/* The following code snippet is to count the number of points in hash table
-	std::vector<T_HASHTABLE> temp_data;
-	temp_data.resize(hash_table_size * sizeof(T_HASHTABLE));
-	cudaCheckErrors(cudaMemcpy(&temp_data.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
-	u64 non_zero = 0ull;
-	for(int i = 0; i < temp_data.size();++i)
-	{
-		if(temp_data[i] != 0ull) non_zero += 1;
-	}
-	temp_data.clear();
-	printf("[Info] Non-zero of non-hot-dim: %llu.\n", non_zero);
- * */
-
-	//TODO: MODIFY HOT DIM SEARCH TO ADJUST TO MULTIRANGE
-	//HOT-DIM-SEARCH
-//	if(num_of_hot_dims)
-//	{
-//		d_dims.clear();
-//		device_vector<query::dim>().swap(d_dims);
-//		device_vector<query::dim> d_hot_dims(hot_dims);
-//		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
-//		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-//			(table.m_size(),
-//			table.i_size(),
-//			hash_table_size,
-//			d_ck_p,
-//			d_inv_p,
-//			d_hot_dims_p,
-//			d_hash_table,
-//			d_bitmap_p,
-//			bitmap_bits,
-//			threshold,
-//			num_of_hot_dims,
-//			hot_dim_threshold);
-//	}
-/* The following code snippet is to count the number of points in hash table
-	std::vector<T_HASHTABLE> temp_data2;
-	temp_data2.resize(hash_table_size * sizeof(T_HASHTABLE));
-	cudaCheckErrors(cudaMemcpy(&temp_data2.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
-	u64 non_zero2 = 0ull;
-	for(int i = 0; i < temp_data2.size();++i)
-	{
-		if(temp_data2[i] != 0ull) non_zero2 += 1;
-	}
-	temp_data2.clear();
-	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
- * */
   
 #ifdef GPUGENIE_DEBUG
   cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting data converting......\n");
 #endif
 
-  //cudaCheckErrors(cudaDeviceSynchronize());
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
 #ifdef GPUGENIE_DEBUG
@@ -1400,8 +1297,6 @@ GPUGenie::match(inv_table& table,
             int hash_table_size,
             int max_load,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
-            int num_of_hot_dims,
-            int hot_dim_threshold,
             device_vector<u32>& d_noiih)
 {
     using namespace GPUGenie;
@@ -1431,20 +1326,6 @@ GPUGenie::match(inv_table& table,
 #ifdef GPUGENIE_DEBUG
 	printf("[Info]hash table size: %d.\n", hash_table_size);
 #endif
-	//TODO: Modify this to enable hot dim search
-//	if(num_of_hot_dims)
-//	{
-//		for(int i = 0; i < queries.size(); ++i)
-//		{
-//			query q(table);
-//			q.topk(queries[i].topk());
-//			queries[i].split_hot_dims(q, num_of_hot_dims);
-//			hot_dims_queries.push_back(q);
-//		}
-//		build_queries(hot_dims_queries, table, hot_dims);
-//	}
-//	printf("Host query size: %d.\n", queries.size());
-
 
 
 #ifdef GPUGENIE_DEBUG
@@ -1507,31 +1388,22 @@ GPUGenie::match(inv_table& table,
 	printf("[ 20%] Declaring device memory...\n");
 #endif
 
-	size_t free_ck_before,free_ck_after, free_inv_after,free_q_after,free_bitmap_after,
-		   free_inv_index_after, free_inv_pos_after, total_m;
-	//cudaMemGetInfo(&free_ck_before, &total_m);//for imp
 	device_vector<int> d_ck(*table.ck());
-	//cudaMemGetInfo(&free_ck_after, &total_m);//for imp
 	int* d_ck_p = raw_pointer_cast(d_ck.data());
 
 	device_vector<int> d_inv(*table.inv());
 	int* d_inv_p = raw_pointer_cast(d_inv.data());
-	//cudaMemGetInfo(&free_inv_after, &total_m);//for imp
 
 	device_vector<query::dim> d_dims(dims);
 	query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
-	//cudaMemGetInfo(&free_q_after, &total_m);//for imp
 
 	d_bitmap.resize(bitmap_size);
-	//cudaMemGetInfo(&free_bitmap_after, &total_m);//for imp
 
 	device_vector<int> d_inv_index(*table.inv_index());
 	int* d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-	//cudaMemGetInfo(&free_inv_index_after, &total_m);//for imp
 
 	device_vector<int> d_inv_pos(*table.inv_pos());
 	int* d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-	//cudaMemGetInfo(&free_inv_pos_after, &total_m);//for imp
 
 	if(bitmap_size)
 	{
@@ -1540,13 +1412,6 @@ GPUGenie::match(inv_table& table,
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
 #ifdef GPUGENIE_DEBUG
-	printf("d_ck size: %u\nd_inv size: %u\nquery size: %u\nbitmap size: %u\nd_inv_index size: %u\nd_inv_pos size: %d\n",
-		  	free_ck_before - free_ck_after,
-		  	free_ck_after - free_inv_after ,
-		  	free_inv_after - free_q_after,
-		  	free_q_after- free_bitmap_after,
-		  	free_bitmap_after - free_inv_index_after,
-		  	free_inv_index_after - free_inv_pos_after);
 
   printf("[ 30%] Allocating device memory to tables...\n");
 #endif
@@ -1600,8 +1465,6 @@ GPUGenie::match(inv_table& table,
 					d_bitmap_p,
 					bitmap_bits,
 					threshold,
-					0 /* NUM OF HOT DIM = 0 */,
-					hot_dim_threshold,
 					d_noiih_p,
 					d_overflow);
 	}else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
@@ -1652,8 +1515,6 @@ GPUGenie::match(inv_table& table,
 						d_threshold_p,//initialized as 1, and increase gradually
 						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
 						num_of_max_count,//number of maximum count per query
-					   0 /* NUM OF HOT DIM = 0 */,
-					   hot_dim_threshold,
 					   d_noiih_p,
 					   d_overflow);
 
@@ -1693,54 +1554,6 @@ GPUGenie::match(inv_table& table,
 
 	} while(h_overflow[0]);
 
-/* The following code snippet is to count the number of points in hash table
-	std::vector<T_HASHTABLE> temp_data;
-	temp_data.resize(hash_table_size * sizeof(T_HASHTABLE));
-	cudaCheckErrors(cudaMemcpy(&temp_data.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
-	u64 non_zero = 0ull;
-	for(int i = 0; i < temp_data.size();++i)
-	{
-		if(temp_data[i] != 0ull) non_zero += 1;
-	}
-	temp_data.clear();
-	printf("[Info] Non-zero of non-hot-dim: %llu.\n", non_zero);
- * */
-
-	//TODO: MODIFY HOT DIM SEARCH TO ADJUST TO MULTIRANGE
-	//HOT-DIM-SEARCH
-//	if(num_of_hot_dims)
-//	{
-//		d_dims.clear();
-//		device_vector<query::dim>().swap(d_dims);
-//		device_vector<query::dim> d_hot_dims(hot_dims);
-//		query::dim* d_hot_dims_p = raw_pointer_cast(d_hot_dims.data());
-//		device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-//			(table.m_size(),
-//			table.i_size(),
-//			hash_table_size,
-//			d_ck_p,
-//			d_inv_p,
-//			d_hot_dims_p,
-//			d_hash_table,
-//			d_bitmap_p,
-//			bitmap_bits,
-//			threshold,
-//			num_of_hot_dims,
-//			hot_dim_threshold);
-//	}
-/* The following code snippet is to count the number of points in hash table
-	std::vector<T_HASHTABLE> temp_data2;
-	temp_data2.resize(hash_table_size * sizeof(T_HASHTABLE));
-	cudaCheckErrors(cudaMemcpy(&temp_data2.front(), d_hash_table, sizeof(T_HASHTABLE) * hash_table_size, cudaMemcpyDeviceToHost));
-	u64 non_zero2 = 0ull;
-	for(int i = 0; i < temp_data2.size();++i)
-	{
-		if(temp_data2[i] != 0ull) non_zero2 += 1;
-	}
-	temp_data2.clear();
-	printf("[Info] Non-zero of hot-dim: %llu.\n", non_zero2);
- * */
-  
 #ifdef GPUGENIE_DEBUG
   cudaEventRecord(kernel_stop);
   printf("[ 90%] Starting data converting......\n");

@@ -116,7 +116,59 @@ namespace GPUGenie
 #endif
     }
 
+    //Read new format query data
+    //Sample data format
+    //qid dim value selectivity weight
+    // 0   0   15     0.04        1
+    // 0   1   6      0.04        1
+    // ....
+	void load_query_multirange(inv_table& table,
+							   std::vector<query>& queries,
+							   GPUGenie_Config& config)
+    {
+		queries.clear();
+		map<int, query*> query_map;
+		int qid,dim,val;
+		float sel, weight;
+		for (int iq = 0; iq < config.query_points->size(); ++iq) {
+			vector<int>& attr = (*config.query_points)[iq];
 
+			if(attr.size() == GPUGENIE_QUERY_NUM_OF_FIELDS){
+				qid = attr[GPUGENIE_QUERY_QID_INDEX];
+				dim = attr[GPUGENIE_QUERY_DIM_INDEX];
+				val = attr[GPUGENIE_QUERY_VALUE_INDEX];
+				weight = attr[GPUGENIE_QUERY_WEIGHT_INDEX];
+				sel = attr[GPUGENIE_QUERY_SELECTIVITY_INDEX];
+				if(query_map.find(qid) == query_map.end()){
+					query q(table, qid);
+					q.topk(config.num_of_topk);
+					if(config.selectivity > 0.0f)
+					{
+						q.selectivity(config.selectivity);
+					}
+					if(config.use_load_balance)
+					{
+						q.use_load_balance = true;
+					}
+					query_map[qid]= &q;
+				}
+				query q = *(query_map[qid]);
+				q.attr(dim,
+					   val,
+					   weight,
+					   sel);
+			}
+		}
+		for(std::map<int, query*>::iterator it = query_map.begin(); it != query_map.end(); ++it)
+		{
+			query q = *(it->second);
+			q.apply_adaptive_query_range();
+			queries.push_back(q);
+		}
+#ifdef GPUGENIE_DEBUG
+		printf("Finish loading queries! %d queries are loaded.\n", queries.size());
+#endif
+    }
 	void
 	load_query(inv_table& table,
 				std::vector<query>& queries,
@@ -135,9 +187,6 @@ namespace GPUGenie
 			query q(table, i);
 
 			for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
-
-				//for debug
-				if(j>=12){
 				value = query_points[i][j];
 				if(value < 0)
 				{
@@ -147,7 +196,6 @@ namespace GPUGenie
 					   value - radius < 0 ? 0 : value - radius,
 					   value + radius,
 					   GPUGENIE_DEFAULT_WEIGHT);
-				}//end for debug
 			}
 
 			q.topk(config.num_of_topk);
@@ -296,44 +344,13 @@ namespace GPUGenie
     }
 
 }
-void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
-					  std::vector<std::vector<int> >& query_points,
-					  std::vector<int>& result,
-					  int num_of_topk)
-{
-	knn_search(data_points,
-			   query_points,
-			   result,
-			   num_of_topk,
-			   GPUGENIE_DEFAULT_RADIUS,
-			   GPUGENIE_DEFAULT_THRESHOLD,
-			   GPUGENIE_DEFAULT_HASHTABLE_SIZE,
-			   GPUGENIE_DEFAULT_DEVICE);
-}
-void GPUGenie::knn_search(std::vector<std::vector<int> >& data_points,
-					  std::vector<std::vector<int> >& query_points,
-					  std::vector<int>& result,
-					  int num_of_topk,
-					  int radius,
-					  int threshold,
-					  float hashtable,
-					  int device)
-{
-	GPUGenie_Config config;
-	config.count_threshold = threshold;
-	config.data_points = &data_points;
-	config.hashtable_size = hashtable;
-	config.num_of_topk = num_of_topk;
-	config.query_points = &query_points;
-	config.query_radius = radius;
-	config.use_device = device;
-	if(!query_points.empty())
-		config.dim = query_points[0].size();
-
-	knn_search(result, config);
-}
-
 void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& config)
+{
+	std::vector<int> result_count;
+	knn_search_bijectMap(result, result_count, config);
+}
+
+void GPUGenie::knn_search_bijectMap(std::vector<int>& result, std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
@@ -372,7 +389,16 @@ void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& c
 #endif
 }
 
-void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
+void GPUGenie::knn_search(std::vector<int>& result,
+						  GPUGenie_Config& config)
+{
+	std::vector<int> result_count;
+	knn_search(result, result_count, config);
+}
+
+void GPUGenie::knn_search(std::vector<int>& result,
+						  std::vector<int>& result_count,
+						  GPUGenie_Config& config)
 {
 	inv_table table;
 	std::vector<query> queries;
@@ -396,14 +422,18 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 	printf("Loading queries...");
     u64 starttime = getTime();
 #endif
+    if(config.use_multirange){
+    	load_query_multirange(table,queries,config);
+    } else {
+    	load_query(table,queries,config);
+    }
 
-	load_query(table,queries,config);
 
 #ifdef GPUGENIE_DEBUG
 	printf("Done!\n");
 #endif
 
-	knn_search(table, queries, result, config);
+	knn_search(table, queries, result, result_count, config);
 
 
 #ifdef GPUGENIE_DEBUG
@@ -413,10 +443,18 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 #endif
 }
 
-
 void GPUGenie::knn_search(inv_table& table,
 					  std::vector<query>& queries,
 					  std::vector<int>& h_topk,
+					  GPUGenie_Config& config)
+{
+	std::vector<int> h_topk_count;
+	knn_search(table, queries, h_topk, h_topk_count, config);
+}
+void GPUGenie::knn_search(inv_table& table,
+					  std::vector<query>& queries,
+					  std::vector<int>& h_topk,
+					  std::vector<int>& h_topk_count,
 					  GPUGenie_Config& config)
 {
 	int device_count, hashtable_size;
@@ -442,7 +480,7 @@ void GPUGenie::knn_search(inv_table& table,
 	}else{
 		hashtable_size =  config.hashtable_size;
 	}
-	thrust::device_vector<int> d_topk;
+	thrust::device_vector<int> d_topk, d_topk_count;
 
 #ifdef GPUGENIE_DEBUG
 	printf("Starting knn search...\n");
@@ -452,12 +490,11 @@ void GPUGenie::knn_search(inv_table& table,
 	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
 			   queries,
 			   d_topk,
+			   d_topk_count,
 			   hashtable_size,
 			   max_load,
 			   config.count_threshold,
-			   config.dim,
-			   config.num_of_hot_dims,
-			   config.hot_dim_threshold);
+			   config.dim);
 
 #ifdef GPUGENIE_DEBUG
 	printf("knn search is done!\n");
@@ -465,7 +502,9 @@ void GPUGenie::knn_search(inv_table& table,
 #endif
 
 	h_topk.resize(d_topk.size());
+	h_topk_count.resize(d_topk_count.size());
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
+	thrust::copy(d_topk_count.begin(), d_topk_count.end(), h_topk_count.begin());
 }
 
 

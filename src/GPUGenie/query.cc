@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdexcept>
+#include <cmath>
 
 typedef unsigned int u32;
 typedef unsigned long long u64;
@@ -41,27 +43,41 @@ GPUGenie::query::ref_table()
 void
 GPUGenie::query::attr(int index, int low, int up, float weight)
 {
-  if (index < 0 || index >= _ref_table->m_size())
-    return;
-
-  range new_attr;
-  new_attr.low = low;
-  new_attr.up = up;
-  new_attr.weight = weight;
-  new_attr.dim = index;
-  new_attr.query = _index;
-  new_attr.low_offset = 0;
-  new_attr.up_offset = 0;
-
-  if(_attr_map.find(index) == _attr_map.end())
-  {
-    std::vector<range>* new_range_list = new std::vector<range>;
-    _attr_map[index] = new_range_list;
-  }
-
-  _attr_map[index]->push_back(new_attr);
-  _count ++;
+	attr(index, low, up, weight, -1);
 }
+
+void
+GPUGenie::query::attr(int index, int value, float weight, float selectivity)
+{
+	attr(index, value, value, weight, selectivity);
+}
+
+void
+GPUGenie::query::attr(int index, int low, int up, float weight, float selectivity)
+{
+	  if (index < 0 || index >= _ref_table->m_size())
+	    return;
+
+	  range new_attr;
+	  new_attr.low = low;
+	  new_attr.up = up;
+	  new_attr.weight = weight;
+	  new_attr.dim = index;
+	  new_attr.query = _index;
+	  new_attr.low_offset = 0;
+	  new_attr.up_offset = 0;
+	  new_attr.selectivity = selectivity;
+
+	  if(_attr_map.find(index) == _attr_map.end())
+	  {
+	    std::vector<range>* new_range_list = new std::vector<range>;
+	    _attr_map[index] = new_range_list;
+	  }
+
+	  _attr_map[index]->push_back(new_attr);
+	  _count ++;
+}
+
 
 inline u64
 GPUGenie::query::pack_dim_and_count(u32 dim, u64 count)
@@ -94,60 +110,10 @@ GPUGenie::query::clear_dim(int index)
   _attr_map.erase(index);
 }
 
-
-//TODO: split_hot_dims must be rewritten!!!!!!
-// void
-// GPUGenie::query::split_hot_dims(GPUGenie::query& hot_dims_query, int num)
-// {
-// 	std::vector<inv_list>& inv_lists = *((*_ref_table).inv_lists());
-// 	std::vector<u64> counts;
-// 	counts.resize(inv_lists.size());
-// 	u64 count_items_on_dim;
-
-// 	for(int di = 0; di < inv_lists.size(); ++di)
-// 	{
-// 		if(_attr[di].up == -1) continue;
-
-// 		count_items_on_dim = 0ull;
-// 		for(int ni = _attr[di].low; ni <= _attr[di].up; ++ni)
-// 		{
-// 			if(!inv_lists[di].contains(ni)) continue;
-
-// 			std::vector<int> index_list = *(inv_lists[di].index(ni));
-// 			count_items_on_dim += index_list.size();
-// 		}
-
-// 		counts.push_back(pack_dim_and_count(u32(di), count_items_on_dim));
-// 	}
-
-// 	std::make_heap(counts.begin(), counts.end());
-// 	std::vector<int> hot_index;
-
-
-// 	//extract top [num] hot dim index
-// 	for(int i = 0; i < num && i < _ref_table->m_size(); ++i)
-// 	{
-// 		hot_index.push_back(unpack_dim(counts.front()));
-// 		std::pop_heap(counts.begin(), counts.end());
-// 		counts.pop_back();
-// 	}
-
-// 	//cut hot dims from self to the given hot_dims_query
-// 	for(int i = 0; i < hot_index.size(); ++i)
-// 	{
-// 		int index = hot_index[i];
-// 		if (index < 0 || index >= _attr.size())
-// 			continue;
-// 		hot_dims_query.attr(index, _attr[index].low, _attr[index].up, _attr[index].weight);
-// 		clear_dim(index);
-// 	}
-// }
-
 void
 GPUGenie::query::selectivity(float s)
 {
-	if(s > 0) _selectivity = s;
-	//else printf("Please choose a selectivity greater than 0.\n");
+	_selectivity = s;
 }
 
 float
@@ -258,15 +224,8 @@ GPUGenie::query::apply_adaptive_query_range()
 		return;
 	}
 
-	if(_selectivity <= 0.0f)
-	{
-		printf("Please set a valid selectivity.\n");
-		return;
-	}
-
-	u32 threshold = u32(_selectivity * table.i_size());
-	if(_selectivity * table.i_size() - threshold > 0)
-		threshold += 1;
+	u32 global_threshold = _selectivity > 0 ? u32(ceil(_selectivity * table.i_size())) : -1;
+	u32 local_threshold;
 
 	for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
 	{
@@ -275,14 +234,23 @@ GPUGenie::query::apply_adaptive_query_range()
 
 		for(int i = 0; i < ranges->size(); ++i)
 		{
-			range& d = ranges->at(i);
+		  range& d = ranges->at(i);
+		  if(d.selectivity > 0){
+			  local_threshold = ceil(d.selectivity*table.i_size());
+		  } else if(_selectivity > 0){
+			  local_threshold = global_threshold;
+		  } else {
+			  printf("Please set valid selectivity!\n");
+			  return;
+		  }
+
 		  int count = 0;
 		  for(int vi = d.low; vi <= d.up; ++vi)
 		  {
 			if(!lists[index].contains(vi)) continue;
 			count += lists[index].index(vi)->size();
 		  }
-		  while(count < threshold)
+		  while(count < local_threshold)
 		  {
 			if(d.low > 0)
 			{
@@ -504,8 +472,8 @@ GPUGenie::query::print(int limit)
     	  if(count == 0) return;
     	  if(count > 0) count --;
     	  range& d = ranges[i];
-        printf("dim %d from query %d: low %d(offset %d), up %d(offset %d), weight %.2f.\n",
-                d.dim,       d.query,  d.low,d.low_offset,d.up,d.up_offset,  d.weight);
+        printf("dim %d from query %d: low %d(offset %d), up %d(offset %d), weight %.2f, selectivity %.2f.\n",
+                d.dim,       d.query,  d.low,d.low_offset,d.up,d.up_offset,  d.weight,    d.selectivity);
       }
   }
 }
