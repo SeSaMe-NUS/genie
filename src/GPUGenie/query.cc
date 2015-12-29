@@ -7,7 +7,18 @@
 
 typedef unsigned int u32;
 typedef unsigned long long u64;
-
+GPUGenie::query::query()
+{
+	  _ref_table = NULL;
+	  _attr_map.clear();
+	  _dim_map.clear();
+	  _topk = 1;
+	  _selectivity = -1.0f;
+	  _index = -1;
+	  _count = -1;
+	  is_load_balanced = false;
+	  use_load_balance = false;
+}
 GPUGenie::query::query(inv_table* ref, int index)
 {
   _ref_table = ref;
@@ -444,6 +455,13 @@ GPUGenie::query::dump(vector<dim>& vout)
   }
   //printf("Query %d: Total number of dims dumped: %d.\n", _index, count);
   return count;
+}
+
+
+int
+GPUGenie::query::index()
+{
+	return _index;
 }
 
 int

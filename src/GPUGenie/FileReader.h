@@ -8,14 +8,26 @@
 #ifndef FILEREADER_H_
 #define FILEREADER_H_
 
-#include "../GPUGenie.h"
-#include "interface.h"
+#include "query.h"
 
 #include <vector>
 #include <string>
 
 namespace GPUGenie {
+	typedef struct _GPUGenie_Query_Data{
+		int qid;
+		int dim;
+		int value;
+		float sel;
+		float weight;
+	} attr_t;
 
+	const int GPUGENIE_QUERY_QID_INDEX = 0;
+	const int GPUGENIE_QUERY_DIM_INDEX = 1;
+	const int GPUGENIE_QUERY_VALUE_INDEX = 2;
+	const int GPUGENIE_QUERY_SELECTIVITY_INDEX =3;
+	const int GPUGENIE_QUERY_WEIGHT_INDEX = 4;
+	const int GPUGENIE_QUERY_NUM_OF_FIELDS = 5;
 
 	void read_file(std::vector<std::vector<int> >& dest,
 					const char* fname,
@@ -36,14 +48,9 @@ namespace GPUGenie {
 	// 0   0   15     0.04        1
 	// 0   1   6      0.04        1
 	// ....
-	void read_query(inv_table& table,
-			        const char* fname,
-			        std::vector<query>& queries,
-			        int num_of_queries,
-			        int topk,
-			        float selectivity = -1);
+	void read_query(std::vector<GPUGenie::attr_t>& data, const char* file_name, int num);
 
-    //convert a csv file to a binaryfile, the third arg determines write style(override or append)
+    //convert a csv file to a binary file, the third arg determines write style(override or append)
     void csv2binary(const char* csvfile, const char* binaryfile, bool app_write = false);
 
     //read from a binary style file

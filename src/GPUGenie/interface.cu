@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <sys/time.h>
 #include <ctime>
@@ -127,41 +128,38 @@ namespace GPUGenie
 							   GPUGenie_Config& config)
     {
 		queries.clear();
-		map<int, query*> query_map;
+		map<int, query> query_map;
 		int qid,dim,val;
 		float sel, weight;
-		for (int iq = 0; iq < config.query_points->size(); ++iq) {
-			vector<int>& attr = (*config.query_points)[iq];
+		for (int iq = 0; iq < config.multirange_query_points->size(); ++iq) {
+			attr_t& attr = (*config.multirange_query_points)[iq];
 
-			if(attr.size() == GPUGENIE_QUERY_NUM_OF_FIELDS){
-				qid = attr[GPUGENIE_QUERY_QID_INDEX];
-				dim = attr[GPUGENIE_QUERY_DIM_INDEX];
-				val = attr[GPUGENIE_QUERY_VALUE_INDEX];
-				weight = attr[GPUGENIE_QUERY_WEIGHT_INDEX];
-				sel = attr[GPUGENIE_QUERY_SELECTIVITY_INDEX];
-				if(query_map.find(qid) == query_map.end()){
-					query q(table, qid);
-					q.topk(config.num_of_topk);
-					if(config.selectivity > 0.0f)
-					{
-						q.selectivity(config.selectivity);
-					}
-					if(config.use_load_balance)
-					{
-						q.use_load_balance = true;
-					}
-					query_map[qid]= &q;
+			qid = attr.qid;
+			dim = attr.dim;
+			val = attr.value;
+			weight = attr.weight;
+			sel = attr.sel;
+			if(query_map.find(qid) == query_map.end()){
+				query q(table, qid);
+				q.topk(config.num_of_topk);
+				if(config.selectivity > 0.0f)
+				{
+					q.selectivity(config.selectivity);
 				}
-				query q = *(query_map[qid]);
-				q.attr(dim,
-					   val,
-					   weight,
-					   sel);
+				if(config.use_load_balance)
+				{
+					q.use_load_balance = true;
+				}
+				query_map[qid]= q;
+
 			}
+			query_map[qid].attr(dim,val, weight, sel);
 		}
-		for(std::map<int, query*>::iterator it = query_map.begin(); it != query_map.end(); ++it)
+		for(std::map<int, query>::iterator it = query_map.begin();
+			it != query_map.end() && queries.size() < config.num_of_queries;
+			++it)
 		{
-			query q = *(it->second);
+			query& q = it->second;
 			q.apply_adaptive_query_range();
 			queries.push_back(q);
 		}
@@ -410,7 +408,7 @@ void GPUGenie::knn_search(std::vector<int>& result,
 	    cout<<"build from data_points..."<<endl;
 	    load_table(table, *(config.data_points), config.posting_list_max_length);
     }else if(config.data != NULL&&config.index!=NULL && config.item_num!=0&& config.row_num!=0){
-	cout<<"build from data array..."<<endl;
+    	cout<<"build from data array..."<<endl;
         load_table(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
     }else{
         printf("no data input!\n");

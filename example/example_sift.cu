@@ -19,6 +19,7 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 	std::vector<std::vector<int> > queries;
+	std::vector<attr_t> multirange_queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
 
@@ -31,17 +32,13 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 
-	int queryNum = 10;
 	string  dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
-       
-
-	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
-	//read queries from file, which has the same format 
-	read_file(queries, dataFile.c_str(), queryNum);
+	string queryFile = "sift_1k_query.csv";
 	
-
 	/*** Configuration of KNN Search ***/
 	GPUGenie::GPUGenie_Config config;
+
+	config.num_of_queries = 10;
 
 	//Data dimension
 	config.dim = 128;
@@ -54,7 +51,7 @@ int main(int argc, char * argv[])
 
 	//Number of topk items desired for each query.
 	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 100;
+	config.num_of_topk = 10;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
@@ -74,14 +71,14 @@ int main(int argc, char * argv[])
 	config.query_radius = 1;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
-	config.use_device = 0;
+	config.use_device = 1;
 
 
 	//Set if adaptive range of query is used.
 	//Once set with a valid selectivity, the query will be re-scanned to
 	//guarantee at least (selectivity * data size) of the data points will be matched
 	//for each dimension.
-	config.use_adaptive_range = false;
+	config.use_adaptive_range = true;
 
 	//The selectivity to be used. Range 0.0f (no other bucket to be matched) to 1.0f (match all buckets).
 
@@ -92,11 +89,25 @@ int main(int argc, char * argv[])
 	config.data_points = &data;
 
 	//The pointer to the vector containing the queries.
-	config.query_points = &queries;
+
 
 	config.multiplier = 1.5f;
 	config.posting_list_max_length = 6400;
-	config.use_load_balance = false;
+	config.use_load_balance = true;
+
+	config.use_multirange = true;
+
+	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
+	if(config.use_multirange)
+	{
+		read_query(multirange_queries, queryFile.c_str(), -1);
+		config.multirange_query_points = &multirange_queries;
+	} else {
+		read_file(queries, queryFile.c_str(), config.num_of_queries);
+		config.query_points = &queries;
+	}
+
+
 	/*** End of Configuration ***/
 
 	/*** NOTE TO DEVELOPERS ***/
@@ -151,7 +162,7 @@ int main(int argc, char * argv[])
 
 	{
 		printf("Query %d result is: \n\t", i);
-		for (int j = 0; j < 5; ++j)
+		for (int j = 0; j < 10; ++j)
 		{
 			printf("%d:%d, ", result[i * config.num_of_topk + j], result_count[i * config.num_of_topk + j]);
 		}

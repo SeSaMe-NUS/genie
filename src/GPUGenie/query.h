@@ -99,6 +99,8 @@ namespace GPUGenie
      */
     query(inv_table& ref, int index);
 
+    query();
+
     /**
      * @brief The refrenced table's pointer.
      * @details The refrenced table's pointer.
