@@ -15,10 +15,13 @@
 class Logger
 {
 public:
+
 	static const int NONE = 0;
-	static const int INFO = 1;
-	static const int VERBOSE = 2;
-	static const int DEBUG = 3;
+	static const int ALERT = 1;
+	static const int INFO = 2;
+	static const int VERBOSE = 3;
+	static const int DEBUG = 4;
+	static const char * const LEVEL_NAMES[];
 
 	virtual ~Logger();
 	static void exit(void);

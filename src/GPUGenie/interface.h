@@ -9,6 +9,7 @@
 #define INTERFACE_H_
 
 #include "../GPUGenie.h"
+#include "Logger.h"
 #include <vector>
 
 #define GPUGENIE_DEFAULT_TOPK 10
@@ -27,6 +28,7 @@
 
 namespace GPUGenie
 {
+	//Logger * logger;
 
 	typedef struct _GPUGenie_Config{
 		int num_of_topk;

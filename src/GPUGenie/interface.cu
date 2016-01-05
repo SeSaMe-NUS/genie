@@ -9,34 +9,40 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
+#include <string>
 #include <sys/time.h>
 #include <ctime>
 #include <map>
 #include <vector>
 #include <algorithm>
+
 #include <thrust/system_error.h>
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+
+#include "Logger.h"
 
 using namespace GPUGenie;
 using namespace std;
 
 namespace GPUGenie
 {
+
 	void
 	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
 	{
 		  inv_list list;
 		  u32 i,j;
-#ifdef GPUGENIE_DEBUG
-		  printf("Data row size: %d. Data Row Number: %d.\n", data_points[0].size(), data_points.size());
+
+		  Logger::log(Logger::DEBUG, "Data row size: %d. Data Row Number: %d.", data_points[0].size(), data_points.size());
 		  u64 starttime = getTime();
-#endif
+
 		  for(i = 0; i < data_points[0].size(); ++i)
 		  {
 			  std::vector<int> col;
@@ -66,22 +72,22 @@ namespace GPUGenie
 
           }
           table.is_stored_in_gpu = save_to_gpu;
-#ifdef GPUGENIE_DEBUG
+
 		  u64 endtime = getTime();
 		  double timeInterval = getInterval(starttime, endtime);
-		  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
-		  cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms<<<<"<<endl;
-#endif
+		  Logger::log(Logger::DEBUG, "Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+		  Logger::log(Logger::VERBOSE, ">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
+
 	}
     
     void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, int max_length, bool save_to_gpu)
     {
           inv_list list;
           u32 i,j;
-#ifdef GPUGENIE_DEBUG
-          printf("Data row size: %d. Data Row Number: %d. \n", index[1], row_num);
+
+          Logger::log(Logger::DEBUG,"Data row size: %d. Data Row Number: %d.", index[1], row_num);
           u64 starttime = getTime();
-#endif
+
           for(i = 0; i<index[1]; ++i){
               std::vector<int> col;
 	      col.reserve(row_num);
@@ -109,12 +115,12 @@ namespace GPUGenie
 
           }
           table.is_stored_in_gpu = save_to_gpu;
-#ifdef GPUGENIE_DEBUG
+
           u64 endtime = getTime();
           double timeInterval = getInterval(starttime, endtime);
-          printf("Before finishing loading. i_size() : %d, m_size() : %d.\n", table.i_size(), table.m_size());
-          cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms<<<<"<<endl;
-#endif
+          Logger::log(Logger::DEBUG,"Before finishing loading. i_size() : %d, m_size() : %d.", table.i_size(), table.m_size());
+          Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
+
     }
 
     //Read new format query data
@@ -163,19 +169,19 @@ namespace GPUGenie
 			q.apply_adaptive_query_range();
 			queries.push_back(q);
 		}
-#ifdef GPUGENIE_DEBUG
-		printf("Finish loading queries! %d queries are loaded.\n", queries.size());
-#endif
+
+		Logger::log(Logger::INFO,"Finish loading queries! %d queries are loaded.", queries.size());
+
     }
 	void
 	load_query(inv_table& table,
 				std::vector<query>& queries,
 				GPUGenie_Config& config)
 	{
-#ifdef GPUGENIE_DEBUG
-		printf("Table dim: %d.\n", table.m_size());
+
+		Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
 		u64 starttime = getTime();
-#endif
+
 		u32 i,j;
 		int value;
 		int radius = config.query_radius;
@@ -209,22 +215,22 @@ namespace GPUGenie
 
 			queries.push_back(q);
 		}
-#ifdef GPUGENIE_DEBUG
+
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime,endtime);
-		printf("%d queries are created!\n", queries.size());
-		cout<<">>>>[time profiling]: loading query takes "<<timeInterval<<" ms<<<<"<<endl;
-#endif
+		Logger::log(Logger::INFO,"%d queries are created!", queries.size());
+		Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading query takes %f ms<<<<",timeInterval);
+
 	}
 	void
 	load_query_bijectMap(inv_table& table,
 				std::vector<query>& queries,
 				GPUGenie_Config& config)
 	{
-#ifdef GPUGENIE_DEBUG
+
 		u64 starttime = getTime();
-		printf("Table dim: %d.\n", table.m_size());
-#endif
+		Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
+
 		u32 i,j;
 		int value;
 		int radius = config.query_radius;
@@ -259,22 +265,21 @@ namespace GPUGenie
 
 			queries.push_back(q);
 		}
-#ifdef GPUGENIE_DEBUG
+
 		u64 endtime = getTime();
 		double timeInterval = getInterval(starttime, endtime);
-		printf("%d queries are created!\n", queries.size());
-		cout<<">>>>[time profiling]: loading query takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
-#endif
+		Logger::log(Logger::INFO,"%d queries are created!", queries.size());
+		Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading query takes %f ms (for one dim multi-values)<<<<",timeInterval);
+
 	}
 
 	void
 	load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
 	{
 
-#ifdef GPUGENIE_DEBUG
+
 	  u64 starttime = getTime();
 
-#endif
 	  inv_list list;
 	  list.invert_bijectMap(data_points);
 	  table.append(list);
@@ -296,21 +301,21 @@ namespace GPUGenie
           table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
       }
       table.is_stored_in_gpu = save_to_gpu;
-#ifdef GPUGENIE_DEBUG
+
 	  u64 endtime = getTime();
 	  double timeInterval = getInterval(starttime,endtime);
-	  printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
-	  cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
-#endif
+	  Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+	  Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
+
 	}
 
     void
     load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index, 
                         unsigned int row_num, int max_length, bool save_to_gpu)
     {
-#ifdef GPUGENIE_DEBUG
+
         u64 starttime = getTime();
-#endif
+
         inv_list list;
         list.invert_bijectMap(data, item_num, index, row_num);
 
@@ -333,12 +338,12 @@ namespace GPUGenie
              table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
         }
         table.is_stored_in_gpu = save_to_gpu;
-#ifdef GPUGENIE_DEBUG
+
         u64 endtime = getTime();
         double timeInterval = getInterval(starttime, endtime);
-        printf("Before finishing loading. i_size():%d, m_size():%d.\n", table.i_size(), table.m_size());
-        cout<<">>>>[time profiling]: loading index takes "<<timeInterval<<" ms (for one dim multi-values)<<<<"<<endl;
-#endif
+        Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+        Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
+
     }
 
 }
@@ -353,38 +358,28 @@ void GPUGenie::knn_search_bijectMap(std::vector<int>& result, std::vector<int>& 
 	inv_table table;
 	std::vector<query> queries;
 
-#ifdef GPUGENIE_DEBUG
-	printf("Building table...");
-#endif
+	Logger::log(Logger::INFO,"Building table...");
+
     if(config.item_num ==0){
 	load_table_bijectMap(table, *(config.data_points), config.posting_list_max_length);
     }else if(config.data != NULL && config.index != NULL && config.item_num!=0 && config.row_num!=0){
         load_table_bijectMap(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
     }else{
-        printf("no data input!\n");
+    	Logger::log(Logger::ALERT,"no data input!");
         return;
     }
-#ifdef GPUGENIE_DEBUG
-	printf("Done!\n");
-	printf("Loading queries...");
-#endif
 
-#ifdef GPUGENIE_DEBUG
+    Logger::log(Logger::INFO,"Loading queries...");
+
 	u64 starttime = getTime();
-#endif
 
 	load_query_bijectMap(table,queries,config);
 
-#ifdef GPUGENIE_DEBUG
-	printf("Done!\n");
-#endif
-
 	knn_search(table, queries, result, config);
-#ifdef GPUGENIE_DEBUG
+
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);
-	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
-#endif
+	Logger::log(Logger::VERBOSE, ">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",elapsed);
 }
 
 void GPUGenie::knn_search(std::vector<int>& result,
@@ -400,45 +395,39 @@ void GPUGenie::knn_search(std::vector<int>& result,
 {
 	inv_table table;
 	std::vector<query> queries;
-	#ifdef GPUGENIE_DEBUG
-	printf("Building table...");
-#endif
+
+	Logger::log(Logger::INFO,"Building table...");
     
     if(config.item_num == 0){
-	    cout<<"build from data_points..."<<endl;
+    	Logger::log(Logger::INFO,"build from data_points...");
 	    load_table(table, *(config.data_points), config.posting_list_max_length);
     }else if(config.data != NULL&&config.index!=NULL && config.item_num!=0&& config.row_num!=0){
-    	cout<<"build from data array..."<<endl;
+    	Logger::log(Logger::INFO,"build from data array...");
         load_table(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
     }else{
-        printf("no data input!\n");
+    	Logger::log(Logger::ALERT,"no data input!");
         return;
     }
 
-#ifdef GPUGENIE_DEBUG
-	printf("Done!\n");
-	printf("Loading queries...");
+    Logger::log(Logger::INFO,"Loading queries...");
     u64 starttime = getTime();
-#endif
+
     if(config.use_multirange){
     	load_query_multirange(table,queries,config);
     } else {
     	load_query(table,queries,config);
     }
 
-
-#ifdef GPUGENIE_DEBUG
-	printf("Done!\n");
-#endif
+    Logger::log(Logger::INFO,"Starting knn_search ...");
 
 	knn_search(table, queries, result, result_count, config);
 
 
-#ifdef GPUGENIE_DEBUG
+
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);
-	 cout<<">>>>[time profiling]: knn_search totally takes "<<elapsed<<" ms (building query+match+selection)<<<<"<<endl;
-#endif
+
+	Logger::log(Logger::VERBOSE,">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",elapsed);
 }
 
 void GPUGenie::knn_search(inv_table& table,
@@ -459,20 +448,18 @@ void GPUGenie::knn_search(inv_table& table,
 	cudaGetDeviceCount(&device_count);
 	if(device_count == 0)
 	{
-		printf("[Info] NVIDIA CUDA-SUPPORTED GPU NOT FOUND!\nProgram aborted..\n");
+		Logger::log(Logger::ALERT,"[ALERT] NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
 		exit(2);
 	} else if(device_count <= config.use_device)
 	{
-#ifdef GPUGENIE_DEBUG
-		printf("[Info] Device %d not found!", config.use_device);
-#endif
+		Logger::log(Logger::INFO,"[Info] Device %d not found! Changing to %d...", config.use_device, GPUGENIE_DEFAULT_DEVICE);
 		config.use_device = GPUGENIE_DEFAULT_DEVICE;
 	}
 	cudaSetDevice(config.use_device);
-#ifdef GPUGENIE_DEBUG
-	printf("Using device %d...\n", config.use_device);
-	printf("table.i_size():%d, config.hashtable_size:%f.\n", table.i_size(), config.hashtable_size);
-#endif
+
+	Logger::log(Logger::INFO,"Using device %d...", config.use_device);
+	Logger::log(Logger::DEBUG,"table.i_size():%d, config.hashtable_size:%f.", table.i_size(), config.hashtable_size);
+
 	if(config.hashtable_size<=2){
 		hashtable_size = table.i_size() * config.hashtable_size + 1;
 	}else{
@@ -480,11 +467,11 @@ void GPUGenie::knn_search(inv_table& table,
 	}
 	thrust::device_vector<int> d_topk, d_topk_count;
 
-#ifdef GPUGENIE_DEBUG
-	printf("Starting knn search...\n");
-#endif
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
-	printf("max_load is %d\n", max_load);
+
+	Logger::log(Logger::DEBUG,"max_load is %d", max_load);
+	Logger::log(Logger::INFO,"Starting knn search...");
+
 	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
 			   queries,
 			   d_topk,
@@ -494,10 +481,10 @@ void GPUGenie::knn_search(inv_table& table,
 			   config.count_threshold,
 			   config.dim);
 
-#ifdef GPUGENIE_DEBUG
-	printf("knn search is done!\n");
-	printf("Topk obtained: %d in total.\n", d_topk.size());
-#endif
+
+	Logger::log(Logger::INFO,"knn search is done!");
+	Logger::log(Logger::DEBUG,"Topk obtained: %d in total.", d_topk.size());
+
 
 	h_topk.resize(d_topk.size());
 	h_topk_count.resize(d_topk_count.size());

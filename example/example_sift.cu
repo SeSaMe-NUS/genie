@@ -15,9 +15,11 @@ using namespace GPUGenie;
 using namespace std;
 
 
-
 int main(int argc, char * argv[])
 {
+
+	Logger::set_level(Logger::DEBUG);
+
 	std::vector<std::vector<int> > queries;
 	std::vector<attr_t> multirange_queries;
 	std::vector<std::vector<int> > data;
@@ -150,13 +152,14 @@ int main(int argc, char * argv[])
 
 	std::vector<int> result, result_count;
 
-	printf("Launching knn functions...\n");
+	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
+
 	u64 start = getTime();
 	GPUGenie::knn_search(result,result_count, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
-	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
+	Logger::log(Logger::DEBUG, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
 	for(int i = 0; i < 5; ++i)
 
@@ -169,7 +172,6 @@ int main(int argc, char * argv[])
 		printf("\n");
 	}
 
-	Logger::log(Logger::INFO, "Testing Logger.");
 	Logger::exit();
 
 	return 0;

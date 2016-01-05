@@ -11,6 +11,12 @@
 #include <sys/time.h>
 #include <ctime>
 
+const char * const Logger::LEVEL_NAMES[] = {"NONE   ",
+											"ALERT  ",
+											"INFO   ",
+											"VERBOSE",
+											"DEBUG  "};
+
 const char * Logger::default_name = "GPUGENIE_LOG.log";
 Logger * Logger::logger = NULL;
 
@@ -79,7 +85,7 @@ int Logger::log(int level, const char *fmt, ...)
     strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
 
     char currentTime[84] = "";
-    sprintf(currentTime, "[%s:%d] ", buffer, milli);
+    sprintf(currentTime, "[%s:%03d %s] ", buffer, milli,LEVEL_NAMES[level]);
 
     fprintf(_logger()->logger->logfile, currentTime);
     int success = vfprintf(_logger()->logger->logfile, fmt, args);
