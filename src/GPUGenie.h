@@ -8,10 +8,6 @@ extern unsigned long long GPUGENIE_TIME;
 #define GPUGENIE_DEBUG
 #endif
 
-//#if defined(GPUGENIE_DEBUG) && !defined(DEBUG_VERBOSE)
-//#define DEBUG_VERBOSE
-//#endif
-
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
@@ -28,9 +24,11 @@ typedef struct data_{
 #include <GPUGenie/match.h>
 #include <GPUGenie/topk.h>
 #include <GPUGenie/parser/parser.h>
+#include <GPUGenie/FileReader.h>// to read csv file data for simple examples
 #include <GPUGenie/interface.h>
 #include <GPUGenie/knn.h>
-#include <GPUGenie/FileReader.h>// to read csv file data for simple examples
+#include <GPUGenie/Logger.h>
+
 
 
 #endif

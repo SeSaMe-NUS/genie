@@ -169,5 +169,8 @@ int main(int argc, char * argv[])
 		printf("\n");
 	}
 
+	Logger::log(Logger::INFO, "Testing Logger.");
+	Logger::exit();
+
 	return 0;
 }
