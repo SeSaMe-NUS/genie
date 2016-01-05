@@ -17,6 +17,9 @@ set(LIB_SRC_LIST
   GPUGenie/lib/bucket_topk/update_min_max.inc
   GPUGenie/lib/bucket_topk/utils.inc
 
+  GPUGenie/Logger.h
+  GPUGenie/Logger.cc
+
   GPUGenie/raw_data.h
   GPUGenie/raw_data.cc
   GPUGenie/inv_list.h
@@ -67,6 +70,8 @@ function(install_header TARGET)
 endfunction()
 
 install(FILES GPUGenie/parser/parser.h DESTINATION include/GPUGenie/parser)
+install_header(Logger.h)
+install_header(interface.h)
 install_header(raw_data.h)
 install_header(inv_list.h)
 install_header(inv_table.h)
