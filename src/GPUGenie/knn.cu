@@ -2,6 +2,7 @@
 #include <math.h>
 #include <assert.h>
 #include <thrust/copy.h>
+#include "Logger.h"
 
 bool GPUGENIE_ERROR = false;
 unsigned long long GPUGENIE_TIME = 0ull;
@@ -51,16 +52,16 @@ GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 	  if(count > qmax)
 		  qmax = count;
   }
-#ifdef GPUGENIE_DEBUG
+
   u64 start = getTime();
-#endif
+
   knn(table, queries, d_top_indexes,d_top_count, hash_table_size,max_load, bitmap_bits,
 		  	  float(qmax+1));
-#ifdef GPUGENIE_DEBUG
+
   u64 end = getTime();
   double elapsed = getInterval(start, end);
-  printf(">>>>>>> knn takes %fms <<<<<< \n", elapsed);
-#endif
+  Logger::log(Logger::VERBOSE, ">>>>>>> knn takes %fms <<<<<<", elapsed);
+
 }
 void
 GPUGenie::knn(GPUGenie::inv_table& table,
@@ -72,9 +73,9 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 		   int bitmap_bits,
 		   int dim)
 {
-#ifdef GPUGENIE_DEBUG
-  printf("Parameters: %d,%d,%d\n", hash_table_size, bitmap_bits, dim);
-#endif
+
+	Logger::log(Logger::DEBUG,"Parameters: %d,%d,%d", hash_table_size, bitmap_bits, dim);
+
   //for improve
 //  int qmax = 0;
 //  for(int i = 0; i < queries.size(); ++i)
@@ -85,48 +86,41 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 //  }
   //end for improve
   dim = 2;
-#ifdef GPUGENIE_DEBUG  //for improve
-  u64 startKnn = getTime();
-#endif
 
-#ifdef GPUGENIE_DEBUG  //for improve
-  u64 end3Knn = getTime();
-  printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end3Knn));
-#endif
+  u64 startKnn = getTime();
 
   device_vector<data_t> d_data;
   device_vector<u32> d_bitmap;
 
-#ifdef GPUGENIE_DEBUG  //for improve
+
   u64 end2Knn = getTime();
-  printf(">>>>> knn() before match() %f ms <<<<<\n", getInterval(startKnn, end2Knn));
-#endif
+  Logger::log(Logger::VERBOSE,">>>>> knn() before match() %f ms <<<<<", getInterval(startKnn, end2Knn));
+
   device_vector<u32> d_num_of_items_in_hashtable(queries.size());
-  printf("[knn] max_load is %d.\n", max_load);
+
+  Logger::log(Logger::DEBUG,"[knn] max_load is %d.", max_load);
+
   match(table, queries, d_data, d_bitmap, hash_table_size,max_load, bitmap_bits, d_num_of_items_in_hashtable);
-#ifdef GPUGENIE_DEBUG  //for improve
+
   u64 end1Knn = getTime();
-  printf(">>>>> knn() after match() %f ms <<<<<\n", getInterval(startKnn, end1Knn));
-#endif
+  Logger::log(Logger::VERBOSE,">>>>> knn() after match() %f ms <<<<<", getInterval(startKnn, end1Knn));
 
-#ifdef GPUGENIE_DEBUG  //for improve
   u64 endKnn = getTime();
-  printf(">>>>> knn() before topk and extractIndex %f ms <<<<<\n", getInterval(startKnn, endKnn));
-#endif
+  Logger::log(Logger::VERBOSE,">>>>> knn() before topk and extractIndex %f ms <<<<<", getInterval(startKnn, endKnn));
 
-#ifdef GPUGENIE_DEBUG
-  printf("Start topk....\n");
+
+
+  Logger::log(Logger::INFO,"Start topk....");
   u64 start = getTime();
-#endif
 
   topk(d_data, queries, d_top_indexes, float(dim));
 
-#ifdef GPUGENIE_DEBUG
+
   u64 end = getTime();
-  printf("Topk Finished! \n");
-  printf(">>>>> main topk takes %fms <<<<<\n", getInterval(start, end));
+  Logger::log(Logger::INFO,"Topk Finished!");
+  Logger::log(Logger::VERBOSE,">>>>> main topk takes %fms <<<<<", getInterval(start, end));
   start=getTime();
-#endif
+
   d_top_count.resize(d_top_indexes.size());
   extract_index_and_count<<<d_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1, GPUGenie_knn_THREADS_PER_BLOCK>>>
 			   (thrust::raw_pointer_cast(d_top_indexes.data()),
@@ -134,9 +128,9 @@ GPUGenie::knn(GPUGenie::inv_table& table,
 			    thrust::raw_pointer_cast(d_data.data()),
 			    d_top_indexes.size());
 
-#ifdef GPUGENIE_DEBUG
+
   end=getTime();
-  printf("Finish topk search!\n");
-  printf(">>>>> extract index and copy selected topk results takes %fms <<<<<\n", getInterval(start, end));
-#endif
+  Logger::log(Logger::INFO,"Finish topk search!");
+  Logger::log(Logger::VERBOSE,">>>>> extract index and copy selected topk results takes %fms <<<<<", getInterval(start, end));
+
 }

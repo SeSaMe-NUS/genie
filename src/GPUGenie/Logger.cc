@@ -84,22 +84,23 @@ int Logger::log(int level, const char *fmt, ...)
     char buffer [80];
     strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
 
-    char currentTime[84] = "";
+    char currentTime[84];
     sprintf(currentTime, "[%s:%03d %s] ", buffer, milli,LEVEL_NAMES[level]);
-
     fprintf(_logger()->logger->logfile, currentTime);
-    int success = vfprintf(_logger()->logger->logfile, fmt, args);
+
+    char message[1024];
+    vsprintf(message, fmt, args);
+    va_end(args);
+
+    fprintf(_logger()->logger->logfile, message);
     fprintf(_logger()->logger->logfile, "\n");
+
     if(_logger()->logger->log_level >= level)
     {
-    	vprintf(fmt, args);
+    	printf(message);
     	printf("\n");
-    }
-    va_end(args);
-    if(success < 0)
-    {
-    	return 0;
-    } else {
     	return 1;
+    } else {
+    	return 0;
     }
 }

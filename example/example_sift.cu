@@ -159,7 +159,7 @@ int main(int argc, char * argv[])
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 
-	Logger::log(Logger::DEBUG, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
+	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
 	for(int i = 0; i < 5; ++i)
 

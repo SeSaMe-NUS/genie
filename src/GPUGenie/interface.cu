@@ -470,7 +470,6 @@ void GPUGenie::knn_search(inv_table& table,
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
 
 	Logger::log(Logger::DEBUG,"max_load is %d", max_load);
-	Logger::log(Logger::INFO,"Starting knn search...");
 
 	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
 			   queries,
