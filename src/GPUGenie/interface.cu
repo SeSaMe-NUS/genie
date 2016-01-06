@@ -170,7 +170,8 @@ namespace GPUGenie
 			queries.push_back(q);
 		}
 
-		Logger::log(Logger::INFO,"Finish loading queries! %d queries are loaded.", queries.size());
+		Logger::log(Logger::INFO,"Finish loading queries!");
+		Logger::log(Logger::DEBUG, "%d queries are loaded.", queries.size());
 
     }
 	void

@@ -3,6 +3,8 @@
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
 
+#include "Logger.h"
+
 
 struct ValueOfFloat
 {
@@ -140,11 +142,9 @@ GPUGenie::topk(device_vector<int>& d_search,
   float max = *minmax.second;
   bucket_topk<int, ValueOfInt>(&d_search, val, min, max, &d_tops, &d_end_index,
       parts, &d_top_indexes);
-#ifdef GPUGENIE_DEGBUG
-  u64 endtime = getTime();
-  cout<<">>>>[time profiling]: Selection  takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
-#endif
 
+  u64 endtime = getTime();
+  Logger::log(Logger::VERBOSE, ">>>>[time profiling]: Selection  takes %f ms (GPU k selection)<<<<", getInterval(starttime,endtime));
 }
 
 void
@@ -179,11 +179,9 @@ u64 starttime = getTime();
   val.max = *minmax.second;
   bucket_topk<float, ValueOfFloat>(&d_search, val, *minmax.first,
       *minmax.second, &d_tops, &d_end_index, parts, &d_top_indexes);
-#ifdef GALD_DEBUG
-u64 endtime = getTime();
-cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
-#endif
 
+	u64 endtime = getTime();
+	Logger::log(Logger::VERBOSE, ">>>>[time profiling]: Selection takes %f ms (GPU k selection)<<<<",getInterval(starttime,endtime));
 }
 
 void
@@ -198,7 +196,7 @@ GPUGenie::topk(device_vector<data_t>& d_search,
 #endif
 	if(d_tops.size() == 0)
 	{
-		printf("Error: No query found! Program aborted...\n");
+		printf("Error: No query found! Program aborted...");
 		exit(1);
 	}
   int parts = d_tops.size();
@@ -225,11 +223,8 @@ GPUGenie::topk(device_vector<data_t>& d_search,
   bucket_topk<data_t, ValueOfData>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
 
-#ifdef GPUGENIE_DEBUG
   u64 endtime = getTime();
-  cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms (GPU k selection)<<<<"<<endl;
-#endif
-
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: Selection takes %f ms (GPU k selection)<<<<",getInterval(starttime,endtime));
 }
 void
 GPUGenie::topk(device_vector<u32>& d_search,
@@ -237,13 +232,12 @@ GPUGenie::topk(device_vector<u32>& d_search,
        device_vector<int>& d_top_indexes,
        u32 dim)
 {
-#ifdef GPUGENIE_DEBUG
-u64 starttime = getTime();
-#endif
+
+	u64 starttime = getTime();
 
   if(d_tops.size() == 0)
   {
-    printf("Error: No query found! Program aborted...\n");
+	  Logger::log(Logger::ALERT,"Error: No query found! Program aborted...");
     exit(1);
   }
   int parts = d_tops.size();
@@ -270,9 +264,6 @@ u64 starttime = getTime();
   bucket_topk<u32, ValueOfU32>(&d_search, val, minval,
       maxval, &d_tops, &d_end_index, parts, &d_top_indexes);
 
-#ifdef GPUGENIE_DEBUG
-u64 endtime = getTime();
-cout<<">>>>[time profiling]: Selection takes "<<getInterval(starttime,endtime)<<" ms ((GPU k selection)<<<<"<<endl;
-#endif
-
+  u64 endtime = getTime();
+	Logger::log(Logger::VERBOSE,">>>>[time profiling]: Selection takes %f ms (GPU k selection)<<<<",getInterval(starttime,endtime));
 }

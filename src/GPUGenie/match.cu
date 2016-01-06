@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <math.h>
+#include "Logger.h"
 
 #ifndef GPUGenie_device_THREADS_PER_BLOCK
 #define GPUGenie_device_THREADS_PER_BLOCK 256
@@ -149,9 +150,6 @@ namespace GPUGenie
       
       location = hash(id, age, hash_table_size);
 
-#ifdef DEBUG_VERBOSE
-       printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
-#endif
       while(1)
       {
           out_key = htable[location];
@@ -161,9 +159,6 @@ namespace GPUGenie
           		&& get_key_age(out_key) < MAX_AGE){
         	u32 attach_id = get_key_attach_id(out_key);
             float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
-#ifdef DEBUG_VERBOSE
-            printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
-#endif
             new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
             											 *reinterpret_cast<u32*>(&old_value_plus),
             											 get_key_age(out_key));
@@ -184,29 +179,18 @@ namespace GPUGenie
         location = hash(id, age, hash_table_size);
         out_key = htable[location];
 
-#ifdef DEBUG_VERBOSE
-        printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
-#endif
-
         if(get_key_pos(out_key) == id
         		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
         		&& get_key_age(out_key) < MAX_AGE)
         {
         	u32 attach_id = get_key_attach_id(out_key);
             float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
-#ifdef DEBUG_VERBOSE
-            printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
-#endif
             new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
             											 *reinterpret_cast<u32*>(&old_value_plus),
             											 get_key_age(out_key));
             if(atomicCAS(&htable[location], out_key, new_key) == out_key)
             {
             	*key_found =true;
-#ifdef DEBUG_VERBOSE
-            	attach_id = get_key_attach_id(htable[location]);
-    			printf("[b%dt%d] <Access3> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attach_id));
-#endif
             	return;
             } else {
             	age --;
@@ -237,10 +221,6 @@ namespace GPUGenie
          T_AGE age = KEY_TYPE_NULL_AGE;
 
          location = hash(id, age, hash_table_size);
-
-   #ifdef DEBUG_VERBOSE
-          printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
-   #endif
          while(1)
          {
              out_key = htable[location];
@@ -258,10 +238,6 @@ namespace GPUGenie
             		 *key_found =true;//already find the key, but do not update
             		 return;
             	 }
-
-   #ifdef DEBUG_VERBOSE
-               printf("[b%dt%d] <Access1> new value: %f.\n", blockIdx.x, threadIdx.x,value_plus);
-   #endif
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
             		   	   	   	   	   	   	   	   	   	*reinterpret_cast<u32*>(&value_plus),
                											 get_key_age(out_key));
@@ -287,10 +263,6 @@ namespace GPUGenie
            location = hash(id, age, hash_table_size);
            out_key = htable[location];
 
-   #ifdef DEBUG_VERBOSE
-           printf(">>> [b%d t%d]Access: hash to %u. id: %u, age: %u.\n", blockIdx.x, threadIdx.x, location, id, age);
-   #endif
-
            if(get_key_pos(out_key) == id
            		&& get_key_age(out_key) != KEY_TYPE_NULL_AGE
            		&& get_key_age(out_key) < MAX_AGE)
@@ -307,9 +279,6 @@ namespace GPUGenie
         	      return;
         	   }
 
-   #ifdef DEBUG_VERBOSE
-               printf("[b%dt%d] <Access2> new value: %f.\n", blockIdx.x, threadIdx.x,old_value_plus);
-   #endif
                new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
                											 *reinterpret_cast<u32*>(&value_plus),//for impprove:update here for weighted distance
                											 get_key_age(out_key));
@@ -322,10 +291,6 @@ namespace GPUGenie
                {
             	*pass_threshold = true;
                	*key_found =true;
-   #ifdef DEBUG_VERBOSE
-               	attach_id = get_key_attach_id(htable[location]);
-       			printf("[b%dt%d] <Access3> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attach_id));
-   #endif
                	return;
                } else {
                	age --;
@@ -341,7 +306,6 @@ namespace GPUGenie
        }
     //for AT: for adaptiveThreshold
 
-
     __inline__ __device__
     void
     hash_kernel(u32 id,//
@@ -351,9 +315,6 @@ namespace GPUGenie
                 u32 * my_noiih,
                 bool * overflow)
     {
-#ifdef DEBUG_VERBOSE
-      printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q.weight, id);
-#endif
       u32 location;
       T_HASHTABLE evicted_key, peek_key;
       T_AGE age = KEY_TYPE_NULL_AGE;
@@ -381,18 +342,11 @@ namespace GPUGenie
         		u32 old_value_1 = get_key_attach_id(peek_key);
         		u32 old_value_2 = get_key_attach_id(key);//
         		float old_value_plus = *reinterpret_cast<float*>(&old_value_2) + *reinterpret_cast<float*>(&old_value_1);
-#ifdef DEBUG_VERBOSE
-        		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
-#endif
         		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
         																 *reinterpret_cast<u32*>(&old_value_plus),
         																 get_key_age(peek_key));
         		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
         		{
-#ifdef DEBUG_VERBOSE
-        			old_value_1 = get_key_attach_id(htable[location]);
-        			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
-#endif
         			return;
         		} else {
         			continue;
@@ -422,7 +376,10 @@ namespace GPUGenie
                 		atomicAdd(my_noiih, 1u);//for improve:
                 	}
 
-#ifdef DEBUG_VERBOSE
+
+/*** DEBUG SECTION - DON'T REMOVE! ****/
+/*** The debug section below can print out the key in binary. ****/
+/*
         			u32 old_value_1 = get_key_attach_id(htable[location]);
         			u64 keykey = htable[location];
         		    char s[65];
@@ -435,7 +392,8 @@ namespace GPUGenie
         					threadIdx.x,
         					*reinterpret_cast<float*>(&old_value_1),
         					s);
-#endif
+*/
+
                 	return;// finish insertion for empty location
                 }
         	}
@@ -448,8 +406,6 @@ namespace GPUGenie
         }
 
       }
-      //u32 attachid = get_key_attach_id(key);
-      //printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
       *overflow = true;
       return;
     }
@@ -468,10 +424,6 @@ namespace GPUGenie
                    bool* pass_threshold
                    )
        {
-   #ifdef DEBUG_VERBOSE
-         printf(">>> [b%d t%d]Insertion starts. weight is %f, Id is %d.\n", blockIdx.x, threadIdx.x, q.weight, id);
-   #endif
-
          u32 location;
          T_HASHTABLE evicted_key, peek_key;
          T_AGE age = KEY_TYPE_NULL_AGE;
@@ -521,9 +473,6 @@ namespace GPUGenie
            		     return;
            		}
 
-   #ifdef DEBUG_VERBOSE
-           		printf("[b%dt%d] <Hash1> new value: %f.\n", blockIdx.x, threadIdx.x, old_value_plus);
-   #endif
            		T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(peek_key),
            																 *reinterpret_cast<u32*>(&key_value),//for improve: update here for weighted distance
            																 get_key_age(peek_key));
@@ -538,10 +487,6 @@ namespace GPUGenie
            		}
            		if(atomicCAS(&htable[location], peek_key, new_key) == peek_key)
            		{
-   #ifdef DEBUG_VERBOSE
-           			old_value_1 = get_key_attach_id(htable[location]);
-           			printf("[b%dt%d] <Hash2> new value: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&old_value_1));
-   #endif
 
            			*pass_threshold = true;//after updat the hashtable, increase the pass_count and my_threshold
            			return;
@@ -599,21 +544,6 @@ namespace GPUGenie
                    	} else{
                    		atomicAdd(my_noiih, 1u);// this will not affect the performance very much
                    	}
-
-   #ifdef DEBUG_VERBOSE
-           			u32 old_value_1 = get_key_attach_id(htable[location]);
-           			u64 keykey = htable[location];
-           		    char s[65];
-           		    s[64] = '\0';
-           			for (int i = 63; i >= 0; i--)
-           			    s[63 - i] = (keykey >> i) & 1 == 1? '1' : '0';
-
-           			printf("[b%dt%d] <Hash3> new value: %f. Bit: %s.\n",
-           					blockIdx.x,
-           					threadIdx.x,
-           					*reinterpret_cast<float*>(&old_value_1),
-           					s);
-   #endif
            			*pass_threshold = true;//after updating the hashtable, increase the pass_count and my_threshold
 
            			return;//finish insertion for empty location
@@ -891,8 +821,6 @@ namespace GPUGenie
 									 &pass_threshold
 									 );
 
-
-
 					   if(key_eligible){
 						   if(pass_threshold){
 							   updateThreshold(my_passCount,my_threshold, my_topk,count);
@@ -906,13 +834,9 @@ namespace GPUGenie
 						 //Insert the key into hash table
 						 //access_id and its location are packed into a packed key
 
-
-
-
 						 if(count< *my_threshold){
 							 continue;//threshold has been increased, no need to insert
 						 }
-
 
 
 						 hash_kernel_AT(access_id,
@@ -976,8 +900,6 @@ GPUGenie::build_queries(vector<query>& queries, inv_table& table, vector<query::
 		queries[i].build_compressed();
 
 	  queries[i].dump(dims);
-	  //int load_balance_count = queries[i].dump(dims);
-	  //printf("query %d: previous %d, load balance %d.\n", i, queries[i].count_ranges(), load_balance_count);
 	}
 }
 void
@@ -1008,18 +930,15 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
             device_vector<u32>& d_noiih)
 {
-    using namespace GPUGenie;
-#ifdef GPUGENIE_DEBUG
-	printf("match.cu version : %s\n", MATCH_VERSION);
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;
 	cudaEventCreate(&kernel_start);
 	cudaEventCreate(&kernel_stop);
 	match_start = getTime();
-	printf("[  0%] Starting matching...\n");
-	printf("[ 10%] Fetching and packing data...\n");
-#endif
+
+	Logger::log(Logger::INFO,"[  0%] Starting matching...");
+
 	if (table.build_status() == inv_table::not_builded)
 		throw inv_table::not_builded_exception;
 
@@ -1032,25 +951,17 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	vector<query::dim> hot_dims;
 	vector<query> hot_dims_queries;
 
-#ifdef GPUGENIE_DEBUG
-	printf("[Info]hash table size: %d.\n", hash_table_size);
-#endif
+	Logger::log(Logger::DEBUG,"hash table size: %d.", hash_table_size);
 
-#ifdef GPUGENIE_DEBUG
   u64 match_query_start,match_query_end;
   match_query_start=getTime();
-#endif
 
   build_queries(queries, table, dims, max_load);
 
-#ifdef GPUGENIE_DEBUG
   match_query_end=getTime();
-  printf(">>>>[time profiling]: match: build_queries function takes %f ms. \n", getInterval(match_query_start, match_query_end));
-#endif
+  Logger::log(Logger::VERBOSE, ">>>>[time profiling]: match: build_queries function takes %f ms.", getInterval(match_query_start, match_query_end));
 
-#ifdef GPUGENIE_DEBUG
-  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
-#endif
+  Logger::log(Logger::DEBUG," dims size: %d. hot_dims size: %d.", dims.size(), hot_dims.size());
 
   //for AT: for adaptiveThreshold, enable adaptiveThreshold
   bool useAdaptiveThreshold = false;//for AT
@@ -1060,9 +971,8 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	 //for hash_table_size, still let it determine by users currently
   }
 
-#ifdef GPUGENIE_DEBUG
-    printf("[info] useAdaptiveThreshold: %d, bitmap_bits:%d.\n", useAdaptiveThreshold, bitmap_bits);
-#endif
+  Logger::log(Logger::DEBUG," useAdaptiveThreshold: %d, bitmap_bits:%d.", useAdaptiveThreshold, bitmap_bits);
+
   //end for AT
 
   int total = table.i_size() * queries.size();
@@ -1089,13 +999,8 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	  bitmap_bits = threshold = 0;
   }
 
-
-
-#ifdef GPUGENIE_DEBUG
-    printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
-	printf("[ 20%] Declaring device memory...\n");
-#endif
-
+  	Logger::log(Logger::DEBUG,"Bitmap bits: %d, threshold:%d.", bitmap_bits, threshold);
+  	Logger::log(Logger::INFO,"[ 20%] Declaring device memory...");
 
 	//device_vector<int> d_ck(*table.ck());
 	//int* d_ck_p = raw_pointer_cast(d_ck.data());
@@ -1120,10 +1025,7 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	}
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
-#ifdef GPUGENIE_DEBUG
-
-  printf("[ 30%] Allocating device memory to tables...\n");
-#endif
+	Logger::log(Logger::INFO,"[ 30%] Allocating device memory to tables...");
 
 	data_t nulldata;
 	nulldata.id = 0u;
@@ -1136,28 +1038,23 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 	//thrust::fill(d_data.begin(), d_data.end(), nulldata);//for imp
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-  
-#ifdef GPUGENIE_DEBUG
-  printf("[ 33%] Copying memory to symbol...\n");
-#endif
+
+	Logger::log(Logger::INFO,"[ 33%] Copying memory to symbol...");
+
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
   cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-#ifdef GPUGENIE_DEBUG
-  printf("[ 40%] Starting match kernels...\n");
+  Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
   cudaEventRecord(kernel_start);
-#endif
 
   	bool h_overflow[1]= {false};
     bool * d_overflow;
     cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
 
-
 	do{
 		h_overflow[0] = false;
 		cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-		//cudaCheckErrors(cudaDeviceSynchronize());
 		u32 num_of_max_count=0,max_topk=0;
 		if(!useAdaptiveThreshold) //for AT: for adaptiveThreshold, branch here
 		{
@@ -1177,8 +1074,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 					d_noiih_p,
 					d_overflow);
 	}else{//for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
-
-
 
 		device_vector<u32> d_threshold;
 		d_threshold.resize(queries.size(),1);
@@ -1207,7 +1102,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 		d_topks.resize(queries.size(),max_topk);
 		u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
-
 		device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
 						(table.m_size(),
 						table.i_size(),
@@ -1230,7 +1124,6 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 
 	}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
-		//cudaCheckErrors(cudaDeviceSynchronize());
 		cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
 		if(h_overflow[0])
@@ -1255,23 +1148,18 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
 			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 		}
 
-#ifdef GPUGENIE_DEBUG
 		if (loop_count>0){
-			printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+			Logger::log(Logger::INFO,"%d time trying to launch match kernel: %s!", loop_count, h_overflow[0]?"failed":"succeeded");
 		}
-#endif
 
 	} while(h_overflow[0]);
   
-#ifdef GPUGENIE_DEBUG
   cudaEventRecord(kernel_stop);
-  printf("[ 90%] Starting data converting......\n");
-#endif
+  Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
-#ifdef GPUGENIE_DEBUG
-  printf("[100%] Matching is done!\n");
+  Logger::log(Logger::INFO,"[100%] Matching is done!");
 
   match_stop = getTime();
   match_elapsed = match_stop - match_start;
@@ -1279,11 +1167,9 @@ GPUGenie::match_for_table_in_gpu(inv_table& table,
   cudaEventSynchronize(kernel_stop);
   kernel_elapsed = 0.0f;
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
-  printf(">>>>[time profiling]: Match kernel takes %f ms. (GPU running) \n", kernel_elapsed);
-  printf(">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)\n", getInterval(match_start, match_stop));
-
-  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-#endif
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: Match kernel takes %f ms. (GPU running)", kernel_elapsed);
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)", getInterval(match_start, match_stop));
+  Logger::log(Logger::VERBOSE,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 }
 
 
@@ -1299,18 +1185,14 @@ GPUGenie::match(inv_table& table,
             int bitmap_bits,//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
             device_vector<u32>& d_noiih)
 {
-    using namespace GPUGenie;
-#ifdef GPUGENIE_DEBUG
-	printf("match.cu version : %s\n", MATCH_VERSION);
 	u64 match_stop, match_elapsed, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;
 	cudaEventCreate(&kernel_start);
 	cudaEventCreate(&kernel_stop);
 	match_start = getTime();
-	printf("[  0%] Starting matching...\n");
-	printf("[ 10%] Fetching and packing data...\n");
-#endif
+	Logger::log(Logger::INFO,"[  0%] Starting matching...");
+
 	if (table.build_status() == inv_table::not_builded)
 		throw inv_table::not_builded_exception;
 
@@ -1323,26 +1205,15 @@ GPUGenie::match(inv_table& table,
 	vector<query::dim> hot_dims;
 	vector<query> hot_dims_queries;
 
-#ifdef GPUGENIE_DEBUG
-	printf("[Info]hash table size: %d.\n", hash_table_size);
-#endif
-
-
-#ifdef GPUGENIE_DEBUG
+	Logger::log(Logger::DEBUG,"hash table size: %d.", hash_table_size);
   u64 match_query_start,match_query_end;
   match_query_start=getTime();
-#endif
 
   build_queries(queries, table, dims, max_load);
 
-#ifdef GPUGENIE_DEBUG
   match_query_end=getTime();
-  printf(">>>>[time profiling]: match: build_queries function takes %f ms. \n", getInterval(match_query_start, match_query_end));
-#endif
-
-#ifdef GPUGENIE_DEBUG
-  printf("[Info] dims size: %d. hot_dims size: %d.\n", dims.size(), hot_dims.size());
-#endif
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: match: build_queries function takes %f ms. ", getInterval(match_query_start, match_query_end));
+  Logger::log(Logger::DEBUG," dims size: %d. hot_dims size: %d.", dims.size(), hot_dims.size());
 
   //for AT: for adaptiveThreshold, enable adaptiveThreshold
   bool useAdaptiveThreshold = false;//for AT
@@ -1352,9 +1223,8 @@ GPUGenie::match(inv_table& table,
 	 //for hash_table_size, still let it determine by users currently
   }
 
-#ifdef GPUGENIE_DEBUG
-    printf("[info] useAdaptiveThreshold: %d, bitmap_bits:%d.\n", useAdaptiveThreshold, bitmap_bits);
-#endif
+  Logger::log(Logger::DEBUG,"[info] useAdaptiveThreshold: %d, bitmap_bits:%d.", useAdaptiveThreshold, bitmap_bits);
+
   //end for AT
 
   int total = table.i_size() * queries.size();
@@ -1381,12 +1251,8 @@ GPUGenie::match(inv_table& table,
 	  bitmap_bits = threshold = 0;
   }
 
-
-
-#ifdef GPUGENIE_DEBUG
-    printf("[info] Bitmap bits: %d, threshold:%d.\n", bitmap_bits, threshold);
-	printf("[ 20%] Declaring device memory...\n");
-#endif
+  Logger::log(Logger::DEBUG,"Bitmap bits: %d, threshold:%d.", bitmap_bits, threshold);
+  Logger::log(Logger::INFO,"[ 20%] Declaring device memory...");
 
 	device_vector<int> d_ck(*table.ck());
 	int* d_ck_p = raw_pointer_cast(d_ck.data());
@@ -1411,10 +1277,7 @@ GPUGenie::match(inv_table& table,
 	}
 	u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
-#ifdef GPUGENIE_DEBUG
-
-  printf("[ 30%] Allocating device memory to tables...\n");
-#endif
+	Logger::log(Logger::INFO,"[ 30%] Allocating device memory to tables...");
 
 	data_t nulldata;
 	nulldata.id = 0u;
@@ -1427,18 +1290,14 @@ GPUGenie::match(inv_table& table,
 	//thrust::fill(d_data.begin(), d_data.end(), nulldata);//for imp
 	d_data_table = thrust::raw_pointer_cast(d_data.data());
 	d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
-  
-#ifdef GPUGENIE_DEBUG
-  printf("[ 33%] Copying memory to symbol...\n");
-#endif
+
+	Logger::log(Logger::INFO,"[ 33%] Copying memory to symbol...");
 
   u32 h_offsets[16] = OFFSETS_TABLE_16;
   cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-#ifdef GPUGENIE_DEBUG
-  printf("[ 40%] Starting match kernels...\n");
+  Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
   cudaEventRecord(kernel_start);
-#endif
 
   	bool h_overflow[1]= {false};
     bool * d_overflow;
@@ -1546,24 +1405,19 @@ GPUGenie::match(inv_table& table,
 			d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 		}
 
-#ifdef GPUGENIE_DEBUG
 		if (loop_count>0){
-			printf("%d time trying to launch match kernel: %s!\n", loop_count, h_overflow[0]?"failed":"succeeded");
+			Logger::log(Logger::INFO,"%d time trying to launch match kernel: %s!", loop_count, h_overflow[0]?"failed":"succeeded");
 		}
-#endif
 
 	} while(h_overflow[0]);
 
-#ifdef GPUGENIE_DEBUG
   cudaEventRecord(kernel_stop);
-  printf("[ 90%] Starting data converting......\n");
-#endif
+  Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
   //cudaCheckErrors(cudaDeviceSynchronize());
   device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1, 1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
-#ifdef GPUGENIE_DEBUG
-  printf("[100%] Matching is done!\n");
+  Logger::log(Logger::INFO,"[100%] Matching is done!");
 
   match_stop = getTime();
   match_elapsed = match_stop - match_start;
@@ -1571,9 +1425,7 @@ GPUGenie::match(inv_table& table,
   cudaEventSynchronize(kernel_stop);
   kernel_elapsed = 0.0f;
   cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
-  printf(">>>>[time profiling]: Match kernel takes %f ms. (GPU running) \n", kernel_elapsed);
-  printf(">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)\n", getInterval(match_start, match_stop));
-
-  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-#endif
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: Match kernel takes %f ms. (GPU running) ", kernel_elapsed);
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)", getInterval(match_start, match_stop));
+  Logger::log(Logger::VERBOSE,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 }

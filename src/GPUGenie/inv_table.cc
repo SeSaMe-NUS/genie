@@ -1,6 +1,7 @@
 #include "inv_table.h"
 #include "stdio.h"
 #include "inv_list.h"
+#include "Logger.h"
 
 using namespace GPUGenie;
 
@@ -141,47 +142,9 @@ GPUGenie::inv_table::build(u64 max_length)
   _inv_pos.push_back(_inv.size());
 
   _build_status = builded;
-  printf("inv_index size %d:\n", _inv_index.size());
-//  for(i = 0; i < _inv_index.size(); ++i)
-//  {
-//	  printf("%d, ", _inv_index[i]);
-//  }
-//  printf("\n");
-  printf("inv_pos size %d:\n", _inv_pos.size());
-//  for(i = 0; i < _inv_pos.size(); ++i)
-//  {
-//	  printf("%d, ", _inv_pos[i]);
-//  }
-//  printf("\n");
-  printf("inv size %d:\n", _inv.size());
-//  for(i = 0; i < _inv.size(); ++i)
-//  {
-//	  printf("%d, ", _inv[i]);
-//  }
-//  printf("\n");
-//  for(i = 0; i<= 4; ++i)
-//  {
-//	  dim = i << _shifter;
-//	  for(j = 0; j <= 4; ++j)
-//	  {
-//		  key = dim + j;
-//		  printf("dim %d value %d: \n", i, j+10+i*10);
-//		  int index_begin = _inv_index[key];
-//		  int index_end = _inv_index[key+1];
-//		  for(int x = index_begin; x < index_end; ++x)
-//		  {
-//			  int pos_begin = _inv_pos[x];
-//			  int pos_end = _inv_pos[x + 1];
-//			  printf("postlist->%d, begin->%d, end->%d.\n", x-index_begin, pos_begin, pos_end);
-//			  for(int z = pos_begin; z < pos_end; ++z)
-//			  {
-//				  printf("%d, ", _inv[z]);
-//			  }
-//			  printf("\n");
-//		  }
-//
-//	  }
-//  }
+  Logger::log(Logger::DEBUG, "inv_index size %d:", _inv_index.size());
+  Logger::log(Logger::DEBUG, "inv_pos size %d:", _inv_pos.size());
+  Logger::log(Logger::DEBUG, "inv size %d:", _inv.size());
 }
 
 void

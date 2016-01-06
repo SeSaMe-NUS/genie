@@ -17,10 +17,10 @@
 #include <map>
 #include <iostream>
 
+#include "Logger.h"
+
 using namespace GPUGenie;
 using namespace std;
-
-
 
 namespace GPUGenie {
 	vector<string> split(string& str, const char* c) {
@@ -70,7 +70,8 @@ void GPUGenie::read_file(vector<vector<int> >& dest,
 			dest.push_back(row);
 			count ++;
 		}
-		printf("%d rows are read into memory!\n", dest.size());
+		Logger::log(Logger::INFO, "Finish reading file!");
+		Logger::log(Logger::DEBUG, "%d rows are read into memory!", dest.size());
 	}
 
 	ifile.close();
@@ -113,7 +114,8 @@ void GPUGenie::read_query(std::vector<attr_t>& data, const char* file_name, int 
 
 	ifile.close();
 
-	printf("Finish reading query data! %d attributes are loaded.\n", total);
+	Logger::log(Logger::INFO, "Finish reading query data!");
+	Logger::log(Logger::DEBUG,"%d attributes are loaded.", total);
 }
 
 //Read old format query data: same format as data files
@@ -163,7 +165,8 @@ void GPUGenie::read_query(inv_table& table,
 
 	ifile.close();
 
-	printf("Finish reading queries! %d queries are loaded.\n", num_of_queries);
+	Logger::log(Logger::INFO, "Finish reading queries!");
+	Logger::log(Logger::DEBUG,"%d queries are loaded.", num_of_queries);
 }
 
 void
@@ -173,7 +176,7 @@ GPUGenie::csv2binary(const char* csvfile, const char* binaryfile, bool app_write
      GPUGenie::read_file(data, csvfile, -1);
      if(data.size()<=0||data[0].size()<=0)
      {
-          printf("In processsing csv2binary: cannot read data from csv:%s \n",csvfile);
+    	  Logger::log(Logger::ALERT,"In processsing csv2binary: cannot read data from csv:%s ",csvfile);
           return;
      }
      unsigned int row_num = data.size();
@@ -189,20 +192,21 @@ GPUGenie::csv2binary(const char* csvfile, const char* binaryfile, bool app_write
          index[i+1] = index[i] + data[i].size();
 	          item_num += data[i].size();
      }
-       item_num += data[data.size()-1].size();
-    cout<<"item: "<<item_num<<endl;
+     item_num += data[data.size()-1].size();
     _data = (int*)malloc(sizeof(int)*item_num);
     unsigned int k=0;
     for(unsigned int i=0; i<data.size(); ++i)
     {
-   	for(unsigned int j=0; j<data[i].size(); ++j)
-	{
-		_data[k] = data[i][j];
-		k++;
-	}
+		for(unsigned int j=0; j<data[i].size(); ++j)
+		{
+			_data[k] = data[i][j];
+			k++;
+		}
     } 
-    cout<<"Written item_num: "<<item_num<<endl;
-    cout<<"Written row_num: "<<row_num<<endl;
+
+    Logger::log(Logger::DEBUG, "Written item_num:%d", item_num);
+    Logger::log(Logger::DEBUG, "Written row_num: ", row_num);
+
     ofstream ofs(binaryfile, ios::trunc | ios::binary);
     if(app_write){
         ofs.close();
@@ -211,7 +215,7 @@ GPUGenie::csv2binary(const char* csvfile, const char* binaryfile, bool app_write
 
     if(!ofs.is_open())
     {
-         printf("In processing csv2binary: cannot open binary file: %s\n",binaryfile);
+    	 Logger::log(Logger::ALERT,"In processing csv2binary: cannot open binary file: %s",binaryfile);
          return;
     }
 
@@ -226,7 +230,6 @@ GPUGenie::csv2binary(const char* csvfile, const char* binaryfile, bool app_write
     free(index);
 
     return;
-
 }
 
 
@@ -237,7 +240,7 @@ GPUGenie::read_file(const char* fname, int **_data, unsigned int& item_num,
      ifstream ifs(fname, ios::binary);
      if(!ifs.is_open())
      {
-         printf("In read_file from binary: cannot open file: %s\n", fname);
+    	 Logger::log(Logger::ALERT,"In read_file from binary: cannot open file: %s", fname);
          return;
      }
      ifs.read((char*)&item_num, sizeof(unsigned int));

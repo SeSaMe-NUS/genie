@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <cmath>
 
+#include "Logger.h"
+
 typedef unsigned int u32;
 typedef unsigned long long u64;
 GPUGenie::query::query()
@@ -146,7 +148,7 @@ GPUGenie::query::build_and_apply_load_balance(int max_load)
 
 	if(max_load <= 0)
 	{
-		printf("Please set a valid max_load.\n");
+		Logger::log(Logger::ALERT, "Please set a valid max_load.");
 		return;
 	}
 
@@ -231,7 +233,7 @@ GPUGenie::query::apply_adaptive_query_range()
 
 	if(table.build_status() == inv_table::not_builded)
 	{
-		printf("Please build the inverted table before applying adaptive query range.\n");
+		Logger::log(Logger::ALERT, "Please build the inverted table before applying adaptive query range.");
 		return;
 	}
 
@@ -251,7 +253,7 @@ GPUGenie::query::apply_adaptive_query_range()
 		  } else if(_selectivity > 0){
 			  local_threshold = global_threshold;
 		  } else {
-			  printf("Please set valid selectivity!\n");
+			  Logger::log(Logger::ALERT, "Please set valid selectivity!");
 			  return;
 		  }
 
@@ -479,7 +481,7 @@ GPUGenie::query::count_ranges()
 void
 GPUGenie::query::print(int limit)
 {
-	printf("This query has %d dimensions.\n", _attr_map.size());
+	Logger::log(Logger::DEBUG, "This query has %d dimensions.", _attr_map.size());
   int count = limit;
   for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
   {
@@ -490,7 +492,7 @@ GPUGenie::query::print(int limit)
     	  if(count == 0) return;
     	  if(count > 0) count --;
     	  range& d = ranges[i];
-        printf("dim %d from query %d: low %d(offset %d), up %d(offset %d), weight %.2f, selectivity %.2f.\n",
+    	  Logger::log(Logger::DEBUG, "dim %d from query %d: low %d(offset %d), up %d(offset %d), weight %.2f, selectivity %.2f.",
                 d.dim,       d.query,  d.low,d.low_offset,d.up,d.up_offset,  d.weight,    d.selectivity);
       }
   }

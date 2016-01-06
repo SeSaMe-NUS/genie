@@ -47,7 +47,7 @@ Logger* Logger::_logger(void)
 	if(logger == NULL)
 	{
 		logger = new Logger(INFO);
-		log(VERBOSE,"---------Starting Logger----------");
+		log(VERBOSE,"---------Starting Logger %s----------", logger->logfile_name);
 
 	}
 	return logger;
@@ -64,7 +64,18 @@ int Logger::get_level()
 
 void Logger::set_logfile_name(const char * name)
 {
-	strcpy(_logger()->logfile_name, name);
+	if(strcmp(name, _logger()->logfile_name) != 0)
+	{
+		strcpy(_logger()->logfile_name, name);
+		if(logger != NULL)
+		{
+			fclose(logger->logfile);
+			logger = NULL;
+			_logger();
+		}
+
+	}
+
 }
 
 const char * Logger::get_logfile_name()

@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 
-	Logger::set_level(Logger::DEBUG);
+	Logger::set_level(Logger::INFO);
 
 	std::vector<std::vector<int> > queries;
 	std::vector<attr_t> multirange_queries;
