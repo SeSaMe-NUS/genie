@@ -84,7 +84,14 @@ namespace GPUGenie
      *        _size to -1.
      */
     inv_table() :
-        _shifter(16), _size(-1), _build_status(not_builded)
+        _shifter(16),
+        _size(-1),
+        _build_status(not_builded),
+        is_stored_in_gpu(false),
+        d_inv_p(NULL),
+        d_inv_index_p(NULL),
+        d_inv_pos_p(NULL),
+        d_ck_p(NULL)
     {
     }
 
