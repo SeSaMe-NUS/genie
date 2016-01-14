@@ -6,6 +6,18 @@
 using namespace GPUGenie;
 
 void
+GPUGenie::inv_table::init()
+{
+    _shifter = 16;
+    _size = -1;
+    _build_status =  not_builded;
+    _inv_lists.clear();
+    _ck.clear();
+    _inv.clear();
+    _inv_index.clear();
+}
+
+void
 GPUGenie::inv_table::clear()
 {
   _build_status = not_builded;
@@ -13,6 +25,32 @@ GPUGenie::inv_table::clear()
   _ck.clear();
   _inv.clear();
   _ck_map.clear();
+  clear_gpu_mem();
+}
+
+GPUGenie::inv_table::~inv_table()
+{
+    if(is_stored_in_gpu == true)
+    {
+        cudaFree(d_inv_p);
+        cudaFree(d_inv_index_p);
+        cudaFree(d_inv_pos_p);
+        cudaFree(d_ck_p);
+    }
+}
+
+void
+GPUGenie::inv_table::clear_gpu_mem()
+{
+    if(is_stored_in_gpu == false)
+        return;
+
+    cudaFree(d_inv_p);
+    cudaFree(d_inv_index_p);
+    cudaFree(d_inv_pos_p);
+    cudaFree(d_ck_p);
+    is_stored_in_gpu = false;
+
 }
 
 bool

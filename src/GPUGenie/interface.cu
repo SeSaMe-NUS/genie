@@ -31,356 +31,659 @@
 using namespace GPUGenie;
 using namespace std;
 
-namespace GPUGenie
+
+void
+merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result, std::vector<std::vector<int> >& _result_count,
+		std::vector<int>& result, std::vector<int>& result_count,
+		int table_num, int topk, int query_num)
 {
+			for(unsigned int i = 0 ; i < query_num ; ++i)
+			{
+				vector<int> _sort;
+				vector<int> _sort_count;
+				for(unsigned int j = 0; j < table_num ; ++j)
+				{
+					_sort.insert(_sort.end(), _result[j].begin() + i*topk, _result[j].begin() + (i+1)*topk);
+					_sort_count.insert(_sort_count.end(), _result_count[j].begin() + i*topk, _result_count[j].begin() + (i+1)*topk);
+				}
 
-	void
-	load_table(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
-	{
-		  inv_list list;
-		  u32 i,j;
+				for(unsigned int j =0 ; j < topk ; ++j)
+				{
+					if(_sort_count.begin() == _sort_count.end())
+					{
+						Logger::log(Logger::ALERT, "No result!");
+						return;
+					}
+					unsigned int index;
+					index = std::distance(_sort_count.begin(), std::max_element(_sort_count.begin(), _sort_count.end()));
 
-		  Logger::log(Logger::DEBUG, "Data row size: %d. Data Row Number: %d.", data_points[0].size(), data_points.size());
-		  u64 starttime = getTime();
+					result.push_back(_sort[index]);
+					result_count.push_back(_sort_count[index]);
+					_sort.erase(_sort.begin()+index);
+					_sort_count.erase(_sort_count.begin()+index);
 
-		  for(i = 0; i < data_points[0].size(); ++i)
-		  {
-			  std::vector<int> col;
-			  col.reserve(data_points.size());
-			  for(j = 0; j < data_points.size(); ++j)
-			  {
-				  col.push_back(data_points[j][i]);
-			  }
-			  list.invert(col);
-			  table.append(list);
-		  }
-
-		  table.build(max_length);
-          if(save_to_gpu == true)
-          {
-             device_vector<int> d_ck(*table.ck());
-             table.d_ck_p = raw_pointer_cast(d_ck.data());
-             
-             device_vector<int> d_inv(*table.inv());
-             table.d_inv_p = raw_pointer_cast(d_inv.data());
-             
-             device_vector<int> d_inv_index(*table.inv_index());
-             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-             
-             device_vector<int> d_inv_pos(*table.inv_pos());
-             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-
-          }
-          table.is_stored_in_gpu = save_to_gpu;
-
-		  u64 endtime = getTime();
-		  double timeInterval = getInterval(starttime, endtime);
-		  Logger::log(Logger::DEBUG, "Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
-		  Logger::log(Logger::VERBOSE, ">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
-
-	}
-    
-    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, int max_length, bool save_to_gpu)
+				}
+			}
+}
+bool
+preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table, inv_table * &_table, unsigned int& table_num)
+{
+    unsigned int cycle = 0;
+    if(config.max_data_size == 0)
     {
-          inv_list list;
-          u32 i,j;
-
-          Logger::log(Logger::DEBUG,"Data row size: %d. Data Row Number: %d.", index[1], row_num);
-          u64 starttime = getTime();
-
-          for(i = 0; i<index[1]; ++i){
-              std::vector<int> col;
-	      col.reserve(row_num);
-              for(j = 0; j<row_num; ++j){
-                col.push_back(data[index[j]+i]);
-             }
-	      list.invert(col);
-              table.append(list);
-          }
-          table.build(max_length);
-
-          if(save_to_gpu == true)
-          {
-             device_vector<int> d_ck(*table.ck());
-             table.d_ck_p = raw_pointer_cast(d_ck.data());
-             
-             device_vector<int> d_inv(*table.inv());
-             table.d_inv_p = raw_pointer_cast(d_inv.data());
-             
-             device_vector<int> d_inv_index(*table.inv_index());
-             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-             
-             device_vector<int> d_inv_pos(*table.inv_pos());
-             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-
-          }
-          table.is_stored_in_gpu = save_to_gpu;
-
-          u64 endtime = getTime();
-          double timeInterval = getInterval(starttime, endtime);
-          Logger::log(Logger::DEBUG,"Before finishing loading. i_size() : %d, m_size() : %d.", table.i_size(), table.m_size());
-          Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
-
+		if(config.data_points->size() > 0){
+			Logger::log(Logger::DEBUG, "build from data_points...");
+			switch(config.search_type)
+			{
+				case 0:
+					load_table(table, *(config.data_points), config);
+					break;
+				case 1:
+					load_table_bijectMap(table, *(config.data_points), config);
+					break;
+				default:
+					Logger::log(Logger::ALERT, "Unrecognised search type!");
+					return false;
+			}
+		}else{
+			Logger::log(Logger::ALERT, "no data input!");
+			return false;
+		}
     }
-
-    //Read new format query data
-    //Sample data format
-    //qid dim value selectivity weight
-    // 0   0   15     0.04        1
-    // 0   1   6      0.04        1
-    // ....
-	void load_query_multirange(inv_table& table,
-							   std::vector<query>& queries,
-							   GPUGenie_Config& config)
+    else
     {
-		queries.clear();
-		map<int, query> query_map;
-		int qid,dim,val;
-		float sel, weight;
-		for (int iq = 0; iq < config.multirange_query_points->size(); ++iq) {
-			attr_t& attr = (*config.multirange_query_points)[iq];
+		Logger::log(Logger::DEBUG, "build from data_points...");
 
-			qid = attr.qid;
-			dim = attr.dim;
-			val = attr.value;
-			weight = attr.weight;
-			sel = attr.sel;
-			if(query_map.find(qid) == query_map.end()){
-				query q(table, qid);
-				q.topk(config.num_of_topk);
-				if(config.selectivity > 0.0f)
-				{
-					q.selectivity(config.selectivity);
-				}
-				if(config.use_load_balance)
-				{
-					q.use_load_balance = true;
-				}
-				query_map[qid]= q;
-
-			}
-			query_map[qid].attr(dim,val, weight, sel);
-		}
-		for(std::map<int, query>::iterator it = query_map.begin();
-			it != query_map.end() && queries.size() < config.num_of_queries;
-			++it)
+		if(config.data_points->size()%config.max_data_size == 0)
 		{
-			query& q = it->second;
-			q.apply_adaptive_query_range();
-			queries.push_back(q);
+			table_num = config.data_points->size() / config.max_data_size;
+			cycle = table_num;
+		}
+		else
+		{
+			table_num = config.data_points->size() / config.max_data_size + 1;
+			cycle = table_num - 2;
 		}
 
-		Logger::log(Logger::INFO,"Finish loading queries!");
-		Logger::log(Logger::DEBUG, "%d queries are loaded.", queries.size());
+		_table = new inv_table[table_num];
 
+		for(unsigned int i=0; i<cycle; ++i)
+		{
+			vector<vector<int> > temp;
+			temp.insert(temp.end(), config.data_points->begin()+i*config.max_data_size, config.data_points->begin()+ (i+1)*config.max_data_size);
+
+			switch(config.search_type)
+			{
+				case 0:
+					load_table(_table[i], temp, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[i], temp, config);
+					break;
+				default:
+					Logger::log(Logger::ALERT, "Unrecognised search type!");
+					return false;
+			}
+		}
+
+		if(table_num != cycle)
+		{
+			vector<vector<int> > temp1;
+			vector<vector<int> > temp2;
+			unsigned int second_last_size = (config.data_points->size() - cycle*config.max_data_size) / 2;
+			temp1.insert(temp1.end(), config.data_points->begin()+cycle*config.max_data_size, config.data_points->begin()+ cycle*config.max_data_size + second_last_size);
+			temp2.insert(temp2.end(), config.data_points->begin()+cycle*config.max_data_size + second_last_size, config.data_points->end());
+			switch(config.search_type)
+			{
+				case 0:
+					load_table(_table[cycle], temp1, config);
+					load_table(_table[cycle+1], temp2, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[cycle], temp1, config);
+					load_table_bijectMap(_table[cycle+1], temp2, config);
+					break;
+				default:
+					Logger::log(Logger::ALERT, "Unrecognised search type!");
+					return false;
+			}
+		}
     }
-	void
-	load_query(inv_table& table,
-				std::vector<query>& queries,
-				GPUGenie_Config& config)
-	{
+    return true;
+}
 
-		Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
-		u64 starttime = getTime();
 
-		u32 i,j;
-		int value;
-		int radius = config.query_radius;
-		std::vector<std::vector<int> >& query_points = *config.query_points;
-		for(i = 0; i < query_points.size(); ++i)
+bool
+preprocess_for_knn_binary(GPUGenie_Config& config, inv_table& table, inv_table * &_table, unsigned int& table_num)
+{
+    unsigned int cycle = 0;
+    if(config.max_data_size == 0)
+    {
+		if(config.item_num!=0 &&
+		   config.data != NULL&&
+		   config.index!=NULL &&
+		   config.item_num!=0&&
+		   config.row_num!=0){
+			Logger::log(Logger::DEBUG, "build from data array...");
+			switch(config.search_type)
+			{
+				case 0:
+					load_table(table, config.data, config.item_num, config.index, config.row_num, config);
+					break;
+				case 1:
+					load_table_bijectMap(table, config.data, config.item_num, config.index, config.row_num, config);
+					break;
+			}
+		}else{
+			Logger::log(Logger::ALERT, "no data input!");
+			return false;
+		}
+    }
+    else
+    {
+		Logger::log(Logger::DEBUG, "build from data array...");
+		if(config.row_num % config.max_data_size == 0)
 		{
-			query q(table, i);
-
-			for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
-				value = query_points[i][j];
-				if(value < 0)
-				{
-					continue;
-				}
-				q.attr(j,
-					   value - radius < 0 ? 0 : value - radius,
-					   value + radius,
-					   GPUGENIE_DEFAULT_WEIGHT);
-			}
-
-			q.topk(config.num_of_topk);
-			q.selectivity(config.selectivity);
-			if(config.use_adaptive_range)
-			{
-				q.apply_adaptive_query_range();
-			}
-			if(config.use_load_balance)
-			{
-				q.use_load_balance = true;
-			}
-
-			queries.push_back(q);
+			 table_num = config.row_num / config.max_data_size;
+			 cycle = table_num;
+		}
+		else
+		{
+			 table_num = config.row_num / config.max_data_size + 1;
+			 cycle = table_num - 2;
 		}
 
-		u64 endtime = getTime();
-		double timeInterval = getInterval(starttime,endtime);
-		Logger::log(Logger::INFO,"%d queries are created!", queries.size());
-		Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading query takes %f ms<<<<",timeInterval);
-
-	}
-	void
-	load_query_bijectMap(inv_table& table,
-				std::vector<query>& queries,
-				GPUGenie_Config& config)
-	{
-
-		u64 starttime = getTime();
-		Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
-
-		u32 i,j;
-		int value;
-		int radius = config.query_radius;
-		std::vector<std::vector<int> >& query_points = *config.query_points;
-		for(i = 0; i < query_points.size(); ++i)
+		_table = new inv_table[table_num];
+		for(unsigned int i=0; i<cycle; ++i)
 		{
-			query q(table, i);
-
-			for(j = 0; j < query_points[i].size(); ++j){
-
-				value = query_points[i][j];
-				if(value < 0)
-				{
-					continue;
-				}
-				q.attr(0,
-					   value - radius < 0 ? 0 : value - radius,
-					   value + radius,
-					   GPUGENIE_DEFAULT_WEIGHT);
-			}
-
-			q.topk(config.num_of_topk);
-			q.selectivity(config.selectivity);
-			if(config.use_adaptive_range)
-			{
-				q.apply_adaptive_query_range();
-			}
-			if(config.use_load_balance)
-			{
-				q.use_load_balance = true;
-			}
-
-			queries.push_back(q);
+			unsigned int item_num=0;
+			item_num = config.index[(i+1)*config.max_data_size] - config.index[i*config.max_data_size];
+			if(i == table_num-1)
+				item_num = config.item_num - config.index[config.max_data_size*(table_num-1)];
+			 switch(config.search_type)
+			 {
+				case 0:
+					load_table(_table[i], config.data+config.index[config.max_data_size*i], item_num,
+						config.index+config.max_data_size*i, config.max_data_size, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[i], config.data+config.index[config.max_data_size*i], item_num,
+						config.index+config.max_data_size*i, config.max_data_size, config);
+					break;
+			 }
 		}
 
-		u64 endtime = getTime();
-		double timeInterval = getInterval(starttime, endtime);
-		Logger::log(Logger::INFO,"%d queries are created!", queries.size());
-		Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading query takes %f ms (for one dim multi-values)<<<<",timeInterval);
+		if(table_num != cycle)
+		{
+			unsigned int second_last_row_size = (config.row_num - cycle*config.max_data_size) / 2;
+			unsigned int last_row_size = config.row_num - second_last_row_size - cycle*config.max_data_size;
+			unsigned int second_last_item_size = config.index[config.max_data_size*cycle+second_last_row_size]-config.index[config.max_data_size*cycle];
+			unsigned int last_item_size = config.item_num - config.index[config.max_data_size*cycle+second_last_row_size];
+			switch(config.search_type)
+			{
+				case 0:
+					load_table(_table[cycle], config.data+config.index[config.max_data_size*cycle], second_last_item_size,
+							config.index+config.max_data_size*cycle, second_last_row_size, config);
+					load_table(_table[cycle+1], config.data+config.index[config.max_data_size*cycle + second_last_row_size], last_item_size,
+							config.index+config.max_data_size*cycle+second_last_row_size, last_row_size, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[cycle], config.data+config.index[config.max_data_size*cycle], second_last_item_size,
+							config.index+config.max_data_size*cycle, second_last_row_size, config);
+					load_table_bijectMap(_table[cycle+1], config.data+config.index[config.max_data_size*cycle + second_last_row_size], last_item_size,
+							config.index+config.max_data_size*cycle+second_last_row_size, last_row_size, config);
+					break;
+			}
+		}
+    }
+    return true;
+}
 
-	}
 
-	void
-	load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu)
-	{
+void
+knn_search_after_preprocess(GPUGenie_Config& config, inv_table& table, inv_table * &_table,
+                            std::vector<int>& result, std::vector<int>& result_count, unsigned int& table_num)
+{
+    std::vector<query> queries;
+    if(config.max_data_size == 0)
+    {
+		load_query(table,queries,config);
+		knn_search(table, queries, result, result_count, config);
+    }
+    else
+    {
+		vector<vector<int> > _result;
+		vector<vector<int> > _result_count;
+
+		_result.resize(table_num);
+		_result_count.resize(table_num);
+
+		unsigned int accumulate_num = 0;
+		for(unsigned int i = 0 ; i < table_num ; ++i)
+		{
+			queries.clear();
+			load_query(_table[i],queries,config);
+
+			knn_search(_table[i], queries, _result[i], _result_count[i], config);
 
 
+			if( i <= 0 ) continue;
+			accumulate_num += _table[i-1].i_size();
+			for(unsigned int j = 0 ; j < _result[i].size() ; ++j)
+			{
+				_result[i][j] += accumulate_num;
+			}
+		}
+		merge_knn_results_from_multiload(_result, _result_count, result,
+				result_count, table_num, config.num_of_topk, queries.size());
+    }
+}
+void
+GPUGenie::load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
+{
+	  inv_list list;
+	  u32 i,j;
+
+	  Logger::log(Logger::DEBUG, "Data row size: %d. Data Row Number: %d.", data_points[0].size(), data_points.size());
 	  u64 starttime = getTime();
 
-	  inv_list list;
-	  list.invert_bijectMap(data_points);
-	  table.append(list);
-	  table.build(max_length);
-
-
-      if(save_to_gpu == true)
+      for(i = 0; i < data_points[0].size(); ++i)
       {
-          device_vector<int> d_ck(*table.ck());
-          table.d_ck_p = raw_pointer_cast(d_ck.data());
-             
-          device_vector<int> d_inv(*table.inv());
-          table.d_inv_p = raw_pointer_cast(d_inv.data());
-             
-          device_vector<int> d_inv_index(*table.inv_index());
-          table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-             
-          device_vector<int> d_inv_pos(*table.inv_pos());
-          table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
+          std::vector<int> col;
+          col.reserve(data_points.size());
+          for(j = 0; j < data_points.size(); ++j)
+          {
+              col.push_back(data_points[j][i]);
+          }
+          list.invert(col);
+          table.append(list);
       }
-      table.is_stored_in_gpu = save_to_gpu;
+
+	  table.build(config.posting_list_max_length);
+
+      if(config.save_to_gpu == true)
+      {
+         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
+         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(),cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
+         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
+         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
+         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
+      }
+	  table.is_stored_in_gpu = config.save_to_gpu;
 
 	  u64 endtime = getTime();
-	  double timeInterval = getInterval(starttime,endtime);
-	  Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
-	  Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
-
-	}
-
-    void
-    load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index, 
-                        unsigned int row_num, int max_length, bool save_to_gpu)
-    {
-
-        u64 starttime = getTime();
-
-        inv_list list;
-        list.invert_bijectMap(data, item_num, index, row_num);
-
-        table.append(list);
-        table.build(max_length);
-
-
-        if(save_to_gpu == true)
-        {
-             device_vector<int> d_ck(*table.ck());
-             table.d_ck_p = raw_pointer_cast(d_ck.data());
-             
-             device_vector<int> d_inv(*table.inv());
-             table.d_inv_p = raw_pointer_cast(d_inv.data());
-             
-             device_vector<int> d_inv_index(*table.inv_index());
-             table.d_inv_index_p = raw_pointer_cast(d_inv_index.data());
-             
-             device_vector<int> d_inv_pos(*table.inv_pos());
-             table.d_inv_pos_p = raw_pointer_cast(d_inv_pos.data());
-        }
-        table.is_stored_in_gpu = save_to_gpu;
-
-        u64 endtime = getTime();
-        double timeInterval = getInterval(starttime, endtime);
-        Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
-        Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
-
-    }
+	  double timeInterval = getInterval(starttime, endtime);
+	  Logger::log(Logger::DEBUG, "Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+	  Logger::log(Logger::VERBOSE, ">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
 
 }
-void GPUGenie::knn_search_bijectMap(std::vector<int>& result, GPUGenie_Config& config)
+
+void
+GPUGenie::load_table(inv_table& table,
+					 int *data,
+					 unsigned int item_num,
+					 unsigned int *index,
+					 unsigned int row_num,
+					 GPUGenie_Config& config)
+{
+	  inv_list list;
+	  u32 i,j;
+
+      unsigned int row_size;
+      unsigned int index_start_pos = 0;
+      if(row_num == 1)
+          row_size = item_num;
+      else
+          row_size = index[1] - index[0];
+
+      index_start_pos = index[0];
+
+	  Logger::log(Logger::DEBUG,"Data row size: %d. Data Row Number: %d.", index[1], row_num);
+	  u64 starttime = getTime();
+
+      for(i = 0; i<row_size ; ++i)
+      {
+          std::vector<int> col;
+          col.reserve(row_num);
+          for(j = 0; j<row_num; ++j)
+          {
+              col.push_back(data[index[j]+i-index_start_pos]);
+          }
+          list.invert(col);
+          table.append(list);
+      }
+
+      table.build(config.posting_list_max_length);
+
+      if(config.save_to_gpu == true)
+      {
+         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
+         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
+         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
+         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
+         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
+      }
+      table.is_stored_in_gpu = config.save_to_gpu;
+
+	  u64 endtime = getTime();
+	  double timeInterval = getInterval(starttime, endtime);
+	  Logger::log(Logger::DEBUG,"Before finishing loading. i_size() : %d, m_size() : %d.", table.i_size(), table.m_size());
+	  Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms<<<<",timeInterval);
+
+}
+
+void
+GPUGenie::load_query(inv_table& table,
+						   std::vector<query>& queries,
+						   GPUGenie_Config& config)
+{
+	if(config.use_multirange)
+	{
+		load_query_multirange(table, queries, config);
+	} else {
+		load_query_singlerange(table, queries, config);
+	}
+}
+
+//Read new format query data
+//Sample data format
+//qid dim value selectivity weight
+// 0   0   15     0.04        1
+// 0   1   6      0.04        1
+// ....
+void
+GPUGenie::load_query_multirange(inv_table& table,
+						   std::vector<query>& queries,
+						   GPUGenie_Config& config)
+{
+	queries.clear();
+	map<int, query> query_map;
+	int qid,dim,val;
+	float sel, weight;
+	for (int iq = 0; iq < config.multirange_query_points->size(); ++iq) {
+		attr_t& attr = (*config.multirange_query_points)[iq];
+
+		qid = attr.qid;
+		dim = attr.dim;
+		val = attr.value;
+		weight = attr.weight;
+		sel = attr.sel;
+		if(query_map.find(qid) == query_map.end()){
+			query q(table, qid);
+			q.topk(config.num_of_topk);
+			if(config.selectivity > 0.0f)
+			{
+				q.selectivity(config.selectivity);
+			}
+			if(config.use_load_balance)
+			{
+				q.use_load_balance = true;
+			}
+			query_map[qid]= q;
+
+		}
+		query_map[qid].attr(dim,val, weight, sel);
+	}
+	for(std::map<int, query>::iterator it = query_map.begin();
+		it != query_map.end() && queries.size() < config.num_of_queries;
+		++it)
+	{
+		query& q = it->second;
+		q.apply_adaptive_query_range();
+		queries.push_back(q);
+	}
+
+	Logger::log(Logger::INFO,"Finish loading queries!");
+	Logger::log(Logger::DEBUG, "%d queries are loaded.", queries.size());
+
+}
+void
+GPUGenie::load_query_singlerange(inv_table& table,
+			std::vector<query>& queries,
+			GPUGenie_Config& config)
+{
+
+	Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
+	u64 starttime = getTime();
+
+	u32 i,j;
+	int value;
+	int radius = config.query_radius;
+	std::vector<std::vector<int> >& query_points = *config.query_points;
+	for(i = 0; i < query_points.size(); ++i)
+	{
+		query q(table, i);
+
+		for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
+			value = query_points[i][j];
+			if(value < 0)
+			{
+				continue;
+			}
+			q.attr(j,
+				   value - radius < 0 ? 0 : value - radius,
+				   value + radius,
+				   GPUGENIE_DEFAULT_WEIGHT);
+		}
+
+		q.topk(config.num_of_topk);
+		q.selectivity(config.selectivity);
+		if(config.use_adaptive_range)
+		{
+			q.apply_adaptive_query_range();
+		}
+		if(config.use_load_balance)
+		{
+			q.use_load_balance = true;
+		}
+
+		queries.push_back(q);
+	}
+
+	u64 endtime = getTime();
+	double timeInterval = getInterval(starttime,endtime);
+	Logger::log(Logger::INFO,"%d queries are created!", queries.size());
+	Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading query takes %f ms<<<<",timeInterval);
+}
+
+void
+GPUGenie::load_table_bijectMap(inv_table& table,
+							   std::vector<std::vector<int> >& data_points,
+							   GPUGenie_Config& config)
+{
+  u64 starttime = getTime();
+
+  inv_list list;
+  list.invert_bijectMap(data_points);
+  table.append(list);
+  table.build(config.posting_list_max_length);
+
+  if(config.save_to_gpu == true)
+  {
+	 cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
+	 cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
+
+	 cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
+	 cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
+
+	 cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
+	 cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
+
+	 cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
+	 cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
+  }
+  table.is_stored_in_gpu = config.save_to_gpu;
+
+  u64 endtime = getTime();
+  double timeInterval = getInterval(starttime,endtime);
+  Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+  Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
+
+}
+
+void
+GPUGenie::load_table_bijectMap(inv_table& table,
+							   int *data,
+							   unsigned int item_num,
+							   unsigned int *index,
+							   unsigned int row_num,
+							   GPUGenie_Config& config)
+{
+
+	u64 starttime = getTime();
+
+	inv_list list;
+	list.invert_bijectMap(data, item_num, index, row_num);
+
+	table.append(list);
+	table.build(config.posting_list_max_length);
+
+    if(config.save_to_gpu == true)
+    {
+         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
+         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
+         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
+         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
+         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
+    }
+    table.is_stored_in_gpu = config.save_to_gpu;
+
+	u64 endtime = getTime();
+	double timeInterval = getInterval(starttime, endtime);
+	Logger::log(Logger::DEBUG,"Before finishing loading. i_size():%d, m_size():%d.", table.i_size(), table.m_size());
+	Logger::log(Logger::VERBOSE,">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",timeInterval);
+
+}
+
+
+void
+GPUGenie::knn_search_bijectMap_for_binary_data(std::vector<int>& result,
+                                            std::vector<int>& result_count,
+                                            GPUGenie_Config& config)
+{
+	inv_table table;
+    inv_table *_table = NULL;
+    unsigned int table_num = 0;
+
+    Logger::log(Logger::INFO,"Building table...");
+
+    preprocess_for_knn_binary(config, table, _table, table_num);
+
+    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
+
+    if(config.max_data_size!=0)
+        delete[] _table;
+}
+
+void
+GPUGenie::knn_search_bijectMap_for_csv_data(std::vector<int>& result,
+                                            std::vector<int>& result_count,
+                                            GPUGenie_Config& config)
+{
+	inv_table table;
+    inv_table *_table = NULL;
+    unsigned int table_num = 0;
+
+    Logger::log(Logger::INFO,"Building table...");
+
+    preprocess_for_knn_csv(config, table, _table, table_num);
+
+    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
+
+     if(config.max_data_size != 0)
+        delete[] _table;
+
+}
+
+void
+GPUGenie::knn_search_bijectMap(std::vector<int>& result,
+							   GPUGenie_Config& config)
 {
 	std::vector<int> result_count;
 	knn_search_bijectMap(result, result_count, config);
 }
 
-void GPUGenie::knn_search_bijectMap(std::vector<int>& result, std::vector<int>& result_count, GPUGenie_Config& config)
+void
+GPUGenie::knn_search_bijectMap(std::vector<int>& result,
+							   std::vector<int>& result_count,
+							   GPUGenie_Config& config)
 {
-	inv_table table;
-	std::vector<query> queries;
-
-	Logger::log(Logger::INFO,"Building table...");
-
-    if(config.item_num ==0){
-	load_table_bijectMap(table, *(config.data_points), config.posting_list_max_length);
-    }else if(config.data != NULL && config.index != NULL && config.item_num!=0 && config.row_num!=0){
-        load_table_bijectMap(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
-    }else{
-    	Logger::log(Logger::ALERT,"no data input!");
-        return;
-    }
-
-    Logger::log(Logger::INFO,"Loading queries...");
-
 	u64 starttime = getTime();
 
-	load_query_bijectMap(table,queries,config);
-
-	knn_search(table, queries, result, config);
+    switch(config.data_type)
+    {
+        case 0:
+            Logger::log(Logger::INFO, "search for csv data!");
+            knn_search_for_csv_data(result, result_count, config);
+            break;
+        case 1:
+        	Logger::log(Logger::INFO, "search for binary data!");
+            knn_search_for_binary_data(result, result_count, config);
+            break;
+        default:
+        	Logger::log(Logger::ALERT,"Please check data type in config");
+    }
 
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);
 	Logger::log(Logger::VERBOSE, ">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",elapsed);
+}
+
+void
+GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
+                                        std::vector<int>& result_count,
+                                        GPUGenie_Config& config)
+{
+	inv_table table;
+    inv_table *_table = NULL;
+    unsigned int table_num = 0;
+
+    preprocess_for_knn_binary(config, table, _table, table_num);
+
+    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
+
+    if(config.max_data_size!=0)
+        delete[] _table;
+}
+
+
+
+void
+GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
+						  std::vector<int>& result_count,
+						  GPUGenie_Config& config)
+{
+	inv_table table;
+    inv_table *_table = NULL;
+    unsigned int table_num = 0;
+
+    Logger::log(Logger::VERBOSE, "Starting preprocessing!");
+    preprocess_for_knn_csv(config, table, _table, table_num);
+
+    Logger::log(Logger::VERBOSE, "preprocessing finished!");
+
+    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
+
+     if(config.max_data_size != 0)
+        delete[] _table;
 }
 
 void GPUGenie::knn_search(std::vector<int>& result,
@@ -394,36 +697,21 @@ void GPUGenie::knn_search(std::vector<int>& result,
 						  std::vector<int>& result_count,
 						  GPUGenie_Config& config)
 {
-	inv_table table;
-	std::vector<query> queries;
-
-	Logger::log(Logger::INFO,"Building table...");
-    
-    if(config.item_num == 0){
-    	Logger::log(Logger::INFO,"build from data_points...");
-	    load_table(table, *(config.data_points), config.posting_list_max_length);
-    }else if(config.data != NULL&&config.index!=NULL && config.item_num!=0&& config.row_num!=0){
-    	Logger::log(Logger::INFO,"build from data array...");
-        load_table(table, config.data, config.item_num, config.index, config.row_num, config.posting_list_max_length);
-    }else{
-    	Logger::log(Logger::ALERT,"no data input!");
-        return;
-    }
-
-    Logger::log(Logger::INFO,"Loading queries...");
     u64 starttime = getTime();
-
-    if(config.use_multirange){
-    	load_query_multirange(table,queries,config);
-    } else {
-    	load_query(table,queries,config);
+    
+    switch(config.data_type)
+    {
+        case 0:
+            Logger::log(Logger::INFO, "search for csv data!");
+            knn_search_for_csv_data(result, result_count, config);
+            break;
+        case 1:
+        	Logger::log(Logger::INFO, "search for binary data!");
+            knn_search_for_binary_data(result, result_count, config);
+            break;
+        default:
+        	Logger::log(Logger::ALERT,"Please check data type in config\n");
     }
-
-    Logger::log(Logger::INFO,"Starting knn_search ...");
-
-	knn_search(table, queries, result, result_count, config);
-
-
 
 	u64 endtime = getTime();
 	double elapsed = getInterval(starttime, endtime);

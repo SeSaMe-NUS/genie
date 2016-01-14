@@ -20,13 +20,15 @@ using namespace std;
 
 int main(int argc, char * argv[])//for ide: from main to main4
 {
+	Logger::set_level(Logger::DEBUG);
 	std::vector<std::vector<int> > queries;
+	std::vector<attr_t> multirange_queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
-	
-	read_file(data, "tweets_4k.csv", -1);//for debug
-	read_file(queries, "tweets_4k.csv", 100);//for debug
-	GPUGenie::GPUGenie_Config config;
+    GPUGenie::GPUGenie_Config config;
+
+	string  dataFile = "tweets_4k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+    string  queryFile= "tweets_4k.csv";
 
 	//Data dimension
 	//For string search, we use one-dimension-mulitple-values method,
@@ -42,7 +44,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.count_threshold = -14;
 
 	//Number of topk items desired for each query.
-	config.num_of_topk = 100;
+	config.num_of_topk = 10;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 			//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
@@ -66,8 +68,8 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
 
-	config.data_points = &data;
 	config.query_points = &queries;
+	config.data_points = &data;
 
 	//if use_load_balance=false, config.multiplier and config.posting_list_max_length are not useful
 	config.use_load_balance = true;
@@ -75,9 +77,23 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.posting_list_max_length = 64000;
 	config.multiplier = 1.5f;//config.multiplier*config.posting_list_max_length is  maximum number of elements processed by one block
 
-	std::vector<int> result;
-	printf("Launching knn functions...\n");
-	u64 start = getTime();
+	config.use_multirange = false;
+
+    config.data_type = 0;
+    config.search_type = 1;
+    config.max_data_size = 0;
+
+    config.num_of_queries = 10;
+
+    read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
+	if(config.use_multirange)
+	{
+		read_query(multirange_queries, queryFile.c_str(), -1);
+		config.multirange_query_points = &multirange_queries;
+	} else {
+		read_file(queries, queryFile.c_str(), config.num_of_queries);
+		config.query_points = &queries;
+	}
 
 	/**
 	* @brief Search on the inverted index and save the result in result
@@ -86,20 +102,33 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	* Previous name: knn_search_tweets()
 	*
 	*/
-	GPUGenie::knn_search_bijectMap(result, config);
+
+
+	std::vector<int> result, result_count;
+
+	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
+
+	u64 start = getTime();
+	GPUGenie::knn_search_bijectMap(result, result_count, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
-	printf(">>>>>>>[time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
-	for(int i = 0; i < 10 && i < queries.size(); ++i)
+	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
+
+	for(int i = 0; i < 5; ++i)
+
 	{
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < 10; ++j)
 		{
-			printf("%d, ", result[i * config.num_of_topk + j]);
+			printf("%d:%d, ", result[i * config.num_of_topk + j], result_count[i * config.num_of_topk + j]);
 		}
 		printf("\n");
 	}
+
+	Logger::exit();
+
+    return 0;
 }
 
 

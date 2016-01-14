@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 
-	Logger::set_level(Logger::INFO);
+	Logger::set_level(Logger::DEBUG);
 
 	std::vector<std::vector<int> > queries;
 	std::vector<attr_t> multirange_queries;
@@ -96,8 +96,12 @@ int main(int argc, char * argv[])
 	config.multiplier = 1.5f;
 	config.posting_list_max_length = 6400;
 	config.use_load_balance = true;
-
 	config.use_multirange = true;
+
+    //below are new configurations
+    config.data_type = 0;
+    config.search_type = 0;
+    config.max_data_size = 500;
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	if(config.use_multirange)

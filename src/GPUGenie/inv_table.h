@@ -95,6 +95,15 @@ namespace GPUGenie
     {
     }
 
+    ~inv_table();
+
+
+    void
+    init();
+
+    void
+    clear_gpu_mem();
+
     /**
      * @brief Clear the inv_table
      * @details The method removes all content in _inv_lists, _ck and _inv.

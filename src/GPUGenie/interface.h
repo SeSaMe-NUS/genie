@@ -28,8 +28,6 @@
 
 namespace GPUGenie
 {
-	//Logger * logger;
-
 	typedef struct _GPUGenie_Config{
 		int num_of_topk;
 		int query_radius;
@@ -45,6 +43,11 @@ namespace GPUGenie
         unsigned int *index;// preserve the beginning of each row
         unsigned int item_num;
         unsigned int row_num;
+
+        int search_type;//0 for knn_search, 1 for knn_search_bijectMap
+        int data_type; //0 for csv data; 0 for bianry data
+        unsigned int max_data_size; // the max number of data items(rows of data)
+        bool save_to_gpu; // specify use of multi table
 
 		std::vector<std::vector<int> > * query_points;
 		std::vector<attr_t> * multirange_query_points;
@@ -67,6 +70,11 @@ namespace GPUGenie
             item_num(0),
             row_num(0),
 
+            search_type(0),
+            data_type(0),
+            max_data_size(0),
+            save_to_gpu(false),
+
 			query_points(NULL),
 			multirange_query_points(NULL),
 			dim(0),
@@ -79,6 +87,13 @@ namespace GPUGenie
 			num_of_queries(GPUGENIE_DEFAULT_NUM_OF_QUERIES)
 		{}
 	} GPUGenie_Config;
+
+    void knn_search_bijectMap_for_binary_data(std::vector<int>& result,
+                                            std::vector<int>& result_count,
+                                            GPUGenie_Config& config);
+    void knn_search_bijectMap_for_csv_data(std::vector<int>& result,
+                                            std::vector<int>& result_count,
+                                            GPUGenie_Config& config);
 
 	/**
 	* @brief Search on the inverted index and save the result in result
@@ -120,18 +135,27 @@ namespace GPUGenie
 					std::vector<int>& h_topk,
 					GPUGenie_Config& config);
 
+    void knn_search_for_binary_data(std::vector<int>& result,
+                                        std::vector<int>& result_count,
+                                        GPUGenie_Config& config);
+
+
+    void knn_search_for_csv_data(std::vector<int>& result,
+                                        std::vector<int>& result_count,
+                                        GPUGenie_Config& config);
+
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
-    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points ,int max_length, bool save_to_gpu=false);
+    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
     void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+    void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
     void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_query_bijectMap(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, int max_length, bool save_to_gpu=false);
+    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
     //below are corresponding functions woring on binary reading results
-
-    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num,int max_length, bool save_to_gpu = false);
+    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
+                    unsigned int row_num, GPUGenie_Config& config);
     void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
-                                unsigned int row_num, int max_length, bool save_to_gpu = false);
+                            unsigned int row_num, GPUGenie_Config& config);
 
 
 

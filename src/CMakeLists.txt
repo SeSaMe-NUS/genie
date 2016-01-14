@@ -25,7 +25,7 @@ set(LIB_SRC_LIST
   GPUGenie/inv_list.h
   GPUGenie/inv_list.cc
   GPUGenie/inv_table.h
-  GPUGenie/inv_table.cc
+  GPUGenie/inv_table.cu
   GPUGenie/query.h
   GPUGenie/query.cc
   GPUGenie/match.h
