@@ -88,12 +88,6 @@ namespace GPUGenie
 		{}
 	} GPUGenie_Config;
 
-    void knn_search_bijectMap_for_binary_data(std::vector<int>& result,
-                                            std::vector<int>& result_count,
-                                            GPUGenie_Config& config);
-    void knn_search_bijectMap_for_csv_data(std::vector<int>& result,
-                                            std::vector<int>& result_count,
-                                            GPUGenie_Config& config);
 
 	/**
 	* @brief Search on the inverted index and save the result in result
@@ -103,13 +97,6 @@ namespace GPUGenie
 	*        Please refer to /example/example_tweets.cu to see an example about using it
 	*
 	*/
-	void knn_search_bijectMap(std::vector<int>& result,
-							  std::vector<int>& result_count,
-							  GPUGenie_Config& config);
-	//For backward compatibility: result_count not included in parameters
-	void knn_search_bijectMap(std::vector<int>& result,
-							  GPUGenie_Config& config);
-
 
 
 	/**
@@ -117,6 +104,28 @@ namespace GPUGenie
 	*        Please refer to /example/example_sift.cu to see an example about using it
 	*
 	*/
+
+
+
+
+
+    bool preprocess_for_knn_csv(GPUGenie_Config& config,
+                                inv_table &table,
+                                inv_table * &_table,
+                                unsigned int& table_num);
+
+    bool preprocess_for_knn_binary(GPUGenie_Config& config,
+                                   inv_table& table,
+                                   inv_table * &_table,
+                                   unsigned int& table_num);
+
+    void knn_search_after_preprocess(GPUGenie_Config& config,
+                                     inv_table& table,
+                                     inv_table * &_table,
+                                     std::vector<int>& result,
+                                     std::vector<int>& result_count,
+                                     unsigned int& table_num);
+
 	void knn_search(std::vector<int>& result,
 					std::vector<int>& result_count,
 					GPUGenie_Config& config);
@@ -136,26 +145,43 @@ namespace GPUGenie
 					GPUGenie_Config& config);
 
     void knn_search_for_binary_data(std::vector<int>& result,
-                                        std::vector<int>& result_count,
-                                        GPUGenie_Config& config);
+                                    std::vector<int>& result_count,
+                                    GPUGenie_Config& config);
 
 
     void knn_search_for_csv_data(std::vector<int>& result,
-                                        std::vector<int>& result_count,
-                                        GPUGenie_Config& config);
+                                 std::vector<int>& result_count,
+                                 GPUGenie_Config& config);
 
     //to provide the load_table function interface, we can make programs more flexible and more adaptive
-    void load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
-    void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
-    void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
+    void load_table(inv_table& table,
+                    std::vector<std::vector<int> >& data_points,
+                    GPUGenie_Config& config);
+    void load_query(inv_table& table,
+                    std::vector<query>& queries,
+                    GPUGenie_Config& config);
+    void load_query_singlerange(inv_table& table,
+                                std::vector<query>& queries,
+                                GPUGenie_Config& config);
+    void load_query_multirange(inv_table& table,
+                               std::vector<query>& queries,
+                               GPUGenie_Config& config);
+    void load_table_bijectMap(inv_table& table,
+                              std::vector<std::vector<int> >& data_points,
+                              GPUGenie_Config& config);
 
     //below are corresponding functions woring on binary reading results
-    void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
+    void load_table(inv_table& table,
+                    int *data,
+                    unsigned int item_num,
+                    unsigned int *index,
                     unsigned int row_num, GPUGenie_Config& config);
-    void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index,
-                            unsigned int row_num, GPUGenie_Config& config);
+    void load_table_bijectMap(inv_table& table,
+                              int *data,
+                              unsigned int item_num,
+                              unsigned int *index,
+                              unsigned int row_num,
+                              GPUGenie_Config& config);
 
 
 

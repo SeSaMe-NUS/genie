@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <map>
-#include <ifstream>
+#include <fstream>
 #include <boost/serialization/map.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -102,6 +102,8 @@ namespace GPUGenie
 
     ~inv_table();
 
+    bool
+    cpy_data_to_gpu();
 
     void
     init();
@@ -248,7 +250,8 @@ namespace GPUGenie
 
 */
 
-  };
+    };
 }
+
 
 #endif

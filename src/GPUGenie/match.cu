@@ -1000,19 +1000,7 @@ GPUGenie::match(inv_table& table,
   query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
 
   if(!table.is_stored_in_gpu)
-  {
-       cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
-       cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
-
-       cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
-       cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
-
-       cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
-       cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
-
-       cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
-       cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
-  }
+       table.cpy_data_to_gpu();
 
 	if(bitmap_size)
 	{

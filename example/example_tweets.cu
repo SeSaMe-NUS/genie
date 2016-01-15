@@ -109,7 +109,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
 
 	u64 start = getTime();
-	GPUGenie::knn_search_bijectMap(result, result_count, config);
+	GPUGenie::knn_search(result, result_count, config);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 

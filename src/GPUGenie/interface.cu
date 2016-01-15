@@ -66,7 +66,10 @@ merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result, std::v
 			}
 }
 bool
-preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table, inv_table * &_table, unsigned int& table_num)
+GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
+                                 inv_table &table,
+                                 inv_table * &_table,
+                                 unsigned int& table_num)
 {
     unsigned int cycle = 0;
     if(config.max_data_size == 0)
@@ -154,7 +157,10 @@ preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table, inv_table * &_
 
 
 bool
-preprocess_for_knn_binary(GPUGenie_Config& config, inv_table& table, inv_table * &_table, unsigned int& table_num)
+GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
+                                    inv_table& table,
+                                    inv_table * &_table,
+                                    unsigned int& table_num)
 {
     unsigned int cycle = 0;
     if(config.max_data_size == 0)
@@ -241,8 +247,12 @@ preprocess_for_knn_binary(GPUGenie_Config& config, inv_table& table, inv_table *
 
 
 void
-knn_search_after_preprocess(GPUGenie_Config& config, inv_table& table, inv_table * &_table,
-                            std::vector<int>& result, std::vector<int>& result_count, unsigned int& table_num)
+GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
+                                      inv_table& table,
+                                      inv_table * &_table,
+                                      std::vector<int>& result,
+                                      std::vector<int>& result_count,
+                                      unsigned int& table_num)
 {
     std::vector<query> queries;
     if(config.max_data_size == 0)
@@ -279,7 +289,9 @@ knn_search_after_preprocess(GPUGenie_Config& config, inv_table& table, inv_table
     }
 }
 void
-GPUGenie::load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
+GPUGenie::load_table(inv_table& table,
+                     std::vector<std::vector<int> >& data_points,
+                     GPUGenie_Config& config)
 {
 	  inv_list list;
 	  u32 i,j;
@@ -301,20 +313,8 @@ GPUGenie::load_table(inv_table& table, std::vector<std::vector<int> >& data_poin
 
 	  table.build(config.posting_list_max_length);
 
-      if(config.save_to_gpu == true)
-      {
-         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
-         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(),cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
-         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
-         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
-         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
-      }
+      if(config.save_to_gpu)
+          table.cpy_data_to_gpu();
 	  table.is_stored_in_gpu = config.save_to_gpu;
 
 	  u64 endtime = getTime();
@@ -361,20 +361,8 @@ GPUGenie::load_table(inv_table& table,
 
       table.build(config.posting_list_max_length);
 
-      if(config.save_to_gpu == true)
-      {
-         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
-         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
-         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
-         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
-         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
-      }
+      if(config.save_to_gpu)
+          table.cpy_data_to_gpu();
       table.is_stored_in_gpu = config.save_to_gpu;
 
 	  u64 endtime = getTime();
@@ -386,8 +374,8 @@ GPUGenie::load_table(inv_table& table,
 
 void
 GPUGenie::load_query(inv_table& table,
-						   std::vector<query>& queries,
-						   GPUGenie_Config& config)
+					 std::vector<query>& queries,
+					 GPUGenie_Config& config)
 {
 	if(config.use_multirange)
 	{
@@ -405,8 +393,8 @@ GPUGenie::load_query(inv_table& table,
 // ....
 void
 GPUGenie::load_query_multirange(inv_table& table,
-						   std::vector<query>& queries,
-						   GPUGenie_Config& config)
+						        std::vector<query>& queries,
+						        GPUGenie_Config& config)
 {
 	queries.clear();
 	map<int, query> query_map;
@@ -451,8 +439,8 @@ GPUGenie::load_query_multirange(inv_table& table,
 }
 void
 GPUGenie::load_query_singlerange(inv_table& table,
-			std::vector<query>& queries,
-			GPUGenie_Config& config)
+		                    	 std::vector<query>& queries,
+			                     GPUGenie_Config& config)
 {
 
 	Logger::log(Logger::DEBUG,"Table dim: %d.", table.m_size());
@@ -462,11 +450,11 @@ GPUGenie::load_query_singlerange(inv_table& table,
 	int value;
 	int radius = config.query_radius;
 	std::vector<std::vector<int> >& query_points = *config.query_points;
-	for(i = 0; i < query_points.size()&&(config.search_type == 1 || j < config.dim) ; ++i)
+	for(i = 0; i < query_points.size(); ++i)
 	{
 		query q(table, i);
 
-		for(j = 0; j < query_points[i].size() && j < config.dim; ++j){
+		for(j = 0; j < query_points[i].size() && (config.search_type == 1 || j < config.dim); ++j){
 			value = query_points[i][j];
 			if(value < 0)
 			{
@@ -511,20 +499,8 @@ GPUGenie::load_table_bijectMap(inv_table& table,
   table.append(list);
   table.build(config.posting_list_max_length);
 
-  if(config.save_to_gpu == true)
-  {
-	 cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
-	 cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
-
-	 cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
-	 cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
-
-	 cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
-	 cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
-
-	 cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
-	 cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
-  }
+  if(config.save_to_gpu)
+      table.cpy_data_to_gpu();
   table.is_stored_in_gpu = config.save_to_gpu;
 
   u64 endtime = getTime();
@@ -551,20 +527,8 @@ GPUGenie::load_table_bijectMap(inv_table& table,
 	table.append(list);
 	table.build(config.posting_list_max_length);
 
-    if(config.save_to_gpu == true)
-    {
-         cudaMalloc(&table.d_ck_p, sizeof(int)*table.ck()->size());
-         cudaMemcpy(table.d_ck_p, &(table.ck()->at(0)), sizeof(int)*table.ck()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_p, sizeof(int)*table.inv()->size());
-         cudaMemcpy(table.d_inv_p, &(table.inv()->at(0)), sizeof(int)*table.inv()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_index_p, sizeof(int)*table.inv_index()->size());
-         cudaMemcpy(table.d_inv_index_p, &(table.inv_index()->at(0)), sizeof(int)*table.inv_index()->size(), cudaMemcpyHostToDevice);
-
-         cudaMalloc(&table.d_inv_pos_p, sizeof(int)*table.inv_pos()->size());
-         cudaMemcpy(table.d_inv_pos_p, &(table.inv_pos()->at(0)), sizeof(int)*table.inv_pos()->size(), cudaMemcpyHostToDevice);
-    }
+    if(config.save_to_gpu)
+        table.cpy_data_to_gpu();
     table.is_stored_in_gpu = config.save_to_gpu;
 
 	u64 endtime = getTime();
@@ -575,83 +539,12 @@ GPUGenie::load_table_bijectMap(inv_table& table,
 }
 
 
-void
-GPUGenie::knn_search_bijectMap_for_binary_data(std::vector<int>& result,
-                                            std::vector<int>& result_count,
-                                            GPUGenie_Config& config)
-{
-	inv_table table;
-    inv_table *_table = NULL;
-    unsigned int table_num = 0;
 
-    Logger::log(Logger::INFO,"Building table...");
-
-    preprocess_for_knn_binary(config, table, _table, table_num);
-
-    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
-
-    if(config.max_data_size!=0)
-        delete[] _table;
-}
-
-void
-GPUGenie::knn_search_bijectMap_for_csv_data(std::vector<int>& result,
-                                            std::vector<int>& result_count,
-                                            GPUGenie_Config& config)
-{
-	inv_table table;
-    inv_table *_table = NULL;
-    unsigned int table_num = 0;
-
-    Logger::log(Logger::INFO,"Building table...");
-
-    preprocess_for_knn_csv(config, table, _table, table_num);
-
-    knn_search_after_preprocess(config, table, _table, result, result_count, table_num);
-
-     if(config.max_data_size != 0)
-        delete[] _table;
-
-}
-
-void
-GPUGenie::knn_search_bijectMap(std::vector<int>& result,
-							   GPUGenie_Config& config)
-{
-	std::vector<int> result_count;
-	knn_search_bijectMap(result, result_count, config);
-}
-
-void
-GPUGenie::knn_search_bijectMap(std::vector<int>& result,
-							   std::vector<int>& result_count,
-							   GPUGenie_Config& config)
-{
-	u64 starttime = getTime();
-
-    switch(config.data_type)
-    {
-        case 0:
-            Logger::log(Logger::INFO, "search for csv data!");
-            knn_search_for_csv_data(result, result_count, config);
-            break;
-        case 1:
-        	Logger::log(Logger::INFO, "search for binary data!");
-            knn_search_for_binary_data(result, result_count, config);
-            break;
-        default:
-        	Logger::log(Logger::ALERT,"Please check data type in config");
-    }
-
-	u64 endtime = getTime();
-	double elapsed = getInterval(starttime, endtime);
-	Logger::log(Logger::VERBOSE, ">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",elapsed);
-}
 
 void
 GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
-                                        std::vector<int>& result_count,
-                                        GPUGenie_Config& config)
+                                     std::vector<int>& result_count,
+                                     GPUGenie_Config& config)
 {
 	inv_table table;
     inv_table *_table = NULL;
@@ -669,8 +562,8 @@ GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
 
 void
 GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
-						  std::vector<int>& result_count,
-						  GPUGenie_Config& config)
+						          std::vector<int>& result_count,
+						          GPUGenie_Config& config)
 {
 	inv_table table;
     inv_table *_table = NULL;
@@ -721,18 +614,18 @@ void GPUGenie::knn_search(std::vector<int>& result,
 }
 
 void GPUGenie::knn_search(inv_table& table,
-					  std::vector<query>& queries,
-					  std::vector<int>& h_topk,
-					  GPUGenie_Config& config)
+					      std::vector<query>& queries,
+					      std::vector<int>& h_topk,
+					      GPUGenie_Config& config)
 {
 	std::vector<int> h_topk_count;
 	knn_search(table, queries, h_topk, h_topk_count, config);
 }
 void GPUGenie::knn_search(inv_table& table,
-					  std::vector<query>& queries,
-					  std::vector<int>& h_topk,
-					  std::vector<int>& h_topk_count,
-					  GPUGenie_Config& config)
+					      std::vector<query>& queries,
+					      std::vector<int>& h_topk,
+					      std::vector<int>& h_topk_count,
+					      GPUGenie_Config& config)
 {
 	int device_count, hashtable_size;
 	cudaGetDeviceCount(&device_count);
@@ -762,13 +655,13 @@ void GPUGenie::knn_search(inv_table& table,
 	Logger::log(Logger::DEBUG,"max_load is %d", max_load);
 
 	GPUGenie::knn_bijectMap(table,//basic API, since encode dimension and value is also finally transformed as a bijection map
-			   queries,
-			   d_topk,
-			   d_topk_count,
-			   hashtable_size,
-			   max_load,
-			   config.count_threshold,
-			   config.dim);
+			                queries,
+			                d_topk,
+			                d_topk_count,
+			                hashtable_size,
+			                max_load,
+			                config.count_threshold,
+			                config.dim);
 
 
 	Logger::log(Logger::INFO,"knn search is done!");

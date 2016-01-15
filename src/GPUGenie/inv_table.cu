@@ -17,6 +17,27 @@ GPUGenie::inv_table::init()
     _inv_index.clear();
 }
 
+
+
+
+bool
+GPUGenie::inv_table::cpy_data_to_gpu()
+{
+         cudaMalloc(&d_ck_p, sizeof(int)*_ck.size());
+         cudaMemcpy(d_ck_p, &_ck[0], sizeof(int)*_ck.size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&d_inv_p, sizeof(int)*_inv.size());
+         cudaMemcpy(d_inv_p, &_inv[0], sizeof(int)*_inv.size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&d_inv_index_p, sizeof(int)*_inv_index.size());
+         cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int)*_inv_index.size(), cudaMemcpyHostToDevice);
+
+         cudaMalloc(&d_inv_pos_p, sizeof(int)*_inv_pos.size());
+         cudaMemcpy(d_inv_pos_p, &_inv_pos[0], sizeof(int)*_inv_pos.size(), cudaMemcpyHostToDevice);
+
+         return true;
+}
+
 void
 GPUGenie::inv_table::clear()
 {
