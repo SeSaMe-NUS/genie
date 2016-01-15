@@ -211,3 +211,27 @@ GPUGenie::inv_table::build_compressed()
     }
   _build_status = builded_compressed;
 }
+/*
+
+void
+GPUGenie::inv_table::serialize_to_file(const char* filename)
+{
+    ofsream ofs(filename, ios::trunc|ios::binary);
+    if(!ofs.is_open())
+    {
+        return;
+    }
+    int status_int = _build_status;
+    ofs.write((char*)&status_int, sizeof(int));
+    ofs.write((char*)&_shifter, sizeof(int));
+    ofs.write((char*)&_size, sizeof(int));
+
+
+}
+
+void
+GPUGenie::inv_table::deserialize_from_file(const char* filename)
+{
+     
+}
+*/

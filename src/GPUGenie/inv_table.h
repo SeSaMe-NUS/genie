@@ -6,6 +6,11 @@
 
 #include <vector>
 #include <map>
+#include <ifstream>
+#include <boost/serialization/map.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+
 typedef unsigned long long u64;
 
 using namespace std;
@@ -233,6 +238,16 @@ namespace GPUGenie
      */
     void
     build_compressed();
+
+/*
+    void
+    serialize_to_file(const char* filename);
+
+    void
+    deserialize_from_file(const char* filename);
+
+*/
+
   };
 }
 

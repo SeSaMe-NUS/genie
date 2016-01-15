@@ -462,7 +462,7 @@ GPUGenie::load_query_singlerange(inv_table& table,
 	int value;
 	int radius = config.query_radius;
 	std::vector<std::vector<int> >& query_points = *config.query_points;
-	for(i = 0; i < query_points.size(); ++i)
+	for(i = 0; i < query_points.size()&&(config.search_type == 1 || j < config.dim) ; ++i)
 	{
 		query q(table, i);
 
@@ -472,7 +472,8 @@ GPUGenie::load_query_singlerange(inv_table& table,
 			{
 				continue;
 			}
-			q.attr(j,
+
+			q.attr(config.search_type == 1 ? 0:j,
 				   value - radius < 0 ? 0 : value - radius,
 				   value + radius,
 				   GPUGENIE_DEFAULT_WEIGHT);
