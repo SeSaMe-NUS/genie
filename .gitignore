@@ -43,3 +43,8 @@ Release
 /Debug
 /build
 /Release
+
+example/*.log
+CTestTestfile.cmake
+src/CTestTestfile.cmake
+src/Makefile
