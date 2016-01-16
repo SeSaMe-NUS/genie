@@ -48,3 +48,4 @@ example/*.log
 CTestTestfile.cmake
 src/CTestTestfile.cmake
 src/Makefile
+Makefile
