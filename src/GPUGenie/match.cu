@@ -1,6 +1,5 @@
 #include "match.h"
 #include <cmath>
-#include <sys/time.h>
 #include <algorithm>
 #include <bitset>
 #include <iostream>
@@ -9,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Logger.h"
+#include "Timing.h"
 
 #ifndef GPUGenie_device_THREADS_PER_BLOCK
 #define GPUGenie_device_THREADS_PER_BLOCK 256
@@ -22,25 +22,6 @@
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
-
-u64 getTime()
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-
-	u64 ret = tv.tv_usec;
-
-	/* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
-	ret += (tv.tv_sec * 1000 * 1000);
-
-	return ret;
-}
-
-double getInterval(u64 start, u64 stop)
-{
-	return ((double)(stop - start)) / 1000;
-}
 
 namespace GPUGenie
 {

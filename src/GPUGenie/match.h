@@ -10,26 +10,11 @@
 using namespace std;
 using namespace thrust;
 
-#define MATCH_VERSION "0.2.5"
-
 typedef unsigned char u8;
 typedef uint32_t u32;
 typedef unsigned long long u64;
-class MemException: public std::exception {
-private:
-    std::string message_;
-public:
-    explicit MemException(const std::string& message){message_ = std::string(message);}
-    explicit MemException(const char * message){message_ = std::string(message);}
-    explicit MemException(char * message){message_ = std::string(message);}
-    virtual const char* what() const throw() {
-        return message_.c_str();
-    }
-    virtual ~MemException() throw(){;}
-};
+
 #define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
-
-
 inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 {
 
@@ -39,28 +24,12 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
         sprintf( errstr, "cudaSafeCall() failed at %s:%i : %s\n",
                  file, line, cudaGetErrorString( err ) );
         printf("cudaSafeCall failed in match function!\n");
-        throw MemException(errstr);
+        exit(1);
     }
-
 
     return;
 }
 
-
-inline cudaError checkAndMalloc(void ** to, u64 bytes)
-{
-	size_t f, t;
-	cudaMemGetInfo(&f, &t);
-	if(f <= bytes)
-	{
-		throw MemException("Insufficient GPU memory...");
-	}
-	return cudaMalloc(to, bytes);
-}
-
-
-u64 getTime();
-double getInterval(u64 t1, u64 t2);
 namespace GPUGenie
 {
 

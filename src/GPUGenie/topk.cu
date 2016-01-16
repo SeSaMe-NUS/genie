@@ -4,6 +4,7 @@
 #include <thrust/extrema.h>
 
 #include "Logger.h"
+#include "Timing.h"
 
 
 struct ValueOfFloat

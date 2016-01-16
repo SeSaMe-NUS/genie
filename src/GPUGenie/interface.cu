@@ -1,5 +1,5 @@
 /*
- * interface.cpp
+ * interface.cu
  *
  *  Created on: Jul 8, 2015
  *      Author: luanwenhao
@@ -27,6 +27,7 @@
 #include <thrust/host_vector.h>
 
 #include "Logger.h"
+#include "Timing.h"
 
 using namespace GPUGenie;
 using namespace std;

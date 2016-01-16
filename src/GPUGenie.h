@@ -27,7 +27,9 @@ typedef struct data_{
 #include <GPUGenie/FileReader.h>// to read csv file data for simple examples
 #include <GPUGenie/interface.h>
 #include <GPUGenie/knn.h>
+
 #include <GPUGenie/Logger.h>
+#include <GPUGenie/Timing.h>
 
 
 

@@ -19,6 +19,9 @@ set(LIB_SRC_LIST
 
   GPUGenie/Logger.h
   GPUGenie/Logger.cc
+  
+  GPUGenie/Timing.h
+  GPUGenie/Timing.cc
 
   GPUGenie/raw_data.h
   GPUGenie/raw_data.cc

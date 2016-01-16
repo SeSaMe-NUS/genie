@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <thrust/copy.h>
 #include "Logger.h"
+#include "Timing.h"
 
 bool GPUGENIE_ERROR = false;
 unsigned long long GPUGENIE_TIME = 0ull;
