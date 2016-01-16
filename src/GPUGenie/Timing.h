@@ -12,5 +12,4 @@ unsigned long long getTime(void);
 
 double getInterval(unsigned long long start, unsigned long long stop);
 
-
 #endif /* TIMING_H_ */

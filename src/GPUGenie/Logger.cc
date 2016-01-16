@@ -11,11 +11,8 @@
 #include <sys/time.h>
 #include <ctime>
 
-const char * const Logger::LEVEL_NAMES[] = {"NONE   ",
-											"ALERT  ",
-											"INFO   ",
-											"VERBOSE",
-											"DEBUG  "};
+const char * const Logger::LEVEL_NAMES[] =
+{ "NONE   ", "ALERT  ", "INFO   ", "VERBOSE", "DEBUG  " };
 
 const char * Logger::default_name = "GPUGENIE_LOG.log";
 Logger * Logger::logger = NULL;
@@ -34,9 +31,9 @@ Logger::~Logger()
 
 void Logger::exit(void)
 {
-	if(logger != NULL)
+	if (logger != NULL)
 	{
-		log(VERBOSE,"---------Exiting  Logger----------");
+		log(VERBOSE, "---------Exiting  Logger----------");
 		delete logger;
 	}
 
@@ -44,10 +41,11 @@ void Logger::exit(void)
 
 Logger* Logger::_logger(void)
 {
-	if(logger == NULL)
+	if (logger == NULL)
 	{
 		logger = new Logger(INFO);
-		log(VERBOSE,"---------Starting Logger %s----------", logger->logfile_name);
+		log(VERBOSE, "---------Starting Logger %s----------",
+				logger->logfile_name);
 
 	}
 	return logger;
@@ -64,10 +62,10 @@ int Logger::get_level()
 
 void Logger::set_logfile_name(const char * name)
 {
-	if(strcmp(name, _logger()->logfile_name) != 0)
+	if (strcmp(name, _logger()->logfile_name) != 0)
 	{
 		strcpy(_logger()->logfile_name, name);
-		if(logger != NULL)
+		if (logger != NULL)
 		{
 			fclose(logger->logfile);
 			logger = NULL;
@@ -85,33 +83,35 @@ const char * Logger::get_logfile_name()
 
 int Logger::log(int level, const char *fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
+	va_list args;
+	va_start(args, fmt);
 
-    timeval curTime;
-    gettimeofday(&curTime, NULL);
-    int milli = curTime.tv_usec / 1000;
+	timeval curTime;
+	gettimeofday(&curTime, NULL);
+	int milli = curTime.tv_usec / 1000;
 
-    char buffer [80];
-    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
+	char buffer[80];
+	strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
 
-    char currentTime[84];
-    sprintf(currentTime, "[%s:%03d %s] ", buffer, milli,LEVEL_NAMES[level]);
-    fprintf(_logger()->logger->logfile, currentTime);
+	char currentTime[84];
+	sprintf(currentTime, "[%s:%03d %s] ", buffer, milli, LEVEL_NAMES[level]);
+	fprintf(_logger()->logger->logfile, currentTime);
 
-    char message[1024];
-    vsprintf(message, fmt, args);
-    va_end(args);
+	char message[1024];
+	vsprintf(message, fmt, args);
+	va_end(args);
 
-    fprintf(_logger()->logger->logfile, message);
-    fprintf(_logger()->logger->logfile, "\n");
+	fprintf(_logger()->logger->logfile, message);
+	fprintf(_logger()->logger->logfile, "\n");
 
-    if(_logger()->logger->log_level >= level)
-    {
-    	printf(message);
-    	printf("\n");
-    	return 1;
-    } else {
-    	return 0;
-    }
+	if (_logger()->logger->log_level >= level)
+	{
+		printf(message);
+		printf("\n");
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }

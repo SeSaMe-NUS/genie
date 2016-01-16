@@ -11,9 +11,10 @@ extern unsigned long long GPUGENIE_TIME;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-typedef struct data_{
-  u32 id;
-  float aggregation;
+typedef struct data_
+{
+	u32 id;
+	float aggregation;
 } data_t;
 
 //for ide: to revert it as system file later, change <> to ""
@@ -30,7 +31,5 @@ typedef struct data_{
 
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/Timing.h>
-
-
 
 #endif

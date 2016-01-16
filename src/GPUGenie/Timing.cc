@@ -25,5 +25,5 @@ unsigned long long getTime()
 
 double getInterval(unsigned long long start, unsigned long long stop)
 {
-	return (double)(stop - start) / 1000.0;
+	return (double) (stop - start) / 1000.0;
 }
