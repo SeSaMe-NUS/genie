@@ -102,7 +102,7 @@ void GPUGenie::topk(device_vector<int>& d_search, device_vector<int>& d_tops,
 
 	int parts = d_tops.size();
 	int total = 0, num;
-	for (unsigned int i = 0; i < parts; i++)
+	for (int i = 0; i < parts; i++)
 	{
 		num = d_tops[i];
 		total += num;
@@ -112,7 +112,7 @@ void GPUGenie::topk(device_vector<int>& d_search, device_vector<int>& d_tops,
 	host_vector<int> h_end_index(parts);
 	device_vector<int> d_end_index(parts);
 	int number_of_each = d_search.size() / parts;
-	for (unsigned int i = 0; i < parts; i++)
+	for (int i = 0; i < parts; i++)
 	{
 		h_end_index[i] = (i + 1) * number_of_each;
 	}
