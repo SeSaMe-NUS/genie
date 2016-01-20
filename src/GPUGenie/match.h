@@ -33,6 +33,9 @@ inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 namespace GPUGenie
 {
 
+int
+cal_max_topk(vector<query>& queries);
+
 /**
  * @brief Search the inv_table and save the match
  *        result into d_count and d_aggregation.
