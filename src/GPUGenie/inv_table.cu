@@ -1,7 +1,13 @@
-#include "inv_table.h"
-#include "stdio.h"
-#include "inv_list.h"
+#include <stdio.h>
+#include <fstream>
+#include <boost/serialization/map.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+
+#include "raw_data.h"
 #include "Logger.h"
+
+#include "inv_table.h"
 
 using namespace GPUGenie;
 
@@ -155,8 +161,9 @@ void GPUGenie::inv_table::build(u64 max_length)
 	_ck.clear(), _inv.clear();
 	_inv_index.clear();
 	_inv_pos.clear();
-	int i, j, key, dim, value, last;
-	for (i = 0; i < _inv_lists.size(); i++)
+	unsigned int last;
+	int key, dim, value;
+	for (unsigned int i = 0; i < _inv_lists.size(); i++)
 	{
 		dim = i << _shifter;
 		for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
@@ -164,7 +171,7 @@ void GPUGenie::inv_table::build(u64 max_length)
 			key = dim + value - _inv_lists[i].min();
 			vector<int>& index = *_inv_lists[i].index(value);
 
-			if (_ck.size() <= key)
+			if (_ck.size() <= (unsigned int) key)
 			{
 				last = _ck.size();
 				_ck.resize(key + 1);
@@ -175,7 +182,7 @@ void GPUGenie::inv_table::build(u64 max_length)
 					_inv_index[last] = _inv_pos.size();
 				}
 			}
-			for (j = 0; j < index.size(); j++)
+			for (unsigned int j = 0; j < index.size(); j++)
 			{
 				if (j % max_length == 0)
 				{
@@ -200,8 +207,8 @@ void GPUGenie::inv_table::build(u64 max_length)
 void GPUGenie::inv_table::build_compressed()
 {
 	_ck.clear(), _inv.clear(), _ck_map.clear();
-	int i, j, key, dim, value;
-	for (i = 0; i < _inv_lists.size(); i++)
+	int key, dim, value;
+	for (unsigned int i = 0; i < _inv_lists.size(); i++)
 	{
 		dim = i << _shifter;
 		for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
@@ -209,7 +216,7 @@ void GPUGenie::inv_table::build_compressed()
 			key = dim + value - _inv_lists[i].min();
 			vector<int>* indexes = _inv_lists[i].index(value);
 
-			for (j = 0; j < indexes->size(); j++)
+			for (unsigned int j = 0; j < indexes->size(); j++)
 			{
 				_inv.push_back((*indexes)[j]);
 				_ck_map[key] = _ck.size();
@@ -222,27 +229,3 @@ void GPUGenie::inv_table::build_compressed()
 	}
 	_build_status = builded_compressed;
 }
-/*
-
- void
- GPUGenie::inv_table::serialize_to_file(const char* filename)
- {
- ofsream ofs(filename, ios::trunc|ios::binary);
- if(!ofs.is_open())
- {
- return;
- }
- int status_int = _build_status;
- ofs.write((char*)&status_int, sizeof(int));
- ofs.write((char*)&_shifter, sizeof(int));
- ofs.write((char*)&_size, sizeof(int));
-
-
- }
-
- void
- GPUGenie::inv_table::deserialize_from_file(const char* filename)
- {
- 
- }
- */

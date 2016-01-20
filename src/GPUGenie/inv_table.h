@@ -1,15 +1,9 @@
 #ifndef GPUGenie_inv_table_h
 #define GPUGenie_inv_table_h
 
-#include "raw_data.h"
-#include "inv_list.h"
-
 #include <vector>
 #include <map>
-#include <fstream>
-#include <boost/serialization/map.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
+#include "inv_list.h"
 
 typedef unsigned long long u64;
 
@@ -29,13 +23,12 @@ public:
 	{
 		not_builded_exception, not_matched_exception
 	};
-
 	//device pointer for some members
-	int *d_inv_p; //_inv
-	int *d_inv_index_p; //_inv_index
-	int *d_inv_pos_p; //_inv_pos
-	int *d_ck_p; //_ck
-	bool is_stored_in_gpu; //just a flag
+	int *d_inv_p;
+	int *d_inv_index_p;
+	int *d_inv_pos_p;
+	int *d_ck_p;
+	bool is_stored_in_gpu;
 private:
 	/**
 	 * @brief Building status of the inv_table.
@@ -83,15 +76,14 @@ private:
 	map<int, int> _ck_map;
 
 public:
+
 	/**
 	 * @brief Default constructor of the inv_table.
 	 * @details It sets the _shifter to 16 and set the
 	 *        _size to -1.
 	 */
-	inv_table() :
-			_shifter(16), _size(-1), _build_status(not_builded), is_stored_in_gpu(
-					false), d_inv_p(NULL), d_inv_index_p(NULL), d_inv_pos_p(
-					NULL), d_ck_p(NULL)
+	inv_table(): d_inv_p(NULL), d_inv_index_p(NULL), d_inv_pos_p(NULL), d_ck_p(NULL),
+				is_stored_in_gpu(false),_build_status(not_builded), _shifter(16), _size(-1)
 	{
 	}
 

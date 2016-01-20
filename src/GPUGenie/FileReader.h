@@ -11,7 +11,6 @@
 #include "query.h"
 
 #include <vector>
-#include <string>
 
 namespace GPUGenie
 {
@@ -24,12 +23,12 @@ typedef struct _GPUGenie_Query_Data
 	float weight;
 } attr_t;
 
-const int GPUGENIE_QUERY_QID_INDEX = 0;
-const int GPUGENIE_QUERY_DIM_INDEX = 1;
-const int GPUGENIE_QUERY_VALUE_INDEX = 2;
-const int GPUGENIE_QUERY_SELECTIVITY_INDEX = 3;
-const int GPUGENIE_QUERY_WEIGHT_INDEX = 4;
-const int GPUGENIE_QUERY_NUM_OF_FIELDS = 5;
+const unsigned int GPUGENIE_QUERY_QID_INDEX = 0u;
+const unsigned int GPUGENIE_QUERY_DIM_INDEX = 1u;
+const unsigned int GPUGENIE_QUERY_VALUE_INDEX = 2u;
+const unsigned int GPUGENIE_QUERY_SELECTIVITY_INDEX = 3u;
+const unsigned int GPUGENIE_QUERY_WEIGHT_INDEX = 4u;
+const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS = 5u;
 
 void read_file(std::vector<std::vector<int> >& dest, const char* fname,
 		int num);

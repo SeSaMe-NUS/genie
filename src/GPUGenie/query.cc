@@ -1,9 +1,10 @@
-#include "query.h"
 #include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdexcept>
 #include <cmath>
+
+#include "query.h"
 
 #include "Logger.h"
 
@@ -132,10 +133,8 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
 	inv_table& table = *_ref_table;
 	this->build();
 
-	vector<int>& inv = *table.inv();
 	vector<int>& inv_index = *table.inv_index();
 	vector<int>& inv_pos = *table.inv_pos();
-	int mask = (1 << 16) - 1;
 
 	if (max_load <= 0)
 	{
@@ -209,13 +208,6 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
 
 	}
 
-	//printf("query %d _dims size is %d\n",_index,_dims.size());
-//	for(int i = 0; i < _dims.size(); ++i)
-//	{
-//		dim& d = _dims[i];
-//		printf("low d %d, v %d, o %d, up d %d, v %d, o %d.\n", d.low >>16, d.low & mask, d.low_offset,
-//															   d.up >> 16, d.up & mask, d.up_offset);
-//	}
 	this->is_load_balanced = true;
 }
 
@@ -241,7 +233,7 @@ void GPUGenie::query::apply_adaptive_query_range()
 		std::vector<range>* ranges = di->second;
 		int index = di->first;
 
-		for (int i = 0; i < ranges->size(); ++i)
+		for (unsigned int i = 0; i < ranges->size(); ++i)
 		{
 			range& d = ranges->at(i);
 			if (d.selectivity > 0)
@@ -258,7 +250,7 @@ void GPUGenie::query::apply_adaptive_query_range()
 				return;
 			}
 
-			int count = 0;
+			unsigned int count = 0;
 			for (int vi = d.low; vi <= d.up; ++vi)
 			{
 				if (!lists[index].contains(vi))
@@ -304,7 +296,7 @@ int GPUGenie::query::topk()
 
 void GPUGenie::query::build()
 {
-	int index, low, up;
+	int low, up;
 	float weight;
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
 			di != _attr_map.end(); ++di)
@@ -326,7 +318,7 @@ void GPUGenie::query::build()
 			_dim_map[index] = new_list;
 		}
 
-		for (int i = 0; i < ranges.size(); ++i)
+		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 
 			range& ran = ranges[i];
@@ -366,7 +358,7 @@ void GPUGenie::query::build()
 
 void GPUGenie::query::build_compressed()
 {
-	int index, low, up;
+	int low, up;
 	float weight;
 	map<int, int>::iterator lower_bound;
 
@@ -390,7 +382,7 @@ void GPUGenie::query::build_compressed()
 			_dim_map[index] = new_list;
 		}
 
-		for (int i = 0; i < ranges.size(); ++i)
+		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 			range& ran = ranges[i];
 			low = ran.low;
@@ -441,7 +433,7 @@ int GPUGenie::query::dump(vector<dim>& vout)
 {
 	if (is_load_balanced)
 	{
-		for (int i = 0; i < _dims.size(); ++i)
+		for (unsigned int i = 0; i < _dims.size(); ++i)
 		{
 			vout.push_back(_dims[i]);
 		}
@@ -454,7 +446,7 @@ int GPUGenie::query::dump(vector<dim>& vout)
 		std::vector<dim>& ranges = *(di->second);
 		count += ranges.size();
 		//vout.insert(vout.end(), ranges.begin(), ranges.end());
-		for (int i = 0; i < ranges.size(); ++i)
+		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 			vout.push_back(ranges[i]);
 		}
@@ -487,9 +479,8 @@ void GPUGenie::query::print(int limit)
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
 			di != _attr_map.end(); ++di)
 	{
-		int index = di->first;
 		std::vector<range>& ranges = *(di->second);
-		for (int i = 0; i < ranges.size(); ++i)
+		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 			if (count == 0)
 				return;

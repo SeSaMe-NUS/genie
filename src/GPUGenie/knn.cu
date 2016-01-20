@@ -1,9 +1,16 @@
-#include "knn.h"
 #include <math.h>
 #include <assert.h>
 #include <thrust/copy.h>
+
+#include "raw_data.h"
+#include "inv_list.h"
+#include "match.h"
+#include "topk.h"
+
 #include "Logger.h"
 #include "Timing.h"
+
+#include "knn.h"
 
 bool GPUGENIE_ERROR = false;
 unsigned long long GPUGENIE_TIME = 0ull;
@@ -38,11 +45,11 @@ void extract_index_and_count(int * id, int * count, data_t * od, int size)
 void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 		vector<GPUGenie::query>& queries, device_vector<int>& d_top_indexes,
 		device_vector<int>& d_top_count, int hash_table_size, int max_load,
-		int bitmap_bits, int dim)
+		int bitmap_bits)
 {
 	int qmax = 0;
 
-	for (int i = 0; i < queries.size(); ++i)
+	for (unsigned int i = 0; i < queries.size(); ++i)
 	{
 		int count = queries[i].count_ranges();
 		if (count > qmax)

@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-int cv(string& s, void* d)
+int cv(string& s)
 {
 	return atoi(s.c_str());
 }
@@ -137,7 +137,7 @@ void GPUGenie::inv_list::invert(vector<int>* vin)
 
 void GPUGenie::inv_list::invert(vector<string>& vin)
 {
-	invert(vin, &cv, NULL);
+	invert(vin, &cv);
 }
 
 void GPUGenie::inv_list::invert(vector<string>* vin)
@@ -146,23 +146,23 @@ void GPUGenie::inv_list::invert(vector<string>* vin)
 }
 
 void GPUGenie::inv_list::invert(vector<string>& vin,
-		int (*stoi)(string&, void*), void* d)
+		int (*stoi)(string&))
 {
 	_size = vin.size();
 	if (vin.empty())
 		return;
 
-	_bound.first = stoi(vin[0], d);
-	_bound.second = stoi(vin[0], d);
+	_bound.first = stoi(vin[0]);
+	_bound.second = stoi(vin[0]);
 	_inv.clear();
 
 	unsigned int i;
 	for (i = 0; i < vin.size(); i++)
 	{
-		if (_bound.first > stoi(vin[i], d))
-			_bound.first = stoi(vin[i], d);
-		if (_bound.second < stoi(vin[i], d))
-			_bound.second = stoi(vin[i], d);
+		if (_bound.first > stoi(vin[i]))
+			_bound.first = stoi(vin[i]);
+		if (_bound.second < stoi(vin[i]))
+			_bound.second = stoi(vin[i]);
 	}
 
 	unsigned int gap = _bound.second - _bound.first + 1;
@@ -171,14 +171,14 @@ void GPUGenie::inv_list::invert(vector<string>& vin,
 		_inv[i].clear();
 
 	for (i = 0; i < vin.size(); i++)
-		_inv[stoi(vin[i], d) - _bound.first].push_back(i);
+		_inv[stoi(vin[i]) - _bound.first].push_back(i);
 	return;
 }
 
 void GPUGenie::inv_list::invert(vector<string>* vin,
-		int (*stoi)(string&, void*), void* d)
+		int (*stoi)(string&))
 {
-	invert(*vin, stoi, d);
+	invert(*vin, stoi);
 }
 
 bool GPUGenie::inv_list::contains(int value)

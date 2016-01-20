@@ -1,11 +1,9 @@
 /*
- * FileReader.cpp
+ * FileReader.cc
  *
  *  Created on: Oct 26, 2015
  *      Author: zhoujingbo
  */
-
-#include "FileReader.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +14,8 @@
 #include <stdexcept>
 #include <map>
 #include <iostream>
+
+#include "FileReader.h"
 
 #include "Logger.h"
 
@@ -66,7 +66,7 @@ void GPUGenie::read_file(vector<vector<int> >& dest, const char* fname, int num)
 		{
 			vector<int> row;
 			vector<string> nstring = split(line, ", ");
-			int i;
+			unsigned int i;
 			for (i = 0; i < nstring.size(); ++i)
 			{
 				int int_value = atoi(eraseSpace(nstring[i]).c_str());
@@ -149,12 +149,11 @@ void GPUGenie::read_query(inv_table& table, const char* fname,
 		{
 
 			vector<string> nstring = split(line, ", ");
-			int i;
+			unsigned int i;
 			query q(table, j);
-			for (i = 0; i < nstring.size() && i < num_of_query_dims; ++i)
+			for (i = 0; i < nstring.size() && i < (unsigned int) num_of_query_dims; ++i)
 			{
 				string myString = eraseSpace(nstring[i]);
-				//cout<<"my string"<<myString<<endl;
 				int value = atoi(myString.c_str());
 
 				q.attr(i, value - radius < 0 ? 0 : value - radius,

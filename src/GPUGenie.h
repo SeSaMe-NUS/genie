@@ -1,21 +1,8 @@
 #ifndef GPUGenie_h
 #define GPUGenie_h
 
-extern bool GPUGENIE_ERROR;
-extern unsigned long long GPUGENIE_TIME;
-
-#ifndef GPUGENIE_DEBUG
-#define GPUGENIE_DEBUG
-#endif
-
 typedef unsigned int u32;
 typedef unsigned long long u64;
-
-typedef struct data_
-{
-	u32 id;
-	float aggregation;
-} data_t;
 
 //for ide: to revert it as system file later, change <> to ""
 #include <GPUGenie/raw_data.h>

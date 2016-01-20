@@ -1,11 +1,11 @@
 #ifndef GPUGenie_match_h
 #define GPUGenie_match_h
 
-#include "../GPUGenie.h"
 #include <stdint.h>
-
 #include <thrust/device_vector.h>
-#include <thrust/copy.h>
+
+#include "query.h"
+#include "inv_table.h"
 
 using namespace std;
 using namespace thrust;
@@ -13,6 +13,12 @@ using namespace thrust;
 typedef unsigned char u8;
 typedef uint32_t u32;
 typedef unsigned long long u64;
+
+typedef struct data_
+{
+	u32 id;
+	float aggregation;
+} data_t;
 
 #define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 inline void __cudaSafeCall(cudaError err, const char *file, const int line)

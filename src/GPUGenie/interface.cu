@@ -36,11 +36,11 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		std::vector<std::vector<int> >& _result_count, std::vector<int>& result,
 		std::vector<int>& result_count, int table_num, int topk, int query_num)
 {
-	for (unsigned int i = 0; i < query_num; ++i)
+	for (int i = 0; i < query_num; ++i)
 	{
 		vector<int> _sort;
 		vector<int> _sort_count;
-		for (unsigned int j = 0; j < table_num; ++j)
+		for (int j = 0; j < table_num; ++j)
 		{
 			_sort.insert(_sort.end(), _result[j].begin() + i * topk,
 					_result[j].begin() + (i + 1) * topk);
@@ -49,7 +49,7 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 					_result_count[j].begin() + (i + 1) * topk);
 		}
 
-		for (unsigned int j = 0; j < topk; ++j)
+		for (int j = 0; j < topk; ++j)
 		{
 			if (_sort_count.begin() == _sort_count.end())
 			{
@@ -436,7 +436,7 @@ void GPUGenie::load_query_multirange(inv_table& table,
 	map<int, query> query_map;
 	int qid, dim, val;
 	float sel, weight;
-	for (int iq = 0; iq < config.multirange_query_points->size(); ++iq)
+	for (unsigned int iq = 0; iq < config.multirange_query_points->size(); ++iq)
 	{
 		attr_t& attr = (*config.multirange_query_points)[iq];
 
@@ -463,7 +463,7 @@ void GPUGenie::load_query_multirange(inv_table& table,
 		query_map[qid].attr(dim, val, weight, sel);
 	}
 	for (std::map<int, query>::iterator it = query_map.begin();
-			it != query_map.end() && queries.size() < config.num_of_queries;
+			it != query_map.end() && queries.size() < (unsigned int) config.num_of_queries;
 			++it)
 	{
 		query& q = it->second;
@@ -492,7 +492,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 
 		for (j = 0;
 				j < query_points[i].size()
-						&& (config.search_type == 1 || j < config.dim); ++j)
+						&& (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
 			value = query_points[i][j];
 			if (value < 0)
@@ -696,7 +696,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 	GPUGenie::knn_bijectMap(
 			table, //basic API, since encode dimension and value is also finally transformed as a bijection map
 			queries, d_topk, d_topk_count, hashtable_size, max_load,
-			config.count_threshold, config.dim);
+			config.count_threshold);
 
 	Logger::log(Logger::INFO, "knn search is done!");
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());

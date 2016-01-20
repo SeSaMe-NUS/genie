@@ -8,9 +8,9 @@
 #ifndef INTERFACE_H_
 #define INTERFACE_H_
 
-#include "../GPUGenie.h"
-#include "Logger.h"
 #include <vector>
+
+#include "../GPUGenie.h"
 
 #define GPUGENIE_DEFAULT_TOPK 10
 #define GPUGENIE_DEFAULT_RADIUS 0

@@ -1,7 +1,9 @@
-#include "topk.h"
-#include "GPUGenie/lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change  "GPUGenie/lib/bucket_topk/bucket_topk.h" to "lib/bucket_topk/bucket_topk.h"
 #include <thrust/host_vector.h>
 #include <thrust/extrema.h>
+
+#include "GPUGenie/lib/bucket_topk/bucket_topk.h" //for ide: to revert it as system file later, change  "GPUGenie/lib/bucket_topk/bucket_topk.h" to "lib/bucket_topk/bucket_topk.h"
+
+#include "topk.h"
 
 #include "Logger.h"
 #include "Timing.h"
@@ -41,7 +43,7 @@ void GPUGenie::topk(device_vector<int>& d_search,
 		vector<GPUGenie::query>& queries, device_vector<int>& d_top_indexes)
 {
 	host_vector<int> h_tops(queries.size());
-	int i;
+	unsigned int i;
 	for (i = 0; i < queries.size(); i++)
 	{
 		h_tops[i] = queries[i].topk();
@@ -54,7 +56,7 @@ void GPUGenie::topk(device_vector<float>& d_search,
 		vector<GPUGenie::query>& queries, device_vector<int>& d_top_indexes)
 {
 	host_vector<int> h_tops(queries.size());
-	int i;
+	unsigned int i;
 	for (i = 0; i < queries.size(); i++)
 	{
 		h_tops[i] = queries[i].topk();
@@ -68,7 +70,7 @@ void GPUGenie::topk(device_vector<data_t>& d_search,
 		float dim)
 {
 	host_vector<int> h_tops(queries.size());
-	int i;
+	unsigned int i;
 	for (i = 0; i < queries.size(); i++)
 	{
 		h_tops[i] = queries[i].topk();
@@ -82,7 +84,7 @@ void GPUGenie::topk(device_vector<u32>& d_search,
 		u32 dim)
 {
 	host_vector<int> h_tops(queries.size());
-	int i;
+	unsigned int i;
 	for (i = 0; i < queries.size(); i++)
 	{
 		h_tops[i] = queries[i].topk();
@@ -99,8 +101,8 @@ void GPUGenie::topk(device_vector<int>& d_search, device_vector<int>& d_tops,
 	u64 starttime = getTime();
 
 	int parts = d_tops.size();
-	int total = 0, i, num;
-	for (i = 0; i < parts; i++)
+	int total = 0, num;
+	for (unsigned int i = 0; i < parts; i++)
 	{
 		num = d_tops[i];
 		total += num;
@@ -110,7 +112,7 @@ void GPUGenie::topk(device_vector<int>& d_search, device_vector<int>& d_tops,
 	host_vector<int> h_end_index(parts);
 	device_vector<int> d_end_index(parts);
 	int number_of_each = d_search.size() / parts;
-	for (i = 0; i < parts; i++)
+	for (unsigned int i = 0; i < parts; i++)
 	{
 		h_end_index[i] = (i + 1) * number_of_each;
 	}

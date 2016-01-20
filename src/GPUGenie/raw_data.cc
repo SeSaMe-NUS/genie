@@ -65,7 +65,7 @@ GPUGenie::raw_data::col(int attr_index)
 	if (attr_index >= m_size() || attr_index < 0)
 		return NULL;
 
-	if (_transpose.size() != m_size())
+	if (_transpose.size() != (unsigned int) m_size())
 		_transpose.resize(m_size());
 
 	if (!_transpose[attr_index].empty())

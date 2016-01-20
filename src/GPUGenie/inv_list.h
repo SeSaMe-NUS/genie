@@ -21,7 +21,7 @@ private:
 	 * @brief The min max values.
 	 * @details The min max values in the original vector.
 	 */
-	pair<int, int> _bound;
+	std::pair<int, int> _bound;
 
 	/**
 	 * @brief The inverted list vector.
@@ -159,10 +159,9 @@ public:
 	 *
 	 * @param vin The vector which will be inverted.
 	 * @param stoi The converter function pointer.
-	 * @param d Anyother things that will be passed to the stoi function.
 	 */
 	void
-	invert(vector<string>& vin, int (*stoi)(string&, void*), void* d);
+	invert(vector<string>& vin, int (*stoi)(string&));
 
 	/**
 	 * @brief Create an inverted list from a string vector.
@@ -174,10 +173,9 @@ public:
 	 *
 	 * @param vin The vector which will be inverted.
 	 * @param stoi The converter function pointer.
-	 * @param d Anyother things that will be passed to the stoi function.
 	 */
 	void
-	invert(vector<string>* vin, int (*stoi)(string&, void*), void* d);
+	invert(vector<string>* vin, int (*stoi)(string&));
 
 	/**
 	 * @brief Check whether the vaule is in the inv_list.

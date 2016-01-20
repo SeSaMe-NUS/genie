@@ -1,12 +1,11 @@
 #ifndef KNN_H_
 #define KNN_H_
 
-#include "inv_list.h"
+#include <vector>
+#include <thrust/device_vector.h>
+
 #include "inv_table.h"
-#include "match.h"
-#include "topk.h"
 #include "query.h"
-#include "raw_data.h"
 
 namespace GPUGenie
 {
@@ -25,7 +24,7 @@ knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
 void
 knn_bijectMap(inv_table& table, vector<query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
-		int hash_table_size, int max_load, int bitmap_bits, int dim);
+		int hash_table_size, int max_load, int bitmap_bits);
 }
 
 #endif //ifndef KNN_H_

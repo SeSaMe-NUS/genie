@@ -5,8 +5,8 @@ link_directories(${PROJECT_SOURCE_DIR}/src)
 set(LIB_SRC_LIST
   GPUGenie.h
 
-  GPUGenie/lib/libcsv/csv.h
-  GPUGenie/lib/libcsv/libcsv.c
+#  GPUGenie/lib/libcsv/csv.h
+#  GPUGenie/lib/libcsv/libcsv.c
 
   GPUGenie/lib/bucket_topk/assign_bucket.inc
   GPUGenie/lib/bucket_topk/bucket_topk.h
@@ -42,8 +42,9 @@ set(LIB_SRC_LIST
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cc
 
-  GPUGenie/parser/parser.h
-  GPUGenie/parser/csv.cc)
+#  GPUGenie/parser/parser.h
+#  GPUGenie/parser/csv.cc
+)
 
 #cuda_add_library(
 #  ${PROJECT_NAME}

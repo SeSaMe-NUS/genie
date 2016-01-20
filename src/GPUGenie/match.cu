@@ -1,20 +1,26 @@
-#include "match.h"
-#include <cmath>
-#include <algorithm>
-#include <bitset>
-#include <iostream>
+#include <stdlib.h>
 #include <string>
 #include <sstream>
-#include <stdlib.h>
 #include <math.h>
+#include <algorithm>
+
+#include <thrust/copy.h>
+
 #include "Logger.h"
 #include "Timing.h"
+
+#include "match.h"
+
+
 
 #ifndef GPUGenie_device_THREADS_PER_BLOCK
 #define GPUGenie_device_THREADS_PER_BLOCK 256
 #endif
 
-#define OFFSETS_TABLE_16 {0u,3949349u,8984219u,9805709u,7732727u,1046459u,9883879u,4889399u,2914183u,3503623u,1734349u,8860463u,1326319u,1613597u,8604269u,9647369u}
+#define OFFSETS_TABLE_16 {0u, 		3949349u, 8984219u, 9805709u,\
+						  7732727u, 1046459u, 9883879u, 4889399u,\
+						  2914183u, 3503623u, 1734349u, 8860463u,\
+						  1326319u, 1613597u, 8604269u, 9647369u}
 
 #define NULL_AGE 0
 #define MAX_AGE 16u
@@ -30,28 +36,29 @@ namespace device
 
 const u32 KEY_TYPE_BITS = 28u;
 const u32 KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-const u32 PACKED_KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-const u32 KEY_TYPE_RANGE = u32(u64((1ull) << KEY_TYPE_BITS) - 2u);
-const u32 UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-const u32 PACKED_UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1ul);
-
 const u32 ATTACH_ID_TYPE_BITS = 32u;
 const u32 ATTACH_ID_TYPE_MASK = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
-const u32 UNDEFINED_ATTACH_ID = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
-const u32 MAX_ATTACH_ID_TYPE = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 2ul);
-
-const u32 KEY_TYPE_AGE_MASK = 15u;
-const u32 KEY_TYPE_AGE_BITS = 4u;
 const u32 KEY_TYPE_INIT_AGE = 1u;
 const u32 KEY_TYPE_NULL_AGE = 0u;
-const u32 KEY_TYPE_MAX_AGE = 16u;
-const u32 KEY_TYPE_MAX_AGE_MASK = 4u;
-const u32 KEY_TYPE_MAX_AGE_BITS = 4u;
+
+/*******************Unused Constants***********************/
+//const u32 PACKED_KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
+//const u32 KEY_TYPE_RANGE = u32(u64((1ull) << KEY_TYPE_BITS) - 2u);
+//const u32 UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
+//const u32 PACKED_UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1ul);
+//
+//const u32 UNDEFINED_ATTACH_ID = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
+//const u32 MAX_ATTACH_ID_TYPE = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 2ul);
+//
+//const u32 KEY_TYPE_AGE_MASK = 15u;
+//const u32 KEY_TYPE_AGE_BITS = 4u;
+//const u32 KEY_TYPE_MAX_AGE = 16u;
+//const u32 KEY_TYPE_MAX_AGE_MASK = 4u;
+//const u32 KEY_TYPE_MAX_AGE_BITS = 4u;
+/***************End of Unused Constants********************/
+
 __device__  __constant__ u32 offsets[16];
 
-/**
- *  @brief get the item id
- */
 __inline__  __host__  __device__ T_KEY get_key_pos(T_HASHTABLE key)
 {
 	return key & KEY_TYPE_MASK;
@@ -81,7 +88,7 @@ T_HASHTABLE pack_key_pos_and_attach_id_and_age(T_KEY p, u32 i, T_AGE a)
 					+ u64(p & KEY_TYPE_MASK));
 }
 
-__inline__  __host__  __device__ u32 hash(T_KEY key, T_AGE age,
+__inline__  __device__ u32 hash(T_KEY key, T_AGE age,
 		int hash_table_size)
 {
 	return (offsets[age] + key) % hash_table_size;
@@ -126,23 +133,24 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 
 		if (get_key_pos(out_key)
 				== id && get_key_age(out_key) != KEY_TYPE_NULL_AGE
-				&& get_key_age(out_key) < MAX_AGE){
-		u32 attach_id = get_key_attach_id(out_key);
-		float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
-		new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-				*reinterpret_cast<u32*>(&old_value_plus),
-				get_key_age(out_key));
-		if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+				&& get_key_age(out_key) < MAX_AGE)
 		{
-			*key_found =true; //
-			return;
+			u32 attach_id = get_key_attach_id(out_key);
+			float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
+			new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+					*reinterpret_cast<u32*>(&old_value_plus),
+					get_key_age(out_key));
+			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+			{
+				*key_found =true; //
+				return;
+			}
+		}
+		else
+		{
+			break;
 		}
 	}
-	else
-	{
-		break;
-	}
-}
 
 	while (age < MAX_AGE)
 	{
@@ -152,25 +160,25 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 
 		if (get_key_pos(out_key)
 				== id && get_key_age(out_key) != KEY_TYPE_NULL_AGE
-				&& get_key_age(out_key) < MAX_AGE){
-		u32 attach_id = get_key_attach_id(out_key);
-		float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
-		new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-				*reinterpret_cast<u32*>(&old_value_plus),
-				get_key_age(out_key));
-		if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+				&& get_key_age(out_key) < MAX_AGE)
 		{
-			*key_found =true;
-			return;
-		}
-		else
-		{
-			age --;
-			continue;
+			u32 attach_id = get_key_attach_id(out_key);
+			float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;
+			new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+					*reinterpret_cast<u32*>(&old_value_plus),
+					get_key_age(out_key));
+			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+			{
+				*key_found =true;
+				return;
+			}
+			else
+			{
+				age --;
+				continue;
+			}
 		}
 	}
-}
-
 		//Entry not found.
 	*key_found = 0;
 }
@@ -193,38 +201,39 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 
 		if (get_key_pos(out_key)
 				== id && get_key_age(out_key) != KEY_TYPE_NULL_AGE
-				&& get_key_age(out_key) < MAX_AGE){
-		u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
-		//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold;   for improve: update here for weighted distance
-		float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
-		//float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
-		float value_plus = count;//for AT: for adaptiveThreshold
-		if(value_plus <value_1)
-		{            	 //for AT: for adaptiveThreshold
-			*pass_threshold = true;// still need to update the my_threshold and passCount
-			*key_found =true;//already find the key, but do not update
-			return;
-		}
-		new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-				*reinterpret_cast<u32*>(&value_plus),
-				get_key_age(out_key));
-		if(value_plus<*my_threshold)
+				&& get_key_age(out_key) < MAX_AGE)
 		{
-			*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
-			*key_found =true;//already find the key, but do not update
-			return;//
+			u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
+			//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold;   for improve: update here for weighted distance
+			float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
+			//float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
+			float value_plus = count;//for AT: for adaptiveThreshold
+			if(value_plus <value_1)
+			{            	 //for AT: for adaptiveThreshold
+				*pass_threshold = true;// still need to update the my_threshold and passCount
+				*key_found =true;//already find the key, but do not update
+				return;
+			}
+			new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+					*reinterpret_cast<u32*>(&value_plus),
+					get_key_age(out_key));
+			if(value_plus<*my_threshold)
+			{
+				*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
+				*key_found =true;//already find the key, but do not update
+				return;//
+			}
+			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+			{	*pass_threshold = true; //high possible that pass the threshold, must update the threshold
+				*key_found =true;//
+				return;
+			}
 		}
-		if(atomicCAS(&htable[location], out_key, new_key) == out_key)
-		{	*pass_threshold = true; //high possible that pass the threshold, must update the threshold
-			*key_found =true;//
-			return;
+		else
+		{
+			break;
 		}
 	}
-	else
-	{
-		break;
-	}
-}
 
 	while (age < MAX_AGE)
 	{
@@ -234,42 +243,43 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 
 		if (get_key_pos(out_key)
 				== id && get_key_age(out_key) != KEY_TYPE_NULL_AGE
-				&& get_key_age(out_key) < MAX_AGE){
-		u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
-		//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
+				&& get_key_age(out_key) < MAX_AGE)
+		{
+			u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
+			//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
 
-		float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
-		//float value_plus = (value_1>count)? (value_1) : (count);//for AT:
-		float value_plus = count;//for AT: for adaptiveThreshold
-		if(value_plus <value_1)
-		{        	   //for AT: for adaptiveThreshold
-			*pass_threshold = true;// still need to update the my_threshold and passCount
-			*key_found =true;//already find the key, but do not update
-			return;
-		}
+			float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
+			//float value_plus = (value_1>count)? (value_1) : (count);//for AT:
+			float value_plus = count;//for AT: for adaptiveThreshold
+			if(value_plus <value_1)
+			{        	   //for AT: for adaptiveThreshold
+				*pass_threshold = true;// still need to update the my_threshold and passCount
+				*key_found =true;//already find the key, but do not update
+				return;
+			}
 
-		new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
-				*reinterpret_cast<u32*>(&value_plus), //for impprove:update here for weighted distance
-				get_key_age(out_key));
-		if(value_plus<*my_threshold)
-		{
-			*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
-			*key_found =true;//already find the key, but do not update
-			return;//
-		}
-		if(atomicCAS(&htable[location], out_key, new_key) == out_key)
-		{
-			*pass_threshold = true;
-			*key_found =true;
-			return;
-		}
-		else
-		{
-			age --;
-			continue;
+			new_key = pack_key_pos_and_attach_id_and_age(get_key_pos(out_key),
+					*reinterpret_cast<u32*>(&value_plus), //for impprove:update here for weighted distance
+					get_key_age(out_key));
+			if(value_plus<*my_threshold)
+			{
+				*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
+				*key_found =true;//already find the key, but do not update
+				return;//
+			}
+			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
+			{
+				*pass_threshold = true;
+				*key_found =true;
+				return;
+			}
+			else
+			{
+				age --;
+				continue;
+			}
 		}
 	}
-}
 
 		//Entry not found.
 	*key_found = false;
@@ -567,7 +577,6 @@ void bitmap_kernel(u32 access_id, u32 * bitmap, int bits, int threshold,
 		{
 			*key_eligible = false;
 			count++;
-
 		}
 		else
 		{
@@ -587,7 +596,7 @@ __device__ __inline__
 u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 		bool * key_eligible)
 {
-	u32 value, count, new_value;
+	u32 value, count = 0, new_value;
 	int offset;
 	while (1)
 	{
@@ -595,22 +604,13 @@ u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 		offset = (access_id % (32 / bits)) * bits;
 		count = get_count(value, offset, bits);
 		count = count + 1; //always maintain the count in bitmap//for improve: change here for weighted distance
-		if (count < my_threshold)
-		{
-			*key_eligible = false;
-
-		}
-		else
-		{
-			*key_eligible = true;
-
-		}
+		*key_eligible = count >= my_threshold;
 		new_value = pack_count(value, offset, bits, count);
 		if (atomicCAS(&bitmap[access_id / (32 / bits)], value, new_value)
 				== value)
-			return count;
+			break;
 	}
-	return 0; //fail to access the count
+	return count; //fail to access the count
 
 }
 //for AT: for adaptiveThreshold, this is function for bitmap
@@ -830,13 +830,13 @@ void convert_to_data(T_HASHTABLE* table, u32 size)
 	mytable->aggregation = *reinterpret_cast<float*>(&agg);
 }
 
-}
-}
+} //End of namespace device
+} //End of namespace GPUGenie
 
 void GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 		vector<query::dim>& dims, int max_load)
 {
-	for (int i = 0; i < queries.size(); ++i)
+	for (unsigned int i = 0; i < queries.size(); ++i)
 	{
 		if (queries[i].ref_table() != &table)
 			throw inv_table::not_matched_exception;
@@ -882,7 +882,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		int hash_table_size, int max_load, int bitmap_bits,	//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
 		device_vector<u32>& d_noiih)
 {
-	u64 match_stop, match_elapsed, match_start;
+	u64 match_stop, match_start;
 	cudaEvent_t kernel_start, kernel_stop;
 	float kernel_elapsed;
 	cudaEventCreate(&kernel_start);
@@ -930,8 +930,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 
 	//end for AT
 
-	int total = table.i_size() * queries.size();
-	int threshold = bitmap_bits - 1, bitmap_size = 0, bitmap_bytes = 0;
+	int threshold = bitmap_bits - 1, bitmap_size = 0;
 	if (bitmap_bits > 1)
 	{
 		float logresult = log2((float) bitmap_bits);
@@ -949,7 +948,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		bitmap_bits = pow(2, bitmap_bits);
 		bitmap_size = (table.i_size() / (32 / bitmap_bits) + 1)
 				* queries.size();
-		bitmap_bytes = bitmap_size * sizeof(u32);
 	}
 	else
 	{
@@ -1106,12 +1104,11 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 	Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
 	//cudaCheckErrors(cudaDeviceSynchronize());
-	device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(d_hash_table,(u32	)hash_table_size*queries.size());
+	device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
 	Logger::log(Logger::INFO, "[100%] Matching is done!");
 
 	match_stop = getTime();
-	match_elapsed = match_stop - match_start;
 
 	cudaEventSynchronize(kernel_stop);
 	kernel_elapsed = 0.0f;

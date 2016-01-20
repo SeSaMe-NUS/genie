@@ -1,10 +1,10 @@
 #ifndef GPUGenie_topk_h
 #define GPUGenie_topk_h
 
-#include "../GPUGenie.h"
-
 #include <vector>
 #include <thrust/device_vector.h>
+
+#include "match.h"
 
 using namespace std;
 using namespace thrust;
