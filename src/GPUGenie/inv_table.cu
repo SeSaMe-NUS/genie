@@ -3,7 +3,7 @@
 #include <boost/serialization/map.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-
+#include <exception>
 #include "raw_data.h"
 #include "Logger.h"
 
@@ -84,7 +84,8 @@ bool GPUGenie::inv_table::empty()
 
 int GPUGenie::inv_table::m_size()
 {
-	return _inv_lists.size();
+    return _dim_size;
+	//return _inv_lists.size();
 }
 
 int GPUGenie::inv_table::i_size()
@@ -104,6 +105,10 @@ void GPUGenie::inv_table::append(inv_list& inv)
 		_build_status = not_builded;
 		_size = inv.size();
 		_inv_lists.push_back(inv);
+
+        _dim_size = _inv_lists.size();
+        inv_list_upperbound.push_back(inv.max());
+        inv_list_lowerbound.push_back(inv.min());
 	}
 }
 
@@ -114,6 +119,25 @@ void GPUGenie::inv_table::append(inv_list* inv)
 		append(*inv);
 	}
 }
+
+int
+GPUGenie::inv_table::get_upperbound_of_list(int index)
+{
+    if(index < inv_list_upperbound.size())
+        return inv_list_upperbound[index];
+    else
+        return -1;
+}
+
+int
+GPUGenie::inv_table::get_lowerbound_of_list(int index)
+{
+    if(index < inv_list_lowerbound.size())
+        return inv_list_lowerbound[index];
+    else
+        return -1;
+}
+
 
 GPUGenie::inv_table::status GPUGenie::inv_table::build_status()
 {
@@ -156,7 +180,8 @@ GPUGenie::inv_table::ck_map()
 	return &_ck_map;
 }
 
-void GPUGenie::inv_table::build(u64 max_length)
+void
+GPUGenie::inv_table::build(u64 max_length)
 {
 	_ck.clear(), _inv.clear();
 	_inv_index.clear();
@@ -204,7 +229,8 @@ void GPUGenie::inv_table::build(u64 max_length)
 	Logger::log(Logger::DEBUG, "inv size %d:", _inv.size());
 }
 
-void GPUGenie::inv_table::build_compressed()
+void
+GPUGenie::inv_table::build_compressed()
 {
 	_ck.clear(), _inv.clear(), _ck_map.clear();
 	int key, dim, value;
@@ -229,3 +255,116 @@ void GPUGenie::inv_table::build_compressed()
 	}
 	_build_status = builded_compressed;
 }
+
+
+
+void
+GPUGenie::inv_table::write_to_file(const char* filename)
+{
+    if(_build_status == not_builded)
+        return;
+    ofstream ofs(filename, ios::binary|ios::trunc|ios::out);
+    if(!ofs.is_open())
+        return;
+
+    ofs.write((char*)&_shifter, sizeof(int));
+    ofs.write((char*)&_size, sizeof(int));
+    ofs.write((char*)&_dim_size, sizeof(int));
+    int temp_status = _build_status;
+    ofs.write((char*)&temp_status, sizeof(int));
+
+    unsigned int _ck_size = _ck.size();
+    unsigned int _inv_size = _inv.size();
+    unsigned int _inv_index_size = _inv_index.size();
+    unsigned int _inv_pos_size = _inv_pos.size();
+    
+    ofs.write((char*)&_ck_size, sizeof(unsigned int));
+    ofs.write((char*)&_inv_size, sizeof(unsigned int));
+    ofs.write((char*)&_inv_index_size, sizeof(unsigned int));
+    ofs.write((char*)&_inv_pos_size, sizeof(unsigned int));
+
+    ofs.write((char*)&_ck[0], _ck_size*sizeof(int));
+    ofs.write((char*)&_inv[0], _inv_size*sizeof(int));
+    ofs.write((char*)&_inv_index[0],_inv_index_size*sizeof(int));
+    ofs.write((char*)&_inv_pos[0], _inv_pos_size*sizeof(int));
+
+    unsigned int _list_upperbound_size = inv_list_upperbound.size();
+    unsigned int _list_lowerbound_size = inv_list_lowerbound.size();
+
+    ofs.write((char*)&_list_upperbound_size, sizeof(unsigned int));
+    ofs.write((char*)&_list_lowerbound_size, sizeof(unsigned int));
+
+    ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+    ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+
+
+    if(_build_status == builded_compressed)
+    {
+        boost::archive::binary_oarchive oarch(ofs);
+        oarch << _ck_map;
+    }
+
+    ofs.close();
+    return;
+}
+
+
+void
+GPUGenie::inv_table::read_from_file(const char* filename)
+{
+
+
+    ifstream ifs(filename, ios::binary|ios::in);
+    if(!ifs.is_open())
+        return;
+    ifs.read((char*)&_shifter, sizeof(int));
+    ifs.read((char*)&_size, sizeof(int));
+    ifs.read((char*)&_dim_size, sizeof(int));
+    int temp_status;
+    ifs.read((char*)&temp_status, sizeof(int));
+    _build_status = static_cast<status>(temp_status);
+
+
+    unsigned int _ck_size;
+    unsigned int _inv_size;
+    unsigned int _inv_index_size;
+    unsigned int _inv_pos_size;
+
+    ifs.read((char*)&_ck_size, sizeof(unsigned int));
+    ifs.read((char*)&_inv_size, sizeof(unsigned int));
+    ifs.read((char*)&_inv_index_size, sizeof(unsigned int));
+    ifs.read((char*)&_inv_pos_size, sizeof(unsigned int));
+
+    _ck.resize(_ck_size);
+    _inv.resize(_inv_size);
+    _inv_index.resize(_inv_index_size);
+    _inv_pos.resize(_inv_pos_size);
+
+    ifs.read((char*)&_ck[0], _ck_size*sizeof(int));
+    ifs.read((char*)&_inv[0], _inv_size*sizeof(int));
+    ifs.read((char*)&_inv_index[0],_inv_index_size*sizeof(int));
+    ifs.read((char*)&_inv_pos[0], _inv_pos_size*sizeof(int));
+    
+    unsigned int _list_upperbound_size;
+    unsigned int _list_lowerbound_size;
+
+    ifs.read((char*)&_list_upperbound_size, sizeof(unsigned int));
+    ifs.read((char*)&_list_lowerbound_size, sizeof(unsigned int));
+
+    inv_list_upperbound.resize(_list_upperbound_size);
+    inv_list_lowerbound.resize(_list_lowerbound_size);
+    ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+    ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+
+
+    if(_build_status == builded_compressed)
+    {
+        boost::archive::binary_iarchive iarch(ifs);
+        iarch >> _ck_map;
+    }
+
+    ifs.close();
+    return;
+}
+
+

@@ -30,7 +30,7 @@ public:
 	int *d_ck_p;
 	bool is_stored_in_gpu;
 private:
-	/**
+    /**
 	 * @brief Building status of the inv_table.
 	 *        Any modification will make the
 	 *        inv_table not_builded.
@@ -46,11 +46,15 @@ private:
 	 * @brief The number of instances.
 	 */
 	int _size;
-
+    int _dim_size;
 	/**
 	 * @brief Inverted lists of different dimensions.
 	 */
 	vector<inv_list> _inv_lists;
+    vector<int> inv_list_upperbound;
+    vector<int> inv_list_lowerbound;
+
+
 
 	/**
 	 * @brief The composite keys' vector.
@@ -208,6 +212,17 @@ public:
 	map<int, int>*
 	ck_map();
 
+
+    //new feature upperboudn and lowerbound for each inv_list
+    int
+    get_upperbound_of_list(int index);
+
+    int
+    get_lowerbound_of_list(int index);
+
+
+
+
 	/**
 	 * @brief Build the inv_table.
 	 * @details This method will merge all inv_lists to
@@ -236,6 +251,19 @@ public:
 	 deserialize_from_file(const char* filename);
 
 	 */
+
+
+    //for serialization
+    void
+    write_to_file(const char* filename);
+
+    void
+    read_from_file(const char* filename);
+
+
+
+
+
 
 };
 }

@@ -96,13 +96,13 @@ typedef struct _GPUGenie_Config
  *
  */
 
-bool preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table,
+bool preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num);
 
-bool preprocess_for_knn_binary(GPUGenie_Config& config, inv_table& table,
+bool preprocess_for_knn_binary(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num);
 
-void knn_search_after_preprocess(GPUGenie_Config& config, inv_table& table,
+void knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count, unsigned int& table_num);
 

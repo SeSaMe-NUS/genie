@@ -68,7 +68,7 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		}
 	}
 }
-bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table,
+bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
@@ -76,14 +76,15 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table,
 	{
 		if (config.data_points->size() > 0)
 		{
+            _table = new inv_table;
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
 			case 0:
-				load_table(table, *(config.data_points), config);
+				load_table(*(_table), *(config.data_points), config);
 				break;
 			case 1:
-				load_table_bijectMap(table, *(config.data_points), config);
+				load_table_bijectMap(*(_table), *(config.data_points), config);
 				break;
 			default:
 				Logger::log(Logger::ALERT, "Unrecognised search type!");
@@ -168,7 +169,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config, inv_table &table,
 }
 
 bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
-		inv_table& table, inv_table * &_table, unsigned int& table_num)
+		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
 	if (config.max_data_size == 0)
@@ -176,15 +177,16 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		if (config.item_num != 0 && config.data != NULL && config.index != NULL
 				&& config.item_num != 0 && config.row_num != 0)
 		{
+            _table = new inv_table;
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
 			case 0:
-				load_table(table, config.data, config.item_num, config.index,
+				load_table(*(_table), config.data, config.item_num, config.index,
 						config.row_num, config);
 				break;
 			case 1:
-				load_table_bijectMap(table, config.data, config.item_num,
+				load_table_bijectMap(*(_table), config.data, config.item_num,
 						config.index, config.row_num, config);
 				break;
 			}
@@ -285,14 +287,14 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 }
 
 void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
-		inv_table& table, inv_table * &_table, std::vector<int>& result,
+		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count, unsigned int& table_num)
 {
 	std::vector<query> queries;
 	if (config.max_data_size == 0)
 	{
-		load_query(table, queries, config);
-		knn_search(table, queries, result, result_count, config);
+		load_query(*(_table), queries, config);
+		knn_search(*(_table), queries, result, result_count, config);
 	}
 	else
 	{
@@ -583,17 +585,19 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 void GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
-	inv_table table;
+	
 	inv_table *_table = NULL;
 	unsigned int table_num = 0;
 
-	preprocess_for_knn_binary(config, table, _table, table_num);
+	preprocess_for_knn_binary(config, _table, table_num);
 
-	knn_search_after_preprocess(config, table, _table, result, result_count,
+	knn_search_after_preprocess(config, _table, result, result_count,
 			table_num);
 
 	if (config.max_data_size != 0)
 		delete[] _table;
+    else
+        delete _table;
 }
 
 void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
@@ -604,15 +608,17 @@ void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
 	unsigned int table_num = 0;
 
 	Logger::log(Logger::VERBOSE, "Starting preprocessing!");
-	preprocess_for_knn_csv(config, table, _table, table_num);
+	preprocess_for_knn_csv(config, _table, table_num);
 
 	Logger::log(Logger::VERBOSE, "preprocessing finished!");
 
-	knn_search_after_preprocess(config, table, _table, result, result_count,
+	knn_search_after_preprocess(config, _table, result, result_count,
 			table_num);
 
 	if (config.max_data_size != 0)
 		delete[] _table;
+    else
+        delete _table;
 }
 
 void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
