@@ -76,15 +76,17 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            _table = new inv_table;
+            _table = new inv_table[1];
+            _table[0].set_table_index(0);
+            _table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
 			case 0:
-				load_table(*(_table), *(config.data_points), config);
+				load_table(_table[0], *(config.data_points), config);
 				break;
 			case 1:
-				load_table_bijectMap(*(_table), *(config.data_points), config);
+				load_table_bijectMap(_table[0], *(config.data_points), config);
 				break;
 			default:
 				Logger::log(Logger::ALERT, "Unrecognised search type!");
@@ -122,6 +124,8 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 					config.data_points->begin()
 							+ (i + 1) * config.max_data_size);
 
+            _table[i].set_table_index(i);
+            _table[i].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
 			case 0:
@@ -135,7 +139,6 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 				return false;
 			}
 		}
-
 		if (table_num != cycle)
 		{
 			vector<vector<int> > temp1;
@@ -149,6 +152,11 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			temp2.insert(temp2.end(),
 					config.data_points->begin() + cycle * config.max_data_size
 							+ second_last_size, config.data_points->end());
+
+            _table[cycle].set_table_index(cycle);
+            _table[cycle].set_total_num_of_table(table_num);
+            _table[cycle + 1].set_table_index(cycle+1);
+            _table[cycle + 1].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
 			case 0:
@@ -177,16 +185,18 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		if (config.item_num != 0 && config.data != NULL && config.index != NULL
 				&& config.item_num != 0 && config.row_num != 0)
 		{
-            _table = new inv_table;
+            _table = new inv_table[1];
+            _table[0].set_table_index(0);
+            _table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
 			case 0:
-				load_table(*(_table), config.data, config.item_num, config.index,
+				load_table(_table[0], config.data, config.item_num, config.index,
 						config.row_num, config);
 				break;
 			case 1:
-				load_table_bijectMap(*(_table), config.data, config.item_num,
+				load_table_bijectMap(_table[0], config.data, config.item_num,
 						config.index, config.row_num, config);
 				break;
 			}
@@ -220,6 +230,8 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			if (i == table_num - 1)
 				item_num = config.item_num
 						- config.index[config.max_data_size * (table_num - 1)];
+            _table[i].set_table_index(i);
+            _table[i].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
 			case 0:
@@ -250,6 +262,10 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			unsigned int last_item_size = config.item_num
 					- config.index[config.max_data_size * cycle
 							+ second_last_row_size];
+            _table[cycle].set_table_index(cycle);
+            _table[cycle].set_total_num_of_table(table_num);
+            _table[cycle + 1].set_table_index(cycle+1);
+            _table[cycle + 1].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
 			case 0:
@@ -293,8 +309,8 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
 	std::vector<query> queries;
 	if (config.max_data_size == 0)
 	{
-		load_query(*(_table), queries, config);
-		knn_search(*(_table), queries, result, result_count, config);
+		load_query(_table[0], queries, config);
+		knn_search(_table[0], queries, result, result_count, config);
 	}
 	else
 	{
@@ -594,16 +610,12 @@ void GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
 	knn_search_after_preprocess(config, _table, result, result_count,
 			table_num);
 
-	if (config.max_data_size != 0)
-		delete[] _table;
-    else
-        delete _table;
+	delete[] _table;
 }
 
 void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
-	inv_table table;
 	inv_table *_table = NULL;
 	unsigned int table_num = 0;
 
@@ -615,10 +627,7 @@ void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
 	knn_search_after_preprocess(config, _table, result, result_count,
 			table_num);
 
-	if (config.max_data_size != 0)
-		delete[] _table;
-    else
-        delete _table;
+	delete[] _table;
 }
 
 void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
@@ -670,7 +679,8 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 	{
 		Logger::log(Logger::ALERT,
 				"[ALERT] NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
-		exit(2);
+		//exit(2);
+        return;
 	}
 	else if (device_count <= config.use_device)
 	{

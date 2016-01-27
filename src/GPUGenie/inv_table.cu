@@ -105,8 +105,17 @@ void GPUGenie::inv_table::append(inv_list& inv)
 		_build_status = not_builded;
 		_size = inv.size();
 		_inv_lists.push_back(inv);
-
+        
         _dim_size = _inv_lists.size();
+        
+        //get size for every posting list
+
+        vector<int> line;
+        for(int i = 0 ; i < inv.value_range() ; ++i)
+            line.push_back(inv.index(i+inv.min())->size());
+        posting_list_size.push_back(line);
+
+        //get upperbound and lowerbound for every inv_list
         inv_list_upperbound.push_back(inv.max());
         inv_list_lowerbound.push_back(inv.min());
 	}
@@ -121,9 +130,29 @@ void GPUGenie::inv_table::append(inv_list* inv)
 }
 
 int
+GPUGenie::inv_table::get_posting_list_size(int attr_index, int value)
+{
+    if((unsigned int)attr_index<posting_list_size.size() && value>=inv_list_lowerbound[attr_index] && value<=inv_list_upperbound[attr_index])
+        return posting_list_size[attr_index][value-inv_list_lowerbound[attr_index]];
+    else
+        return 0;
+}
+
+bool
+GPUGenie::inv_table::list_contain(int attr_index, int value)
+{
+    if(value <= inv_list_upperbound[attr_index] && value >= inv_list_lowerbound[attr_index])
+        return true;
+    else
+        return false;
+}
+
+
+
+int
 GPUGenie::inv_table::get_upperbound_of_list(int index)
 {
-    if(index < inv_list_upperbound.size())
+    if((unsigned int)index < inv_list_upperbound.size())
         return inv_list_upperbound[index];
     else
         return -1;
@@ -132,12 +161,35 @@ GPUGenie::inv_table::get_upperbound_of_list(int index)
 int
 GPUGenie::inv_table::get_lowerbound_of_list(int index)
 {
-    if(index < inv_list_lowerbound.size())
+    if((unsigned int)index < inv_list_lowerbound.size())
         return inv_list_lowerbound[index];
     else
         return -1;
 }
 
+
+void
+GPUGenie::inv_table::set_table_index(int index)
+{
+    table_index = index;
+}
+void
+GPUGenie::inv_table::set_total_num_of_table(int num)
+{
+    total_num_of_table = num;
+}
+
+int
+GPUGenie::inv_table::get_table_index()
+{
+    return table_index;
+}
+    
+int
+GPUGenie::inv_table::get_total_num_of_table()
+{
+    return total_num_of_table;
+}
 
 GPUGenie::inv_table::status GPUGenie::inv_table::build_status()
 {
@@ -258,15 +310,14 @@ GPUGenie::inv_table::build_compressed()
 
 
 
-void
-GPUGenie::inv_table::write_to_file(const char* filename)
+bool
+GPUGenie::inv_table::write_to_file(ofstream& ofs)
 {
     if(_build_status == not_builded)
-        return;
-    ofstream ofs(filename, ios::binary|ios::trunc|ios::out);
-    if(!ofs.is_open())
-        return;
+        return false;
 
+    ofs.write((char*)&table_index, sizeof(int));
+    ofs.write((char*)&total_num_of_table, sizeof(int));
     ofs.write((char*)&_shifter, sizeof(int));
     ofs.write((char*)&_size, sizeof(int));
     ofs.write((char*)&_dim_size, sizeof(int));
@@ -297,26 +348,34 @@ GPUGenie::inv_table::write_to_file(const char* filename)
     ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
     ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
 
-
+    //write posting list size
+    unsigned int num_of_attr = posting_list_size.size();
+    ofs.write((char*)&num_of_attr, sizeof(unsigned int));
+    for(unsigned int i=0 ; i<num_of_attr ; ++i)
+    {
+         unsigned int value_range_size = posting_list_size[i].size();
+         ofs.write((char*)&value_range_size, sizeof(unsigned int));
+         ofs.write((char*)&posting_list_size[i][0], value_range_size*sizeof(int));
+    }
+    
     if(_build_status == builded_compressed)
     {
         boost::archive::binary_oarchive oarch(ofs);
         oarch << _ck_map;
     }
 
-    ofs.close();
-    return;
+    if(table_index == total_num_of_table - 1)
+        ofs.close();
+    return true;
 }
 
 
-void
-GPUGenie::inv_table::read_from_file(const char* filename)
+bool
+GPUGenie::inv_table::read_from_file(ifstream& ifs)
 {
-
-
-    ifstream ifs(filename, ios::binary|ios::in);
-    if(!ifs.is_open())
-        return;
+    
+    ifs.read((char*)&table_index, sizeof(int));
+    ifs.read((char*)&total_num_of_table, sizeof(int));
     ifs.read((char*)&_shifter, sizeof(int));
     ifs.read((char*)&_size, sizeof(int));
     ifs.read((char*)&_dim_size, sizeof(int));
@@ -356,6 +415,16 @@ GPUGenie::inv_table::read_from_file(const char* filename)
     ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
     ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
 
+    unsigned int num_of_attr;
+    ifs.read((char*)&num_of_attr, sizeof(unsigned int));
+    posting_list_size.resize(num_of_attr);
+    for(unsigned int i=0 ; i<num_of_attr ; ++i)
+    {
+         unsigned int value_range_size;
+         ifs.read((char*)&value_range_size, sizeof(unsigned int));
+         posting_list_size[i].resize(value_range_size);
+         ifs.read((char*)&posting_list_size[i][0], value_range_size*sizeof(int));
+    }
 
     if(_build_status == builded_compressed)
     {
@@ -363,8 +432,63 @@ GPUGenie::inv_table::read_from_file(const char* filename)
         iarch >> _ck_map;
     }
 
-    ifs.close();
-    return;
+    if(table_index == total_num_of_table-1)
+        ifs.close();
+    
+    return true;
 }
 
 
+bool
+GPUGenie::inv_table::write(const char* filename, inv_table*& table)
+{
+    
+    int _table_index = table[0].get_table_index();
+    if(_table_index != 0)
+        return false;
+    
+    ofstream _ofs(filename, ios::binary|ios::trunc|ios::out);
+    if(!_ofs.is_open())
+        return false;
+    int _total_num_of_table = table[0].get_total_num_of_table();
+    bool success;
+    for(int i=0; i<_total_num_of_table; ++i)
+    {
+        success = table[i].write_to_file(_ofs);
+    }
+    
+    if(!_ofs.is_open() && success)
+        return true;
+    else
+        return false;
+    
+}
+
+bool
+GPUGenie::inv_table::read(const char* filename, inv_table*& table)
+{
+    ifstream ifs(filename, ios::binary|ios::in);
+    if(!ifs.is_open())
+        return false;
+    
+    int _table_index, _total_num_of_table;
+    ifs.read((char*)&_table_index, sizeof(int));
+    ifs.read((char*)&_total_num_of_table, sizeof(int));
+    ifs.close();
+    if(_table_index!=0 || _total_num_of_table<1)
+        return false;
+    
+    table = new inv_table[_total_num_of_table];
+
+    ifstream _ifs(filename, ios::binary|ios::in);
+    
+    bool success;
+    for(int i=0 ; i<_total_num_of_table ; ++i)
+    {
+         success = table[i].read_from_file(_ifs);
+    }
+    if(!_ifs.is_open()&&success)
+        return true;
+    else
+        return false;
+}

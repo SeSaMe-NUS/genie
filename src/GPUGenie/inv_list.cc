@@ -195,3 +195,9 @@ GPUGenie::inv_list::index(int value)
 		return NULL;
 	return &_inv[value - min()];
 }
+
+int
+GPUGenie::inv_list::value_range()
+{
+    return _inv.size();
+}

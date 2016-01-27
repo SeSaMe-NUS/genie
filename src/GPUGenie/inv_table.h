@@ -30,6 +30,11 @@ public:
 	int *d_ck_p;
 	bool is_stored_in_gpu;
 private:
+    int table_index;//start at 0
+    int total_num_of_table;//start at 1
+
+
+
     /**
 	 * @brief Building status of the inv_table.
 	 *        Any modification will make the
@@ -53,6 +58,8 @@ private:
 	vector<inv_list> _inv_lists;
     vector<int> inv_list_upperbound;
     vector<int> inv_list_lowerbound;
+
+    vector<vector<int> > posting_list_size;
 
 
 
@@ -87,11 +94,32 @@ public:
 	 *        _size to -1.
 	 */
 	inv_table(): d_inv_p(NULL), d_inv_index_p(NULL), d_inv_pos_p(NULL), d_ck_p(NULL),
-				is_stored_in_gpu(false),_build_status(not_builded), _shifter(16), _size(-1)
+				is_stored_in_gpu(false),table_index(0),total_num_of_table(1),
+                _build_status(not_builded), _shifter(16),_size(-1)
 	{
 	}
 
 	~inv_table();
+
+
+    static bool
+    write(const char* filename, inv_table*& table);
+
+    static bool
+    read(const char* filename, inv_table*& table);
+
+    void
+    set_table_index(int index);
+
+    void
+    set_total_num_of_table(int num);
+
+    int
+    get_table_index();
+
+    int
+    get_total_num_of_table();
+
 
 	bool
 	cpy_data_to_gpu();
@@ -243,22 +271,20 @@ public:
 	void
 	build_compressed();
 
-	/*
-	 void
-	 serialize_to_file(const char* filename);
+    //get length of each posting list
+    int
+    get_posting_list_size(int attr_index, int value);
 
-	 void
-	 deserialize_from_file(const char* filename);
-
-	 */
-
+    //contain certain value
+    bool
+    list_contain(int attr_index, int value);
 
     //for serialization
-    void
-    write_to_file(const char* filename);
+    bool
+    write_to_file(ofstream& ofs);
 
-    void
-    read_from_file(const char* filename);
+    bool
+    read_from_file(ifstream& ifs);
 
 
 

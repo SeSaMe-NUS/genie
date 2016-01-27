@@ -199,6 +199,9 @@ public:
 	vector<int>*
 	index(int value);
 
+    int
+    value_range();
+
 };
 }
 
