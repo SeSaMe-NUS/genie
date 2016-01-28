@@ -32,6 +32,8 @@
 using namespace GPUGenie;
 using namespace std;
 
+
+//merge result
 void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		std::vector<std::vector<int> >& _result_count, std::vector<int>& result,
 		std::vector<int>& result_count, int table_num, int topk, int query_num)

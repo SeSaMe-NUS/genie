@@ -39,9 +39,9 @@ build:
 
 #Building file: example_read_table_from_file.cu
 #Invoking: NVCC Compiler
-	nvcc -I../src -include ../src/GPUGenie.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example_table_from_file.d" "example_table_from_file.cu"
-	nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GPUGenie.h  -x cu -o  "example_table_from_file.o" "example_table_from_file.cu"
-	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_table_from_file_bin"  example_table_from_file.o   -lGPUGenie -lpthread -lboost_serialization
+#	nvcc -I../src -include ../src/GPUGenie.h -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example_table_from_file.d" "example_table_from_file.cu"
+#	nvcc --device-c  -I../src -O3 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GPUGenie.h  -x cu -o  "example_table_from_file.o" "example_table_from_file.cu"
+#	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true -gencode arch=compute_20,code=sm_20 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_table_from_file_bin"  example_table_from_file.o   -lGPUGenie -lpthread -lboost_serialization
 #
 #
 #

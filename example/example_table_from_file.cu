@@ -102,6 +102,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	*
 	*/
 
+    //example of writing and reading operations
     inv_table * __table = NULL;
     unsigned int table_num = 1;
     preprocess_for_knn_binary(config, __table,table_num);
