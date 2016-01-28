@@ -72,13 +72,17 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
-	if (config.max_data_size == 0)
+    unsigned int max_data_size=config.max_data_size;
+    if(max_data_size >= config.data_points->size())
+        max_data_size  = 0;
+	if (max_data_size == 0)
 	{
 		if (config.data_points->size() > 0)
 		{
             _table = new inv_table[1];
             _table[0].set_table_index(0);
             _table[0].set_total_num_of_table(1);
+            table_num = 1;
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
@@ -180,6 +184,9 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
+    unsigned int max_data_size=config.max_data_size;
+    if(max_data_size >= config.row_num)
+        max_data_size  = 0;
 	if (config.max_data_size == 0)
 	{
 		if (config.item_num != 0 && config.data != NULL && config.index != NULL
@@ -188,6 +195,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
             _table = new inv_table[1];
             _table[0].set_table_index(0);
             _table[0].set_total_num_of_table(1);
+            table_num = 1;
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
@@ -306,40 +314,29 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count, unsigned int& table_num)
 {
-	std::vector<query> queries;
-	if (config.max_data_size == 0)
-	{
-		load_query(_table[0], queries, config);
-		knn_search(_table[0], queries, result, result_count, config);
-	}
-	else
-	{
-		vector<vector<int> > _result;
-		vector<vector<int> > _result_count;
+    std::vector<query> queries;
+    vector<vector<int> > _result;
+    vector<vector<int> > _result_count;
+    _result.resize(table_num);
+    _result_count.resize(table_num);
 
-		_result.resize(table_num);
-		_result_count.resize(table_num);
+    unsigned int accumulate_num = 0;
+    for (unsigned int i = 0; i < table_num; ++i)
+    {
+        queries.clear();
+        load_query(_table[i], queries, config);
 
-		unsigned int accumulate_num = 0;
-		for (unsigned int i = 0; i < table_num; ++i)
-		{
-			queries.clear();
-			load_query(_table[i], queries, config);
+        knn_search(_table[i], queries, _result[i], _result_count[i],config);
 
-			knn_search(_table[i], queries, _result[i], _result_count[i],
-					config);
-
-			if (i <= 0)
-				continue;
-			accumulate_num += _table[i - 1].i_size();
-			for (unsigned int j = 0; j < _result[i].size(); ++j)
-			{
-				_result[i][j] += accumulate_num;
-			}
-		}
-		merge_knn_results_from_multiload(_result, _result_count, result,
-				result_count, table_num, config.num_of_topk, queries.size());
-	}
+        if (i <= 0) continue;
+        accumulate_num += _table[i - 1].i_size();
+        for (unsigned int j = 0; j < _result[i].size(); ++j)
+        {
+            _result[i][j] += accumulate_num;
+        }
+    }
+    merge_knn_results_from_multiload(_result, _result_count, result,
+            result_count, table_num, config.num_of_topk, queries.size());
 }
 void GPUGenie::load_table(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
