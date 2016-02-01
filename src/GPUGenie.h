@@ -17,5 +17,6 @@ typedef unsigned long long u64;
 
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/Timing.h>
+#include <GPUGenie/genie_errors.h>
 
 #endif

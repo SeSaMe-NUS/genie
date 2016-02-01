@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 
-	Logger::set_level(Logger::DEBUG);
+	Logger::set_level(Logger::INFO);
 
 	std::vector<std::vector<int> > queries;
 	std::vector<attr_t> multirange_queries;
@@ -51,9 +51,8 @@ int main(int argc, char * argv[])
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
 	config.count_threshold = -128;
 
-	//Number of topk items desired for each query.
-	//Some queries may result in fewer than desired topk items.
-	config.num_of_topk = 10;
+	//Number of topk items to select for each query.
+	config.num_of_topk = 1;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
@@ -101,7 +100,7 @@ int main(int argc, char * argv[])
     //below are new configurations
     config.data_type = 0;
     config.search_type = 0;
-    config.max_data_size = 500;
+    config.max_data_size = -1;
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	if(config.use_multirange)
@@ -165,11 +164,11 @@ int main(int argc, char * argv[])
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
 
 	{
 		printf("Query %d result is: \n\t", i);
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < config.num_of_topk && j < 10; ++j)
 		{
 			printf("%d:%d, ", result[i * config.num_of_topk + j], result_count[i * config.num_of_topk + j]);
 		}

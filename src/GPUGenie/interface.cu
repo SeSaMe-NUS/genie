@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <string>
 
 #include <thrust/system_error.h>
 #include <thrust/copy.h>
@@ -55,8 +56,7 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		{
 			if (_sort_count.begin() == _sort_count.end())
 			{
-				Logger::log(Logger::ALERT, "No result!");
-				return;
+				throw GPUGenie::cpu_runtime_error("No result!");
 			}
 			unsigned int index;
 			index = std::distance(_sort_count.begin(),
@@ -74,10 +74,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
-    unsigned int max_data_size=config.max_data_size;
-    if(max_data_size >= config.data_points->size())
-        max_data_size  = 0;
-	if (max_data_size == 0)
+	if (config.max_data_size >= config.data_points->size())
 	{
 		if (config.data_points->size() > 0)
 		{
@@ -95,14 +92,12 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 				load_table_bijectMap(_table[0], *(config.data_points), config);
 				break;
 			default:
-				Logger::log(Logger::ALERT, "Unrecognised search type!");
-				return false;
+				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		else
 		{
-			Logger::log(Logger::ALERT, "no data input!");
-			return false;
+			throw GPUGenie::cpu_runtime_error("no data input!");
 		}
 	}
 	else
@@ -141,8 +136,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 				load_table_bijectMap(_table[i], temp, config);
 				break;
 			default:
-				Logger::log(Logger::ALERT, "Unrecognised search type!");
-				return false;
+				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		if (table_num != cycle)
@@ -174,8 +168,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 				load_table_bijectMap(_table[cycle + 1], temp2, config);
 				break;
 			default:
-				Logger::log(Logger::ALERT, "Unrecognised search type!");
-				return false;
+				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 	}
@@ -186,10 +179,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
-    unsigned int max_data_size=config.max_data_size;
-    if(max_data_size >= config.row_num)
-        max_data_size  = 0;
-	if (config.max_data_size == 0)
+	if (config.max_data_size >= config.row_num)
 	{
 		if (config.item_num != 0 && config.data != NULL && config.index != NULL
 				&& config.item_num != 0 && config.row_num != 0)
@@ -213,8 +203,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		}
 		else
 		{
-			Logger::log(Logger::ALERT, "no data input!");
-			return false;
+			throw GPUGenie::cpu_runtime_error("no data input!");
 		}
 	}
 	else
@@ -638,28 +627,43 @@ void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 void GPUGenie::knn_search(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
-	u64 starttime = getTime();
+	try{
+		u64 starttime = getTime();
+		switch (config.data_type)
+		{
+		case 0:
+			Logger::log(Logger::INFO, "search for csv data!");
+			knn_search_for_csv_data(result, result_count, config);
+			break;
+		case 1:
+			Logger::log(Logger::INFO, "search for binary data!");
+			knn_search_for_binary_data(result, result_count, config);
+			break;
+		default:
+			throw GPUGenie::cpu_runtime_error("Please check data type in config\n");
+		}
 
-	switch (config.data_type)
-	{
-	case 0:
-		Logger::log(Logger::INFO, "search for csv data!");
-		knn_search_for_csv_data(result, result_count, config);
-		break;
-	case 1:
-		Logger::log(Logger::INFO, "search for binary data!");
-		knn_search_for_binary_data(result, result_count, config);
-		break;
-	default:
-		Logger::log(Logger::ALERT, "Please check data type in config\n");
+		u64 endtime = getTime();
+		double elapsed = getInterval(starttime, endtime);
+
+		Logger::log(Logger::VERBOSE,
+				">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",
+				elapsed);
 	}
-
-	u64 endtime = getTime();
-	double elapsed = getInterval(starttime, endtime);
-
-	Logger::log(Logger::VERBOSE,
-			">>>>[time profiling]: knn_search totally takes %f ms (building query+match+selection)<<<<",
-			elapsed);
+	catch (thrust::system::system_error &e){
+		throw GPUGenie::gpu_runtime_error(e.what());
+	} catch (GPUGenie::gpu_bad_alloc &e){
+		throw e;
+	} catch (GPUGenie::gpu_runtime_error &e){
+		throw e;
+	} catch(std::bad_alloc &e){
+		throw GPUGenie::cpu_bad_alloc(e.what());
+	} catch(std::exception &e){
+		throw GPUGenie::cpu_runtime_error(e.what());
+	} catch(...){
+		std::string msg = "Warning: Unknown Exception! Please try again or contact the author.\n";
+		throw GPUGenie::cpu_runtime_error(msg.c_str());
+	}
 }
 
 void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
@@ -673,13 +677,10 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 		GPUGenie_Config& config)
 {
 	int device_count, hashtable_size;
-	cudaGetDeviceCount(&device_count);
+	cudaCheckErrors(cudaGetDeviceCount(&device_count));
 	if (device_count == 0)
 	{
-		Logger::log(Logger::ALERT,
-				"[ALERT] NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
-		//exit(2);
-        return;
+		throw GPUGenie::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
 	}
 	else if (device_count <= config.use_device)
 	{
@@ -688,7 +689,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 				config.use_device, GPUGENIE_DEFAULT_DEVICE);
 		config.use_device = GPUGENIE_DEFAULT_DEVICE;
 	}
-	cudaSetDevice(config.use_device);
+	cudaCheckErrors(cudaSetDevice(config.use_device));
 
 	Logger::log(Logger::INFO, "Using device %d...", config.use_device);
 	Logger::log(Logger::DEBUG, "table.i_size():%d, config.hashtable_size:%f.",
@@ -718,6 +719,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 
 	h_topk.resize(d_topk.size());
 	h_topk_count.resize(d_topk_count.size());
+
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
 	thrust::copy(d_topk_count.begin(), d_topk_count.end(),
 			h_topk_count.begin());

@@ -11,17 +11,13 @@ using namespace std;
 
 namespace GPUGenie
 {
+
 class inv_table
 {
 public:
 	enum status
 	{
 		not_builded, builded, builded_compressed
-	};
-
-	enum exception
-	{
-		not_builded_exception, not_matched_exception
 	};
 	//device pointer for some members
 	int *d_inv_p;
@@ -95,7 +91,7 @@ public:
 	 */
 	inv_table(): d_inv_p(NULL), d_inv_index_p(NULL), d_inv_pos_p(NULL), d_ck_p(NULL),
 				is_stored_in_gpu(false),table_index(0),total_num_of_table(1),
-                _build_status(not_builded), _shifter(16),_size(-1)
+                _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0)
 	{
 	}
 

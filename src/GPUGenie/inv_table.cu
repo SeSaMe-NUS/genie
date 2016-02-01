@@ -4,8 +4,10 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <exception>
+
 #include "raw_data.h"
 #include "Logger.h"
+#include "genie_errors.h"
 
 #include "inv_table.h"
 
@@ -24,21 +26,25 @@ void GPUGenie::inv_table::init()
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
-	cudaMalloc(&d_ck_p, sizeof(int) * _ck.size());
-	cudaMemcpy(d_ck_p, &_ck[0], sizeof(int) * _ck.size(),
-			cudaMemcpyHostToDevice);
+	try{
+		cudaMalloc(&d_ck_p, sizeof(int) * _ck.size());
+		cudaMemcpy(d_ck_p, &_ck[0], sizeof(int) * _ck.size(),
+				cudaMemcpyHostToDevice);
 
-	cudaMalloc(&d_inv_p, sizeof(int) * _inv.size());
-	cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),
-			cudaMemcpyHostToDevice);
+		cudaMalloc(&d_inv_p, sizeof(int) * _inv.size());
+		cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),
+				cudaMemcpyHostToDevice);
 
-	cudaMalloc(&d_inv_index_p, sizeof(int) * _inv_index.size());
-	cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int) * _inv_index.size(),
-			cudaMemcpyHostToDevice);
+		cudaMalloc(&d_inv_index_p, sizeof(int) * _inv_index.size());
+		cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int) * _inv_index.size(),
+				cudaMemcpyHostToDevice);
 
-	cudaMalloc(&d_inv_pos_p, sizeof(int) * _inv_pos.size());
-	cudaMemcpy(d_inv_pos_p, &_inv_pos[0], sizeof(int) * _inv_pos.size(),
-			cudaMemcpyHostToDevice);
+		cudaMalloc(&d_inv_pos_p, sizeof(int) * _inv_pos.size());
+		cudaMemcpy(d_inv_pos_p, &_inv_pos[0], sizeof(int) * _inv_pos.size(),
+				cudaMemcpyHostToDevice);
+	} catch(std::bad_alloc &e){
+		throw(GPUGenie::gpu_bad_alloc(e.what()));
+	}
 
 	return true;
 }

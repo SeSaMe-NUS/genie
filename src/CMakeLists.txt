@@ -4,10 +4,7 @@ link_directories(${PROJECT_SOURCE_DIR}/src)
 
 set(LIB_SRC_LIST
   GPUGenie.h
-
-#  GPUGenie/lib/libcsv/csv.h
-#  GPUGenie/lib/libcsv/libcsv.c
-
+  
   GPUGenie/lib/bucket_topk/assign_bucket.inc
   GPUGenie/lib/bucket_topk/bucket_topk.h
   GPUGenie/lib/bucket_topk/bucket_topk.inc
@@ -16,6 +13,9 @@ set(LIB_SRC_LIST
   GPUGenie/lib/bucket_topk/save_result.inc
   GPUGenie/lib/bucket_topk/update_min_max.inc
   GPUGenie/lib/bucket_topk/utils.inc
+
+  GPUGenie/genie_errors.h
+  GPUGenie/genie_errors.cu
 
   GPUGenie/Logger.h
   GPUGenie/Logger.cc
@@ -41,15 +41,7 @@ set(LIB_SRC_LIST
   GPUGenie/knn.cu
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cc
-
-#  GPUGenie/parser/parser.h
-#  GPUGenie/parser/csv.cc
 )
-
-#cuda_add_library(
-#  ${PROJECT_NAME}
-#  SHARED
-#  ${LIB_SRC_LIST})
 
 cuda_add_library(
   ${PROJECT_NAME}

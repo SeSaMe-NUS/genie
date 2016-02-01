@@ -20,22 +20,6 @@ typedef struct data_
 	float aggregation;
 } data_t;
 
-#define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
-inline void __cudaSafeCall(cudaError err, const char *file, const int line)
-{
-
-	if (cudaSuccess != err)
-	{
-		char errstr[1000];
-		sprintf(errstr, "cudaSafeCall() failed at %s:%i : %s\n", file, line,
-				cudaGetErrorString(err));
-		printf("cudaSafeCall failed in match function!\n");
-		exit(1);
-	}
-
-	return;
-}
-
 namespace GPUGenie
 {
 

@@ -73,16 +73,6 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size,
 			bitmap_bits, dim);
-
-	//for improve
-//  int qmax = 0;
-//  for(int i = 0; i < queries.size(); ++i)
-//  {
-//	 int count = queries[i].count_ranges();
-//	  if(count > qmax)
-//		  qmax = count;
-//  }
-	//end for improve
 	dim = 2;
 
 	u64 startKnn = getTime();
