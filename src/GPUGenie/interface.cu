@@ -74,7 +74,8 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
-	if (config.max_data_size >= config.data_points->size())
+
+	if (config.max_data_size >= config.data_points->size() || config.max_data_size <= 0)
 	{
 		if (config.data_points->size() > 0)
 		{
@@ -179,7 +180,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		inv_table * &_table, unsigned int& table_num)
 {
 	unsigned int cycle = 0;
-	if (config.max_data_size >= config.row_num)
+	if (config.max_data_size >= config.row_num || config.max_data_size <= 0)
 	{
 		if (config.item_num != 0 && config.data != NULL && config.index != NULL
 				&& config.item_num != 0 && config.row_num != 0)
@@ -634,7 +635,8 @@ void GPUGenie::knn_search(std::vector<int>& result,
 		case 0:
 			Logger::log(Logger::INFO, "search for csv data!");
 			knn_search_for_csv_data(result, result_count, config);
-			break;
+			cout<<"knn for csv finished!"<<endl;
+            break;
 		case 1:
 			Logger::log(Logger::INFO, "search for binary data!");
 			knn_search_for_binary_data(result, result_count, config);
@@ -651,16 +653,22 @@ void GPUGenie::knn_search(std::vector<int>& result,
 				elapsed);
 	}
 	catch (thrust::system::system_error &e){
+        cout<<"system_error : "<<e.what()<<endl;
 		throw GPUGenie::gpu_runtime_error(e.what());
 	} catch (GPUGenie::gpu_bad_alloc &e){
+        cout<<"bad_alloc"<<endl;
 		throw e;
 	} catch (GPUGenie::gpu_runtime_error &e){
-		throw e;
+		cout<<"run time error"<<endl;
+        throw e;
 	} catch(std::bad_alloc &e){
+        cout<<"cpu bad alloc"<<endl;
 		throw GPUGenie::cpu_bad_alloc(e.what());
 	} catch(std::exception &e){
+        cout<<"cpu runtime"<<endl;
 		throw GPUGenie::cpu_runtime_error(e.what());
 	} catch(...){
+        cout<<"other error"<<endl;
 		std::string msg = "Warning: Unknown Exception! Please try again or contact the author.\n";
 		throw GPUGenie::cpu_runtime_error(msg.c_str());
 	}

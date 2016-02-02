@@ -62,7 +62,8 @@ int main(int argc, char * argv[])
 	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
 		//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
 		//hash_table size is usually set as: maximum_countXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
-	config.hashtable_size = 128*config.num_of_topk*1.5;//960
+	//config.hashtable_size = 128*config.num_of_topk*1.5;//960
+    config.hashtable_size = 128*1*1.5;//354
 
 
 
@@ -100,7 +101,7 @@ int main(int argc, char * argv[])
     //below are new configurations
     config.data_type = 0;
     config.search_type = 0;
-    config.max_data_size = -1;
+    config.max_data_size = 0;
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	if(config.use_multirange)
