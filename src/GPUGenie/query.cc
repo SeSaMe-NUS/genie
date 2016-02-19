@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <cmath>
 
+
 #include "query.h"
 
 #include "Logger.h"
@@ -130,86 +131,57 @@ float GPUGenie::query::selectivity()
 
 void GPUGenie::query::build_and_apply_load_balance(int max_load)
 {
-	inv_table& table = *_ref_table;
-	this->build();
+    this->build();
 
-	vector<int>& inv_index = *table.inv_index();
-	vector<int>& inv_pos = *table.inv_pos();
+    if(max_load <= 0)
+    {
+        Logger::log(Logger::ALERT, "Please set a valid max_load.");
+        return;
+    }
 
-	if (max_load <= 0)
-	{
-		Logger::log(Logger::ALERT, "Please set a valid max_load.");
-		return;
-	}
+    _dims.clear();
 
-	_dims.clear();
-	//printf("Query %d processing...\n", _index);
-	for (std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin();
-			di != _dim_map.end(); ++di)
-	{
-		std::vector<dim>& dims = *(di->second);
-		int orginal_size = dims.size();
+    map<int, vector<dim>*>::iterator di = _dim_map.begin();
+    for( ; di != _dim_map.end(); ++di)
+    {
+        std::vector<dim>& dims = *(di->second);
+        for(unsigned int i = 0; i < dims.size(); ++i)
+        {
+            unsigned int length = dims[i].end_pos - dims[i].start_pos;
+            if((unsigned int)max_load > length)
+            {
+                _dims.push_back(dims[i]);
+                continue;
+            }
+            unsigned int j = 1;
+            for(; max_load*j <= length; ++j)
+            {
+                 dim new_dim;
+                 new_dim.query = dims[i].query;
+                 new_dim.weight = dims[i].weight;
+                 new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
+                 new_dim.end_pos = new_dim.start_pos + max_load;
+                 _dims.push_back(new_dim);
+            }
+            if(max_load*(j-1) != length)
+            {
+                 dim new_dim;
+                 new_dim.query = dims[i].query;
+                 new_dim.weight = dims[i].weight;
+                 new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
+                 new_dim.end_pos = dims[i].end_pos;
+                 _dims.push_back(new_dim);
+            }
 
-		for (int i = 0; i < orginal_size; ++i)
-		{
 
-			dim d = dims[i];
-//			printf("d %d, low %d, up %d.\n", d.low >> 16, d.low & mask, d.up & mask);
-			int low = d.low, up = d.up;
-			int vi, pi;
-			int count = 0;
+        }
+    }
 
-			for (vi = low; vi <= up; ++vi)
-			{
-				pi = inv_index[vi];
-				for (; pi < inv_index[vi + 1]; ++pi)
-				{
-					if (d.low == -1)
-					{
-						d.low = vi;
-						d.low_offset = pi - inv_index[vi];
-					}
-					count += inv_pos[pi + 1] - inv_pos[pi];
-
-					if (count >= max_load)
-					{
-						//printf(" query %d split list pi=%d inv_pos[%d]=%d  count=%d! \n", d.query,pi,pi,inv_pos[pi],count);
-						dim new_dim;
-						new_dim.weight = d.weight;
-						new_dim.query = d.query;
-						new_dim.low = d.low;
-						new_dim.low_offset = d.low_offset;
-						new_dim.up = vi;
-						new_dim.up_offset = pi - inv_index[vi];
-						_dims.push_back(new_dim);
-						count = 0;
-
-						d.low = -1;
-					}
-
-				}
-			}
-
-			if (d.low != -1)
-			{
-				dim new_dim;
-				new_dim.weight = d.weight;
-				new_dim.query = d.query;
-				new_dim.low = d.low;
-				new_dim.low_offset = d.low_offset;
-				new_dim.up = vi == 0 ? 0 : vi - 1;
-				new_dim.up_offset =
-						vi == 0 ?
-								inv_index[vi] :
-								inv_index[vi] - inv_index[vi - 1];
-				_dims.push_back(new_dim);
-			}
-		}
-
-	}
-
-	this->is_load_balanced = true;
+    this->is_load_balanced = true;
 }
+
+
+
 
 void GPUGenie::query::apply_adaptive_query_range()
 {
@@ -310,6 +282,9 @@ void GPUGenie::query::build()
 	int low, up;
 	float weight;
 	inv_table& table = *_ref_table;
+    vector<int>& inv_index = *table.inv_index();
+    vector<int>& inv_pos = *table.inv_pos();
+
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
 			di != _attr_map.end(); ++di)
 	{
@@ -347,27 +322,20 @@ void GPUGenie::query::build()
 			dim new_dim;
 			new_dim.weight = weight;
 			new_dim.query = _index;
-/*
-			if (low < inv.min())
-			{
-				low = inv.min();
-			}
-*/
+
             low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
-/*
-			if (up > inv.max())
-			{
-				up = inv.max();
-			}
-*/
+
             up = up > table.get_upperbound_of_list(index)?table.get_upperbound_of_list(index):up;
 
-			//new_dim.low = d + low - inv.min();
-            new_dim.low = d + low -table.get_lowerbound_of_list(index);
-			//new_dim.up = d + up - inv.min();
-			new_dim.up = d+ up - table.get_lowerbound_of_list(index);
-            new_dim.low_offset = ran.low_offset;
-			new_dim.up_offset = ran.up_offset;
+            //new_dim.low = d + low - inv.min();
+
+            int _min, _max;
+
+            _min = d + low - table.get_lowerbound_of_list(index);
+            _max = d + up - table.get_lowerbound_of_list(index);
+
+            new_dim.start_pos = inv_pos[inv_index[_min]];
+            new_dim.end_pos = inv_pos[inv_index[_max+1]];
 
 			_dim_map[index]->push_back(new_dim);
 		}
@@ -377,6 +345,10 @@ void GPUGenie::query::build()
 
 void GPUGenie::query::build_compressed()
 {
+    this->build();
+}
+
+/*{
 	int low, up;
 	float weight;
 	inv_table& table = *_ref_table;
@@ -418,16 +390,7 @@ void GPUGenie::query::build_compressed()
 			dim new_dim;
 			new_dim.weight = weight;
 			new_dim.query = _index;
-/*
-			if (low < inv.min())
-			{
-				low = inv.min();
-			}
-			if (up > inv.max())
-			{
-				up = inv.max();
-			}
-*/
+
             low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
             up = up > table.get_upperbound_of_list(index)?table.get_upperbound_of_list(index):up;
 
@@ -456,13 +419,14 @@ void GPUGenie::query::build_compressed()
 		}
 	}
 }
+*/
 
 int GPUGenie::query::dump(vector<dim>& vout)
 {
 	if (is_load_balanced)
 	{
-		for (unsigned int i = 0; i < _dims.size(); ++i)
-		{
+        for(unsigned int i = 0; i < _dims.size(); ++i)
+        {
 			vout.push_back(_dims[i]);
 		}
 		return _dims.size();

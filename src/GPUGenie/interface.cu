@@ -327,6 +327,7 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
             _result[i][j] += accumulate_num;
         }
     }
+
     merge_knn_results_from_multiload(_result, _result_count, result,
             result_count, table_num, config.num_of_topk, queries.size());
 }
@@ -352,7 +353,7 @@ void GPUGenie::load_table(inv_table& table,
 		table.append(list);
 	}
 
-	table.build(config.posting_list_max_length);
+	table.build(config.posting_list_max_length, config.use_load_balance);
 
 	if (config.save_to_gpu)
 		table.cpy_data_to_gpu();
@@ -400,7 +401,7 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 		table.append(list);
 	}
 
-	table.build(config.posting_list_max_length);
+	table.build(config.posting_list_max_length, config.use_load_balance);
 
 	if (config.save_to_gpu)
 		table.cpy_data_to_gpu();
@@ -542,7 +543,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 	inv_list list;
 	list.invert_bijectMap(data_points);
 	table.append(list);
-	table.build(config.posting_list_max_length);
+	table.build(config.posting_list_max_length, config.use_load_balance);
 
 	if (config.save_to_gpu)
 		table.cpy_data_to_gpu();
@@ -570,7 +571,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	list.invert_bijectMap(data, item_num, index, row_num);
 
 	table.append(list);
-	table.build(config.posting_list_max_length);
+	table.build(config.posting_list_max_length, config.use_load_balance);
 
 	if (config.save_to_gpu)
 		table.cpy_data_to_gpu();

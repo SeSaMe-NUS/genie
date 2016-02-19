@@ -255,7 +255,7 @@ public:
 	 *          only be done after the inv_table has been builded.
 	 */
 	void
-	build(u64 max_length);
+	build(u64 max_length, bool use_load_balance);
 
 	/**
 	 * @brief Build the inv_table as a compressed array.
@@ -289,5 +289,6 @@ public:
 
 };
 }
+
 
 #endif

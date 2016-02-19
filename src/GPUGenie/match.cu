@@ -617,8 +617,7 @@ u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 //for AT: for adaptiveThreshold, this is function for bitmap
 
 __global__
-void match(int m_size, int i_size, int hash_table_size, int* d_ck, int* d_inv,
-		int* d_inv_index, int* d_inv_pos, query::dim* d_dims,
+void match(int m_size, int i_size, int hash_table_size, int* d_inv, query::dim* d_dims,
 		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
 		int threshold, u32 * noiih, bool * overflow)
 {
@@ -634,6 +633,7 @@ void match(int m_size, int i_size, int hash_table_size, int* d_ck, int* d_inv,
 		bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
 	u32 access_id;
 
+    /*
 	int min, max, min_offset, max_offset;
 	min = q.low;
 	min_offset = q.low_offset;
@@ -641,9 +641,18 @@ void match(int m_size, int i_size, int hash_table_size, int* d_ck, int* d_inv,
 	max_offset = q.up_offset;
 	if (min > max)
 		return;
+*/
 
+    if(q.start_pos >= q.end_pos)
+        return;
+
+    int min, max;
+    /*
 	min = d_inv_pos[d_inv_index[min] + min_offset];
 	max = d_inv_pos[d_inv_index[max] + max_offset + 1];
+*/
+    min = q.start_pos;
+    max = q.end_pos;
 
 	bool key_eligible;
 
@@ -711,8 +720,8 @@ __device__ inline void updateThreshold(u32* my_passCount, u32* my_threshold,
 }
 //for AT: for adaptiveThreshold match function for adaptiveThreshold
 __global__
-void match_AT(int m_size, int i_size, int hash_table_size, int* d_ck,
-		int* d_inv, int* d_inv_index, int* d_inv_pos, query::dim* d_dims,
+void match_AT(int m_size, int i_size, int hash_table_size,
+		int* d_inv, query::dim* d_dims,
 		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
 		u32* d_topks, u32* d_threshold, //initialized as 1, and increase gradually
 		u32* d_passCount, //initialized as 0, count the number of items passing one d_threshold
@@ -732,7 +741,7 @@ void match_AT(int m_size, int i_size, int hash_table_size, int* d_ck,
 	if (bitmap_bits)
 		bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
 	u32 access_id;
-
+/*
 	int min, max, min_offset, max_offset;
 	min = q.low;
 	min_offset = q.low_offset;
@@ -740,9 +749,17 @@ void match_AT(int m_size, int i_size, int hash_table_size, int* d_ck,
 	max_offset = q.up_offset;
 	if (min > max)
 		return;
-
+*/
+    int min, max;
+    if(q.start_pos >= q.end_pos)
+        return;
+/*
 	min = d_inv_pos[d_inv_index[min] + min_offset];
 	max = d_inv_pos[d_inv_index[max] + max_offset + 1];
+*/
+
+    min = q.start_pos;
+    max = q.end_pos;
 
 	bool key_eligible;                //
 	bool pass_threshold;    //to determine whether pass the check of my_theshold
@@ -1017,10 +1034,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 				(table.m_size(),
 						table.i_size(),
 						hash_table_size,
-						table.d_ck_p,
 						table.d_inv_p,
-						table.d_inv_index_p,
-						table.d_inv_pos_p,
 						d_dims_p,
 						d_hash_table,
 						d_bitmap_p,
@@ -1052,10 +1066,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 				(table.m_size(),
 						table.i_size(),
 						hash_table_size,
-						table.d_ck_p,
 						table.d_inv_p,
-						table.d_inv_index_p,
-						table.d_inv_pos_p,
 						d_dims_p,
 						d_hash_table,
 						d_bitmap_p,

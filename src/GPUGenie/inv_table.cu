@@ -27,14 +27,15 @@ void GPUGenie::inv_table::init()
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
 	try{
+        /*
 		cudaMalloc(&d_ck_p, sizeof(int) * _ck.size());
 		cudaMemcpy(d_ck_p, &_ck[0], sizeof(int) * _ck.size(),
 				cudaMemcpyHostToDevice);
-
+*/
 		cudaMalloc(&d_inv_p, sizeof(int) * _inv.size());
 		cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),
 				cudaMemcpyHostToDevice);
-
+/*
 		cudaMalloc(&d_inv_index_p, sizeof(int) * _inv_index.size());
 		cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int) * _inv_index.size(),
 				cudaMemcpyHostToDevice);
@@ -42,6 +43,7 @@ bool GPUGenie::inv_table::cpy_data_to_gpu()
 		cudaMalloc(&d_inv_pos_p, sizeof(int) * _inv_pos.size());
 		cudaMemcpy(d_inv_pos_p, &_inv_pos[0], sizeof(int) * _inv_pos.size(),
 				cudaMemcpyHostToDevice);
+                */
 	} catch(std::bad_alloc &e){
 		throw(GPUGenie::gpu_bad_alloc(e.what()));
 	}
@@ -64,10 +66,12 @@ GPUGenie::inv_table::~inv_table()
 	if (is_stored_in_gpu == true)
 	{
 		cudaFree(d_inv_p);
-		cudaFree(d_inv_index_p);
+	/*
+        cudaFree(d_inv_index_p);
 		cudaFree(d_inv_pos_p);
 		cudaFree(d_ck_p);
-	}
+	*/
+    }
 }
 
 void GPUGenie::inv_table::clear_gpu_mem()
@@ -76,9 +80,11 @@ void GPUGenie::inv_table::clear_gpu_mem()
 		return;
 
 	cudaFree(d_inv_p);
-	cudaFree(d_inv_index_p);
+	/*
+    cudaFree(d_inv_index_p);
 	cudaFree(d_inv_pos_p);
 	cudaFree(d_ck_p);
+    */
 	is_stored_in_gpu = false;
 
 }
@@ -239,12 +245,16 @@ GPUGenie::inv_table::ck_map()
 }
 
 void
-GPUGenie::inv_table::build(u64 max_length)
+GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 {
 	_ck.clear(), _inv.clear();
 	_inv_index.clear();
 	_inv_pos.clear();
-	unsigned int last;
+    if(!use_load_balance)
+    {
+        max_length = (u64)0 - (u64)1;
+    }
+    unsigned int last;
 	int key, dim, value;
 	for (unsigned int i = 0; i < _inv_lists.size(); i++)
 	{
@@ -267,7 +277,7 @@ GPUGenie::inv_table::build(u64 max_length)
 			}
 			for (unsigned int j = 0; j < index.size(); j++)
 			{
-				if (j % max_length == 0)
+                if (j % max_length == 0)
 				{
 					_inv_pos.push_back(_inv.size());
 				}

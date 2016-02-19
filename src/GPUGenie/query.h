@@ -13,6 +13,9 @@ namespace GPUGenie
 
 typedef unsigned int u32;
 typedef unsigned long long u64;
+
+
+
 class query
 {
 public:
@@ -27,16 +30,13 @@ public:
 		int up_offset;
 		float selectivity;
 	};
-	struct dim
-	{
-		int query;
-		int low;
-		int up;
-		float weight;
-		int low_offset;
-		int up_offset;
-	};
-
+    struct dim
+    {
+         int query;
+         int start_pos;// with respect to inv[], containing data points
+         int end_pos;
+         float weight;
+    };
 private:
 	/**
 	 * @brief The refrenced table.
