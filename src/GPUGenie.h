@@ -11,9 +11,11 @@ typedef unsigned long long u64;
 #include <GPUGenie/query.h>
 #include <GPUGenie/match.h>
 #include <GPUGenie/topk.h>
+#include <GPUGenie/heap_count.h>
 #include <GPUGenie/FileReader.h>// to read csv file data for simple examples
 #include <GPUGenie/interface.h>
 #include <GPUGenie/knn.h>
+
 
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/Timing.h>

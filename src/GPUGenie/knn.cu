@@ -5,7 +5,8 @@
 #include "raw_data.h"
 #include "inv_list.h"
 #include "match.h"
-#include "topk.h"
+//#include "topk.h"
+#include "heap_count.h"
 
 #include "Logger.h"
 #include "Timing.h"
@@ -31,15 +32,25 @@ unsigned long long GPUGENIE_TIME = 0ull;
 #define GPUGenie_knn_DEFAULT_DATA_PER_THREAD 256
 #endif
 
+//__global__
+//void extract_index_and_count(int * id, int * count, data_t * od, int size)
+//{
+//	int tId = threadIdx.x + blockIdx.x * blockDim.x;
+//	if (tId >= size)
+//		return;
+//	int topk_id = id[tId];
+//	id[tId] = od[topk_id].id;
+//	count[tId] = (int) od[topk_id].aggregation;
+//}
+
 __global__
-void extract_index_and_count(int * id, int * count, data_t * od, int size)
+void extract_index_and_count(data_t * data, int * id, int * count, int size)
 {
 	int tId = threadIdx.x + blockIdx.x * blockDim.x;
 	if (tId >= size)
 		return;
-	int topk_id = id[tId];
-	id[tId] = od[topk_id].id;
-	count[tId] = (int) od[topk_id].aggregation;
+	id[tId] = data[tId].id;
+	count[tId] = (int) data[tId].aggregation;
 }
 
 void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
@@ -85,11 +96,12 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 			getInterval(startKnn, end2Knn));
 
 	device_vector<u32> d_num_of_items_in_hashtable(queries.size());
+	device_vector<u32> d_threshold, d_passCount;
 
 	Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load);
 
 	match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
-			bitmap_bits, d_num_of_items_in_hashtable);
+			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 
 	u64 end1Knn = getTime();
 	Logger::log(Logger::VERBOSE, ">>>>> knn() after match() %f ms <<<<<",
@@ -103,7 +115,11 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();
 
-	topk(d_data, queries, d_top_indexes, float(dim));
+	//topk(d_data, queries, d_top_indexes, float(dim));
+
+	thrust::device_vector<data_t> d_topk;
+	heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+			queries[0].topk(),queries.size());
 
 	u64 end = getTime();
 	Logger::log(Logger::INFO, "Topk Finished!");
@@ -111,13 +127,23 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 			getInterval(start, end));
 	start = getTime();
 
-	d_top_count.resize(d_top_indexes.size());
+//	d_top_count.resize(d_top_indexes.size());
+//	extract_index_and_count<<<
+//			d_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
+//			GPUGenie_knn_THREADS_PER_BLOCK>>>(
+//			thrust::raw_pointer_cast(d_top_indexes.data()),
+//			thrust::raw_pointer_cast(d_top_count.data()),
+//			thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
+
+	d_top_count.resize(d_topk.size());
+	d_top_indexes.resize(d_topk.size());
 	extract_index_and_count<<<
 			d_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
 			GPUGenie_knn_THREADS_PER_BLOCK>>>(
+			thrust::raw_pointer_cast(d_topk.data()),
 			thrust::raw_pointer_cast(d_top_indexes.data()),
-			thrust::raw_pointer_cast(d_top_count.data()),
-			thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
+			thrust::raw_pointer_cast(d_top_count.data()), d_top_indexes.size());
+
 
 	end = getTime();
 	Logger::log(Logger::INFO, "Finish topk search!");

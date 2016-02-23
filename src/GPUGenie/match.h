@@ -23,6 +23,7 @@ typedef struct data_
 namespace GPUGenie
 {
 
+
 int
 cal_max_topk(vector<query>& queries);
 
@@ -48,9 +49,10 @@ match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data,
 void
 match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data,
 		device_vector<u32>& d_bitmap, int hash_table_size, int max_load,
-		int bitmap_bits, device_vector<u32>& d_noiih);
+		int bitmap_bits, device_vector<u32>& d_noiih,
+		device_vector<u32>& d_threshold, device_vector<u32>& d_passCount);
 
-void
+int
 build_queries(vector<query>& queries, inv_table& table,
 		vector<query::dim>& dims, int max_load);
 

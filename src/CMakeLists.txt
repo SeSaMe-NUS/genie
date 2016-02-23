@@ -39,6 +39,8 @@ set(LIB_SRC_LIST
   GPUGenie/interface.cu
   GPUGenie/knn.h
   GPUGenie/knn.cu
+  GPUGenie/heap_count.h
+  GPUGenie/heap_count.cu  
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cc
 )

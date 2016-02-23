@@ -117,7 +117,6 @@ u32 pack_count(u32 data, int offset, int bits, u32 count)
 	r |= (count << offset);
 	return r;
 }
-
 __inline__ __device__
 void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 		query::dim& q, bool * key_found)
@@ -851,10 +850,11 @@ void convert_to_data(T_HASHTABLE* table, u32 size)
 } //End of namespace device
 } //End of namespace GPUGenie
 
-void GPUGenie::build_queries(vector<query>& queries, inv_table& table,
+int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 		vector<query::dim>& dims, int max_load)
 {
 	try{
+		int max_count = -1;
 		for (unsigned int i = 0; i < queries.size(); ++i)
 		{
 			if (queries[i].ref_table() != &table)
@@ -872,9 +872,11 @@ void GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 
 			else if (table.build_status() == inv_table::builded_compressed)
 				queries[i].build_compressed();
-
+			int count = queries[i].count_ranges();
+			if(count > max_count) max_count = count;
 			queries[i].dump(dims);
 		}
+		return max_count;
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::cpu_bad_alloc(e.what());
 	} catch(GPUGenie::cpu_runtime_error &e){
@@ -898,15 +900,15 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		device_vector<data_t>& d_data, int hash_table_size, int max_load,
 		int bitmap_bits, device_vector<u32>& d_noiih)
 {
-	device_vector<u32> d_bitmap;
+	device_vector<u32> d_bitmap, d_threshold, d_passCount;
 	match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
-			bitmap_bits, d_noiih);
+			bitmap_bits, d_noiih,d_threshold, d_passCount);
 }
 
 void GPUGenie::match(inv_table& table, vector<query>& queries,
 		device_vector<data_t>& d_data, device_vector<u32>& d_bitmap,
 		int hash_table_size, int max_load, int bitmap_bits,	//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
-		device_vector<u32>& d_noiih)
+		device_vector<u32>& d_noiih, device_vector<u32>& d_threshold, device_vector<u32>& d_passCount)
 {
 	try{
 		u64 match_stop, match_start;
@@ -919,7 +921,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 
 		if (table.build_status() == inv_table::not_builded)
 			throw GPUGenie::cpu_runtime_error("table not built!");
-
+		u32 num_of_max_count=0,max_topk=0;
 		u32 loop_count = 0u;
 		d_noiih.resize(queries.size(), 0);
 		u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
@@ -930,7 +932,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		u64 match_query_start, match_query_end;
 		match_query_start = getTime();
 
-		build_queries(queries, table, dims, max_load);
+		num_of_max_count = build_queries(queries, table, dims, max_load);
 
 		match_query_end = getTime();
 		Logger::log(Logger::VERBOSE,
@@ -1026,8 +1028,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		{
 			h_overflow[0] = false;
 			cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-			//cudaCheckErrors(cudaDeviceSynchronize());
-			u32 num_of_max_count=0,max_topk=0;
 			if(!useAdaptiveThreshold)//for AT: for adaptiveThreshold, branch here
 			{
 				device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
@@ -1048,13 +1048,11 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 			else
 			{ //for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
-				device_vector<u32> d_threshold;
 				d_threshold.resize(queries.size(),1);
 				//thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
 				u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
-				device_vector<u32> d_passCount;
-				num_of_max_count = dims.size();
+				//num_of_max_count = dims.size();
 				d_passCount.resize(queries.size()*num_of_max_count,0u);//
 				//thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
 				u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
@@ -1080,6 +1078,19 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 				if(!table.is_stored_in_gpu)
 				table.clear_gpu_mem();
 			}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
+
+			//DEBUG
+			thrust::host_vector<u32> h_passCount(d_passCount);
+			printf("passCount in match.cu:\n");
+			for(int i = 0; i < queries.size(); ++i){
+				printf("query %d:\n", i);
+				for(int j = 0; j < h_passCount.size() / queries.size(); ++j){
+					printf("[%d]%d ", j, h_passCount[i * h_passCount.size() / queries.size() + j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+			//End DEBUG
 
 			cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
