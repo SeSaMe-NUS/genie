@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
 	config.count_threshold = -128;
 
 	//Number of topk items to select for each query.
-	config.num_of_topk = 10;
+	config.num_of_topk = 1;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
