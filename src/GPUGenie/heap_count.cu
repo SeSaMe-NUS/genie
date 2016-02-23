@@ -137,24 +137,24 @@ void heap_count_topk(thrust::device_vector<data_t>& d_data,
 					sizeof(int) * threads * num_of_queries));
 
 	//DEBUG
-	thrust::host_vector<u32> h_threshold_b(d_threshold);
-	printf("Thresholds before minus one transforms:\n");
-	for(int i = 0; i < h_threshold_b.size(); ++i){
-		printf("%d ", h_threshold_b[i]);
-	}
-	printf("\n");
+//	thrust::host_vector<u32> h_threshold_b(d_threshold);
+//	printf("Thresholds before minus one transforms:\n");
+//	for(int i = 0; i < h_threshold_b.size(); ++i){
+//		printf("%d ", h_threshold_b[i]);
+//	}
+//	printf("\n");
 	//End DEBUG
 	d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 	minus_one<<<d_threshold.size() / GPUGenie_Minus_One_THREADS_PER_BLOCK + 1,
 			GPUGenie_Minus_One_THREADS_PER_BLOCK>>>(d_threshold_p,
 			d_threshold.size());
 	//DEBUG
-	thrust::host_vector<u32> h_threshold_af(d_threshold);
-	printf("Thresholds after minus one transforms:\n");
-	for(int i = 0; i < h_threshold_af.size(); ++i){
-		printf("%d ", h_threshold_af[i]);
-	}
-	printf("\n");
+//	thrust::host_vector<u32> h_threshold_af(d_threshold);
+//	printf("Thresholds after minus one transforms:\n");
+//	for(int i = 0; i < h_threshold_af.size(); ++i){
+//		printf("%d ", h_threshold_af[i]);
+//	}
+//	printf("\n");
 	//End DEBUG
 
 	d_data_p = thrust::raw_pointer_cast(d_data.data());
@@ -168,15 +168,15 @@ void heap_count_topk(thrust::device_vector<data_t>& d_data,
 	cudaMemcpy((void*) h_result, d_num_over_threshold_p,
 			sizeof(int) * threads * num_of_queries, cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < 5; ++i)
-	{
-		for (int j = 0; j < 10; ++j)
-		{
-			printf("%d ", h_result[i * threads + j]);
-		}
-		printf("\n");
-	}
-	printf("-----------------------------------\n");
+//	for (int i = 0; i < 5; ++i)
+//	{
+//		for (int j = 0; j < 10; ++j)
+//		{
+//			printf("%d ", h_result[i * threads + j]);
+//		}
+//		printf("\n");
+//	}
+//	printf("-----------------------------------\n");
 
 	int * d_buffer, *d_scan_indices;
 	cudaMalloc((void**) &d_buffer, 2 * sizeof(int) * threads * num_of_queries);
@@ -194,19 +194,18 @@ void heap_count_topk(thrust::device_vector<data_t>& d_data,
 			sizeof(int) * (threads + 1) * num_of_queries,
 			cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < 5; ++i)
-	{
-		for (int j = 0; j < 10; ++j)
-		{
-			printf("%d ", h_result[i * (threads + 1) + j]);
-		}
-		printf("\n");
-	}
-	printf("-----------------------------------\n");
+//	for (int i = 0; i < 5; ++i)
+//	{
+//		for (int j = 0; j < 10; ++j)
+//		{
+//			printf("%d ", h_result[i * (threads + 1) + j]);
+//		}
+//		printf("\n");
+//	}
+//	printf("-----------------------------------\n");
 
 	d_topk.resize(topk * num_of_queries);
-	data_t empty_data =
-	{ 0, 0 };
+	data_t empty_data ={ 0, 0 };
 	thrust::fill(d_topk.begin(), d_topk.end(), empty_data);
 	data_t * d_topk_p = thrust::raw_pointer_cast(d_topk.data());
 
@@ -218,16 +217,16 @@ void heap_count_topk(thrust::device_vector<data_t>& d_data,
 	cudaMemcpy((void*) h_topk_result, d_topk_p,
 			sizeof(data_t) * topk * num_of_queries, cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < 5; ++i)
-	{
-		for (int j = 0; j < topk && j < 10; ++j)
-		{
-			printf("%d ", int(h_topk_result[i * topk + j].aggregation));
-		}
-		printf("\n");
-	}
-	printf("-----------------------------------\n");
-	printf("Number of threads per block launched: %d.\n", threads);
+//	for (int i = 0; i < 5; ++i)
+//	{
+//		for (int j = 0; j < topk && j < 10; ++j)
+//		{
+//			printf("%d ", int(h_topk_result[i * topk + j].aggregation));
+//		}
+//		printf("\n");
+//	}
+//	printf("-----------------------------------\n");
+//	printf("Number of threads per block launched: %d.\n", threads);
 
 	cudaCheckErrors(cudaFree(d_num_over_threshold_p));
 	cudaCheckErrors(cudaFree(d_buffer));

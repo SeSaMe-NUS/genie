@@ -1080,16 +1080,16 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 			}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
 
 			//DEBUG
-			thrust::host_vector<u32> h_passCount(d_passCount);
-			printf("passCount in match.cu:\n");
-			for(int i = 0; i < queries.size(); ++i){
-				printf("query %d:\n", i);
-				for(int j = 0; j < h_passCount.size() / queries.size(); ++j){
-					printf("[%d]%d ", j, h_passCount[i * h_passCount.size() / queries.size() + j]);
-				}
-				printf("\n");
-			}
-			printf("\n");
+//			thrust::host_vector<u32> h_passCount(d_passCount);
+//			printf("passCount in match.cu:\n");
+//			for(int i = 0; i < queries.size(); ++i){
+//				printf("query %d:\n", i);
+//				for(int j = 0; j < h_passCount.size() / queries.size(); ++j){
+//					printf("[%d]%d ", j, h_passCount[i * h_passCount.size() / queries.size() + j]);
+//				}
+//				printf("\n");
+//			}
+//			printf("\n");
 			//End DEBUG
 
 			cudaCheckErrors(cudaDeviceSynchronize());
