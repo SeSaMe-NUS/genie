@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
 	config.count_threshold = -128;
 
 	//Number of topk items to select for each query.
-	config.num_of_topk = 1;
+	config.num_of_topk = 10;
 
 	//if config.hashtable_size<=2, the hashtable_size means ratio against data size
 		//Hash Table size is set as: config.hashtable_size (i.e.) ratio X data size.
@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
 	config.query_radius = 1;
 
 	//Index of the GPU device to be used. If you only have one card, then set to 0.
-	config.use_device = 1;
+	config.use_device = 0;
 
 
 	//Set if adaptive range of query is used.
@@ -101,7 +101,7 @@ int main(int argc, char * argv[])
     //below are new configurations
     config.data_type = 0;
     config.search_type = 0;
-    config.max_data_size = 0;
+    config.max_data_size = 400;
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	if(config.use_multirange)

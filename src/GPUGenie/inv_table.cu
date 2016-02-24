@@ -32,9 +32,8 @@ bool GPUGenie::inv_table::cpy_data_to_gpu()
 		cudaMemcpy(d_ck_p, &_ck[0], sizeof(int) * _ck.size(),
 				cudaMemcpyHostToDevice);
 */
-		cudaMalloc(&d_inv_p, sizeof(int) * _inv.size());
-		cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),
-				cudaMemcpyHostToDevice);
+		cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
+		cudaCheckErrors(cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
 /*
 		cudaMalloc(&d_inv_index_p, sizeof(int) * _inv_index.size());
 		cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int) * _inv_index.size(),
@@ -65,7 +64,7 @@ GPUGenie::inv_table::~inv_table()
 {
 	if (is_stored_in_gpu == true)
 	{
-		cudaFree(d_inv_p);
+		cudaCheckErrors(cudaFree(d_inv_p));
 	/*
         cudaFree(d_inv_index_p);
 		cudaFree(d_inv_pos_p);
