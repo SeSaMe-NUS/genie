@@ -5,11 +5,13 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/count.h>
+#include "Timing.h"
 #include "match.h"
 #include "genie_errors.h"
 
 #define THREADS_PER_BLOCK 256
 #define GPUGenie_Minus_One_THREADS_PER_BLOCK 1024
+
 using namespace std;
 
 __global__
@@ -119,6 +121,36 @@ void transform_threshold(u32 * thresholds, int size, int max_count)
 	}
 }
 
+void write_hashtable_to_file(thrust::device_vector<data_t>& d_data, int num_of_queries){
+
+	int part_size = d_data.size() / num_of_queries;
+	thrust::host_vector<data_t> h_data(d_data);
+	FILE * fout = NULL;
+	FILE * fout_compact = NULL;
+	std::string s = currentDateTime();
+	char fout_name[100];
+	char fout_compact_name[100];
+	sprintf(fout_name, "%s.txt", s.c_str());
+	sprintf(fout_compact_name, "%s-compact.txt", s.c_str());
+	fout = fopen(fout_name, "w");
+	fout_compact = fopen(fout_compact_name, "w");
+	for(int qi = 0; qi < num_of_queries; ++qi){
+		fprintf(fout, "Query %d:\n", qi);
+		fprintf(fout_compact, "Query %d:\n", qi);
+		for(int di = 0; di < part_size; ++di){
+			int id = qi * part_size + di;
+			if(h_data[id].aggregation != 0.0f || h_data[id].id != 0){
+				fprintf(fout_compact, "[%d] %d\n", h_data[id].id, int(h_data[id].aggregation));
+			}
+			fprintf(fout, "[%d] %d\n", h_data[id].id, int(h_data[id].aggregation));
+		}
+		fprintf(fout, "\n");
+		fprintf(fout_compact, "\n");
+	}
+	fclose(fout);
+	fclose(fout_compact);
+}
+
 void heap_count_topk(thrust::device_vector<data_t>& d_data,
 		thrust::device_vector<data_t>& d_topk,
 		thrust::device_vector<u32>& d_threshold,
@@ -140,6 +172,9 @@ void heap_count_topk(thrust::device_vector<data_t>& d_data,
 					sizeof(int) * threads * num_of_queries));
 
 	//DEBUG
+
+	//write_hashtable_to_file(d_data, num_of_queries);
+
 //	thrust::host_vector<u32> h_threshold_b(d_threshold);
 //	printf("Thresholds before minus one transforms:\n");
 //	for(int i = 0; i < h_threshold_b.size(); ++i){

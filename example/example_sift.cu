@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
 
 
 	config.multiplier = 1.5f;
-	config.posting_list_max_length = 6400;
+	config.posting_list_max_length = 256;
 	config.use_load_balance = true;
 	config.use_multirange = true;
 

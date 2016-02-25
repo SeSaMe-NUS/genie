@@ -754,9 +754,13 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 				{
 					queries[i].build();
 				}
-			int count = queries[i].count_ranges();
-			if(count > max_count) max_count = count;
+			int prev_size = dims.size();
+
 			queries[i].dump(dims);
+
+			int count = dims.size() - prev_size;
+
+			if(count > max_count) max_count = count;
 		}
 		return max_count;
 	} catch(std::bad_alloc &e){
@@ -804,7 +808,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		if (table.build_status() == inv_table::not_builded)
 			throw GPUGenie::cpu_runtime_error("table not built!");
 		u32 num_of_max_count=0,max_topk=0;
-		u32 loop_count = 0u;
+		u32 loop_count = 1u;
 		d_noiih.resize(queries.size(), 0);
 		u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
 
@@ -908,18 +912,21 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		{
 			h_overflow[0] = false;
 			cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-            d_threshold.resize(queries.size(),1);
+            d_threshold.resize(queries.size());
+            thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
             u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
             //which num_of_max_count should be used?
 
-            num_of_max_count = dims.size();
+            //num_of_max_count = dims.size();
             
-            d_passCount.resize(queries.size()*num_of_max_count,0u);//
+            d_passCount.resize(queries.size()*num_of_max_count);
+            thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
             u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
             max_topk = cal_max_topk(queries);
             device_vector<u32> d_topks;
-            d_topks.resize(queries.size(),max_topk);
+            d_topks.resize(queries.size());
+            thrust::fill(d_topks.begin(), d_topks.end(), max_topk);
             u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
@@ -946,7 +953,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
 			if(h_overflow[0])
-			{	loop_count ++;
+			{
 				hash_table_size += num_of_max_count*max_topk;
 				if(hash_table_size > table.i_size())
 				{
@@ -963,10 +970,11 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 				d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 			}
 
-			if (loop_count>0)
+			if (loop_count>1 || (loop_count == 1 && h_overflow[0]))
 			{
 				Logger::log(Logger::INFO,"%d time trying to launch match kernel: %s!", loop_count, h_overflow[0]?"failed":"succeeded");
 			}
+			loop_count ++;
 
 		}while(h_overflow[0]);
 

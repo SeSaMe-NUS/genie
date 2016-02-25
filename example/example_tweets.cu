@@ -74,14 +74,14 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	//if use_load_balance=false, config.multiplier and config.posting_list_max_length are not useful
 	config.use_load_balance = true;
 	//maximum number per posting list, if a keyword has a long posting list, we break it into sublists, and this parameter defines the maximum length of sub-list
-	config.posting_list_max_length = 64000;
+	config.posting_list_max_length = 256;
 	config.multiplier = 1.5f;//config.multiplier*config.posting_list_max_length is  maximum number of elements processed by one block
 
 	config.use_multirange = false;
 
     config.data_type = 0;
     config.search_type = 1;
-    config.max_data_size = 0;
+    config.max_data_size =400 ;
 
     config.num_of_queries = 10;
 

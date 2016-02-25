@@ -10,6 +10,7 @@
 
 #include "Logger.h"
 #include "Timing.h"
+#include "genie_errors.h"
 
 #include "knn.h"
 
@@ -86,31 +87,27 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 			bitmap_bits, dim);
 	dim = 2;
 
-	u64 startKnn = getTime();
-
 	device_vector<data_t> d_data;
 	device_vector<u32> d_bitmap;
-
-	u64 end2Knn = getTime();
-	Logger::log(Logger::VERBOSE, ">>>>> knn() before match() %f ms <<<<<",
-			getInterval(startKnn, end2Knn));
 
 	device_vector<u32> d_num_of_items_in_hashtable(queries.size());
 	device_vector<u32> d_threshold, d_passCount;
 
 	Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load);
 
+	if(queries.empty()){
+		throw GPUGenie::cpu_runtime_error("Queries not loaded!");
+	}
+
+	u64 startMatch = getTime();
+
 	match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 
-	u64 end1Knn = getTime();
-	Logger::log(Logger::VERBOSE, ">>>>> knn() after match() %f ms <<<<<",
-			getInterval(startKnn, end1Knn));
-
-	u64 endKnn = getTime();
+	u64 endMatch = getTime();
 	Logger::log(Logger::VERBOSE,
-			">>>>> knn() before topk and extractIndex %f ms <<<<<",
-			getInterval(startKnn, endKnn));
+			">>>>> match() takes %f ms <<<<<",
+			getInterval(startMatch, endMatch));
 
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();

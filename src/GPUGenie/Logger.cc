@@ -11,16 +11,20 @@
 #include <sys/time.h>
 #include <ctime>
 
+#include "Timing.h"
+
 const char * const Logger::LEVEL_NAMES[] =
 { "NONE   ", "ALERT  ", "INFO   ", "VERBOSE", "DEBUG  " };
 
-const char * Logger::default_name = "GPUGENIE_LOG.log";
 Logger * Logger::logger = NULL;
 
 Logger::Logger(int level)
 {
 	log_level = level;
-	strcpy(logfile_name, default_name);
+	std::string s = currentDateTime();
+	char fout_name[128];
+	sprintf(fout_name, "GPUGENIE_LOG-%s.log", s.c_str());
+	strcpy(logfile_name, fout_name);
 	logfile = fopen(logfile_name, "a");
 }
 

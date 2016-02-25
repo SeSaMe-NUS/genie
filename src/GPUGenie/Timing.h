@@ -8,6 +8,10 @@
 #ifndef TIMING_H_
 #define TIMING_H_
 
+#include <string>
+
+std::string currentDateTime();
+
 unsigned long long getTime(void);
 
 double getInterval(unsigned long long start, unsigned long long stop);

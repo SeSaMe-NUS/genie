@@ -37,7 +37,6 @@ public:
 private:
 	static Logger * logger;
 	int log_level;
-	static const char * default_name;
 	char logfile_name[LOGGER_MAX_FILE_NAME_SIZE];
 	FILE * logfile;
 
