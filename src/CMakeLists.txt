@@ -5,14 +5,6 @@ link_directories(${PROJECT_SOURCE_DIR}/src)
 set(LIB_SRC_LIST
   GPUGenie.h
   
-  GPUGenie/lib/bucket_topk/assign_bucket.inc
-  GPUGenie/lib/bucket_topk/bucket_topk.h
-  GPUGenie/lib/bucket_topk/bucket_topk.inc
-  GPUGenie/lib/bucket_topk/count_sum.inc
-  GPUGenie/lib/bucket_topk/result_thread_partition.inc
-  GPUGenie/lib/bucket_topk/save_result.inc
-  GPUGenie/lib/bucket_topk/update_min_max.inc
-  GPUGenie/lib/bucket_topk/utils.inc
 
   GPUGenie/genie_errors.h
   GPUGenie/genie_errors.cu
@@ -33,8 +25,6 @@ set(LIB_SRC_LIST
   GPUGenie/query.cc
   GPUGenie/match.h
   GPUGenie/match.cu
-  GPUGenie/topk.h
-  GPUGenie/topk.cu
   GPUGenie/interface.h
   GPUGenie/interface.cu
   GPUGenie/knn.h

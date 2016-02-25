@@ -5,7 +5,6 @@
 #include "raw_data.h"
 #include "inv_list.h"
 #include "match.h"
-//#include "topk.h"
 #include "heap_count.h"
 
 #include "Logger.h"
@@ -32,17 +31,6 @@ unsigned long long GPUGENIE_TIME = 0ull;
 #ifndef GPUGenie_knn_DEFAULT_DATA_PER_THREAD
 #define GPUGenie_knn_DEFAULT_DATA_PER_THREAD 256
 #endif
-
-//__global__
-//void extract_index_and_count(int * id, int * count, data_t * od, int size)
-//{
-//	int tId = threadIdx.x + blockIdx.x * blockDim.x;
-//	if (tId >= size)
-//		return;
-//	int topk_id = id[tId];
-//	id[tId] = od[topk_id].id;
-//	count[tId] = (int) od[topk_id].aggregation;
-//}
 
 __global__
 void extract_index_and_count(data_t * data, int * id, int * count, int size)
@@ -124,13 +112,6 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 			getInterval(start, end));
 	start = getTime();
 
-//	d_top_count.resize(d_top_indexes.size());
-//	extract_index_and_count<<<
-//			d_top_indexes.size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
-//			GPUGenie_knn_THREADS_PER_BLOCK>>>(
-//			thrust::raw_pointer_cast(d_top_indexes.data()),
-//			thrust::raw_pointer_cast(d_top_count.data()),
-//			thrust::raw_pointer_cast(d_data.data()), d_top_indexes.size());
 
 	d_top_count.resize(d_topk.size());
 	d_top_indexes.resize(d_topk.size());
