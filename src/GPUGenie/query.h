@@ -183,9 +183,6 @@ public:
 	void
 	print(int limit);
 
-	void
-	print();
-
 	int
 	index();
 
