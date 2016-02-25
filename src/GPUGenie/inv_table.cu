@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <fstream>
-#include <boost/serialization/map.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <exception>
 
 #include "raw_data.h"
@@ -27,22 +24,8 @@ void GPUGenie::inv_table::init()
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
 	try{
-        /*
-		cudaMalloc(&d_ck_p, sizeof(int) * _ck.size());
-		cudaMemcpy(d_ck_p, &_ck[0], sizeof(int) * _ck.size(),
-				cudaMemcpyHostToDevice);
-*/
 		cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
 		cudaCheckErrors(cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
-/*
-		cudaMalloc(&d_inv_index_p, sizeof(int) * _inv_index.size());
-		cudaMemcpy(d_inv_index_p, &_inv_index[0], sizeof(int) * _inv_index.size(),
-				cudaMemcpyHostToDevice);
-
-		cudaMalloc(&d_inv_pos_p, sizeof(int) * _inv_pos.size());
-		cudaMemcpy(d_inv_pos_p, &_inv_pos[0], sizeof(int) * _inv_pos.size(),
-				cudaMemcpyHostToDevice);
-                */
 	} catch(std::bad_alloc &e){
 		throw(GPUGenie::gpu_bad_alloc(e.what()));
 	}
@@ -63,27 +46,14 @@ void GPUGenie::inv_table::clear()
 GPUGenie::inv_table::~inv_table()
 {
 	if (is_stored_in_gpu == true)
-	{
 		cudaCheckErrors(cudaFree(d_inv_p));
-	/*
-        cudaFree(d_inv_index_p);
-		cudaFree(d_inv_pos_p);
-		cudaFree(d_ck_p);
-	*/
-    }
 }
 
 void GPUGenie::inv_table::clear_gpu_mem()
 {
 	if (is_stored_in_gpu == false)
 		return;
-
 	cudaFree(d_inv_p);
-	/*
-    cudaFree(d_inv_index_p);
-	cudaFree(d_inv_pos_p);
-	cudaFree(d_ck_p);
-    */
 	is_stored_in_gpu = false;
 
 }
@@ -296,33 +266,6 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 	Logger::log(Logger::DEBUG, "inv size %d:", _inv.size());
 }
 
-void
-GPUGenie::inv_table::build_compressed()
-{
-	_ck.clear(), _inv.clear(), _ck_map.clear();
-	int key, dim, value;
-	for (unsigned int i = 0; i < _inv_lists.size(); i++)
-	{
-		dim = i << _shifter;
-		for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
-		{
-			key = dim + value - _inv_lists[i].min();
-			vector<int>* indexes = _inv_lists[i].index(value);
-
-			for (unsigned int j = 0; j < indexes->size(); j++)
-			{
-				_inv.push_back((*indexes)[j]);
-				_ck_map[key] = _ck.size();
-			}
-			if (indexes->size() > 0)
-			{
-				_ck.push_back(_inv.size());
-			}
-		}
-	}
-	_build_status = builded_compressed;
-}
-
 
 
 bool
@@ -373,11 +316,6 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
          ofs.write((char*)&posting_list_size[i][0], value_range_size*sizeof(int));
     }
     
-    if(_build_status == builded_compressed)
-    {
-        boost::archive::binary_oarchive oarch(ofs);
-        oarch << _ck_map;
-    }
 
     if(table_index == total_num_of_table - 1)
         ofs.close();
@@ -441,12 +379,6 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
          ifs.read((char*)&posting_list_size[i][0], value_range_size*sizeof(int));
     }
 
-    if(_build_status == builded_compressed)
-    {
-        boost::archive::binary_iarchive iarch(ifs);
-        iarch >> _ck_map;
-    }
-
     if(table_index == total_num_of_table-1)
         ifs.close();
     
@@ -472,10 +404,9 @@ GPUGenie::inv_table::write(const char* filename, inv_table*& table)
         success = table[i].write_to_file(_ofs);
     }
     
-    if(!_ofs.is_open() && success)
-        return true;
-    else
-        return false;
+
+    return !_ofs.is_open() && success;
+
     
 }
 
@@ -502,8 +433,5 @@ GPUGenie::inv_table::read(const char* filename, inv_table*& table)
     {
          success = table[i].read_from_file(_ifs);
     }
-    if(!_ifs.is_open()&&success)
-        return true;
-    else
-        return false;
+    return !_ifs.is_open() && success;
 }

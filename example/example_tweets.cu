@@ -54,7 +54,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	//if config.hashtable_size>2, the hashtable_size means the size of the hashtable,
 			//this is useful when using adaptiveThreshold (i.e. config.count_threshold <0), where the
 			//hash_table size is usually set as: maximum_countXconfig.num_of_topkx1.5 (where 1.5 is load factor for hashtable).
-	config.hashtable_size = 14*config.num_of_topk*1.5;//960
+	config.hashtable_size = 100*config.num_of_topk*1.5;//960
 
 	//Query radius from the data point bucket expanding to upward and downward.
 		//For tweets data, set it as 0, which means exact match
@@ -72,7 +72,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	config.data_points = &data;
 
 	//if use_load_balance=false, config.multiplier and config.posting_list_max_length are not useful
-	config.use_load_balance = false;
+	config.use_load_balance = true;
 	//maximum number per posting list, if a keyword has a long posting list, we break it into sublists, and this parameter defines the maximum length of sub-list
 	config.posting_list_max_length = 64000;
 	config.multiplier = 1.5f;//config.multiplier*config.posting_list_max_length is  maximum number of elements processed by one block

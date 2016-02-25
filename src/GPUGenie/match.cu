@@ -142,7 +142,7 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 					get_key_age(out_key));
 			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
 			{
-				*key_found =true; //
+				*key_found =true; 
 				return;
 			}
 		}
@@ -204,9 +204,7 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 				&& get_key_age(out_key) < MAX_AGE)
 		{
 			u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
-			//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold;   for improve: update here for weighted distance
 			float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold
-			//float value_plus = (value_1>count)? (value_1) : (count);//for AT:   for improve: update here for weighted distance
 			float value_plus = count;//for AT: for adaptiveThreshold
 			if(value_plus <value_1)
 			{            	 //for AT: for adaptiveThreshold
@@ -221,11 +219,11 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 			{
 				*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
 				*key_found =true;//already find the key, but do not update
-				return;//
+				return;
 			}
 			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
 			{	*pass_threshold = true; //high possible that pass the threshold, must update the threshold
-				*key_found =true;//
+				*key_found =true;
 				return;
 			}
 		}
@@ -246,10 +244,8 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 				&& get_key_age(out_key) < MAX_AGE)
 		{
 			u32 attach_id = get_key_attach_id(out_key); //for AT: for adaptiveThreshold
-			//float old_value_plus = *reinterpret_cast<float*>(&attach_id) + q.weight;//for AT: for adaptiveThreshold
 
 			float value_1 = *reinterpret_cast<float*>(&attach_id);//for AT: for adaptiveThreshold  //for improve: update here for weighted distance
-			//float value_plus = (value_1>count)? (value_1) : (count);//for AT:
 			float value_plus = count;//for AT: for adaptiveThreshold
 			if(value_plus <value_1)
 			{        	   //for AT: for adaptiveThreshold
@@ -265,7 +261,7 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 			{
 				*pass_threshold = false; // if my_threshold is updated, no need to update hash_table and threshold
 				*key_found =true;//already find the key, but do not update
-				return;//
+				return;
 			}
 			if(atomicCAS(&htable[location], out_key, new_key) == out_key)
 			{
@@ -281,7 +277,6 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 		}
 	}
 
-		//Entry not found.
 	*key_found = false;
 	//key not found, no need to update my_threshold
 	*pass_threshold = false;
@@ -290,7 +285,7 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 
 __inline__ __device__
 void hash_kernel(
-		u32 id,        	   //
+		u32 id,
 		T_HASHTABLE* htable, int hash_table_size, query::dim& q, u32 * my_noiih,
 		bool * overflow)
 {
@@ -317,10 +312,10 @@ void hash_kernel(
 			peek_key = htable[location];
 			//for parallel race region, item may be inserted by othe threads
 			if (get_key_pos(peek_key) == get_key_pos(key)
-					&& get_key_age(peek_key) != 0u)        //
+					&& get_key_age(peek_key) != 0u)        
 			{
 				u32 old_value_1 = get_key_attach_id(peek_key);
-				u32 old_value_2 = get_key_attach_id(key);        //
+				u32 old_value_2 = get_key_attach_id(key);        
 				float old_value_plus = *reinterpret_cast<float*>(&old_value_2)
 						+ *reinterpret_cast<float*>(&old_value_1);
 				T_HASHTABLE new_key = pack_key_pos_and_attach_id_and_age(
@@ -337,12 +332,12 @@ void hash_kernel(
 				}
 			}
 
-			if (get_key_age(peek_key) < get_key_age(key))        //
+			if (get_key_age(peek_key) < get_key_age(key))        
 			{
 				evicted_key = atomicCAS(&htable[location], peek_key, key);
 				if (evicted_key != peek_key)
 					continue;
-				if (get_key_age(evicted_key) > 0u)        //
+				if (get_key_age(evicted_key) > 0u)        
 				{
 					key = evicted_key;
 					age = get_key_age(evicted_key);
@@ -361,23 +356,6 @@ void hash_kernel(
 					{
 						atomicAdd(my_noiih, 1u);        //for improve:
 					}
-
-					/*** DEBUG SECTION - DON'T REMOVE! ****/
-					/*** The debug section below can print out the key in binary. ****/
-					/*
-					 u32 old_value_1 = get_key_attach_id(htable[location]);
-					 u64 keykey = htable[location];
-					 char s[65];
-					 s[64] = '\0';
-					 for (int i = 63; i >= 0; i--)
-					 s[63 - i] = (keykey >> i) & 1 == 1? '1' : '0';
-
-					 printf("[b%dt%d] <Hash3> new value: %f. Bit: %s.\n",
-					 blockIdx.x,
-					 threadIdx.x,
-					 *reinterpret_cast<float*>(&old_value_1),
-					 s);
-					 */
 
 					return;        // finish insertion for empty location
 				}
@@ -399,7 +377,7 @@ void hash_kernel(
 //for AT: for countHeap (with adaptiveThreshold)
 __inline__ __device__
 void hash_kernel_AT(
-		u32 id,        //
+		u32 id,        
 		T_HASHTABLE* htable, int hash_table_size, query::dim& q, u32 count,
 		u32* my_threshold, //for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
 		u32 * my_noiih, bool * overflow, bool* pass_threshold)
@@ -518,7 +496,7 @@ void hash_kernel_AT(
 					{ // for AT: for adaptiveThreshold, if the count is smaller than my_threshold,
 					  //this item is also expired in the hashTable,
 						*pass_threshold = true;	//after updating the hashtable, increase the pass_count and my_threshold
-						return;												//
+						return;
 					}
 
 					key = evicted_key;
@@ -554,8 +532,6 @@ void hash_kernel_AT(
 		}
 
 	}
-	//u32 attachid = get_key_attach_id(key);
-	//printf("[b%dt%d]Failed to update hash table. AGG: %f.\n", blockIdx.x, threadIdx.x, *reinterpret_cast<float*>(&attachid));
 	*overflow = true;
 	*pass_threshold = true;
 	return;
@@ -613,84 +589,6 @@ u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 	return count; //fail to access the count
 
 }
-//for AT: for adaptiveThreshold, this is function for bitmap
-
-__global__
-void match(int m_size, int i_size, int hash_table_size, int* d_inv, query::dim* d_dims,
-		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
-		int threshold, u32 * noiih, bool * overflow)
-{
-	if (m_size == 0 || i_size == 0)
-		return;
-	query::dim& q = d_dims[blockIdx.x];
-	int query_index = q.query;
-	u32* my_noiih = &noiih[query_index];
-
-	T_HASHTABLE* hash_table = &hash_table_list[query_index * hash_table_size];
-	u32 * bitmap;
-	if (bitmap_bits)
-		bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
-	u32 access_id;
-
-    /*
-	int min, max, min_offset, max_offset;
-	min = q.low;
-	min_offset = q.low_offset;
-	max = q.up;
-	max_offset = q.up_offset;
-	if (min > max)
-		return;
-*/
-
-    if(q.start_pos >= q.end_pos)
-        return;
-
-    int min, max;
-    /*
-	min = d_inv_pos[d_inv_index[min] + min_offset];
-	max = d_inv_pos[d_inv_index[max] + max_offset + 1];
-*/
-    min = q.start_pos;
-    max = q.end_pos;
-
-	bool key_eligible;
-
-	for (int i = 0; i < (max - min) / GPUGenie_device_THREADS_PER_BLOCK + 1;
-			i++)
-	{
-		int tmp_id = threadIdx.x + i * GPUGenie_device_THREADS_PER_BLOCK + min;
-		if (tmp_id < max)
-		{
-			access_id = d_inv[tmp_id];
-			if (bitmap_bits)
-			{
-				key_eligible = false;
-				bitmap_kernel(access_id, bitmap, bitmap_bits, threshold,
-						&key_eligible);
-
-				if (!key_eligible)
-					continue;
-			}
-
-			key_eligible = false;
-			//Try to find the entry in hash tables
-			access_kernel(access_id, //
-					hash_table, hash_table_size, q, &key_eligible);
-
-			if (!key_eligible)
-			{
-				//Insert the key into hash table
-				//access_id and its location are packed into a packed key
-				hash_kernel(access_id, hash_table, hash_table_size, q, my_noiih,
-						overflow);
-				if (*overflow)
-				{
-					return;
-				}
-			}
-		}
-	}
-}
 
 __device__ inline void updateThreshold(u32* my_passCount, u32* my_threshold,
 		u32 my_topk, u32 count)
@@ -740,22 +638,9 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 	if (bitmap_bits)
 		bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
 	u32 access_id;
-/*
-	int min, max, min_offset, max_offset;
-	min = q.low;
-	min_offset = q.low_offset;
-	max = q.up;
-	max_offset = q.up_offset;
-	if (min > max)
-		return;
-*/
     int min, max;
     if(q.start_pos >= q.end_pos)
         return;
-/*
-	min = d_inv_pos[d_inv_index[min] + min_offset];
-	max = d_inv_pos[d_inv_index[max] + max_offset + 1];
-*/
 
     min = q.start_pos;
     max = q.end_pos;
@@ -792,7 +677,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 
 			//Try to find the entry in hash tables
 			access_kernel_AT(
-					access_id,                //
+					access_id,               
 					hash_table, hash_table_size, q, count, &key_eligible,
 					my_threshold, &pass_threshold);
 
@@ -869,9 +754,6 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 				{
 					queries[i].build();
 				}
-
-			else if (table.build_status() == inv_table::builded_compressed)
-				queries[i].build_compressed();
 			int count = queries[i].count_ranges();
 			if(count > max_count) max_count = count;
 			queries[i].dump(dims);
@@ -942,17 +824,15 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 				dims.size());
 
 		//for AT: for adaptiveThreshold, enable adaptiveThreshold
-		bool useAdaptiveThreshold = false;						 //for AT
 		if (bitmap_bits < 0)
 		{
 			bitmap_bits = -bitmap_bits;
-			useAdaptiveThreshold = true;
 			//for hash_table_size, still let it determine by users currently
 		}
 
 		Logger::log(Logger::DEBUG,
-				"[info] useAdaptiveThreshold: %d, bitmap_bits:%d.",
-				useAdaptiveThreshold, bitmap_bits);
+				"[info] bitmap_bits:%d.",
+				bitmap_bits);
 
 		//end for AT
 
@@ -1028,87 +908,46 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		{
 			h_overflow[0] = false;
 			cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
-			if(!useAdaptiveThreshold)//for AT: for adaptiveThreshold, branch here
-			{
-				device::match<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-				(table.m_size(),
-						table.i_size(),
-						hash_table_size,
-						table.d_inv_p,
-						d_dims_p,
-						d_hash_table,
-						d_bitmap_p,
-						bitmap_bits,
-						threshold,
-						d_noiih_p,
-						d_overflow);
-				if(!table.is_stored_in_gpu)
-				    table.clear_gpu_mem();
-			}
-			else
-			{ //for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
-				d_threshold.resize(queries.size(),1);
-				//thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
-				u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+            d_threshold.resize(queries.size(),1);
+            u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
-				//which num_of_max_count should be used?
+            //which num_of_max_count should be used?
 
-                num_of_max_count = dims.size();
-                
-				d_passCount.resize(queries.size()*num_of_max_count,0u);//
-				//thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
-				u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
-				max_topk = cal_max_topk(queries);
-				device_vector<u32> d_topks;
-				d_topks.resize(queries.size(),max_topk);
-				u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+            num_of_max_count = dims.size();
+            
+            d_passCount.resize(queries.size()*num_of_max_count,0u);//
+            u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
+            max_topk = cal_max_topk(queries);
+            device_vector<u32> d_topks;
+            d_topks.resize(queries.size(),max_topk);
+            u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
-				device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-				(table.m_size(),
-						table.i_size(),
-						hash_table_size,
-						table.d_inv_p,
-						d_dims_p,
-						d_hash_table,
-						d_bitmap_p,
-						bitmap_bits,
-						d_topks_p,
-						d_threshold_p,//initialized as 1, and increase gradually
-						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
-						num_of_max_count,//number of maximum count per query
-						d_noiih_p,
-						d_overflow);
-				if(!table.is_stored_in_gpu)
-                {
-				    table.clear_gpu_mem();
-                }
-			}//end for AT: for adaptiveThreshold, use different match method for adaptiveThreshold
-			//DEBUG
-//			thrust::host_vector<u32> h_passCount(d_passCount);
-//			printf("passCount in match.cu:\n");
-//			for(int i = 0; i < queries.size(); ++i){
-//				printf("query %d:\n", i);
-//				for(int j = 0; j < h_passCount.size() / queries.size(); ++j){
-//					printf("[%d]%d ", j, h_passCount[i * h_passCount.size() / queries.size() + j]);
-//				}
-//				printf("\n");
-//			}
-//			printf("\n");
-			//End DEBUG
+            device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
+            (table.m_size(),
+                    table.i_size(),
+                    hash_table_size,
+                    table.d_inv_p,
+                    d_dims_p,
+                    d_hash_table,
+                    d_bitmap_p,
+                    bitmap_bits,
+                    d_topks_p,
+                    d_threshold_p,//initialized as 1, and increase gradually
+                    d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+                    num_of_max_count,//number of maximum count per query
+                    d_noiih_p,
+                    d_overflow);
+            if(!table.is_stored_in_gpu)
+            {
+                table.clear_gpu_mem();
+            }
 			cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
 			if(h_overflow[0])
 			{	loop_count ++;
-				if(!useAdaptiveThreshold)
-				{
-					hash_table_size += 0.1f * table.i_size();
-				}
-				else
-				{
-					hash_table_size += num_of_max_count*max_topk;
-				}
+				hash_table_size += num_of_max_count*max_topk;
 				if(hash_table_size > table.i_size())
 				{
 					hash_table_size = table.i_size();
@@ -1134,7 +973,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		cudaEventRecord(kernel_stop);
 		Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
-		//cudaCheckErrors(cudaDeviceSynchronize());
 		device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(d_hash_table,(u32)hash_table_size*queries.size());
 
 		Logger::log(Logger::INFO, "[100%] Matching is done!");

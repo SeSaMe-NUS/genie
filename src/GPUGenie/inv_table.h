@@ -17,7 +17,7 @@ class inv_table
 public:
 	enum status
 	{
-		not_builded, builded, builded_compressed
+		not_builded, builded
 	};
 	//device pointer for some members
 	int *d_inv_p;
@@ -257,15 +257,6 @@ public:
 	void
 	build(u64 max_length, bool use_load_balance);
 
-	/**
-	 * @brief Build the inv_table as a compressed array.
-	 * @details This method will merge all inv_lists to
-	 *          two vector _ck and _inv and keep the indexes
-	 *          in _ck_map, thenset the _build_status to builded_compressed.
-	 *          Any query should only be done after the inv_table has been builded.
-	 */
-	void
-	build_compressed();
 
     //get length of each posting list
     int

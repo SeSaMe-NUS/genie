@@ -343,83 +343,6 @@ void GPUGenie::query::build()
 	}
 }
 
-void GPUGenie::query::build_compressed()
-{
-    this->build();
-}
-
-/*{
-	int low, up;
-	float weight;
-	inv_table& table = *_ref_table;
-	map<int, int>::iterator lower_bound;
-
-	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
-			di != _attr_map.end(); ++di)
-	{
-		int index = di->first;
-		std::vector<range>& ranges = *(di->second);
-
-		int d = index << _ref_table->shifter();
-		//vector<inv_list>& inv_lists = *_ref_table->inv_lists();
-		//inv_list& inv = inv_lists[index];
-
-		if (ranges.empty())
-		{
-			continue;
-		}
-		if (_dim_map.find(index) == _dim_map.end())
-		{
-			std::vector<dim>* new_list = new std::vector<dim>;
-			_dim_map[index] = new_list;
-		}
-
-		for (unsigned int i = 0; i < ranges.size(); ++i)
-		{
-			range& ran = ranges[i];
-			low = ran.low;
-			up = ran.up;
-			weight = ran.weight;
-
-			//if (low > up || low > inv.max() || up < inv.min())
-            if (low > up || low > table.get_upperbound_of_list(index) || up < table.get_lowerbound_of_list(index))
-			{
-				continue;
-			}
-
-			dim new_dim;
-			new_dim.weight = weight;
-			new_dim.query = _index;
-
-            low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
-            up = up > table.get_upperbound_of_list(index)?table.get_upperbound_of_list(index):up;
-
-			//lower_bound = _ref_table->ck_map()->lower_bound(d + low - inv.min());
-            lower_bound = table.ck_map()->lower_bound(d + low - table.get_lowerbound_of_list(index));
-
-			new_dim.low = lower_bound->second;
-			new_dim.low_offset = ran.low_offset;
-			new_dim.up_offset = ran.up_offset;
-			//lower_bound = _ref_table->ck_map()->lower_bound(d + up - inv.min());
-            lower_bound = table.ck_map()->lower_bound(d + up - table.get_lowerbound_of_list(index));
-
-			//if (lower_bound->first - d + inv.min() != up)
-			if(lower_bound->first - d + table.get_lowerbound_of_list(index) != up)
-            {
-				lower_bound--;
-			}
-			new_dim.up = lower_bound->second;
-
-			if (new_dim.up < new_dim.low)
-			{
-				continue;
-			}
-
-			_dim_map[index]->push_back(new_dim);
-		}
-	}
-}
-*/
 
 int GPUGenie::query::dump(vector<dim>& vout)
 {
@@ -437,13 +360,11 @@ int GPUGenie::query::dump(vector<dim>& vout)
 	{
 		std::vector<dim>& ranges = *(di->second);
 		count += ranges.size();
-		//vout.insert(vout.end(), ranges.begin(), ranges.end());
 		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 			vout.push_back(ranges[i]);
 		}
 	}
-	//printf("Query %d: Total number of dims dumped: %d.\n", _index, count);
 	return count;
 }
 
@@ -454,12 +375,6 @@ int GPUGenie::query::index()
 
 int GPUGenie::query::count_ranges()
 {
-//	  int count = 0;
-//	  for(std::map<int, std::vector<range>*>::iterator di = _attr_map.begin(); di != _attr_map.end(); ++di)
-//	  {
-//	    std::vector<range>& ranges = *(di->second);
-//	    count += ranges.size();
-//	  }
 	return _count;
 }
 

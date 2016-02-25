@@ -169,12 +169,6 @@ public:
 	void
 	build();
 
-	/**
-	 * @brief Construct the query based on a compressed table.
-	 * @details Construct the query based on a compressed table.
-	 */
-	void
-	build_compressed();
 
 	/**
 	 * @brief Transfer the matching information(the queried ranges) to vector vout.
