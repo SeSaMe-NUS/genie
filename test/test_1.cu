@@ -13,7 +13,8 @@
 #include <assert.h>
 #include <vector>
 #include <iostream>
-
+#include <stdio.h>
+#include <stdlib.h>
 using namespace std;
 using namespace GPUGenie;
 
@@ -28,7 +29,7 @@ int main(int argc, char* argv[])
 
     config.dim = 5;
     config.count_threshold = 14;
-    config.num_of_topk = 10;
+    config.num_of_topk = 5;
     config.hashtable_size = 14*config.num_of_topk*1.5;
     config.query_radius = 0;
     config.use_device = 0;
@@ -68,8 +69,17 @@ int main(int argc, char* argv[])
     vector<int> result_count;
     knn_search_after_preprocess(config, table, result, result_count, table_num);
 
+    assert(result[0] == 0);
+    assert(result_count[0] == 5);
 
+    assert(result[1] == 4);
+    assert(result_count[1] == 2);
 
+    assert(result[5] == 1);
+    assert(result_count[5] == 5);
+    
+    assert(result[10] == 2);
+    assert(result_count[10] == 5);
     delete[] table;
     return 0;
 }
