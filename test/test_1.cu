@@ -53,8 +53,7 @@ int main(int argc, char* argv[])
     read_file(data, dataFile.c_str(), -1);
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
-    unsigned int table_num = 1;
-    preprocess_for_knn_csv(config, table, table_num);
+    preprocess_for_knn_csv(config, table);
 
     /**test for table*/
     vector<int>& inv = *table[0].inv();
@@ -67,7 +66,7 @@ int main(int argc, char* argv[])
 
     vector<int> result;
     vector<int> result_count;
-    knn_search_after_preprocess(config, table, result, result_count, table_num);
+    knn_search_after_preprocess(config, table, result, result_count);
 
     assert(result[0] == 0);
     assert(result_count[0] == 5);

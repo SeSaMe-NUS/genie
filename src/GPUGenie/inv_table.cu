@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <fstream>
 #include <exception>
-
+#include <iostream>
 #include "raw_data.h"
 #include "Logger.h"
 #include "genie_errors.h"
 
 #include "inv_table.h"
-
+using namespace std;
 using namespace GPUGenie;
 
 void GPUGenie::inv_table::init()
@@ -304,7 +304,7 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
     ofs.write((char*)&_list_lowerbound_size, sizeof(unsigned int));
 
     ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
-    ofs.write((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+    ofs.write((char*)&inv_list_lowerbound[0], _list_lowerbound_size*sizeof(int));
 
     //write posting list size
     unsigned int num_of_attr = posting_list_size.size();
@@ -366,7 +366,7 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
     inv_list_upperbound.resize(_list_upperbound_size);
     inv_list_lowerbound.resize(_list_lowerbound_size);
     ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
-    ifs.read((char*)&inv_list_upperbound[0], _list_upperbound_size*sizeof(int));
+    ifs.read((char*)&inv_list_lowerbound[0], _list_lowerbound_size*sizeof(int));
 
     unsigned int num_of_attr;
     ifs.read((char*)&num_of_attr, sizeof(unsigned int));
@@ -425,7 +425,6 @@ GPUGenie::inv_table::read(const char* filename, inv_table*& table)
         return false;
     
     table = new inv_table[_total_num_of_table];
-
     ifstream _ifs(filename, ios::binary|ios::in);
     
     bool success;
