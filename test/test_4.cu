@@ -1,7 +1,8 @@
-/** Name: test_1.cc
+/** Name: test_4.cu
  * Description:
- *   sift data
- *   data is from csv file
+ *   focus on multiload
+ *   bianry data
+ *   data is from bianry file
  *   query is from csv file, single range
  *
  *

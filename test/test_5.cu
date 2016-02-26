@@ -1,4 +1,4 @@
-/** Name: test_1.cc
+/** Name: test_5.cu
  * Description:
  * focus on save_to_gpu function
  *   sift data

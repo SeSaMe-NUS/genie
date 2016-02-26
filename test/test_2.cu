@@ -1,7 +1,8 @@
-/** Name: test_1.cc
+/** Name: test_1.cu
  * Description:
- *   sift data
- *   data is from csv file
+ *   basic test
+ *   binary data
+ *   data is from binary file
  *   query is from csv file, single range
  *
  *
