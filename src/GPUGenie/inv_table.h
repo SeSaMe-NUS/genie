@@ -86,8 +86,8 @@ public:
 	 * @details It sets the _shifter to 16 and set the
 	 *        _size to -1.
 	 */
-	inv_table(): d_inv_p(NULL), d_inv_index_p(NULL), d_inv_pos_p(NULL), d_ck_p(NULL),
-				is_stored_in_gpu(false),table_index(0),total_num_of_table(1),
+	inv_table(): d_inv_p(NULL), is_stored_in_gpu(false),
+                table_index(0),total_num_of_table(1),
                 _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0)
 	{
 	}
@@ -116,9 +116,6 @@ public:
 
 	bool
 	cpy_data_to_gpu();
-
-	void
-	init();
 
 	void
 	clear_gpu_mem();

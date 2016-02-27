@@ -10,16 +10,6 @@
 using namespace std;
 using namespace GPUGenie;
 
-void GPUGenie::inv_table::init()
-{
-	_shifter = 16;
-	_size = -1;
-	_build_status = not_builded;
-	_inv_lists.clear();
-	_ck.clear();
-	_inv.clear();
-	_inv_index.clear();
-}
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
