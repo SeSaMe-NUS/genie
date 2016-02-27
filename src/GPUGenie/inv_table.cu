@@ -1,3 +1,9 @@
+/*! \file inv_table.cu
+ *  \brief Implementation of class inv_table 
+ *  declared in file inv_table.h
+ */
+
+
 #include <stdio.h>
 #include <fstream>
 #include <exception>
@@ -29,7 +35,6 @@ void GPUGenie::inv_table::clear()
 	_inv_lists.clear();
 	_ck.clear();
 	_inv.clear();
-	_ck_map.clear();
 	clear_gpu_mem();
 }
 
@@ -197,11 +202,6 @@ GPUGenie::inv_table::inv_pos()
 	return &_inv_pos;
 }
 
-map<int, int>*
-GPUGenie::inv_table::ck_map()
-{
-	return &_ck_map;
-}
 
 void
 GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
