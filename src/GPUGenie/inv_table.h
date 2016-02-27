@@ -21,9 +21,6 @@ public:
 	};
 	//device pointer for some members
 	int *d_inv_p;
-	int *d_inv_index_p;
-	int *d_inv_pos_p;
-	int *d_ck_p;
 	bool is_stored_in_gpu;
 private:
     int table_index;//start at 0
