@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['is_5fstored_5fin_5fgpu',['is_stored_in_gpu',['../classGPUGenie_1_1inv__table.html#aeeb4b1f8e23d404a27f3286033ec978a',1,'GPUGenie::inv_table']]]
+  ['count_5fthreshold',['count_threshold',['../structGPUGenie_1_1__GPUGenie__Config.html#a33f53302d0d1c24b757d95547e7afbfa',1,'GPUGenie::_GPUGenie_Config']]]
 ];

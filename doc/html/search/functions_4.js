@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['empty',['empty',['../classGPUGenie_1_1inv__table.html#ab798cbd11b4191db24b132307968aeb9',1,'GPUGenie::inv_table']]]
+  ['dump',['dump',['../classGPUGenie_1_1query.html#a846a93c96ea49fdf5e9cc50800fe37fe',1,'GPUGenie::query']]]
 ];

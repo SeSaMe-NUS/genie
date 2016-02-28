@@ -1,8 +1,5 @@
-/*
- * interface.cu
- *
- *  Created on: Jul 8, 2015
- *      Author: luanwenhao
+/*! \file interface.cu
+ *  \brief Implementation for interface declared in interface.h
  */
 
 #include "interface.h"
@@ -670,12 +667,6 @@ void GPUGenie::knn_search(std::vector<int>& result,
 	}
 }
 
-void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
-		std::vector<int>& h_topk, GPUGenie_Config& config)
-{
-	std::vector<int> h_topk_count;
-	knn_search(table, queries, h_topk, h_topk_count, config);
-}
 void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count,
 		GPUGenie_Config& config)
