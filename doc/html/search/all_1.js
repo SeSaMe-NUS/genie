@@ -9,5 +9,5 @@ var searchData=
   ['attach_5fid_5ftype_5fbits',['ATTACH_ID_TYPE_BITS',['../namespaceGPUGenie_1_1device.html#ac81e7b03fd288217110b65d5179132cf',1,'GPUGenie::device']]],
   ['attach_5fid_5ftype_5fmask',['ATTACH_ID_TYPE_MASK',['../namespaceGPUGenie_1_1device.html#ab921c2d064e53b8a744f96d91607a6f6',1,'GPUGenie::device']]],
   ['attr',['attr',['../classGPUGenie_1_1query.html#ae9d9b6bcf1b7eede49a9b36f7a9f6fb5',1,'GPUGenie::query::attr(int index, int low, int up, float weight)'],['../classGPUGenie_1_1query.html#a09d0e47463ad9aeae6f95aa855ca865b',1,'GPUGenie::query::attr(int index, int value, float weight, float selectivity)'],['../classGPUGenie_1_1query.html#a0ce37e2a5a268ce75c612ed5a03b8f85',1,'GPUGenie::query::attr(int index, int low, int up, float weight, float selectivity)']]],
-  ['attr_5ft',['attr_t',['../namespaceGPUGenie.html#a3bf4d52950ed7309cb51a994ecde1437',1,'GPUGenie']]]
+  ['attr_5ft',['attr_t',['../namespaceGPUGenie.html#aeed4729ce1bce20c3cdc4c5076ff2a8a',1,'GPUGenie']]]
 ];

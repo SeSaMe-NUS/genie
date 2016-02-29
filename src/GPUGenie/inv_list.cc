@@ -1,3 +1,7 @@
+/*! \file inv_list.cc
+ *  \brief Implementation for inv_list class
+ */
+
 #include "inv_list.h"
 
 #include <cstdlib>

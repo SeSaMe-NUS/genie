@@ -17,7 +17,7 @@ var searchData=
   ['get_5ftotal_5fnum_5fof_5ftable',['get_total_num_of_table',['../classGPUGenie_1_1inv__table.html#aef487be7cd9afbc3e34cc354f68e4117',1,'GPUGenie::inv_table']]],
   ['get_5fupperbound_5fof_5flist',['get_upperbound_of_list',['../classGPUGenie_1_1inv__table.html#aa7626c4ee5dad1ce2605aa14eca05ff7',1,'GPUGenie::inv_table']]],
   ['getinterval',['getInterval',['../Timing_8cc.html#a66733e2cdd773b2d117d7679d62a097f',1,'getInterval(unsigned long long start, unsigned long long stop):&#160;Timing.cc'],['../Timing_8h.html#a66733e2cdd773b2d117d7679d62a097f',1,'getInterval(unsigned long long start, unsigned long long stop):&#160;Timing.cc']]],
-  ['gettime',['getTime',['../Timing_8cc.html#a29652348c8c74d3b5ba933ffc9e0aa4e',1,'getTime():&#160;Timing.cc'],['../Timing_8h.html#a68d9ae2c493e15e3748b7d4db09229b8',1,'getTime(void):&#160;Timing.cc']]],
+  ['gettime',['getTime',['../Timing_8cc.html#a29652348c8c74d3b5ba933ffc9e0aa4e',1,'getTime():&#160;Timing.cc'],['../Timing_8h.html#a29652348c8c74d3b5ba933ffc9e0aa4e',1,'getTime():&#160;Timing.cc']]],
   ['gpu_5fbad_5falloc',['gpu_bad_alloc',['../classGPUGenie_1_1gpu__bad__alloc.html#ad6588ad72390e34ec5dedd559942722c',1,'GPUGenie::gpu_bad_alloc']]],
   ['gpu_5fbad_5falloc',['gpu_bad_alloc',['../classGPUGenie_1_1gpu__bad__alloc.html',1,'GPUGenie']]],
   ['gpu_5fruntime_5ferror',['gpu_runtime_error',['../classGPUGenie_1_1gpu__runtime__error.html#ad1bba0ababb42df50f531828d429000e',1,'GPUGenie::gpu_runtime_error']]],

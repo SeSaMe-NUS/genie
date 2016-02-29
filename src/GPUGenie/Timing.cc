@@ -1,8 +1,5 @@
-/*
- * Timing.cc
- *
- *  Created on: Jan 16, 2016
- *      Author: luanwenhao
+/*! \file Timing.cc
+ *  \brief Implementation for functions in Timing.h
  */
 
 #include <sys/time.h>

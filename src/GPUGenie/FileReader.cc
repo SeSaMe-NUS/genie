@@ -1,8 +1,5 @@
-/*
- * FileReader.cc
- *
- *  Created on: Oct 26, 2015
- *      Author: zhoujingbo
+/*! \file FileReader.cc
+ *  \brief Implementation of functions in FileReader.h
  */
 
 #include <stdio.h>
