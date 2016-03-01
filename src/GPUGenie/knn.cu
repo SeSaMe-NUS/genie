@@ -79,6 +79,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	device_vector<u32> d_bitmap;
 
 	device_vector<u32> d_num_of_items_in_hashtable(queries.size());
+
 	device_vector<u32> d_threshold, d_passCount;
 
 	Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load);

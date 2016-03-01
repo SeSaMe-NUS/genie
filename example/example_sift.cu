@@ -40,7 +40,7 @@ int main(int argc, char * argv[])
 	/*** Configuration of KNN Search ***/
 	GPUGenie::GPUGenie_Config config;
 
-	config.num_of_queries = 10;
+	config.num_of_queries = 500;
 
 	//Data dimension
 	config.dim = 128;
@@ -97,11 +97,11 @@ int main(int argc, char * argv[])
 	config.posting_list_max_length = 256;
 	config.use_load_balance = true;
 	config.use_multirange = true;
-
+    config.save_to_gpu = false;
     //below are new configurations
     config.data_type = 0;
     config.search_type = 0;
-    config.max_data_size = 400;
+    config.max_data_size = 0;
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold
 	if(config.use_multirange)
@@ -164,7 +164,7 @@ int main(int argc, char * argv[])
 	double elapsed = getInterval(start, end);
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
-
+/*
 	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
 
 	{
@@ -175,8 +175,8 @@ int main(int argc, char * argv[])
 		}
 		printf("\n");
 	}
-
+*/
 	Logger::exit();
-
+    std::cin.ignore().get();
 	return 0;
 }

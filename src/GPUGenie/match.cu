@@ -952,6 +952,8 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 			cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
+            cudaCheckErrors(cudaFree(d_overflow));
+
 			if(h_overflow[0])
 			{
 				hash_table_size += num_of_max_count*max_topk;
