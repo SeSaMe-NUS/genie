@@ -151,7 +151,7 @@ void write_hashtable_to_file(thrust::device_vector<data_t>& d_data, int num_of_q
 	fclose(fout_compact);
 }
 
-void heap_count_topk(thrust::device_vector<data_t>& d_data,
+void GPUGenie::heap_count_topk(thrust::device_vector<data_t>& d_data,
 		thrust::device_vector<data_t>& d_topk,
 		thrust::device_vector<u32>& d_threshold,
 		thrust::device_vector<u32>& d_passCount, int topk, int num_of_queries)
