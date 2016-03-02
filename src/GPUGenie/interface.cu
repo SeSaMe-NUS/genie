@@ -326,6 +326,8 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
 
     merge_knn_results_from_multiload(_result, _result_count, result,
             result_count, table_num, config.num_of_topk, queries.size());
+
+
 }
 void GPUGenie::load_table(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
@@ -720,3 +722,8 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			h_topk_count.begin());
 }
 
+
+void GPUGenie::reset_device()
+{
+    cudaDeviceReset();
+}

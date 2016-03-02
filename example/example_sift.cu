@@ -161,10 +161,10 @@ int main(int argc, char * argv[])
 	u64 start = getTime();
 	GPUGenie::knn_search(result,result_count, config);
 	u64 end = getTime();
+    GPUGenie::reset_device();
 	double elapsed = getInterval(start, end);
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
-/*
 	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
 
 	{
@@ -175,8 +175,7 @@ int main(int argc, char * argv[])
 		}
 		printf("\n");
 	}
-*/
+
 	Logger::exit();
-    std::cin.ignore().get();
 	return 0;
 }

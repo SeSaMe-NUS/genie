@@ -299,6 +299,19 @@ void load_table(inv_table& table, int *data, unsigned int item_num,
 void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config);
 
+/*! \fn void reset_device()
+ *  \brief clear gpu memory
+ *
+ *  Every time a kernel finishes, there would be some information remained on GPU.
+ *  It can cause the same problem as memory leakage. So we have to clear GPU, if we want to
+ *  launch multiple queries in one host process
+ */
+
+void reset_device();
+
+
+
+
 }
 
 #endif /* INTERFACE_H_ */
