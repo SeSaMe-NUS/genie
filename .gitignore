@@ -44,8 +44,13 @@ Release
 /build
 /Release
 
+#Unnecessary files
 example/*.log
 CTestTestfile.cmake
 src/CTestTestfile.cmake
 src/Makefile
 Makefile
+
+#Doxygen files
+doc/html
+Doxyfile
