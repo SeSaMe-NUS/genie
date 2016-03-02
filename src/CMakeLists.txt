@@ -15,8 +15,6 @@ set(LIB_SRC_LIST
   GPUGenie/Timing.h
   GPUGenie/Timing.cc
 
-  GPUGenie/raw_data.h
-  GPUGenie/raw_data.cc
   GPUGenie/inv_list.h
   GPUGenie/inv_list.cc
   GPUGenie/inv_table.h

@@ -8,7 +8,6 @@
 #include <fstream>
 #include <exception>
 #include <iostream>
-#include "raw_data.h"
 #include "Logger.h"
 #include "genie_errors.h"
 

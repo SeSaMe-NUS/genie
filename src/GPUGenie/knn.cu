@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <thrust/copy.h>
 
-#include "raw_data.h"
 #include "inv_list.h"
 #include "match.h"
 #include "heap_count.h"
