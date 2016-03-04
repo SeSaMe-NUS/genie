@@ -8,6 +8,7 @@
 #include "Timing.h"
 #include "match.h"
 #include "genie_errors.h"
+#include "heap_count.h"
 
 #define THREADS_PER_BLOCK 256
 #define GPUGenie_Minus_One_THREADS_PER_BLOCK 1024

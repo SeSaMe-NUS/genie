@@ -1,8 +1,6 @@
-/*
- * genie_errors.h
+/*! \file genie_errors.h
+ *  \brief All the exceptions
  *
- *  Created on: Feb 1, 2016
- *      Author: luanwenhao
  */
 
 #ifndef GENIE_ERRORS_H_

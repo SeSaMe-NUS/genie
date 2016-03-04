@@ -92,20 +92,6 @@ void GPUGenie::query::attr(int index, int low, int up, float weight,
 	_count++;
 }
 
-inline u64 GPUGenie::query::pack_dim_and_count(u32 dim, u64 count)
-{
-	u64 mask = u64((1u << 16) - 1u);
-	return (u64(count) << 16) + (mask & u64(dim));
-}
-inline u32 GPUGenie::query::unpack_dim(u64 packed_data)
-{
-	u64 mask = u64((1u << 16) - 1u);
-	return packed_data & mask;
-}
-inline u64 GPUGenie::query::unpack_count(u64 packed_data)
-{
-	return packed_data >> 16;
-}
 
 void GPUGenie::query::clear_dim(int index)
 {

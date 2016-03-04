@@ -1,8 +1,6 @@
-/*
- * Logger.h
+/*! \file Logger.h
+ *  \brief Record run-time information
  *
- *  Created on: Jan 4, 2016
- *      Author: luanwenhao
  */
 
 #ifndef LOGGER_H_

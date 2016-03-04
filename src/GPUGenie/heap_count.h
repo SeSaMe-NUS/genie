@@ -1,3 +1,9 @@
+/*! \file heap_count.h
+ *  \brief This file implements the function for topk selection
+ *  in the final hashtable.
+ *
+ */
+
 #ifndef _HEAP_COUNT_H
 #define _HEAP_COUNT_H
 
