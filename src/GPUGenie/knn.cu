@@ -1,3 +1,6 @@
+/*! \file knn.cu
+ *  \brief Implementation for knn.h
+ */
 #include <math.h>
 #include <assert.h>
 #include <thrust/copy.h>

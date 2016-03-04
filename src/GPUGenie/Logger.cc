@@ -1,8 +1,5 @@
-/*
- * Logger.cc
- *
- *  Created on: Jan 4, 2016
- *      Author: luanwenhao
+/* \file Logger.cc
+ * \brief Implementation for Logger.h
  */
 
 #include "Logger.h"

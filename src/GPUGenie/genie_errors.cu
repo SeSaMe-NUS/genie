@@ -1,3 +1,7 @@
+/*! \file genie_errors.cu
+ *  \brief Implementation for genie_errors.h
+ */
+
 #include "Logger.h"
 
 #include "genie_errors.h"

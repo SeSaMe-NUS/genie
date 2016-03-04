@@ -99,12 +99,12 @@ private:
 	float _selectivity;
 
     /*! \var int _index
-     *
+     *  \brief Index of the query.
      */
 	int _index;
 
     /*! \var int _count
-     *
+     *  \brief number of dim
      */
 	int _count;
 
@@ -265,14 +265,23 @@ public:
 	dump(vector<dim>& vout);
 
     /*! \fn void print(int limit)
-     *  \brief
+     *  \brief Print out the information of all dims.
+     *
+     *  \param The maximum number of dims to print out.
      */
 	void
 	print(int limit);
 
+    /*! \fn int index()
+     *  \brief Get index of the query
+     */
 	int
 	index();
 
+    /*! \fn int count_ranges()
+     *  \brief Get value of _ count
+     *
+     */
 	int
 	count_ranges();
 };

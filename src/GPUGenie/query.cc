@@ -1,3 +1,7 @@
+/*! \file query.cc
+ *  \brief Implementation for query class
+ *
+ */
 #include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>

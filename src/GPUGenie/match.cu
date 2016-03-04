@@ -1,3 +1,8 @@
+/*! \file match.cu
+ *  \brief Implementation for match.h
+ */
+
+
 #include <stdlib.h>
 #include <string>
 #include <sstream>

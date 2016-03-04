@@ -1,3 +1,7 @@
+/*! \file heap_count.cu
+ *  \brief Implementation for heap_count.h
+ *
+ */
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
