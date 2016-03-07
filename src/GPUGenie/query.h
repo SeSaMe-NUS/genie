@@ -186,7 +186,7 @@ public:
     /*! \fn void clear_dim(int index)
      *  \brief Delete the dim at index
      *
-     *  \param The index of the dim to be deleted.
+     *  \param index The index of the dim to be deleted.
      */
 	void
 	clear_dim(int index);
@@ -194,7 +194,7 @@ public:
     /*! \fn void selectivity(float s)
      *  \brief Set the selectivity.
      *
-     *  \param Selectivity to set
+     *  \param s Selectivity to set
      */
 	void
 	selectivity(float s);
@@ -267,7 +267,7 @@ public:
     /*! \fn void print(int limit)
      *  \brief Print out the information of all dims.
      *
-     *  \param The maximum number of dims to print out.
+     *  \param limit The maximum number of dims to print out.
      */
 	void
 	print(int limit);

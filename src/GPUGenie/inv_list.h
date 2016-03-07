@@ -63,10 +63,10 @@ public:
 	 */
 	inv_list(vector<int>* vin);
 
-    /*! \fn invert_bijectMap(vector<vector<int> > & vin)
+    /*! \fn void invert_bijectMap(vector<vector<int> > & vin)
      *  \brief invert a special kind of data,which is of one dimension
      *
-     *  \vin Data to be inverted
+     *  \param vin Data to be inverted
      *
      *  This function will be used to invert data points like short text data,
      *  which has only one dimension but many individual words on that attibute.
@@ -79,7 +79,7 @@ public:
 	 *  \brief Handle input from binary file
 	 *
      *  \param data The data array
-     *  \param Length of data array
+     *  \param item_num Length of data array
      *  \param index Stores the starting position of each data point in data array
      *  \param row_num Length of index array
      *

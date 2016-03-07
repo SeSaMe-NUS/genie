@@ -97,7 +97,7 @@ match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data,
 /*! \fn int build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load)
  *  \brief Collect all the dims in all queries.
  *
- *  \param quereis The query set
+ *  \param queries The query set
  *  \param table The inverted table.
  *  \param dims The container for the resulting query details.
  *  \param max_load The maximum number of posting list items that can be processed by one gpu block

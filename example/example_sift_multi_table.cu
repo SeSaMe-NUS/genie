@@ -160,6 +160,7 @@ int main(int argc, char * argv[])
 //	double elapsed = getInterval(start, end);
 //	printf(">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<\n", elapsed);
 
+    GPUGenie::reset_device();
     for(int z=0; z<5; ++z){
 	    for(int i = 0; i < 5; ++i)
 	    {

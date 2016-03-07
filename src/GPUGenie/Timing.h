@@ -7,7 +7,7 @@
 
 #include <string>
 
-/*! \fn std::string currentDataTime()
+/*! \fn std::string currentDateTime()
  *  \brief Get current data time
  *
  *  \return Current date/time, format is YYYY-MM-DD.HH:mm:ss

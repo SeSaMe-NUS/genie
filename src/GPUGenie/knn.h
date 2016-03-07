@@ -13,7 +13,8 @@
 
 namespace GPUGenie
 {
-/*! \fn void knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits, int dim )
+/*! \fn void knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
+ *     device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits, int dim)
  *  \brief Find the top k values in given inv_table.
  *
  *  \param table The given table.
@@ -32,7 +33,8 @@ knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
 		device_vector<int>& d_top_count, int hash_table_size, int max_load,
 		int bitmap_bits, int dim);
 
-/*! \fn void knn_bijectMap(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
+/*! \fn void knn_bijectMap(inv_table& table, vector<query>& queries,
+ *  device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
  *  \brief Find the top k values in given inv_table.
  *
  *  \param table The given table.

@@ -163,7 +163,7 @@ int main(int argc, char * argv[])
 	u64 end = getTime();
     GPUGenie::reset_device();
 	double elapsed = getInterval(start, end);
-
+    GPUGenie::reset_device();
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
 

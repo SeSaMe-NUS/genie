@@ -243,7 +243,7 @@ void load_query(inv_table& table, vector<query>& queries, GPUGenie_Config& confi
  *
  *  \param table The inv_table object
  *  \param queries Constructed queries would be returned by this parameter
- *  \param Settings by users
+ *  \param config Settings by users
  */
 void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
 
@@ -275,7 +275,7 @@ void load_table_bijectMap(inv_table& table, vector<vector<int> >& data_points, G
  *  \param item_num Length for data array
  *  \param index It stores start position for each individual data point in data array
  *  \param row_num Number of data point
- *  \config Settings by user
+ *  \param config Settings by user
  *
  *  This function is responsible for handling data set from binary files. All
  *  data is sift.
@@ -291,7 +291,7 @@ void load_table(inv_table& table, int *data, unsigned int item_num,
  *  \param item_num Length for data array
  *  \param index It stores start position for each individual data point in data array
  *  \param row_num Number of data point
- *  \config Settings by user
+ *  \param config Settings by user
  *
  *  This function is responsible for handling data set from binary files. And
  *  the data is for short-text-like data set.

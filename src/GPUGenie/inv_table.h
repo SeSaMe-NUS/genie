@@ -37,7 +37,7 @@ class inv_table
 {
 public:
 
-    /*! \enum enum status
+    /*! \enum status
      *  \brief This enum var defines two statuses for a inv_table object, which is either builded or not_builded.
      */
 	enum status
@@ -77,7 +77,7 @@ private:
 
 
 
-    /*! \var status _buid_status
+    /*! \var status _build_status
 	 *  \brief Building status of the inv_table.
 	 *        Any modification will make the
 	 *        inv_table not_builded.

@@ -104,8 +104,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
     //example of writing and reading operations
     inv_table * __table = NULL;
-    unsigned int table_num = 1;
-    preprocess_for_knn_binary(config, __table,table_num);
+    preprocess_for_knn_binary(config, __table);
 
     u64 s1 = getTime();
     inv_table::write("table.dat", __table);
@@ -129,12 +128,13 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	u64 start = getTime();
 	//GPUGenie::knn_search(result, result_count, config);
-    knn_search_after_preprocess(config, _table, result, result_count, table_num);
+    knn_search_after_preprocess(config, _table, result, result_count);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
+    GPUGenie::reset_device();
 	for(int i = 0; i < 5; ++i)
 
 	{

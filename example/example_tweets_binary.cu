@@ -114,6 +114,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
+    GPUGenie::reset_device();
 	for(int i = 0; i < 5; ++i)
 
 	{

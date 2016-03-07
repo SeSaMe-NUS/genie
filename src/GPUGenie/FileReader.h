@@ -31,27 +31,27 @@ typedef struct _GPUGenie_Query_Data
 	float weight;/*!< Weight onn this range*/
 } attr_t;
 
-/*! \var const unsigned int GPUGENIE_QUERY_QID_INDEX 0u
+/*! \var const unsigned int GPUGENIE_QUERY_QID_INDEX
  */
 const unsigned int GPUGENIE_QUERY_QID_INDEX = 0u;
 
-/*! \var const unsigned int GPUGENIE_QUERY_DIM_INDEX 1u
+/*! \var const unsigned int GPUGENIE_QUERY_DIM_INDEX
  */
 const unsigned int GPUGENIE_QUERY_DIM_INDEX = 1u;
 
-/*! \var const unsigned int GPUGENIE_QUERY_VALUE_INDEX 2u
+/*! \var const unsigned int GPUGENIE_QUERY_VALUE_INDEX
  */
 const unsigned int GPUGENIE_QUERY_VALUE_INDEX = 2u;
 
-/*! \var const unsigned int GPUGENIE_QUERY_SELECTIVITY_INDEX 3u
+/*! \var const unsigned int GPUGENIE_QUERY_SELECTIVITY_INDEX
  */
 const unsigned int GPUGENIE_QUERY_SELECTIVITY_INDEX = 3u;
 
-/*! \var const unsigned int GPUGENIE_QUERY_WEIGHT_INDEX 4u
+/*! \var const unsigned int GPUGENIE_QUERY_WEIGHT_INDEX
  */
 const unsigned int GPUGENIE_QUERY_WEIGHT_INDEX = 4u;
 
-/*! \var const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS 5u
+/*! \var const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS
  */
 const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS = 5u;
 
@@ -68,16 +68,17 @@ const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS = 5u;
  */
 void read_file(vector<vector<int> >& dest, const char* fname, int num);
 
-/*! \fn void read_query(inv_table& table, const char* fname, vector<query>& queries, int numn_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)
- *  \brief
+/*! \fn void read_query(inv_table& table, const char* fname, vector<query>& queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)
+ *  \brief Process queries, read from file.
  *
- *  \param table
+ *  \param table The given table
  *  \param fname File name
- *  \param queries
+ *  \param queries Query set
  *  \param num_of_queries Number of queries
+ *  \param num_of_query_dims Number of dim structs of queries.
  *  \param radius Radius of queries
  *  \param topk Number of results for one query
- *  \selectivity Selectivity of queries
+ *  \param selectivity Selectivity of queries
  */
 
 void read_query(inv_table& table, const char* fname,
@@ -106,7 +107,7 @@ void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num);
  *
  *  \param csvfile The name of the csv file
  *  \param binaryfile The name of the binary file
- *  \app_write The writing mode. True for appending writing, false for trunc writing
+ *  \param app_write The writing mode. True for appending writing, false for trunc writing
  *
  *  Reading csv files is time-comsuming. If you want to read a csv file for many times, we suggest
  *  you first convert the csv file to a binary file. Reading binary file can save a lot of time. You can
@@ -115,11 +116,11 @@ void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num);
  */
 void csv2binary(const char* csvfile, const char* binaryfile, bool app_write = false);
 
-/*! \fn void read_file(const char* fname, int **data, unsigned int& item_num, unsigned int **_index, unsigned int& row_num)
+/*! \fn void read_file(const char* fname, int **_data, unsigned int& item_num, unsigned int **_index, unsigned int& row_num)
  *  \brief This function provides a way to read data points from given dataset.
  *
  *  \param fname The file name
- *  \param _data points to the address of a one-dimension array, storing all data
+ *  \param _data All elements of all data.
  *  \param item_num The number of elements in data array
  *  \param _index points to the address of a one-dimension array, storing starting position of each row in data array
  *  \param row_num Equal to the size of index array

@@ -29,41 +29,24 @@ class Logger
 {
 public:
 
-	/*!
-	 * \def NONE 0
-	 * \brief Screen print level - no message.
-	 */
-	static const int NONE = 0;
+	static const int NONE = 0;/*!< Screen print level - no message*/
 
-	/*!
-	 * \def ALERT 1
-	 * \brief Screen print level - only error alerts.
-	 */
-	static const int ALERT = 1;
+	static const int ALERT = 1;/*!< Screen print level - only error alters */
 
-	/*!
-	 * \def INFO 2
-	 * \brief Screen print level - progress information.
-	 */
-	static const int INFO = 2;
+	static const int INFO = 2;/*!< Screen print level - progress information */
 
-	/*!
-	 * \def VERBOSE 3
-	 * \brief Screen print level - detailed information.
-	 */
-	static const int VERBOSE = 3;
+	static const int VERBOSE = 3;/*!< Screen print level - detailed information */
 
-	/*!
-	 * \def DEBUG 4
-	 * \brief Screen print level - debugging information.
-	 */
-	static const int DEBUG = 4;
+	static const int DEBUG = 4;/*!< Screen print level - debugging information */
 
-	/*!
-	 * \brief Names of corresponding log levels.
-	 */
 	static const char * const LEVEL_NAMES[];
 
+
+
+    /*! \fn virtual ~Logger()
+     *  \brief Destructor.
+     *
+     */
 	virtual ~Logger();
 
 	/*! \fn static void exit(void)

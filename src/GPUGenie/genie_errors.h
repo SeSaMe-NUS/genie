@@ -29,8 +29,6 @@ namespace GPUGenie
  *  \brief The base class for genie error exceptions
  *
  *  The genie error exception class is inherited from std::runtime_error.
- *
- *  \ref std::runtime_error
  */
 class genie_error : public std::runtime_error
 {

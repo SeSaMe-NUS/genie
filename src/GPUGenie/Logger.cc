@@ -1,5 +1,5 @@
-/* \file Logger.cc
- * \brief Implementation for Logger.h
+/*! \file Logger.cc
+ *  \brief Implementation for Logger.h
  */
 
 #include "Logger.h"
