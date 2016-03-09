@@ -26,7 +26,7 @@ Logger::Logger(int level)
 	sprintf(fout_name, "GPUGENIE_LOG-%s.log", s.c_str());
     stringstream ss;
     ss<<"log/"<<string(fout_name);
-    struct stat;
+    struct stat st;
     if(stat("log", &st) == -1)
         mkdir("log", 0700);
 	strcpy(logfile_name, ss.str().c_str());
