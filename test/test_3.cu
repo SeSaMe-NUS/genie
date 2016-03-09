@@ -61,7 +61,6 @@ int main(int argc, char* argv[])
 
     /**test for table*/
     
-    assert(table_num == 2);
     
     vector<int>& inv = *table[0].inv();
     assert(inv[0] == 8);

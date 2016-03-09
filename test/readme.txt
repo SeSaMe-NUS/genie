@@ -9,4 +9,4 @@ test_6.cu: test for serializtion of table, especially testing under multiload se
 test_7.cu: basic test for csv imput, tweets data
 test_8.cu: basic test for binary input, tweets data
 test_9.cu: test for csv input and multiload, tweets data
-test_10.cu: test for binary input, tweets data
+test_10.cu: test for binary input, especially multiload, tweets data

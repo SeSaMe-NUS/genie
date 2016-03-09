@@ -70,7 +70,6 @@ int main(int argc, char* argv[])
     vector<int> result_count;
     knn_search_after_preprocess(config, table, result, result_count);
 
-    reset_device();
     assert(result[0] == 0);
     assert(result_count[0] == 5);
 
@@ -95,6 +94,7 @@ int main(int argc, char* argv[])
     assert(_inv[4] == 2);
     assert(_inv[5] == 4);
 
+    reset_device();
     free(_inv);
 
     delete[] table;
