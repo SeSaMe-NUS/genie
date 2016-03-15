@@ -153,8 +153,8 @@ void GPUGenie::read_query(inv_table& table, const char* fname,
 				string myString = eraseSpace(nstring[i]);
 				int value = atoi(myString.c_str());
 
-				q.attr(i, value - radius < 0 ? 0 : value - radius,
-						value + radius, 1);
+				q.attr(j, value - radius < 0 ? 0 : value - radius,
+						value + radius, 1, i);
 			}
 			q.topk(topk);
 			if (selectivity > 0.0f)

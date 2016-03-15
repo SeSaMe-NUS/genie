@@ -466,7 +466,7 @@ void GPUGenie::load_query_multirange(inv_table& table,
 			query_map[qid] = q;
 
 		}
-		query_map[qid].attr(dim, val, weight, sel);
+		query_map[qid].attr(dim, val, weight, sel, query_map[qid].count_ranges());//To main a certain order, query in the file must sticks to some order
 	}
 	for (std::map<int, query>::iterator it = query_map.begin();
 			it != query_map.end() && queries.size() < (unsigned int) config.num_of_queries;
@@ -508,7 +508,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 
 			q.attr(config.search_type == 1 ? 0 : j,
 					value - radius < 0 ? 0 : value - radius, value + radius,
-					GPUGENIE_DEFAULT_WEIGHT);
+					GPUGENIE_DEFAULT_WEIGHT, j);
 		}
 
 		q.topk(config.num_of_topk);
@@ -534,12 +534,15 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 }
 
 void GPUGenie::load_table_bijectMap(inv_table& table,
-		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
+		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)//bijectMap include subsequence search
 {
 	u64 starttime = getTime();
 
 	inv_list list;
-	list.invert_bijectMap(data_points);
+    if(config.use_subsequence_search)
+        list.invert_subsequence(data_points);
+    else
+	    list.invert_bijectMap(data_points);
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
@@ -566,7 +569,10 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	u64 starttime = getTime();
 
 	inv_list list;
-	list.invert_bijectMap(data, item_num, index, row_num);
+    if(config.use_subsequence_search)
+        list.invert_subsequence(data, item_num, index, row_num);
+    else
+	    list.invert_bijectMap(data, item_num, index, row_num);
 
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
@@ -726,4 +732,16 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 void GPUGenie::reset_device()
 {
     cudaDeviceReset();
+}
+void GPUGenie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
+                    vector<int> &resultOffset, unsigned int shift_bits)
+{
+    for(unsigned int i = 0 ; i < result.size() ; ++i)
+    {
+        int rowID, offset;
+        rowID = result[i]>>shift_bits;
+        offset = result[i] - (rowID<<shift_bits);
+        resultID.push_back(rowID);
+        resultOffset.push_back(offset);
+    }
 }
