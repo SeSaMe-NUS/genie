@@ -492,7 +492,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 	int value;
 	int radius = config.query_radius;
 	std::vector<std::vector<int> >& query_points = *config.query_points;
-	for (i = 0; i < query_points.size(); ++i)
+	for (i = 0; i < query_points.size() && i < config.num_of_queries; ++i)
 	{
 		query q(table, i);
 
