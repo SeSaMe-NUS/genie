@@ -310,7 +310,7 @@ void GPUGenie::query::build()
             _max = d + up - table.get_lowerbound_of_list(index);
 
             new_dim.start_pos = inv_pos[inv_index[_min]];
-            new_dim.end_pos = inv_pos[inv_index[_max+1]];
+            new_dim.end_pos = inv_pos[inv_index[_max+1]]; // point to the exact end position plus 1
 
 			_dim_map[index]->push_back(new_dim);
 		}
