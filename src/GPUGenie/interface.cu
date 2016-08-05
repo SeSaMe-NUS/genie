@@ -501,13 +501,14 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 						&& (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
 			value = query_points[i][j];
-			if (value < 0)
+			/*this value can be smaller than 0, same as data points.
+            if (value < 0)
 			{
 				continue;
 			}
-
+            */
 			q.attr(config.search_type == 1 ? 0 : j,
-					value - radius < 0 ? 0 : value - radius, value + radius,
+					value - radius, value + radius,
 					GPUGENIE_DEFAULT_WEIGHT, j);
 		}
 
