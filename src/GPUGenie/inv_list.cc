@@ -5,6 +5,7 @@
 #include "inv_list.h"
 
 #include <cstdlib>
+#include <iostream>
 
 int cv(string& s)
 {
@@ -76,6 +77,7 @@ void GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 			_inv[vin[i][j] - _bound.first].push_back(i);
 		}
 	}
+    shift_bits_subsequence = 0;
 	return;
 }
 
@@ -104,7 +106,114 @@ void GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num,
 	for (i = index[row_num - 1]; i < item_num; ++i)
 		_inv[data[i] - _bound.first].push_back(row_num - 1);
 
+    shift_bits_subsequence = 0;
 	return;
+}
+
+void GPUGenie::inv_list::invert_subsequence(vector<vector<int> > & vin)
+{
+	_size = vin.size();
+	if (vin.empty())
+		return;
+
+	_bound.first = vin[0][0], _bound.second = vin[0][0], _inv.clear();
+
+	unsigned int i, j, max_offset_subsequence=0;
+	for (i = 0; i < vin.size(); i++)
+	{
+        if(vin[i].size() > max_offset_subsequence)
+            max_offset_subsequence = vin[i].size();
+		for (j = 0; j < vin[i].size(); ++j)
+		{
+			if (_bound.first > vin[i][j])
+				_bound.first = vin[i][j];
+			if (_bound.second < vin[i][j])
+				_bound.second = vin[i][j];
+		}
+	}
+	unsigned int gap = _bound.second - _bound.first + 1;
+	_inv.resize(gap);
+
+    shift_bits_subsequence = 0;
+    for(i  = 1 ; i < max_offset_subsequence ; i *= 2)
+        shift_bits_subsequence++;
+
+	for (i = 0; i < gap; i++)
+		_inv[i].clear();
+
+    unsigned int rowID_offset;
+	for (i = 0; i < vin.size(); i++)
+	{
+		for (j = 0; j < vin[i].size(); ++j)
+        {
+            rowID_offset = (i<<shift_bits_subsequence) + j;
+			_inv[vin[i][j] - _bound.first].push_back(rowID_offset);
+		}
+	}
+	return;
+}
+
+void GPUGenie::inv_list::invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num)
+{
+	_size = row_num;
+	if (item_num == 0)
+		return;
+	unsigned int i, j, max_offset_subsequence=0;
+	unsigned int length;
+	_bound.first = data[0], _bound.second = data[0], _inv.clear();
+    for( i = 1; i < row_num ;++i )
+    {
+        length = index[i] - index[i-1];
+        if(length > max_offset_subsequence)
+            max_offset_subsequence = length;
+    }
+    length = item_num - index[row_num - 1];
+    if(length > max_offset_subsequence)
+        max_offset_subsequence = length;
+
+    for (i = 0; i < item_num; ++i)
+	{
+		if (_bound.first > data[i])
+			_bound.first = data[i];
+		if (_bound.second < data[i])
+			_bound.second = data[i];
+	}
+	unsigned int gap = _bound.second - _bound.first + 1;
+	_inv.resize(gap);
+
+    shift_bits_subsequence = 0;
+    for(i  = 1 ; i < max_offset_subsequence ; i *= 2)
+        shift_bits_subsequence++;
+
+    for (i = 0; i < gap; ++i)
+		_inv[i].clear();
+
+    unsigned int rowID_offset;
+    int offset;
+    for (i = 0; i < row_num - 1; ++i)
+    {
+        offset = 0;
+		for (j = index[i] - index[0]; j < index[i + 1] - index[0]; ++j)
+        {
+            rowID_offset = (i<<shift_bits_subsequence) + offset;
+            _inv[data[j] - _bound.first].push_back(rowID_offset);
+            offset++;
+        }
+    }
+    offset = 0;
+    int rowID = (row_num - 1)<<shift_bits_subsequence;
+	for (i = index[row_num - 1] - index[0]; i < item_num; ++i)
+    {
+        rowID_offset = rowID + offset;
+		_inv[data[i] - _bound.first].push_back(rowID_offset);
+        offset++;
+    }
+	return;
+}
+
+unsigned int GPUGenie::inv_list::_shift_bits_subsequence()
+{
+     return shift_bits_subsequence;
 }
 
 void GPUGenie::inv_list::invert(vector<int>& vin)

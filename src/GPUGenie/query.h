@@ -41,6 +41,7 @@ public:
 	struct range
 	{
 		int query;/*!< The query which the range belongs to */
+        int order;/*!< Mainly used in subsequence match */
 		int dim;/*!< The dimension which the range is on */
 		int low;/*!< The starting value of this range */
 		int up;/*!< The ending value of this range */
@@ -56,6 +57,7 @@ public:
     struct dim
     {
          int query;/*!< The query which the range belongs to */
+         int order;/*!< Mainly used in subsequence search */
          int start_pos;/*!< The starting position in the ListArray for this dim */
          int end_pos;/*!< The ending position in the ListArray for this dim */
          float weight;/*!< Weight of this dim */
@@ -160,7 +162,7 @@ public:
 	 *  \param weight The weight
 	 */
 	void
-	attr(int index, int low, int up, float weight);
+	attr(int index, int low, int up, float weight, int order);
 	/*! \fn void attr(int index, int value, float weight, float selectivity)
 	 *  \brief Set an attr struct.
 	 *
@@ -170,7 +172,7 @@ public:
 	 *  \param selectivity The selectivity
 	 */
 	void
-	attr(int index, int value, float weight, float selectivity);
+	attr(int index, int value, float weight, float selectivity, int order);
 	/*! \fn void attr(int index, int low,int up ,float weight, float selectivity)
 	 *  \brief Set an attr struct
 	 *
@@ -181,7 +183,7 @@ public:
 	 *  \param selectivity The selectivity
 	 */
 	void
-	attr(int index, int low, int up, float weight, float selectivity);
+	attr(int index, int low, int up, float weight, float selectivity, int order);
 
     /*! \fn void clear_dim(int index)
      *  \brief Delete the dim at index

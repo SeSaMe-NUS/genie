@@ -10,3 +10,5 @@ test_7.cu: basic test for csv imput, tweets data
 test_8.cu: basic test for binary input, tweets data
 test_9.cu: test for csv input and multiload, tweets data
 test_10.cu: test for binary input, especially multiload, tweets data
+test_11.cu: test for subsequence search, sift data from csv file
+test_12.cu test for sunsequence search, sift data from binary file

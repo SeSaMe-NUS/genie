@@ -142,6 +142,11 @@ GPUGenie::inv_table::get_lowerbound_of_list(int index)
         return -1;
 }
 
+unsigned int
+GPUGenie::inv_table::_shift_bits_subsequence()
+{
+    return shift_bits_subsequence;
+}
 
 void
 GPUGenie::inv_table::set_table_index(int index)
@@ -212,6 +217,7 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
     {
         max_length = (u64)0 - (u64)1;
     }
+
     unsigned int last;
 	int key, dim, value;
 	for (unsigned int i = 0; i < _inv_lists.size(); i++)
@@ -219,9 +225,11 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 		dim = i << _shifter;
 		for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
 		{
+
 			key = dim + value - _inv_lists[i].min();
 			vector<int>& index = *_inv_lists[i].index(value);
-
+            if(_inv_lists.size() <= 1)//used int subsequence search
+                shift_bits_subsequence = _inv_lists[i]._shift_bits_subsequence();
 			if (_ck.size() <= (unsigned int) key)
 			{
 				last = _ck.size();
@@ -256,7 +264,6 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 }
 
 
-
 bool
 GPUGenie::inv_table::write_to_file(ofstream& ofs)
 {
@@ -268,6 +275,7 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
     ofs.write((char*)&_shifter, sizeof(int));
     ofs.write((char*)&_size, sizeof(int));
     ofs.write((char*)&_dim_size, sizeof(int));
+    ofs.write((char*)&shift_bits_subsequence, sizeof(unsigned int));
     int temp_status = _build_status;
     ofs.write((char*)&temp_status, sizeof(int));
 
@@ -321,6 +329,7 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
     ifs.read((char*)&_shifter, sizeof(int));
     ifs.read((char*)&_size, sizeof(int));
     ifs.read((char*)&_dim_size, sizeof(int));
+    ifs.read((char*)&shift_bits_subsequence, sizeof(unsigned int));
     int temp_status;
     ifs.read((char*)&temp_status, sizeof(int));
     _build_status = static_cast<status>(temp_status);

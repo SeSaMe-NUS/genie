@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <cmath>
-
+#include <iostream>
 
 #include "query.h"
 
@@ -59,19 +59,19 @@ GPUGenie::query::ref_table()
 	return _ref_table;
 }
 
-void GPUGenie::query::attr(int index, int low, int up, float weight)
+void GPUGenie::query::attr(int index, int low, int up, float weight, int order)
 {
-	attr(index, low, up, weight, -1);
+	attr(index, low, up, weight, -1, order);
 }
 
 void GPUGenie::query::attr(int index, int value, float weight,
-		float selectivity)
+		float selectivity, int order)
 {
-	attr(index, value, value, weight, selectivity);
+	attr(index, value, value, weight, selectivity, order);
 }
 
 void GPUGenie::query::attr(int index, int low, int up, float weight,
-		float selectivity)
+		float selectivity, int order)
 {
 	if (index < 0 || index >= _ref_table->m_size())
 		return;
@@ -82,6 +82,7 @@ void GPUGenie::query::attr(int index, int low, int up, float weight,
 	new_attr.weight = weight;
 	new_attr.dim = index;
 	new_attr.query = _index;
+    new_attr.order = order;
 	new_attr.low_offset = 0;
 	new_attr.up_offset = 0;
 	new_attr.selectivity = selectivity;
@@ -148,6 +149,7 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
             {
                  dim new_dim;
                  new_dim.query = dims[i].query;
+                 new_dim.order = dims[i].order;
                  new_dim.weight = dims[i].weight;
                  new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
                  new_dim.end_pos = new_dim.start_pos + max_load;
@@ -157,6 +159,7 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
             {
                  dim new_dim;
                  new_dim.query = dims[i].query;
+                 new_dim.order = dims[i].order;
                  new_dim.weight = dims[i].weight;
                  new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
                  new_dim.end_pos = dims[i].end_pos;
@@ -298,6 +301,7 @@ void GPUGenie::query::build()
 			dim new_dim;
 			new_dim.weight = weight;
 			new_dim.query = _index;
+            new_dim.order = ran.order;
 
             low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
 

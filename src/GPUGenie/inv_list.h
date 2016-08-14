@@ -40,6 +40,12 @@ private:
 	 */
 	vector<vector<int> > _inv;
 
+    /*! \var unsigned int shift_bits_subsequence
+     *  \brief It will be used to shift rowid and then add the position offset of element in that row
+     */
+    unsigned int shift_bits_subsequence;
+
+
 public:
 	/*! \fn inv_list()
 	 *  \brief Create an empty inv_list.
@@ -63,6 +69,12 @@ public:
 	 */
 	inv_list(vector<int>* vin);
 
+    /*! \fn unsigned int _shift_bits_subsequence()
+     *
+     *  \return The shift bits used in subsequence search
+     */
+    unsigned int
+    _shift_bits_subsequence();
     /*! \fn void invert_bijectMap(vector<vector<int> > & vin)
      *  \brief invert a special kind of data,which is of one dimension
      *
@@ -89,7 +101,27 @@ public:
 	void
 	invert_bijectMap(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num);
 
-	/*! \fn inv_list(vector<string>& vin)
+    /*! \fn void invert_subsequence(vector<vector<int> > & vin)
+     *  \brief This function is used for subsequence search, csv input
+     *
+     *  \param vin Sequence value of all rows
+     */
+    void
+    invert_subsequence(vector<vector<int> > & vin);
+
+
+    /*! \fn void invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num)
+     *  \brief This function is used for subsequence search, binary input
+     *
+     *  \param data Array storing all sequence elements
+     *  \param item_num Length of data array
+     *  \param index Stores elements pointing to starting position of each row in data array
+     *  \param row_num Length of index array
+     */
+    void
+    invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num);
+
+    /*! \fn inv_list(vector<string>& vin)
 	 *  \brief Create an inv_list from a string vector.
 	 *
 	 *  \param vin The vector which will be inverted.

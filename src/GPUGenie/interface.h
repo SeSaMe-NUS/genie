@@ -77,7 +77,7 @@ typedef struct _GPUGenie_Config
 	unsigned int item_num;/*!< length of data array*/
 	unsigned int row_num;/*!< length of index array*/
 
-	int search_type; /*!< 0 for sift-like data search, 1 for short text data search */
+	int search_type; /*!< 0 for sift-like data search, 1 for bijectMap data search */
 	int data_type; /*!< 0 for csv data; 1 for binary data */
 	unsigned int max_data_size; /*!< the max number of data items(rows of data), used for multiload feature */
 	bool save_to_gpu; /*!< true for transferring data to gpu and keeping in gpu memory */
@@ -90,6 +90,8 @@ typedef struct _GPUGenie_Config
 	bool use_multirange;/*!< whether to use multirange query */
 
 	int num_of_queries;/*!< number of queries in one query set */
+
+    bool use_subsequence_search;/*!< whether to use subsequence search*/
 	_GPUGenie_Config() :
 			num_of_topk(GPUGENIE_DEFAULT_TOPK), query_radius(
 					GPUGENIE_DEFAULT_RADIUS), count_threshold(
@@ -108,7 +110,7 @@ typedef struct _GPUGenie_Config
 					GPUGENIE_DEFAULT_LOAD_MULTIPLIER), use_load_balance(
 					GPUGENIE_DEFAULT_USE_LOAD_BALANCE), use_multirange(
 					GPUGENIE_DEFAULT_USE_MULTIRANGE), num_of_queries(
-					GPUGENIE_DEFAULT_NUM_OF_QUERIES)
+					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false)
 	{
 	}
 } GPUGenie_Config;
@@ -309,7 +311,18 @@ void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
 
 void reset_device();
 
-
+/*! \fn void get_rowID_offset(vector<int> &result, vector<int> &resultID, vector<int> &resultOffset, unsigned int shift_bits);
+ *  \brief Get rowID and corresponding offset in two vectors
+ *
+ *  \param result The original result with rowID and offset packed together.
+ *  \param resultID All the RowID without offset
+ *  \param resultOffset All the offset without rowID
+ *  \param shift_bits Bits to shift in order to get rowID
+ *
+ *  In subsequence search, the RowID and Offset are combined according to shift_bits. This function helps to seperate
+ *  rowID and  offset.
+ */
+void get_rowID_offset(vector<int> &result, vector<int> &resultID, vector<int> &resultOffset, unsigned int shift_bits);
 
 
 }

@@ -35,7 +35,12 @@ build:
 	nvcc -I../src -include ../src/GPUGenie.h -O3  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example_table_from_file.d" "example_table_from_file.cu"
 	nvcc --device-c  -I../src -O3  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GPUGenie.h  -x cu -o  "example_table_from_file.o" "example_table_from_file.cu"
 	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_table_from_file_bin"  example_table_from_file.o   -lGPUGenie -lpthread 
-#
+
+#Building file: example_read_table_from_file.cu
+#Invoking: NVCC Compiler
+	nvcc -I../src -include ../src/GPUGenie.h -O3  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52  -M -o "example_sift_subsequence.d" "example_sift_subsequence.cu"
+	nvcc --device-c  -I../src -O3  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -include ../src/GPUGenie.h  -x cu -o  "example_table_from_file.o" "example_sift_subsequence.cu"
+	nvcc --cudart  shared -L../lib -L/lib64 -L../build/lib --relocatable-device-code=true  -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -link -o  "example_sift_subsequence_bin"  example_sift_subsequence.o   -lGPUGenie -lpthread 
 #
 #
 ##Building file: convert_csv2binary.cu

@@ -145,6 +145,12 @@ private:
 	 */
 	vector<int> _inv_pos;
 
+
+    /*! \var unsigned int shift_bits_subsequence
+     *  \brief The shift bits in subsequence search.
+     */
+    unsigned int shift_bits_subsequence;
+
 public:
 
 	/*! \fn inv_table()
@@ -155,7 +161,8 @@ public:
 	 */
 	inv_table(): d_inv_p(NULL), is_stored_in_gpu(false),
                 table_index(0),total_num_of_table(1),
-                _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0)
+                _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0),
+                shift_bits_subsequence(0)
 	{
 	}
 
@@ -280,6 +287,13 @@ public:
 	int
 	shifter();
 
+    /*! \fn unsigned int _shift_bits_subsequence()
+     *  \return The shift bits for subsequence search. The way to combine
+     *  rowID and offset of its element.
+     */
+    unsigned int
+    _shift_bits_subsequence();
+
 	/*! \fn void append(inv_list& inv)
 	 *  \brief Append an inv_list to the inv_table.
 	 *
@@ -390,7 +404,6 @@ public:
      */
 	void
 	build(u64 max_length, bool use_load_balance);
-
 
     /*! \fn int get_posting_list_size(int attr_index, int value)
      *

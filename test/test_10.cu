@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     config.multiplier = 1.5f;
     config.use_multirange = false;
 
-    config.data_type = 0;
+    config.data_type = 1;
     config.search_type = 1;
     config.max_data_size = 10;
 

@@ -104,7 +104,6 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	u64 start = getTime();
 
 	//topk(d_data, queries, d_top_indexes, float(dim));
-
 	thrust::device_vector<data_t> d_topk;
 	heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
 			queries[0].topk(),queries.size());
