@@ -531,7 +531,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 	bool key_eligible;                //
 	bool pass_threshold;    //to determine whether pass the check of my_theshold
 
-	for (int i = 0; i < (max - min - 1) / GPUGenie_device_THREADS_PER_BLOCK + 1; i++)
+	for (int i = 0; i < (max - min - 1) / GPUGenie_device_THREADS_PER_BLOCK + 1; ++i)
 	{
 
 		int tmp_id = threadIdx.x + i * GPUGenie_device_THREADS_PER_BLOCK + min;
