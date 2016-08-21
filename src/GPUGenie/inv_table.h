@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include "inv_list.h"
 
 /*! \var typedef unsigned long long u64
@@ -57,6 +58,11 @@ public:
      *  (Here, one query means one execution of search)
      */
 	bool is_stored_in_gpu;
+
+    /*! \var int shift_bits_sequence
+     *  \brief This variable is used to tell the number of bits shifted for recording gram in different position.
+     */
+    	int shift_bits_sequence;
 private:
 
     /*! \var int table_index
@@ -78,21 +84,22 @@ private:
 
 
     /*! \var status _build_status
-	 *  \brief Building status of the inv_table.
-	 *        Any modification will make the
-	 *        inv_table not_builded.
-	 */
-	status _build_status;
+     *  \brief Building status of the inv_table.
+     *        Any modification will make the
+     *        inv_table not_builded.
+     */
+    status _build_status;
 
-	/*! \var int _shifter
-	 *  \brief Bits shifted.
-	 */
-	int _shifter;
+    /*! \var int _shifter
+     *  \brief Bits shifted.
+     *
+     */
+    int _shifter;
 
-	/*! \var int _size
-	 *  \brief The number of instances.
-	 */
-	int _size;
+    /*! \var int _size
+     *  \brief The number of instances.
+     */
+    int _size;
 
     /*! \var int _dim_size
      *  \brief The number of dim for the corresponding dataset.
@@ -100,9 +107,17 @@ private:
     int _dim_size;
 
     /*! \var vector<inv_list> _inv_lists;
-	 *  \brief Inverted lists of different dimensions.
-	 */
-	vector<inv_list> _inv_lists;
+     *  \brief Inverted lists of different dimensions.
+     */
+    vector<inv_list> _inv_lists;
+
+    /*! \var vector<vector<int> > distinct_value
+     *  \brief distinct_value for each sequence;
+     *
+     */
+    //vector<vector<int> > distinct_value;
+    vector<unordered_map<int, int> > _distinct_map;
+
 
     /*! \var vector<int> inv_list_upperbound
      *  \brief the maximum value for one inv_list. The id is implicitly expressed by the vector index.
@@ -122,47 +137,68 @@ private:
 
 
 
-	/*! \var vector<int> _ck
-	 *  \brief The composite keys' vector.
-	 */
-	vector<int> _ck;
+    /*! \var vector<int> _ck
+     *  \brief The composite keys' vector.
+     */
+     vector<int> _ck;
 
-	/*! \var vector<int> _inv
-	 *  \brief The inverted indexes' vector.
+    /*! \var vector<int> _inv
+     *  \brief The inverted indexes' vector.
      *
      *  _inv contains the all the posting list which consist of ids of data points. The d_inv_p points to
      *  the corresponding memory on GPU.
-	 */
-	vector<int> _inv;
-
-	/*! \var vector<int> _inv_index
-	 *  \brief The first level index lists of posting lists vector
-	 */
-	vector<int> _inv_index;
-
-	/*! \var vector<int> _inv_pos
-	 *  \brief The second level posting lists vector
-	 */
-	vector<int> _inv_pos;
-
-
-    /*! \var unsigned int shift_bits_subsequence
-     *  \brief The shift bits in subsequence search.
      */
-    unsigned int shift_bits_subsequence;
+     vector<int> _inv;
+
+     /*! \var vector<int> _inv_index
+      *  \brief The first level index lists of posting lists vector
+      */
+      vector<int> _inv_index;
+
+     /*! \var vector<int> _inv_pos
+      *  \brief The second level posting lists vector
+      */
+      vector<int> _inv_pos;
+
+      /*! \var unsigned int shift_bits_subsequence
+       *  \brief The number of shifted bits in subsequence search.
+       *
+       *
+       */
+      unsigned int shift_bits_subsequence;
+
+      /*! \var int min_value_sequence
+       *  \brief The min value of all sequences that are kept in this inv_table object
+       */
+      int min_value_sequence;
+
+
+      /*! \var int max_value_sequence
+       *  \brief The max value. Compare to min_value_sequence
+       *
+       *
+       */
+      int max_value_sequence;
+
+      /*! \var int gram_length_sequence
+       *  \brief The length of each gram.
+       */
+      int gram_length_sequence;
+
 
 public:
 
 	/*! \fn inv_table()
 	 *  \brief Default constructor of the inv_table.
 	 *
-     *  It sets is_store_in_gpu to false, _shifter 16,
-     *  _size -1, table_index 0, total_num_of_table 1 and _dim_size 0.
+     	 *  It sets is_store_in_gpu to false, _shifter 16,
+         *  _size -1, table_index 0, total_num_of_table 1 and _dim_size 0.
 	 */
-	inv_table(): d_inv_p(NULL), is_stored_in_gpu(false),
+	inv_table(): d_inv_p(NULL), is_stored_in_gpu(false),shift_bits_sequence(0),
                 table_index(0),total_num_of_table(1),
                 _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0),
-                shift_bits_subsequence(0)
+		        shift_bits_subsequence(0),
+                min_value_sequence(0), max_value_sequence(0), gram_length_sequence(1)
 	{
 	}
 
@@ -170,6 +206,23 @@ public:
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
      */
 	~inv_table();
+
+
+    /*! \fn vector<vector<int> >* distinct_value()
+     *  \brief return the distinct value vector for all inv_lists
+     *
+     *  \param dim The specific dim of the expected distinct values
+     *
+     */
+    unordered_map<int, int>* get_distinct_map(int dim);
+
+    /*! \fn void append_sequence(inv_list& inv)
+     *  \brief append inv_list for sequence search
+     *
+     *  \param inv The inv_list to append.
+     *
+     */
+    void append_sequence(inv_list& inv);
 
     /*! \fn static bool write(const char* filename, inv_table*& table)
      *  \brief static member function responsible for serialize inv_table objects to a binary file
@@ -268,38 +321,36 @@ public:
 
 	/*! \fn int m_size()
 	 *
-     *  \return The number of dimensions.
+     	 *  \return The number of dimensions.
 	 */
 	int
 	m_size();
 
 	/*! \fn int i_size()
 	 *
-     *  \return The number of instances(data points)
+     	 *  \return The number of instances(data points)
 	 */
 	int
 	i_size();
 
 	/*! \fn int shifter()
-     *
 	 *  \return The shifter.
 	 */
 	int
 	shifter();
 
-    /*! \fn unsigned int _shift_bits_subsequence()
-     *  \return The shift bits for subsequence search. The way to combine
-     *  rowID and offset of its element.
-     */
-    unsigned int
-    _shift_bits_subsequence();
+	  /*! \fn unsigned int _shift_bits_subsequence()
+    	   *  \return The shift bits for subsequence search. The way to combine
+     	   *  rowID and offset of its element.
+           */
+    	unsigned int
+    	_shift_bits_subsequence();
 
 	/*! \fn void append(inv_list& inv)
 	 *  \brief Append an inv_list to the inv_table.
 	 *
 	 *  \param inv The refrence to the inv_list which will be appended.
-     *
-     *  The appended inv_list will be added
+         *  The appended inv_list will be added
 	 *  to _inv_lists. The first inv_list will set
 	 *  the _size to correct number. If _size is not
 	 *  equal to the size of inv_list or -1. This
@@ -312,8 +363,8 @@ public:
 	 *  \brief Append an inv_list to the inv_table.
 	 *
 	 *  \param inv: the refrence to the inv_list which will be appended.
-     *
-     *  The appended inv_list will be added
+     	 *
+     	 *  The appended inv_list will be added
 	 *  to _inv_lists. The first inv_list will set
 	 *  the _size to correct number. If _size is not
 	 *  equal to the size of inv_list or -1. This
@@ -324,42 +375,42 @@ public:
 
 	/*! \fn status build_status()
 	 *
-     *  \return Building status of the inv_table.
+         *  \return Building status of the inv_table.
 	 */
 	status
 	build_status();
 
 	/*! \fn vector<inv_list>* inv_lists()
 	 *
-     *  \return The pointer points to _inv_lists vector.
+         *  \return The pointer points to _inv_lists vector.
 	 */
 	vector<inv_list>*
 	inv_lists();
 
 	/*! \fn vector<int>* ck()
 	 *
-     *  \return The pointer points to _ck vector.
+         *  \return The pointer points to _ck vector.
 	 */
 	vector<int>*
 	ck();
 
 	/*! \fn vector<int>* inv()
 	 *
-     *  \return The pointer points to _inv vector.
+         *  \return The pointer points to _inv vector.
 	 */
 	vector<int>*
 	inv();
 
 	/*! \fn vector<int>* inv_index()
 	 *
-     *  \return The pointer points to _inv_index vector.
+         *  \return The pointer points to _inv_index vector.
 	 */
 	vector<int>*
 	inv_index();
 
-    /*! \fn vector<int>* inv_pos()
+        /*! \fn vector<int>* inv_pos()
 	 *
-     *  \return The pointer points to _inv_pos vector.
+         *  \return The pointer points to _inv_pos vector.
 	 */
 	vector<int>*
 	inv_pos();
@@ -389,21 +440,22 @@ public:
 	/*! \fn void build(u64 max_length, bool use_load_balance)
 	 *  \brief Build the inv_table.
 	 *
-     *  \param max_length The maximum length of one segment in posting list array
-     *  \param use_load_balance The flag to determine whether to do load balance
-     *
-     *  This method will merge all inv_lists to
+         *  \param max_length The maximum length of one segment in posting list array
+         *  \param use_load_balance The flag to determine whether to do load balance
+         *
+         *  This method will merge all inv_lists to
 	 *  two vector _ck and _inv and set the
 	 *  _build_status to builded. Any query should
 	 *  only be done after the inv_table has been builded.
-     *  If use_load_balance is true, the max_length will be used
-     *  to divide posting list which is longer than max_length suggests.
-     *  if use_load_balance is false, the max_length will be set
-     *  to positive infinity before it is used
-     *
-     */
+         *  If use_load_balance is true, the max_length will be used
+         *  to divide posting list which is longer than max_length suggests.
+         *  if use_load_balance is false, the max_length will be set
+         *  to positive infinity before it is used
+         *
+         */
 	void
 	build(u64 max_length, bool use_load_balance);
+
 
     /*! \fn int get_posting_list_size(int attr_index, int value)
      *
@@ -452,6 +504,58 @@ public:
      */
     bool
     read_from_file(ifstream& ifs);
+
+
+    /*! \fn void set_min_value_sequence(int min_value)
+     *  \brief Used in sequence search. To set the min_value for all sequences' element.
+     *
+     *  \param min_value The value to be set as the minimum value.
+     */
+    void
+    set_min_value_sequence(int min_value);
+
+    /*! \fn int get_min_value_sequence()
+     *  \brief Get the min value for sequences' elements in this inv_table.
+     *
+     *  \return The min value.
+     */
+    int
+    get_min_value_sequence();
+
+    /*! \fn void set_max_value_sequence(int max_value)
+     *  \brief Set the max value for all sequence. Compare to set_min_value_sequence()
+     *
+     *  \param max_value The max value to be set.
+     */
+    void
+    set_max_value_sequence(int max_value);
+
+    /*! \fn int get_max_value_sequence()
+     *  \brief Get the max value.
+     *
+     *  \return The max value.
+     */
+    int
+    get_max_value_sequence();
+
+    /*! \fn void set_gram_length_sequence(int gram_length)
+     *  \brief Set length of each gram.
+     *
+     *  \param gram_length The gram length to be set.
+     *
+     */
+    void
+    set_gram_length_sequence(int gram_length);
+
+    /*! \fn int get_gram_length_sequence()
+     *
+     *  \brief Get the gram length.
+     *
+     *  \return The gram length used in this inv_table.
+     *
+     */
+    int
+    get_gram_length_sequence();
 
 
 

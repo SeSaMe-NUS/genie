@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <string>
-
+#include <unordered_map>
 using namespace std;
 
 namespace GPUGenie
@@ -21,6 +21,13 @@ namespace GPUGenie
  */
 class inv_list
 {
+public:
+    /* \var vector<int> distinct_value_sequence
+     * \brief Used in sequence search to keep distinct value.
+     */
+    unordered_map<int, int> _distinct;
+
+
 private:
 	/*! \var int _size
 	 *  \brief The number of instances in the original vector.
@@ -120,6 +127,17 @@ public:
      */
     void
     invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num);
+
+    /*! \fn void invert_sequence(vector<vector<int> > & vin)
+     *  \brief This is used for sequence match
+     *
+     *  \param vin Data to be inverted.
+     *  \param shift_bits Number of bits to shift.
+     *  \param respective_id The id for each line of vin.
+     */
+    void
+    invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id);
+
 
     /*! \fn inv_list(vector<string>& vin)
 	 *  \brief Create an inv_list from a string vector.

@@ -16,11 +16,11 @@ set(LIB_SRC_LIST
   GPUGenie/Timing.cc
 
   GPUGenie/inv_list.h
-  GPUGenie/inv_list.cc
+  GPUGenie/inv_list.cu
   GPUGenie/inv_table.h
   GPUGenie/inv_table.cu
   GPUGenie/query.h
-  GPUGenie/query.cc
+  GPUGenie/query.cu
   GPUGenie/match.h
   GPUGenie/match.cu
   GPUGenie/interface.h
@@ -30,7 +30,7 @@ set(LIB_SRC_LIST
   GPUGenie/heap_count.h
   GPUGenie/heap_count.cu  
   GPUGenie/FileReader.h
-  GPUGenie/FileReader.cc
+  GPUGenie/FileReader.cu
 )
 
 cuda_add_library(

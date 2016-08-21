@@ -648,8 +648,13 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 				}
 				else
 				{
-					queries[i].build();
+					if(table.shift_bits_sequence == 0)
+					    queries[i].build();
+                   			else
+                        		    queries[i].build_sequence();
 				}
+
+		
 			int prev_size = dims.size();
 			queries[i].dump(dims);
 
@@ -739,13 +744,13 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		int threshold = bitmap_bits - 1, bitmap_size = 0;
 		if (bitmap_bits > 1)
 		{
-			float logresult = log2((float) bitmap_bits);
+			float logresult = std::log2((float) bitmap_bits);
 			bitmap_bits = (int) logresult;
 			if (logresult - bitmap_bits > 0)
 			{
 				bitmap_bits += 1;
 			}
-			logresult = log2((float) bitmap_bits);
+			logresult = std::log2((float) bitmap_bits);
 			bitmap_bits = (int) logresult;
 			if (logresult - bitmap_bits > 0)
 			{

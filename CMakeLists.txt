@@ -6,7 +6,7 @@ set(PROJECT_MINOR_VERSION 0.0)
 
 project(${PROJECT_NAME})
 enable_testing()
-
+include(CheckCXXCompilerFlag)
 
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
@@ -29,7 +29,7 @@ set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 set(BUILD_STATIC_LIBS ON)
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
-SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
+SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
 
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
