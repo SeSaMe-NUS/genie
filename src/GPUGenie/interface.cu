@@ -650,7 +650,10 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 	u64 starttime = getTime();
 
 	inv_list list;
-	list.invert_bijectMap(data_points);
+    if(config.use_subsequence_search)
+        list.invert_subsequence(data_points);
+    else
+	    list.invert_bijectMap(data_points);
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
@@ -677,7 +680,10 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	u64 starttime = getTime();
 
 	inv_list list;
-	list.invert_bijectMap(data, item_num, index, row_num);
+    if(config.use_subsequence_search)
+        list.invert_subsequence(data, item_num, index, row_num);
+    else
+	    list.invert_bijectMap(data, item_num, index, row_num);
 
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
