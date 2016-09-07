@@ -27,6 +27,7 @@ using namespace std;
 namespace GPUGenie
 {
 
+
 /*! \class inv_table
  *  \brief The declaration for class inv_table
  *
@@ -34,6 +35,7 @@ namespace GPUGenie
  *  to be searched. Also this class contains information for constructing query on this set.
  *  In one word, this class manages all information about the inverted index.
  */
+
 class inv_table
 {
 public:
@@ -48,7 +50,7 @@ public:
     /*! \var int *d_inv_p
      *  \brief d_inv_p points to the start location for posting list array in GPU memory.
      */
-	int *d_inv_p;
+	static int *d_inv_p;
 
     /*! \var bool is_stored_in_gpu
      *  \brief is_stored_in_gpu tell whether inverted index structure is pre-stored inside gpu memory
@@ -194,7 +196,7 @@ public:
      	 *  It sets is_store_in_gpu to false, _shifter 16,
          *  _size -1, table_index 0, total_num_of_table 1 and _dim_size 0.
 	 */
-	inv_table(): d_inv_p(NULL), is_stored_in_gpu(false),shift_bits_sequence(0),
+	inv_table():is_stored_in_gpu(false),shift_bits_sequence(0),
                 table_index(0),total_num_of_table(1),
                 _build_status(not_builded), _shifter(16),_size(-1),_dim_size(0),
 		        shift_bits_subsequence(0),
@@ -294,7 +296,7 @@ public:
     /*! \fn void clear_gpu_mem()
      *  \brief clear the corresponding gpu memory referenced by d_inv_p
      */
-	void
+	static void
 	clear_gpu_mem();
 
 	/*! \fn void clear()

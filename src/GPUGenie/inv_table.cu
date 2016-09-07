@@ -20,15 +20,20 @@
 using namespace std;
 using namespace GPUGenie;
 
+int*  inv_table::d_inv_p = NULL;
+
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
 	try{
-		cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
-        	u64 t=getTime();
+        if(d_inv_p == NULL)
+        {
+            cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
+        }
+            u64 t=getTime();
 		cudaCheckErrors(cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
         	u64 tt=getTime();
-        	cout<<"Transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
+        	cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
 	} catch(std::bad_alloc &e){
 		throw(GPUGenie::gpu_bad_alloc(e.what()));
 	}
@@ -42,21 +47,33 @@ void GPUGenie::inv_table::clear()
 	_inv_lists.clear();
 	_ck.clear();
 	_inv.clear();
-	clear_gpu_mem();
 }
 
 GPUGenie::inv_table::~inv_table()
 {
-	if (is_stored_in_gpu == true)
-		cudaCheckErrors(cudaFree(d_inv_p));
-}
+    if(d_inv_p != NULL)
+    {
 
+    cout << "Program end ---- cudaFreeTime: " ;
+	u64 t1 = getTime();
+        cudaCheckErrors(cudaFree(d_inv_p));
+        d_inv_p = NULL;
+
+    u64 t2 = getTime();
+    cout << getInterval(t1, t2) << " ms."<< endl;
+    }
+}
 void GPUGenie::inv_table::clear_gpu_mem()
 {
-	if (is_stored_in_gpu == false)
+	if (d_inv_p == NULL)
 		return;
-	cudaFree(d_inv_p);
-	is_stored_in_gpu = false;
+
+
+    cout << "cudaFreeTime: " ;
+	u64 t1 = getTime();
+    cudaCheckErrors(cudaFree(d_inv_p));
+    u64 t2 = getTime();
+    cout << getInterval(t1, t2) << " ms."<< endl;
 
 }
 
