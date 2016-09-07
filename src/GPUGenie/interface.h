@@ -77,7 +77,7 @@ typedef struct _GPUGenie_Config
 	unsigned int item_num;/*!< length of data array*/
 	unsigned int row_num;/*!< length of index array*/
 
-	int search_type; /*!< 0 for sift-like data search, 1 for bijectMap data search */
+	int search_type; /*!< 0 for sift-like data search, 1 for bijectMap data search, 2 for specialized sequence search */
 	int data_type; /*!< 0 for csv data; 1 for binary data */
 	unsigned int max_data_size; /*!< the max number of data items(rows of data), used for multiload feature */
 	bool save_to_gpu; /*!< true for transferring data to gpu and keeping in gpu memory */
@@ -88,10 +88,14 @@ typedef struct _GPUGenie_Config
 	float multiplier;/*!< for calculating how long posting list should be fit into one gpu block, used under load balance setting */
 	bool use_load_balance;/*!< whether to use load balance feature */
 	bool use_multirange;/*!< whether to use multirange query */
-
 	int num_of_queries;/*!< number of queries in one query set */
 
     bool use_subsequence_search;/*!< whether to use subsequence search*/
+
+    int data_gram_length;/*!< Length of gram in the construction of gram dataset*/
+    float edit_distance_diff;/*!< The given upper-bound of edit distance for search. This value will be multiplied by query and the result would be the distance bound*/
+
+
 	_GPUGenie_Config() :
 			num_of_topk(GPUGENIE_DEFAULT_TOPK), query_radius(
 					GPUGENIE_DEFAULT_RADIUS), count_threshold(
@@ -110,7 +114,8 @@ typedef struct _GPUGenie_Config
 					GPUGENIE_DEFAULT_LOAD_MULTIPLIER), use_load_balance(
 					GPUGENIE_DEFAULT_USE_LOAD_BALANCE), use_multirange(
 					GPUGENIE_DEFAULT_USE_MULTIRANGE), num_of_queries(
-					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false)
+					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false),
+                    data_gram_length(3), edit_distance_diff(0.1)
 	{
 	}
 } GPUGenie_Config;
@@ -300,6 +305,49 @@ void load_table(inv_table& table, int *data, unsigned int item_num,
  */
 void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config);
+
+
+
+/*! \fn void load_table_sequence(inv_table& table, vector<vector<int> > & data_points, GPUGenie_Config& config)
+ *  \brief This function handles construction of inv_table for sequence search.
+ *
+ *  \param table The inv_table to be constructed.
+ *  \param data_points The data set to be searched.
+ *  \param config The settings from User.
+ */
+void load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config);
+
+
+/*! \fn void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Config& config)
+ *  \brief This function help constructs queries' structure on a specific inv_table.
+ *
+ *  \param table The specific inv_table for dataset.
+ *  \param queries The query set to return.
+ *  \param config User settings.
+ *
+ */
+void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Config& config);
+
+/*! \fn void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gram_data, int max_value, int gram_length)
+ *  \brief This function is used to convert initial sequence data to sequences represented by n-gram data
+ *
+ *  \param sequences The initial sequences.
+ *  \param gram_data The data to represent sequence which is broken into n-grams
+ *  \param max_value The range of value that can occur in the original sequences, should start at 0.
+ *  \param gram_length The length of one n-gram.
+ */
+void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gram_data, int max_value, int gram_length);
+
+/*! \fn void sequence_reduce_to_ground(vector<vector<int> >& data, vector<vector<int> >& converted_data, int& min_value, int& max_value)
+ *  \brief Find the max value and min value of data, and subtract each element by min value.
+ *
+ *  \param data The data waiting to be processed.
+ *  \param converted_data It stores a copy of data, where each element is subtracted by the minimum value.
+ *  \param min_value The min value returned.
+ *  \param max_value The max value returned.
+ */
+void sequence_reduce_to_ground(vector<vector<int> >& data, vector<vector<int> >& converted_data, int& min_value, int& max_value);
+
 
 /*! \fn void reset_device()
  *  \brief clear gpu memory

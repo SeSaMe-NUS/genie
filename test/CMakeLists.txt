@@ -7,6 +7,7 @@ function(add_test_case TARGET)
    add_dependencies(${TARGET} ${PROJECT_NAME})
    target_link_libraries(${TARGET}
                          -lpthread
+                         -lboost_serialization
                          -l${PROJECT_NAME})
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
@@ -21,5 +22,5 @@ add_test_case(test_7_csv_input_tweets test_7.cu)
 add_test_case(test_8_binary_input_tweets test_8.cu)
 add_test_case(test_9_csv_multiload_tweets test_9.cu)
 add_test_case(test_10_binary_multiload_tweets test_10.cu)
-add_test_case(test_11_subsequence_search_sift_data test_11.cu)
-add_test_case(test_12_subsequence_search_sift_binary_data test_12.cu)
+add_test_case(test_11_subsequence_search_csv_input test_11.cu)
+add_test_case(test_12_subsequence_search_binary_input test_12.cu)

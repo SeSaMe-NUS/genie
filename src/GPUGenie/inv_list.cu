@@ -81,6 +81,79 @@ void GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 	return;
 }
 
+
+void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id)
+{
+	_size = vin.size();
+	if (vin.empty())
+    {
+        _bound.first = 0;
+        _bound.second = 0;
+
+		return;
+    }
+
+
+	unsigned int i, j;
+	_bound.first = 0, _bound.second = 0, _inv.clear();
+
+    vector<vector<int> > vin_after_shift;
+    shift_bits = 6;
+    unordered_map<int, int> _map;
+    for(i = 0; i < vin.size(); ++i)
+    {
+        vector<int> line;
+        for(j = 0; j < vin[i].size(); ++j)
+        {
+            int temp_value;
+            unordered_map<int, int>::iterator result = _map.find(vin[i][j]);
+            if(result == _map.end())
+            {
+                temp_value = vin[i][j]<<shift_bits;
+                _map.insert({vin[i][j], 0});
+            }
+            else
+            {
+                if(result->second < 63)
+                    result->second += 1;
+                temp_value = (result->first<<shift_bits) + result->second;
+            }
+
+            unordered_map<int, int>::iterator it = _distinct.find(temp_value);
+            if(it != _distinct.end())
+                temp_value = it->second;
+            else
+            {
+                _distinct.insert({temp_value, _distinct.size()});
+                //distinct_value_sequence.push_back(temp_value);
+                temp_value = _distinct.size() - 1;
+            }
+
+            line.push_back(temp_value);
+        }
+        vin_after_shift.push_back(line);
+        _map.clear();
+    }
+    _bound.second = _distinct.size() - 1;
+
+	unsigned int gap = _bound.second - _bound.first + 1;
+    //cout<<"Gap = "<<gap<<endl;
+	_inv.resize(gap);
+	for (i = 0; i < gap; i++)
+		_inv[i].clear();
+
+    for (i = 0; i < vin_after_shift.size(); ++i)
+	{
+		for (j = 0; j < vin_after_shift[i].size(); ++j)
+		{
+			_inv[vin_after_shift[i][j] - _bound.first].push_back(respective_id[i]);
+		}
+	}
+    //cout<<"inv_list finished!"<<endl;
+	return;
+}
+
+
 void GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num)
 {

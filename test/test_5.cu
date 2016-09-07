@@ -84,8 +84,7 @@ int main(int argc, char* argv[])
 
     int i_size = inv.size();
     int* _inv = (int*)malloc(sizeof(int)*i_size);
-    cudaCheckErrors(cudaMemcpy(_inv, table[0].d_inv_p, sizeof(int)*i_size, cudaMemcpyDeviceToHost));
-    table[0].clear_gpu_mem();
+    cudaCheckErrors(cudaMemcpy(_inv, inv_table::d_inv_p, sizeof(int)*i_size, cudaMemcpyDeviceToHost));
 
     assert(_inv[0] == 8);
     assert(_inv[1] == 9);
@@ -94,7 +93,6 @@ int main(int argc, char* argv[])
     assert(_inv[4] == 2);
     assert(_inv[5] == 4);
 
-    reset_device();
     free(_inv);
 
     delete[] table;

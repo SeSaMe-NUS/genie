@@ -648,8 +648,13 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 				}
 				else
 				{
-					queries[i].build();
+					if(table.shift_bits_sequence == 0)
+					    queries[i].build();
+                   			else
+                        		    queries[i].build_sequence();
 				}
+
+		
 			int prev_size = dims.size();
 			queries[i].dump(dims);
 
@@ -717,7 +722,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		num_of_max_count = build_queries(queries, table, dims, max_load);
 
 		match_query_end = getTime();
-		Logger::log(Logger::VERBOSE,
+		Logger::log(Logger::INFO,
 				">>>>[time profiling]: match: build_queries function takes %f ms. ",
 				getInterval(match_query_start, match_query_end));
 		Logger::log(Logger::DEBUG, " dims size: %d.",
@@ -739,13 +744,13 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		int threshold = bitmap_bits - 1, bitmap_size = 0;
 		if (bitmap_bits > 1)
 		{
-			float logresult = log2((float) bitmap_bits);
+			float logresult = std::log2((float) bitmap_bits);
 			bitmap_bits = (int) logresult;
 			if (logresult - bitmap_bits > 0)
 			{
 				bitmap_bits += 1;
 			}
-			logresult = log2((float) bitmap_bits);
+			logresult = std::log2((float) bitmap_bits);
 			bitmap_bits = (int) logresult;
 			if (logresult - bitmap_bits > 0)
 			{
@@ -766,8 +771,15 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 
 		d_bitmap.resize(bitmap_size);
 
+
+        cout << "query_transfer time = " ; 
+        u64 query_start = getTime();
+
 		device_vector<query::dim> d_dims(dims);
 		query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+
+        u64 query_end = getTime();
+        cout << getInterval(query_start, query_end) << "ms." << endl;
 
 		if (!table.is_stored_in_gpu)
 			table.cpy_data_to_gpu();
@@ -844,12 +856,13 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                     d_overflow,
                     shift_bits_subsequence);
 
-
+/*
             if(!table.is_stored_in_gpu)
             {
                 table.clear_gpu_mem();
             }
-			cudaCheckErrors(cudaDeviceSynchronize());
+*/
+            cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
             cudaCheckErrors(cudaFree(d_overflow));
@@ -892,10 +905,10 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		cudaEventSynchronize(kernel_stop);
 		kernel_elapsed = 0.0f;
 		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
-		Logger::log(Logger::VERBOSE,
+		Logger::log(Logger::INFO,
 				">>>>[time profiling]: Match kernel takes %f ms. (GPU running) ",
 				kernel_elapsed);
-		Logger::log(Logger::VERBOSE,
+		Logger::log(Logger::INFO,
 				">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)",
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");

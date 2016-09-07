@@ -18,6 +18,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 
 #include <thrust/system_error.h>
 #include <thrust/copy.h>
@@ -76,20 +77,23 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            _table = new inv_table[1];
-            _table[0].set_table_index(0);
-            _table[0].set_total_num_of_table(1);
+            		_table = new inv_table[1];
+            		_table[0].set_table_index(0);
+            		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[0], *(config.data_points), config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[0], *(config.data_points), config);
-				break;
-			default:
-				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+				case 0:
+					load_table(_table[0], *(config.data_points), config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[0], *(config.data_points), config);
+					break;
+            	case 2:
+                	load_table_sequence(_table[0], *(config.data_points), config);
+                	break;
+				default:
+					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		else
@@ -100,7 +104,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	else
 	{
 		Logger::log(Logger::DEBUG, "build from data_points...");
-        unsigned int table_num;
+        	unsigned int table_num;
 		if (config.data_points->size() % config.max_data_size == 0)
 		{
 			table_num = config.data_points->size() / config.max_data_size;
@@ -122,18 +126,21 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 					config.data_points->begin()
 							+ (i + 1) * config.max_data_size);
 
-            _table[i].set_table_index(i);
-            _table[i].set_total_num_of_table(table_num);
+            		_table[i].set_table_index(i);
+            		_table[i].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[i], temp, config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[i], temp, config);
-				break;
-			default:
-				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+				case 0:
+					load_table(_table[i], temp, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[i], temp, config);
+					break;
+            	case 2:
+                	load_table_sequence(_table[i], temp, config);
+               		break;
+				default:
+					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		if (table_num != cycle)
@@ -145,27 +152,31 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			temp1.insert(temp1.end(),
 					config.data_points->begin() + cycle * config.max_data_size,
 					config.data_points->begin() + cycle * config.max_data_size
-							+ second_last_size);
+					+ second_last_size);
 			temp2.insert(temp2.end(),
 					config.data_points->begin() + cycle * config.max_data_size
-							+ second_last_size, config.data_points->end());
+					+ second_last_size, config.data_points->end());
 
-            _table[cycle].set_table_index(cycle);
-            _table[cycle].set_total_num_of_table(table_num);
-            _table[cycle + 1].set_table_index(cycle+1);
-            _table[cycle + 1].set_total_num_of_table(table_num);
+            		_table[cycle].set_table_index(cycle);
+           	    	_table[cycle].set_total_num_of_table(table_num);
+           		_table[cycle + 1].set_table_index(cycle+1);
+           	 	_table[cycle + 1].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[cycle], temp1, config);
-				load_table(_table[cycle + 1], temp2, config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[cycle], temp1, config);
-				load_table_bijectMap(_table[cycle + 1], temp2, config);
-				break;
-			default:
-				throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+				case 0:
+					load_table(_table[cycle], temp1, config);
+					load_table(_table[cycle + 1], temp2, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[cycle], temp1, config);
+					load_table_bijectMap(_table[cycle + 1], temp2, config);
+			        break;
+            	case 2:
+                	load_table_sequence(_table[cycle], temp1, config);
+               		load_table_sequence(_table[cycle + 1], temp2,config);
+                	break;
+				default:
+					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 	}
@@ -180,20 +191,23 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            _table = new inv_table[1];
-            _table[0].set_table_index(0);
-            _table[0].set_total_num_of_table(1);
+            		_table = new inv_table[1];
+            		_table[0].set_table_index(0);
+            		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[0], config.data, config.item_num, config.index,
+				case 0:
+					load_table(_table[0], config.data, config.item_num, config.index,
 						config.row_num, config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[0], config.data, config.item_num,
+					break;
+				case 1:
+					load_table_bijectMap(_table[0], config.data, config.item_num,
 						config.index, config.row_num, config);
-				break;
+					break;
+        			case 2:
+					//binary reading is gradually deprecated
+                			break;
 			}
 		}
 		else
@@ -204,7 +218,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	else
 	{
 		Logger::log(Logger::DEBUG, "build from data array...");
-        unsigned int table_num;
+       		unsigned int table_num;
 		if (config.row_num % config.max_data_size == 0)
 		{
 			table_num = config.row_num / config.max_data_size;
@@ -225,22 +239,25 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			if (i == table_num - 1)
 				item_num = config.item_num
 						- config.index[config.max_data_size * (table_num - 1)];
-            _table[i].set_table_index(i);
-            _table[i].set_total_num_of_table(table_num);
+            		_table[i].set_table_index(i);
+            		_table[i].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[i],
+				case 0:
+					load_table(_table[i],
 						config.data + config.index[config.max_data_size * i],
 						item_num, config.index + config.max_data_size * i,
 						config.max_data_size, config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[i],
+					break;
+				case 1:
+					load_table_bijectMap(_table[i],
 						config.data + config.index[config.max_data_size * i],
 						item_num, config.index + config.max_data_size * i,
 						config.max_data_size, config);
-				break;
+					break;
+            	case 2:
+					//binary reading is deprecated
+                	break;
 			}
 		}
 
@@ -257,40 +274,40 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			unsigned int last_item_size = config.item_num
 					- config.index[config.max_data_size * cycle
 							+ second_last_row_size];
-            _table[cycle].set_table_index(cycle);
-            _table[cycle].set_total_num_of_table(table_num);
-            _table[cycle + 1].set_table_index(cycle+1);
-            _table[cycle + 1].set_total_num_of_table(table_num);
+            		_table[cycle].set_table_index(cycle);
+            		_table[cycle].set_total_num_of_table(table_num);
+            		_table[cycle + 1].set_table_index(cycle+1);
+            		_table[cycle + 1].set_total_num_of_table(table_num);
 			switch (config.search_type)
 			{
-			case 0:
-				load_table(_table[cycle],
-						config.data
-								+ config.index[config.max_data_size * cycle],
+				case 0:
+					load_table(_table[cycle],
+						config.data + config.index[config.max_data_size * cycle],
 						second_last_item_size,
 						config.index + config.max_data_size * cycle,
 						second_last_row_size, config);
-				load_table(_table[cycle + 1],
+					load_table(_table[cycle + 1],
+						config.data + config.index[config.max_data_size * cycle
+										+ second_last_row_size], last_item_size,
+						config.index + config.max_data_size * cycle
+								+ second_last_row_size, last_row_size, config);
+					break;
+				case 1:
+					load_table_bijectMap(_table[cycle],
+						config.data + config.index[config.max_data_size * cycle],
+						second_last_item_size,
+						config.index + config.max_data_size * cycle,
+						second_last_row_size, config);
+					load_table_bijectMap(_table[cycle + 1],
 						config.data
 								+ config.index[config.max_data_size * cycle
 										+ second_last_row_size], last_item_size,
 						config.index + config.max_data_size * cycle
 								+ second_last_row_size, last_row_size, config);
-				break;
-			case 1:
-				load_table_bijectMap(_table[cycle],
-						config.data
-								+ config.index[config.max_data_size * cycle],
-						second_last_item_size,
-						config.index + config.max_data_size * cycle,
-						second_last_row_size, config);
-				load_table_bijectMap(_table[cycle + 1],
-						config.data
-								+ config.index[config.max_data_size * cycle
-										+ second_last_row_size], last_item_size,
-						config.index + config.max_data_size * cycle
-								+ second_last_row_size, last_row_size, config);
-				break;
+					break;
+            	case 2:
+					//deprecated
+            		break;
 			}
 		}
 	}
@@ -419,6 +436,11 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 void GPUGenie::load_query(inv_table& table, std::vector<query>& queries,
 		GPUGenie_Config& config)
 {
+    if(config.search_type == 2)
+    {
+        load_query_sequence(table, queries, config);
+        return;
+    }
 	if (config.use_multirange)
 	{
 		load_query_multirange(table, queries, config);
@@ -466,7 +488,7 @@ void GPUGenie::load_query_multirange(inv_table& table,
 			query_map[qid] = q;
 
 		}
-		query_map[qid].attr(dim, val, weight, sel, query_map[qid].count_ranges());//To main a certain order, query in the file must sticks to some order
+		query_map[qid].attr(dim, val, weight, sel, query_map[qid].count_ranges());
 	}
 	for (std::map<int, query>::iterator it = query_map.begin();
 			it != query_map.end() && queries.size() < (unsigned int) config.num_of_queries;
@@ -492,7 +514,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 	int value;
 	int radius = config.query_radius;
 	std::vector<std::vector<int> >& query_points = *config.query_points;
-	for (i = 0; i < query_points.size() && i < config.num_of_queries; ++i)
+	for (i = 0; i < query_points.size(); ++i)
 	{
 		query q(table, i);
 
@@ -501,12 +523,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 						&& (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
 			value = query_points[i][j];
-			/*this value can be smaller than 0, same as data points.
-            if (value < 0)
-			{
-				continue;
-			}
-            */
+
 			q.attr(config.search_type == 1 ? 0 : j,
 					value - radius, value + radius,
 					GPUGENIE_DEFAULT_WEIGHT, j);
@@ -534,8 +551,101 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 			timeInterval);
 }
 
+void GPUGenie::load_query_sequence(inv_table& table,
+		vector<query>& queries, GPUGenie_Config& config)
+{
+
+	Logger::log(Logger::DEBUG, "Table dim: %d.", table.m_size());
+	u64 starttime = getTime();
+
+	u32 i, j;
+	int value, min_value;
+    	min_value = table.get_min_value_sequence();
+
+	vector<vector<int> >& query_points = *config.query_points;
+	vector<vector<int> > converted_query;
+    	for(i = 0 ; i<query_points.size() ; ++i)
+    	{
+        	vector<int> line;
+        	for(j = 0 ; j<query_points[i].size() ; ++j)
+            		line.push_back(query_points[i][j] - min_value);
+        	converted_query.push_back(line);
+    	}
+
+    	vector<vector<int> > _gram_query, gram_query;
+    	sequence_to_gram(converted_query, _gram_query, table.get_max_value_sequence() - min_value, table.get_gram_length_sequence());
+
+    	unordered_map<int, int> _map;
+    
+    	for(i = 0; i < _gram_query.size(); ++i)
+    	{
+        	vector<int> line;
+        	for(j = 0; j < _gram_query[i].size(); ++j)
+        	{
+            		unordered_map<int, int>::iterator result = _map.find(_gram_query[i][j]);
+            		if(result == _map.end())
+            		{
+                		_map.insert({_gram_query[i][j], 0});
+                		line.push_back(_gram_query[i][j]<<table.shift_bits_sequence);
+            		}
+            		else
+            		{
+                		result->second += 1;
+                		line.push_back((result->first<<table.shift_bits_sequence) + result->second);
+            		}
+        	}
+        	gram_query.push_back(line);
+        	_map.clear();
+    	}
+
+    	u64 query_start = getTime();
+
+    	for (i = 0; i < gram_query.size(); ++i)
+	{
+		query q(table, i);
+
+        	int min_bound,max_bound;
+        	min_bound = (int)gram_query[i].size()*(1 - config.edit_distance_diff) - 1;
+        	max_bound = (int)gram_query[i].size()*(1 + config.edit_distance_diff); // exclusive
+    
+        	if(min_bound < 0) min_bound = 0;
+	    	if(max_bound > table.m_size()) max_bound = table.m_size();
+        	for (j = 0; j < gram_query[i].size() ; ++j)
+		{
+			value = gram_query[i][j];
+			if (value < 0)
+			{
+				continue;
+			}
+
+            for(int k = min_bound; k < max_bound; ++k)
+			    q.attr(k, value, value, GPUGENIE_DEFAULT_WEIGHT, 0);
+		}
+
+		q.topk(config.num_of_topk);
+		if (config.use_load_balance)
+		{
+			q.use_load_balance = true;
+		}
+
+		queries.push_back(q);
+	}
+    	u64 query_end = getTime();
+
+    	cout<<"query build time = "<<getInterval(query_start, query_end)<<"ms."<<endl;
+	u64 endtime = getTime();
+	double timeInterval = getInterval(starttime, endtime);
+	Logger::log(Logger::INFO, "%d queries are created!", queries.size());
+	Logger::log(Logger::VERBOSE,
+			">>>>[time profiling]: loading query takes %f ms<<<<",
+			timeInterval);
+}
+
+
+
+
 void GPUGenie::load_table_bijectMap(inv_table& table,
-		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)//bijectMap include subsequence search
+		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
 {
 	u64 starttime = getTime();
 
@@ -591,6 +701,69 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 			">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",
 			timeInterval);
 
+}
+
+void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
+{
+    u64 starttime = getTime();
+    int min_value, max_value;
+    vector<vector<int> > converted_data;
+    vector<vector<int> > gram_data;
+    sequence_reduce_to_ground(data_points, converted_data ,min_value ,max_value);
+    table.set_min_value_sequence(min_value);
+    table.set_max_value_sequence(max_value);
+    sequence_to_gram(converted_data, gram_data, max_value-min_value ,config.data_gram_length);
+    table.set_gram_length_sequence(config.data_gram_length);
+    
+    vector<vector<int> > length_id;//th 1st element, length is 1
+    vector<inv_list> lists;
+    for(unsigned int i = 0; i < gram_data.size(); ++i)
+    {
+        if(gram_data[i].size() <= 0)
+            continue;
+        if(length_id.size() < gram_data[i].size())
+            length_id.resize(gram_data[i].size());
+        length_id[gram_data[i].size()-1].push_back(i);
+
+    }
+    
+    lists.resize(length_id.size());
+    config.dim = length_id.size();
+    cout<<"Start building index"<<endl;
+    u64 tt1 = getTime();
+    for(unsigned int i = 0; i < length_id.size(); ++i)
+    {
+        vector<vector<int> > temp_set;
+        vector<int> respective_id;
+        respective_id = length_id[i];
+        for(unsigned int j = 0; j < length_id[i].size(); ++j)
+            temp_set.push_back(gram_data[length_id[i][j]]);
+
+        inv_list list;
+        list.invert_sequence(temp_set, table.shift_bits_sequence, respective_id);
+        table.append_sequence(list);
+    }
+
+    table.build(config.posting_list_max_length, config.use_load_balance);
+    u64 tt2 = getTime();
+
+    cout<<"Building table time = "<<getInterval(tt1, tt2)<<endl;
+
+    if(config.save_to_gpu)
+        table.cpy_data_to_gpu();
+    table.is_stored_in_gpu = config.save_to_gpu;
+
+    u64 endtime = getTime();
+	double timeInterval = getInterval(starttime, endtime);
+	Logger::log(Logger::DEBUG,
+			"Before finishing loading. i_size():%d, m_size():%d.",
+			table.i_size(), table.m_size());
+	Logger::log(Logger::VERBOSE,
+			">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",
+			timeInterval);
+
+
+    
 }
 
 void GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
@@ -734,6 +907,7 @@ void GPUGenie::reset_device()
 {
     cudaDeviceReset();
 }
+
 void GPUGenie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
                     vector<int> &resultOffset, unsigned int shift_bits)
 {
@@ -746,3 +920,69 @@ void GPUGenie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
         resultOffset.push_back(offset);
     }
 }
+
+void GPUGenie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int> >& gram_data,
+        int max_value, int gram_length)
+{
+    int num_of_value = max_value + 1;
+    int gram_value = 0;
+
+    for(unsigned int i = 0 ; i < sequences.size() ; ++i)
+    {
+        int max_index = sequences[i].size() - gram_length + 1;
+        if(max_index <= 0)
+        {
+            vector<int> line_null;
+            vector<int> temp_line;
+            for(unsigned int p = 0; p < (unsigned int)gram_length; ++p)
+            {
+                if(p<sequences[i].size() <= 0) break;
+                if(p < sequences[i].size())
+                    line_null.push_back(sequences[i][p]);
+                else
+                    line_null.push_back(sequences[i][0]);
+
+            }
+            int number = 0;
+            for(unsigned int p = 0; p < (unsigned int)gram_length; ++p)
+            {
+                 number = number*num_of_value + line_null[p];
+            }
+            temp_line.push_back(number);
+            gram_data.push_back(temp_line);
+            continue;
+        }
+        vector<int> line;
+        for(unsigned int j = 0 ; j < (unsigned int)max_index ; ++j)
+        {
+            gram_value = 0;
+            for(unsigned int k = 0 ; k < (unsigned int)gram_length ; ++k )
+            {
+                gram_value = gram_value*num_of_value + sequences[i][j + k];
+            }
+            line.push_back(gram_value);
+        }
+        gram_data.push_back(line);
+    }
+}
+void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
+{
+    min_value = data[0][0];
+    max_value = min_value;
+    converted_data.clear();
+    for(unsigned int i = 0 ; i < data.size() ; ++i)
+        for(unsigned int j = 0 ; j < data[i].size() ; ++j)
+        {
+            if(data[i][j] > max_value) max_value = data[i][j];
+            if(data[i][j] < min_value) min_value = data[i][j];
+        }
+    for(unsigned int i = 0 ; i < data.size() ; ++i)
+    {
+        vector<int> line;
+        for(unsigned int j = 0 ; j < data[i].size() ; ++j)
+            line.push_back(data[i][j] - min_value);
+        converted_data.push_back(line);
+    
+    }
+}
+

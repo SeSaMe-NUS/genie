@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
 
     vector<int> & inv = *table[0].inv();
 
+
     /**test for table*/
     assert(inv[0] == 4);
     assert(inv[1] == 11);
@@ -78,7 +79,6 @@ int main(int argc, char* argv[])
     assert( shift_bits == 3 );
 
     get_rowID_offset(original_result, rowID, rowOffset, shift_bits);
-    reset_device();
     
     assert(rowID[0] == 0);
     assert(rowOffset[0] == 0);

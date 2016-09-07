@@ -81,7 +81,6 @@ int main(int argc, char* argv[])
     assert( shift_bits == 3 );
 
     get_rowID_offset(original_result, rowID, rowOffset, shift_bits);
-    reset_device();
     
     assert(rowID[0] == 0);
     assert(rowOffset[0] == 0);
