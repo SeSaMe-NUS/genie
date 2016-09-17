@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <list>
 
 #include <thrust/system_error.h>
 #include <thrust/copy.h>
@@ -32,21 +33,77 @@ using namespace GPUGenie;
 using namespace std;
 
 
+void swap(int * position, int offset1, int offset2)
+{
+    int temp = *(position + offset1);
+    *(position + offset1) = *(position + offset2);
+    *(position + offset2) = temp;
+}
+
+int partition(int * id_array, int * count_array, const int left, const int right)// right is inclusive
+{
+    //const int mid = left + (right - left) / 2;
+    
+    const int pivot = count[left];
+    int i = left + 1;
+    int j = right;
+    while(i <= j)
+    {
+        while(i <= j && count_array[i] > pivot)
+            i++;
+        while(i <= j && count_array[j] <=pivot)
+            j--;
+        if(i < j)
+        {
+            swap(count_array, i, j);
+            swap(id_array, i, j)
+        }
+
+    }
+
+    swap(count_array, left, i-1);
+    swap(id_array, left, i-1);
+    return i-1;
+
+}
+
+void quiksortIdCount(int * id_array, int * count_array, const int left, const int right)//right is inclusive
+{
+    if(left >= right) return;
+
+    int mid = partition(id_array, count_array, left, right);
+
+    quiksortIdCount(id_array, count_array, left, mid-1);
+    quiksortIdCount(id_array, count_array, mid + 1, right);
+}
+
+
+
+
+
 //merge result
 void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		std::vector<std::vector<int> >& _result_count, std::vector<int>& result,
-		std::vector<int>& result_count, int table_num, int topk, int query_num)
+		std::vector<int>& result_count, int table_num, int topk, int query_num, unsigned int iteration_times)
 {
+    cout << "result merge and rank " << endl;
+    cout << "The" << iteration_times << "th iteration." << endl;
+    u64 start_merge = getTime();
+    int individual_topk = topk / iteration_times;
 	for (int i = 0; i < query_num; ++i)
 	{
 		vector<int> _sort;
 		vector<int> _sort_count;
-		for (int j = 0; j < table_num; ++j)
+        //std::list<int> _sort;
+        //std::list<int> _sort_count;
+
+        for (int j = 0; j < table_num; ++j)
 		{
-			_sort.insert(_sort.end(), _result[j].begin() + i * topk,
+			_result.insert(result.end(), 
+                    _result[j].begin() + i * topk + individual_topk * (iteration_times - 1),
 					_result[j].begin() + (i + 1) * topk);
-			_sort_count.insert(_sort_count.end(),
-					_result_count[j].begin() + i * topk,
+			 result_count.insert(result_count.end(),
+					_result_count[j].begin() + i * topk + individual_topk * (iteration_times - 1),
 					_result_count[j].begin() + (i + 1) * topk);
 		}
 
@@ -59,7 +116,6 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 			unsigned int index;
 			index = std::distance(_sort_count.begin(),
 					std::max_element(_sort_count.begin(), _sort_count.end()));
-
 			result.push_back(_sort[index]);
 			result_count.push_back(_sort_count[index]);
 			_sort.erase(_sort.begin() + index);
@@ -67,11 +123,16 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 
 		}
 	}
+    u64 end_merge = getTime();
+    cout << "Merge time = " << getInterval(start_merge, end_merge) << "ms. "<<endl;
 }
 bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table)
 {
 	unsigned int cycle = 0;
+
+    config.num_of_topk = config.num_of_iteration * config.num_of_topk;
+    
 
 	if (config.max_data_size >= config.data_points->size() || config.max_data_size <= 0)
 	{
@@ -187,6 +248,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		inv_table * &_table)
 {
 	unsigned int cycle = 0;
+    config.num_of_topk = config.num_of_iteration * config.num_of_topk;
 	if (config.max_data_size >= config.row_num || config.max_data_size <= 0)
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
