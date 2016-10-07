@@ -32,7 +32,6 @@
 using namespace GPUGenie;
 using namespace std;
 
-
 void swap(int * position, int offset1, int offset2)
 {
     int temp = *(position + offset1);
@@ -40,23 +39,28 @@ void swap(int * position, int offset1, int offset2)
     *(position + offset2) = temp;
 }
 
+
 int partition(int * id_array, int * count_array, const int left, const int right)// right is inclusive
+
 {
-    //const int mid = left + (right - left) / 2;
     
-    const int pivot = count[left];
+    const int pivot = count_array[left];
     int i = left + 1;
     int j = right;
     while(i <= j)
     {
         while(i <= j && count_array[i] > pivot)
+        {
             i++;
+        }
         while(i <= j && count_array[j] <=pivot)
+        {
             j--;
+        }
         if(i < j)
         {
             swap(count_array, i, j);
-            swap(id_array, i, j)
+            swap(id_array, i, j);
         }
 
     }
@@ -67,18 +71,26 @@ int partition(int * id_array, int * count_array, const int left, const int right
 
 }
 
-void quiksortIdCount(int * id_array, int * count_array, const int left, const int right)//right is inclusive
+void quicksortIdCount(int * id_array, int * count_array, const int left, const int right)//right is inclusive
 {
     if(left >= right) return;
 
     int mid = partition(id_array, count_array, left, right);
 
-    quiksortIdCount(id_array, count_array, left, mid-1);
-    quiksortIdCount(id_array, count_array, mid + 1, right);
+    quicksortIdCount(id_array, count_array, left, mid-1);
+    quicksortIdCount(id_array, count_array, mid + 1, right);
 }
 
 
-
+void print1DVector(vector<int> & toPrint)
+{
+    cout << "print vector 1D. " << endl;
+    for(unsigned int i = 0 ; i < toPrint.size() ; ++i)
+    {
+        cout << toPrint[i] << ",";
+    }
+    cout << endl;
+}
 
 
 //merge result
@@ -87,41 +99,33 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
 		std::vector<int>& result_count, int table_num, int topk, int query_num, unsigned int iteration_times)
 {
     cout << "result merge and rank " << endl;
-    cout << "The" << iteration_times << "th iteration." << endl;
+    cout << "The " << iteration_times << "th iteration." << endl;
     u64 start_merge = getTime();
+    cout << "topk = " << topk << endl;
     int individual_topk = topk / iteration_times;
+    result.clear();
+    result_count.clear();
 	for (int i = 0; i < query_num; ++i)
 	{
-		vector<int> _sort;
-		vector<int> _sort_count;
-        //std::list<int> _sort;
-        //std::list<int> _sort_count;
-
+		vector<int> sort;
+		vector<int> sort_count;
         for (int j = 0; j < table_num; ++j)
 		{
-			_result.insert(result.end(), 
-                    _result[j].begin() + i * topk + individual_topk * (iteration_times - 1),
+            //print1DVector(_result[j]);
+            //print1DVector(_result_count[j]);
+            
+             sort.insert(sort.end(),
+                    _result[j].begin() + (i * topk + individual_topk * (iteration_times - 1)),
 					_result[j].begin() + (i + 1) * topk);
-			 result_count.insert(result_count.end(),
+             sort_count.insert(sort_count.end(),
 					_result_count[j].begin() + i * topk + individual_topk * (iteration_times - 1),
 					_result_count[j].begin() + (i + 1) * topk);
 		}
 
-		for (int j = 0; j < topk; ++j)
-		{
-			if (_sort_count.begin() == _sort_count.end())
-			{
-				throw GPUGenie::cpu_runtime_error("No result!");
-			}
-			unsigned int index;
-			index = std::distance(_sort_count.begin(),
-					std::max_element(_sort_count.begin(), _sort_count.end()));
-			result.push_back(_sort[index]);
-			result_count.push_back(_sort_count[index]);
-			_sort.erase(_sort.begin() + index);
-			_sort_count.erase(_sort_count.begin() + index);
-
-		}
+        quicksortIdCount(&sort[0], &sort_count[0], 0, sort.size()-1);
+        result.insert(result.end(), sort.begin(), sort.begin() + individual_topk);
+        result_count.insert(result_count.end(), sort_count.begin(), sort_count.begin()+individual_topk);
+        
 	}
     u64 end_merge = getTime();
     cout << "Merge time = " << getInterval(start_merge, end_merge) << "ms. "<<endl;
@@ -267,9 +271,9 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 					load_table_bijectMap(_table[0], config.data, config.item_num,
 						config.index, config.row_num, config);
 					break;
-        			case 2:
+        		case 2:
 					//binary reading is gradually deprecated
-                			break;
+                	break;
 			}
 		}
 		else
@@ -404,7 +408,7 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
     }
 
     merge_knn_results_from_multiload(_result, _result_count, result,
-            result_count, table_num, config.num_of_topk, queries.size());
+            result_count, table_num, config.num_of_topk, queries.size(), config.num_of_iteration);
 
 
 }
@@ -432,7 +436,7 @@ void GPUGenie::load_table(inv_table& table,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu)
+	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -480,7 +484,7 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu)
+	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -666,13 +670,13 @@ void GPUGenie::load_query_sequence(inv_table& table,
 	{
 		query q(table, i);
 
-        	int min_bound,max_bound;
-        	min_bound = (int)gram_query[i].size()*(1 - config.edit_distance_diff) - 1;
-        	max_bound = (int)gram_query[i].size()*(1 + config.edit_distance_diff); // exclusive
-    
-        	if(min_bound < 0) min_bound = 0;
-	    	if(max_bound > table.m_size()) max_bound = table.m_size();
-        	for (j = 0; j < gram_query[i].size() ; ++j)
+        int min_bound,max_bound;
+        min_bound = (int)gram_query[i].size() - ((int)gram_query[i].size()+2)*config.edit_distance_diff;//(L-2) - L*diff, L is the original length
+        max_bound = (int)gram_query[i].size() + ((int)gram_query[i].size()+2)*config.edit_distance_diff + 1; //(L-2) + L*diff, exclusive
+
+        if(min_bound < 0) min_bound = 0;
+        if(max_bound > table.m_size()) max_bound = table.m_size();
+        for (j = 0; j < gram_query[i].size() ; ++j)
 		{
 			value = gram_query[i][j];
 			if (value < 0)
@@ -811,7 +815,7 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
 
     cout<<"Building table time = "<<getInterval(tt1, tt2)<<endl;
 
-    if(config.save_to_gpu)
+    if(config.save_to_gpu && inv_table::d_inv_p == NULL)
         table.cpy_data_to_gpu();
     table.is_stored_in_gpu = config.save_to_gpu;
 

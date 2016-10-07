@@ -781,7 +781,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
         u64 query_end = getTime();
         cout << getInterval(query_start, query_end) << "ms." << endl;
 
-		if (!table.is_stored_in_gpu)
+		if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
 			table.cpy_data_to_gpu();
 
 		if (bitmap_size)
