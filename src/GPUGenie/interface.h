@@ -93,7 +93,6 @@ typedef struct _GPUGenie_Config
     bool use_subsequence_search;/*!< whether to use subsequence search*/
 
     int data_gram_length;/*!< Length of gram in the construction of gram dataset*/
-    float edit_distance_diff;/*!< The given upper-bound of edit distance for search. This value will be multiplied by query and the result would be the distance bound*/
 
     unsigned int num_of_iteration;/*!< Number of iterations. This parameter is used major in sequence search, to cut off obtained knn.*/
 
@@ -116,7 +115,7 @@ typedef struct _GPUGenie_Config
 					GPUGENIE_DEFAULT_USE_LOAD_BALANCE), use_multirange(
 					GPUGENIE_DEFAULT_USE_MULTIRANGE), num_of_queries(
 					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false),
-                    data_gram_length(3), edit_distance_diff(0.1),num_of_iteration(1)
+                    data_gram_length(3), num_of_iteration(1)
 	{
 	}
 } GPUGenie_Config;

@@ -57,7 +57,7 @@ public:
     struct dim
     {
          int query;/*!< The query which the range belongs to */
-	 int order;/*!< Mainly used in subsequence search */
+	     int order;/*!< Mainly used in subsequence search */
          int start_pos;/*!< The starting position in the ListArray for this dim */
          int end_pos;/*!< The ending position in the ListArray for this dim */
          float weight;/*!< Weight of this dim */

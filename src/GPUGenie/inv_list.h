@@ -23,7 +23,7 @@ class inv_list
 {
 public:
     /* \var vector<int> distinct_value_sequence
-     * \brief Used in sequence search to keep distinct value.
+     * \brief Used in sequence search. compact the range.
      */
     unordered_map<int, int> _distinct;
 
@@ -133,10 +133,10 @@ public:
      *
      *  \param vin Data to be inverted.
      *  \param shift_bits Number of bits to shift.
-     *  \param respective_id The id for each line of vin.
      */
     void
-    invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id);
+    invert_sequence(vector<vector<int> > & vin, int shift_bits);
+    //invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id);
 
 
     /*! \fn inv_list(vector<string>& vin)

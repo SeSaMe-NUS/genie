@@ -407,6 +407,8 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
         }
     }
 
+
+
     merge_knn_results_from_multiload(_result, _result_count, result,
             result_count, table_num, config.num_of_topk, queries.size(), config.num_of_iteration);
 
@@ -625,57 +627,67 @@ void GPUGenie::load_query_sequence(inv_table& table,
 	u64 starttime = getTime();
 
 	u32 i, j;
-	int value, min_value;
-    	min_value = table.get_min_value_sequence();
+	int value, min_value, max_value;
+    min_value = table.get_min_value_sequence();
+    max_value = table.get_max_value_sequence();
 
 	vector<vector<int> >& query_points = *config.query_points;
 	vector<vector<int> > converted_query;
-    	for(i = 0 ; i<query_points.size() ; ++i)
-    	{
-        	vector<int> line;
-        	for(j = 0 ; j<query_points[i].size() ; ++j)
-            		line.push_back(query_points[i][j] - min_value);
-        	converted_query.push_back(line);
-    	}
+    for(i = 0 ; i<query_points.size() ; ++i)
+    {
+        vector<int> line;
+        for(j = 0 ; j<query_points[i].size() ; ++j)
+        {
+        	if(query_points[i][j] < min_value || query_points[i][j] > max_value)
+        		continue;
+        	line.push_back(query_points[i][j] - min_value);
+        }
 
-    	vector<vector<int> > _gram_query, gram_query;
-    	sequence_to_gram(converted_query, _gram_query, table.get_max_value_sequence() - min_value, table.get_gram_length_sequence());
+        converted_query.push_back(line);
+    }
 
-    	unordered_map<int, int> _map;
-    
-    	for(i = 0; i < _gram_query.size(); ++i)
-    	{
-        	vector<int> line;
-        	for(j = 0; j < _gram_query[i].size(); ++j)
-        	{
-            		unordered_map<int, int>::iterator result = _map.find(_gram_query[i][j]);
-            		if(result == _map.end())
-            		{
-                		_map.insert({_gram_query[i][j], 0});
-                		line.push_back(_gram_query[i][j]<<table.shift_bits_sequence);
-            		}
-            		else
-            		{
-                		result->second += 1;
-                		line.push_back((result->first<<table.shift_bits_sequence) + result->second);
-            		}
-        	}
-        	gram_query.push_back(line);
-        	_map.clear();
-    	}
+    vector<vector<int> > _gram_query, gram_query;
+    sequence_to_gram(converted_query, _gram_query, table.get_max_value_sequence() - min_value, table.get_gram_length_sequence());
 
-    	u64 query_start = getTime();
 
-    	for (i = 0; i < gram_query.size(); ++i)
+    unordered_map<int, int> _map;
+
+    for(i = 0; i < _gram_query.size(); ++i)
+    {
+        vector<int> line;
+        for(j = 0; j < _gram_query[i].size(); ++j)
+        {
+                unordered_map<int, int>::iterator result = _map.find(_gram_query[i][j]);
+                if(result == _map.end())
+                {
+                    _map.insert({_gram_query[i][j], 0});
+                    line.push_back(_gram_query[i][j]<<table.shift_bits_sequence);// should be 6 here
+                }
+                else if(result->second < (int)pow(2, table.shift_bits_sequence) -1)
+                {
+                    result->second += 1;
+                    line.push_back((result->first<<table.shift_bits_sequence) + result->second);
+                }
+        }
+        gram_query.push_back(line);
+        _map.clear();
+    }
+
+    u64 query_start = getTime();
+
+
+    for (i = 0; i < gram_query.size(); ++i)
 	{
 		query q(table, i);
 
+        /*
         int min_bound,max_bound;
         min_bound = (int)gram_query[i].size() - ((int)gram_query[i].size()+2)*config.edit_distance_diff;//(L-2) - L*diff, L is the original length
         max_bound = (int)gram_query[i].size() + ((int)gram_query[i].size()+2)*config.edit_distance_diff + 1; //(L-2) + L*diff, exclusive
 
         if(min_bound < 0) min_bound = 0;
         if(max_bound > table.m_size()) max_bound = table.m_size();
+        */
         for (j = 0; j < gram_query[i].size() ; ++j)
 		{
 			value = gram_query[i][j];
@@ -684,8 +696,7 @@ void GPUGenie::load_query_sequence(inv_table& table,
 				continue;
 			}
 
-            for(int k = min_bound; k < max_bound; ++k)
-			    q.attr(k, value, value, GPUGENIE_DEFAULT_WEIGHT, 0);
+			q.attr(0, value, value, GPUGENIE_DEFAULT_WEIGHT, 0);
 		}
 
 		q.topk(config.num_of_topk);
@@ -698,7 +709,7 @@ void GPUGenie::load_query_sequence(inv_table& table,
 	}
     	u64 query_end = getTime();
 
-    	cout<<"query build time = "<<getInterval(query_start, query_end)<<"ms."<<endl;
+    	cout<<"query build time = "<<getInterval(starttime, query_end)<<"ms."<<endl;
 	u64 endtime = getTime();
 	double timeInterval = getInterval(starttime, endtime);
 	Logger::log(Logger::INFO, "%d queries are created!", queries.size());
@@ -723,7 +734,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu)
+	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -754,7 +765,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu)
+	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -776,11 +787,19 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
     vector<vector<int> > converted_data;
     vector<vector<int> > gram_data;
     sequence_reduce_to_ground(data_points, converted_data ,min_value ,max_value);
+
+
+    cout << "converted data done" << endl;
+
+
     table.set_min_value_sequence(min_value);
     table.set_max_value_sequence(max_value);
-    sequence_to_gram(converted_data, gram_data, max_value-min_value ,config.data_gram_length);
+    sequence_to_gram(converted_data, gram_data, max_value - min_value ,config.data_gram_length);
     table.set_gram_length_sequence(config.data_gram_length);
     
+    table.shift_bits_sequence = 6;
+
+    /*
     vector<vector<int> > length_id;//th 1st element, length is 1
     vector<inv_list> lists;
     for(unsigned int i = 0; i < gram_data.size(); ++i)
@@ -794,9 +813,12 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
     }
     
     lists.resize(length_id.size());
-    config.dim = length_id.size();
+    */
+    //config.dim = length_id.size();
+    config.dim = 1;
     cout<<"Start building index"<<endl;
     u64 tt1 = getTime();
+    /*
     for(unsigned int i = 0; i < length_id.size(); ++i)
     {
         vector<vector<int> > temp_set;
@@ -809,7 +831,11 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
         list.invert_sequence(temp_set, table.shift_bits_sequence, respective_id);
         table.append_sequence(list);
     }
+    */
 
+    inv_list list;
+    list.invert_sequence(gram_data, table.shift_bits_sequence);//For now, the number of bits is set to 6 internally.
+    table.append_sequence(list);
     table.build(config.posting_list_max_length, config.use_load_balance);
     u64 tt2 = getTime();
 
@@ -824,7 +850,7 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
 	Logger::log(Logger::DEBUG,
 			"Before finishing loading. i_size():%d, m_size():%d.",
 			table.i_size(), table.m_size());
-	Logger::log(Logger::VERBOSE,
+	Logger::log(Logger::INFO,
 			">>>>[time profiling]: loading index takes %f ms (for one dim multi-values)<<<<",
 			timeInterval);
 
