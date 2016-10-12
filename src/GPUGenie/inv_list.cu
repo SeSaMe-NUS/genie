@@ -82,7 +82,8 @@ void GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 }
 
 
-void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id)
+void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int shift_bits)
+        //, vector<int> & respective_id)
 {
 	_size = vin.size();
 	if (vin.empty())
@@ -93,12 +94,11 @@ void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int & shift
 		return;
     }
 
-
 	unsigned int i, j;
 	_bound.first = 0, _bound.second = 0, _inv.clear();
 
     vector<vector<int> > vin_after_shift;
-    shift_bits = 6;
+    //shift_bits = 6;
     unordered_map<int, int> _map;
     for(i = 0; i < vin.size(); ++i)
     {
@@ -146,10 +146,11 @@ void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int & shift
 	{
 		for (j = 0; j < vin_after_shift[i].size(); ++j)
 		{
-			_inv[vin_after_shift[i][j] - _bound.first].push_back(respective_id[i]);
+			_inv[vin_after_shift[i][j] - _bound.first].push_back(i);
 		}
 	}
-    //cout<<"inv_list finished!"<<endl;
+
+    shift_bits_subsequence = 0;
 	return;
 }
 

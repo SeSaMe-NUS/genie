@@ -641,19 +641,18 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 			if (queries[i].ref_table() != &table)
 				throw GPUGenie::cpu_runtime_error("table not built!");
 			if (table.build_status() == inv_table::builded)
-				if (queries[i].use_load_balance)
+			{
+				if(table.shift_bits_sequence != 0)
+				{
+					queries[i].build_sequence();// For sequence, balance have not been done
+				} else if (queries[i].use_load_balance)
 				{
 					queries[i].build_and_apply_load_balance(max_load);
-
-				}
-				else
+				}else
 				{
-					if(table.shift_bits_sequence == 0)
-					    queries[i].build();
-                   			else
-                        		    queries[i].build_sequence();
+					queries[i].build();
 				}
-
+			}
 		
 			int prev_size = dims.size();
 			queries[i].dump(dims);
@@ -662,6 +661,7 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 
 			if(count > max_count) max_count = count;
 		}
+
 		return max_count;
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::cpu_bad_alloc(e.what());
@@ -699,7 +699,8 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 	try{
 		u64 match_stop, match_start;
         u32 shift_bits_subsequence = table._shift_bits_subsequence();
-		cudaEvent_t kernel_start, kernel_stop;
+
+        cudaEvent_t kernel_start, kernel_stop;
 		float kernel_elapsed;
 		cudaEventCreate(&kernel_start);
 		cudaEventCreate(&kernel_stop);
@@ -718,7 +719,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		Logger::log(Logger::DEBUG, "hash table size: %d.", hash_table_size);
 		u64 match_query_start, match_query_end;
 		match_query_start = getTime();
-
 		num_of_max_count = build_queries(queries, table, dims, max_load);
 
 		match_query_end = getTime();
@@ -781,9 +781,10 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
         u64 query_end = getTime();
         cout << getInterval(query_start, query_end) << "ms." << endl;
 
-		if (!table.is_stored_in_gpu)
+		if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
+		{
 			table.cpy_data_to_gpu();
-
+		}
 		if (bitmap_size)
 		{
 			thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
@@ -836,7 +837,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
             d_topks.resize(queries.size());
             thrust::fill(d_topks.begin(), d_topks.end(), max_topk);
             u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
-
 
 
             device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>

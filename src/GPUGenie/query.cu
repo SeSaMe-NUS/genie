@@ -152,7 +152,7 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
             {
                  dim new_dim;
                  new_dim.query = dims[i].query;
-		 new_dim.order = dims[i].order;
+                 new_dim.order = dims[i].order;
                  new_dim.weight = dims[i].weight;
                  new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
                  new_dim.end_pos = new_dim.start_pos + max_load;
@@ -162,7 +162,7 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
             {
                  dim new_dim;
                  new_dim.query = dims[i].query;
-		 new_dim.order = dims[i].order;
+                 new_dim.order = dims[i].order;
                  new_dim.weight = dims[i].weight;
                  new_dim.start_pos = max_load*(j-1) + dims[i].start_pos;
                  new_dim.end_pos = dims[i].end_pos;
@@ -190,7 +190,7 @@ void GPUGenie::query::apply_adaptive_query_range()
 		return;
 	}
 
-	u32 global_threshold = _selectivity > 0 ? u32(ceil(_selectivity * table.i_size())) : -1;
+	u32 global_threshold = _selectivity > 0 ? u32(ceil(_selectivity * table.i_size())) : 0;
 	u32 local_threshold;
 
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
@@ -242,7 +242,7 @@ void GPUGenie::query::apply_adaptive_query_range()
 				else
 				{
 					d.up++;
-                    			count += table.get_posting_list_size(index, d.up);
+                    count += table.get_posting_list_size(index, d.up);
 				}
 			}
 		}
@@ -295,7 +295,7 @@ void GPUGenie::query::build()
 			up = ran.up;
 			weight = ran.weight;
 
-            		if(low > up || low > table.get_upperbound_of_list(index) || up < table.get_lowerbound_of_list(index))
+            if(low > up || low > table.get_upperbound_of_list(index) || up < table.get_lowerbound_of_list(index))
 			{
 				continue;
 			}
@@ -305,18 +305,18 @@ void GPUGenie::query::build()
 			new_dim.query = _index;
 			new_dim.order = ran.order;
 
-            		low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
+            low = low < table.get_lowerbound_of_list(index)?table.get_lowerbound_of_list(index):low;
 
-            		up = up > table.get_upperbound_of_list(index)?table.get_upperbound_of_list(index):up;
+            up = up > table.get_upperbound_of_list(index)?table.get_upperbound_of_list(index):up;
 
 
-            		int _min, _max;
+            int _min, _max;
 
-            		_min = d + low - table.get_lowerbound_of_list(index);
-            		_max = d + up - table.get_lowerbound_of_list(index);
+            _min = d + low - table.get_lowerbound_of_list(index);
+            _max = d + up - table.get_lowerbound_of_list(index);
 
-            		new_dim.start_pos = inv_pos[inv_index[_min]];
-            		new_dim.end_pos = inv_pos[inv_index[_max+1]];
+            new_dim.start_pos = inv_pos[inv_index[_min]];
+            new_dim.end_pos = inv_pos[inv_index[_max+1]];
 
 			_dim_map[index]->push_back(new_dim);
 		}
@@ -333,15 +333,18 @@ void GPUGenie::query::build_sequence()
     vector<int>& inv_index = *table.inv_index();
     vector<int>& inv_pos = *table.inv_pos();
 
-    unordered_map<int, int> _distinct;
+    //unordered_map<int, int> _distinct;
 
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
 			di != _attr_map.end(); ++di)
 	{
-        _distinct.clear();
+        //_distinct.clear();
 		int index = di->first;
         unordered_map<int, int>& _distinct = *table.get_distinct_map(index);
         if(_distinct.size() <= 0) continue;
+
+        unordered_map<int, int>::iterator itt = _distinct.begin();
+
 		std::vector<range>& ranges = *(di->second);
 		int d = index << _ref_table->shifter();
 
@@ -356,7 +359,7 @@ void GPUGenie::query::build_sequence()
 			std::vector<dim>* new_list = new std::vector<dim>;
 			_dim_map[index] = new_list;
 		}
-
+        
 		for (unsigned int i = 0; i < ranges.size(); ++i)
 		{
 
@@ -391,7 +394,6 @@ void GPUGenie::query::build_sequence()
             if(up > table.get_upperbound_of_list(index))
                 continue;
 
-
             int _min, _max;
 
             _min = d + low - table.get_lowerbound_of_list(index);
@@ -403,8 +405,8 @@ void GPUGenie::query::build_sequence()
 			_dim_map[index]->push_back(new_dim);
 		}
 
-	}
 
+	}
 }
 
 

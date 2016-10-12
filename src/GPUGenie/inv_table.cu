@@ -128,6 +128,7 @@ void GPUGenie::inv_table::append(inv_list& inv)
 
 void GPUGenie::inv_table::append_sequence(inv_list& inv)
 {
+    // As for now, we built all data sequence together. Therefore, the _distanct_map is always of size 1
     if(_size == -1)
         _size = 0;
     _build_status = not_builded;
@@ -147,6 +148,7 @@ void GPUGenie::inv_table::append_sequence(inv_list& inv)
     inv_list_lowerbound.push_back(inv.min());
     //distinct_value.push_back(inv.distinct_value_sequence);
 	_distinct_map.push_back(inv._distinct);
+
 }
 
 void GPUGenie::inv_table::append(inv_list* inv)
@@ -282,14 +284,14 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
             
 			vector<int>* _index;
             
-            		_index = _inv_lists[i].index(value);
-            
-            		vector<int> index;
-            		index.clear();
-            		if(_index != NULL)
-                		index = *_index;
-	    		if(_inv_lists.size() <= 1)//used int subsequence search
-                		shift_bits_subsequence = _inv_lists[i]._shift_bits_subsequence();
+            _index = _inv_lists[i].index(value);
+    
+            vector<int> index;
+            index.clear();
+            if(_index != NULL)
+                index = *_index;
+            if(_inv_lists.size() <= 1)//used int subsequence search
+                shift_bits_subsequence = _inv_lists[i]._shift_bits_subsequence();
 
 			if (_ck.size() <= (unsigned int) key)
 			{
@@ -304,7 +306,7 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 			}
 			for (unsigned int j = 0; j < index.size(); ++j)
 			{
-                		if (j % max_length == 0)
+                if (j % max_length == 0)
 				{
 					_inv_pos.push_back(_inv.size());
 				}
