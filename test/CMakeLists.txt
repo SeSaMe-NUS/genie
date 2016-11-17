@@ -1,5 +1,5 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
-link_directories(${PROJECT_SOURCE_DIR}/lib)
+link_directories(${PROJECT_SOURCE_DIR}/lib /usr/local/lib)
 
 
 function(add_test_case TARGET)

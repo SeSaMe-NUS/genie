@@ -1,6 +1,6 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
 cuda_include_directories(${PROJECT_SOURCE_DIR}/src)
-link_directories(${PROJECT_SOURCE_DIR}/src)
+link_directories(${PROJECT_SOURCE_DIR}/src /usr/local/lib)
 
 set(LIB_SRC_LIST
   GPUGenie.h
