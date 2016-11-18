@@ -99,60 +99,45 @@ int main(int argc, char* argv[])
 
     std::stringstream ss;
 
-    std::cout << "ck:" << std::endl;
     std::vector<int> *ck = table->ck();
-    if (ck && ck->size() <= 256)
+    if (ck)
     {
-        std::copy(ck->begin(), ck->end(), std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "CK: %s", ss.str().c_str());
+        auto end = (ck->size() <= 256) ? ck->end() : (ck->begin() + 256); 
+        std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
     }
-    else if (ck)
-    {
-        Logger::log(Logger::DEBUG, "CK size too large: %d", ck->size());
-    }
 
-    std::cout << "inv:" << std::endl;
     std::vector<int> *inv = table->inv();
-    if (inv && inv->size() <= 256)
+    if (inv)
     {
-        std::copy(inv->begin(), inv->end(), std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV: %s", ss.str().c_str());
+        auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256); 
+        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
     }
-    else if (inv)
-    {
-        Logger::log(Logger::DEBUG, "INV size too large: %d", inv->size());
-    }
 
-    std::cout << "inv_index:" << std::endl;
     std::vector<int> *inv_index = table->inv_index();
-    if (inv_index && inv_index->size() <= 256)
+    if (inv_index)
     {
-        std::copy(inv_index->begin(), inv_index->end(), std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_INDEX: %s", ss.str().c_str());
+        auto end = (inv_index->size() <= 256) ? inv_index->end() : (inv_index->begin() + 256); 
+        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
-    }
-    else if (inv_index)
-    {
-        Logger::log(Logger::DEBUG, "INV_INDEX size too large: %d", inv_index->size());
     }
 
-    std::cout << "inv_pos:" << std::endl;
+
     std::vector<int> *inv_pos = table->inv_pos();
-    if (inv_pos && inv_pos->size() <= 256)
+    if (inv_pos)
     {
-        std::copy(inv_pos->begin(), inv_pos->end(), std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_POS: %s", ss.str().c_str());
+        auto end = (inv_pos->size() <= 256) ? inv_pos->end() : (inv_pos->begin() + 256); 
+        std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
-    }
-    else if (inv_pos)
-    {
-        Logger::log(Logger::DEBUG, "INV_POS size too large: %d", inv_pos->size());
     }
 
     // check values / print values into a file
