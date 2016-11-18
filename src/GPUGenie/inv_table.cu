@@ -180,19 +180,19 @@ GPUGenie::inv_table::list_contain(int attr_index, int value)
 
 
 int
-GPUGenie::inv_table::get_upperbound_of_list(int index)
+GPUGenie::inv_table::get_upperbound_of_list(int attr_index)
 {
-    if((unsigned int)index < inv_list_upperbound.size())
-        return inv_list_upperbound[index];
+    if((unsigned int)attr_index < inv_list_upperbound.size())
+        return inv_list_upperbound[attr_index];
     else
         return -1;
 }
 
 int
-GPUGenie::inv_table::get_lowerbound_of_list(int index)
+GPUGenie::inv_table::get_lowerbound_of_list(int attr_index)
 {
-    if((unsigned int)index < inv_list_lowerbound.size())
-        return inv_list_lowerbound[index];
+    if((unsigned int)attr_index < inv_list_lowerbound.size())
+        return inv_list_lowerbound[attr_index];
     else
         return -1;
 }
@@ -204,9 +204,9 @@ GPUGenie::inv_table::_shift_bits_subsequence()
 }
 
 void
-GPUGenie::inv_table::set_table_index(int index)
+GPUGenie::inv_table::set_table_index(int attr_index)
 {
-    table_index = index;
+    table_index = attr_index;
 }
 void
 GPUGenie::inv_table::set_total_num_of_table(int num)
@@ -266,7 +266,8 @@ void
 GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 {
     u64 table_start = getTime();
-	_ck.clear(), _inv.clear();
+	_ck.clear();
+    _inv.clear();
 	_inv_index.clear();
 	_inv_pos.clear();
     if(!use_load_balance)

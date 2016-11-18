@@ -250,14 +250,14 @@ public:
     static bool
     read(const char* filename, inv_table*& table);
 
-    /*! \fn void set_table_index(int index)
+    /*! \fn void set_table_index(int attr_index)
      *  \brief Set the table_index to 'index'
      *  \param index The index value you wish to set.
      *
      *  Actually, users do not need to call this function.
      */
     void
-    set_table_index(int index);
+    set_table_index(int attr_index);
 
     /*! \fn void set_total_num_of_table(int num)
      *  \brief Set the total_num_of_table to 'num'
@@ -418,23 +418,23 @@ public:
 	inv_pos();
 
 
-    /*! \fn int get_upperbound_of_list(int index)
+    /*! \fn int get_upperbound_of_list(int attr_index)
      *
      *  \param index Specify index of the inverted list
      *
      *  \return The maximum value of the inverted list at 'index'
      */
     int
-    get_upperbound_of_list(int index);
+    get_upperbound_of_list(int attr_index);
 
-    /*! \fn int get_lowerbound_of_list(int index)
+    /*! \fn int get_lowerbound_of_list(int attr_index)
      *
      *  \param index Specify index of the inverted list
      *
      *  \return The minimum value of the inverted list at 'index'
      */
     int
-    get_lowerbound_of_list(int index);
+    get_lowerbound_of_list(int attr_index);
 
 
 
