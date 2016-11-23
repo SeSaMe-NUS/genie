@@ -33,13 +33,16 @@ using namespace FastPForLib;
 int main(int argc, char* argv[])
 {
 
+    std::cout << "Available codecs: " << std::endl;
+    for (auto &kv : CODECFactory::scodecmap)
+        std::cout << "  " << kv.first << std::endl;
 
-
-    string dataFile = "/home/lubos/data/sift_4.5m.csv";
-    // string dataFile = "../static/sift_20.csv";
+    bool delta = true;
+    string dataFile = "/home/lubos/data/ocr.dat";
+    // string dataFile = "../static/sift_20.dat";
     // string queryFile = "../static/sift_20.csv";
     vector<vector<int> > queries;
-    vector<vector<int> > data;
+    // vector<vector<int> > data;
     inv_table * table = NULL;
     GPUGenie_Config config;
 
@@ -53,14 +56,14 @@ int main(int argc, char* argv[])
     config.selectivity = 0.0f;
 
     config.query_points = &queries;
-    config.data_points = &data;
+    config.data_points = NULL;
 
     config.use_load_balance = false;
     config.posting_list_max_length = 6400;
     config.multiplier = 1.5f;
     config.use_multirange = false;
 
-    config.data_type = 0;
+    config.data_type = 1;
     config.search_type = 0;
     config.max_data_size = 0;
 
@@ -68,10 +71,19 @@ int main(int argc, char* argv[])
 
     assert(config.compression_type == GPUGenie_Config::NO_COMPRESSION);
 
-    read_file(data, dataFile.c_str(), -1);
-    // read_file(queries, queryFile.c_str(), config.num_of_queries);
+    std::cout << "Reading data file..." << std::endl;  
+    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
+    // read_file(data, dataFile.c_str(), -1);
 
-    preprocess_for_knn_csv(config, table);
+    assert(config.item_num > 0);
+    assert(config.row_num > 0);
+
+    std::cout << "Done reading data file!" << std::endl;  
+
+
+    std::cout << "Preprocessing data..." << std::endl;  
+    preprocess_for_knn_binary(config, table);
+    std::cout << "Done preprocessing data..." << std::endl;  
 
     // check how many tables we have
     assert(table != NULL);
@@ -110,7 +122,7 @@ int main(int argc, char* argv[])
             attr_index, table->get_upperbound_of_list(attr_index));
     }
 
-    // std::stringstream ss;
+    // std::stringstream ss;    
     std::vector<int> *ck = table->ck();
     // if (ck)
     // {
@@ -182,28 +194,45 @@ int main(int argc, char* argv[])
 
     Logger::log(Logger::DEBUG, "Uncompressed size of inv_pos (bytes): %d", inv_pos->size() * 4);
 
-
-
-
-    std::cout << "Compressing inverted lists..." << std::endl;
-    IntegerCODEC &codec = *CODECFactory::getFromName("simdfastpfor256");
-    // IntegerCODEC &codec = *CODECFactory::getFromName("simple8b");
-    size_t compressedsize_total = 0;
-    std::vector<uint32_t> compressed_output;
-    for (auto it = rawInvertedLists.begin(); it != rawInvertedLists.end(); it++)
+    if (delta)
     {
-        compressed_output.resize(it->size() + 1024);
-        size_t compressedsize = compressed_output.size();
-        codec.encodeArray(it->data(), it->size(), compressed_output.data(),compressedsize);
-        compressedsize_total += compressedsize;
-        // std::cout << "  orig size: " << it->size() << ", compressed size: " << compressedsize << std::endl;
+        std::cout << "Delting inverted lists..." << std::endl;
+        for (auto it = rawInvertedLists.begin(); it != rawInvertedLists.end(); it++)
+            Delta::deltaSIMD(it->data(), it->size());
+        std::cout << "Done delting inverted lists..." << std::endl;
     }
-    std::cout << "Done compressing inverted lists..." << std::endl;
-    std::cout << std::setprecision(3);
-    std::cout << "You are using "
-            << 32.0 * static_cast<double>(compressedsize_total) /
-                   static_cast<double>(rawInvertedListsSize)
-            << " bits per integer. " << std::endl;
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    for (auto &kv : CODECFactory::scodecmap)
+    {
+        string compression_name = kv.first;
+
+        std::cout << "Compressing inverted lists using " << compression_name << "..." << std::endl;
+        IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
+        // IntegerCODEC &codec = *CODECFactory::getFromName("simple8b");
+        size_t compressedsize_total = 0;
+        std::vector<uint32_t> compressed_output;
+        for (auto it = rawInvertedLists.begin(); it != rawInvertedLists.end(); it++)
+        {
+            compressed_output.resize(it->size() + 1024);
+            size_t compressedsize = compressed_output.size();
+            codec.encodeArray(it->data(), it->size(), compressed_output.data(),compressedsize);
+            compressedsize_total += compressedsize;
+            // std::cout << "  orig size: " << it->size() << ", compressed size: " << compressedsize << std::endl;
+        }
+        std::cout << "Done compressing inverted lists..." << std::endl;
+        std::cout << "----------------------------------" << std::endl;
+        std::cout << std::setprecision(3);
+        std::cout << "Ratio: "
+                  << 32.0 * static_cast<double>(compressedsize_total) / static_cast<double>(rawInvertedListsSize)
+                  << " bits per integer. " << std::endl;
+        std::cout << "Compression type: " << compression_name << std::endl;
+        std::cout << "Delta: " << (delta ? "SIMD" : "no") << std::endl;
+        std::cout << "Data file: " << dataFile << std::endl;
+        std::cout << std::endl;
+    }
     //
     // You are done!... with the compression...
     //
@@ -229,7 +258,6 @@ int main(int argc, char* argv[])
     // Delta::deltaSIMD(mydata.data(), mydata.size());
     // Delta::inverseDeltaSIMD(mydata.data(), mydata.size());
     // be mindful of CPU caching issues
-
 
     return 0;
 }
