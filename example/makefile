@@ -45,7 +45,7 @@ build:
 #
 ##Building file: convert_csv2binary.cu
 ##Invoking: nvcc -std=c++11 Compiler
-#	nvcc -std=c++11 -I../src -include ../src/GPUGenie.h -L../lib convert_csv2binary.cu -o convert -lGPUGenie
+	nvcc -std=c++11 -I../src -include ../src/GPUGenie.h -L../lib convert_csv2binary.cu -o convert -lGPUGenie -L/usr/local/lib -lboost_serialization
 
 clean:
 	rm -rf *.o 
