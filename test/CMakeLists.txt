@@ -1,4 +1,8 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
+if (COMPR)
+    include_directories("${SIMDCAI_INSTALL_DIR}/include")
+endif()
+
 link_directories(${PROJECT_SOURCE_DIR}/lib /usr/local/lib)
 
 
@@ -25,6 +29,16 @@ add_test_case(test_10_binary_multiload_tweets test_10.cu)
 add_test_case(test_11_subsequence_search_csv_input test_11.cu)
 add_test_case(test_12_subsequence_search_binary_input test_12.cu)
 
-add_test_case(test_13_compression_test test_13.cu)
-target_include_directories(test_13_compression_test PUBLIC ${PROJECT_SOURCE_DIR}/fastpfor/headers)
-target_link_libraries(test_13_compression_test ${PROJECT_SOURCE_DIR}/fastpfor/libFastPFor.a)
+if (COMPR)
+    add_test_case(test_13_compression_test test_13.cu)
+    # # This is possibly a bug in CMake - target_link_libraries does not add -I<path> parameter to nvcc
+    # # Workaround: add global include_directories instead
+    #
+    # target_include_directories(test_13_compression_test PUBLIC
+    #     # ${PROJECT_SOURCE_DIR}/fastpfor/headers
+    #     ${SIMDCAI_INSTALL_DIR}/include)
+    
+    target_link_libraries(test_13_compression_test
+        # ${PROJECT_SOURCE_DIR}/fastpfor/libFastPFor.a
+        ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
+endif()
