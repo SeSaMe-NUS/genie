@@ -43,6 +43,7 @@ if (COMPR)
       PREFIX "simdcai" # Root dir for entire project
       GIT_REPOSITORY https://github.com/lemire/SIMDCompressionAndIntersection # URL of git repo
       UPDATE_COMMAND "" # Source work-tree update command
+      PATCH_COMMAND bash -c "patch --directory=${PROJECT_SOURCE_DIR}/simdcai/src/SIMDCAI --strip=1 --forward --quiet < ${PROJECT_SOURCE_DIR}/simdcai.patch $<SEMICOLON> echo OK "  # Patch SIMDCAI source for NVCC
       CONFIGURE_COMMAND "" # Build tree configuration command
       BUILD_COMMAND make "-j4" # Command to drive the native build
       BUILD_IN_SOURCE 1 # Use source dir for build dir
