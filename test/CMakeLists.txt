@@ -30,15 +30,33 @@ add_test_case(test_11_subsequence_search_csv_input test_11.cu)
 add_test_case(test_12_subsequence_search_binary_input test_12.cu)
 
 if (COMPR)
-    add_test_case(test_13_compression_test test_13.cu)
     # # This is possibly a bug in CMake - target_link_libraries does not add -I<path> parameter to nvcc
     # # Workaround: add global include_directories instead
     #
     # target_include_directories(test_13_compression_test PUBLIC
     #     # ${PROJECT_SOURCE_DIR}/fastpfor/headers
     #     ${SIMDCAI_INSTALL_DIR}/include)
-    
+    # target_link_libraries(test_13_compression_test
+    #     ${PROJECT_SOURCE_DIR}/fastpfor/libFastPFor.a
+
+    # This one seems to be ignored by NVCC -- NVCC does not use COMPILER_FLAGS
+    # target_compile_options(test_13_compression_test PUBLIC "--compiler-options -mssse3")
+
+    # This one does not work as well -- probably CMake.CUDA bug
+    # https://cmake.org/pipermail/cmake/2012-September/052007.html
+    # set_target_properties(test_13_compression_test PROPERTIES
+    #     CUDA_NVCC_FLAGS "--compiler-options -mssse3")
+    # Relatively complicated workaround:
+    #       http://stackoverflow.com/questions/24560001/how-to-set-cmake-cuda-nvcc-flags-per-cu-file
+
+    set(CUDA_NVCC_FLAGS_BACKUP ${CUDA_NVCC_FLAGS})
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--compiler-options -mssse3)
+
+    add_test_case(test_13_compression_test test_13.cu)
+
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS_BACKUP})
+
     target_link_libraries(test_13_compression_test
-        # ${PROJECT_SOURCE_DIR}/fastpfor/libFastPFor.a
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
 endif()
+
