@@ -1,15 +1,10 @@
-/** Name: test_1.cu
+/**
+ * Name: test_13.cu
  * Description:
- *   the most basic test
- *   sift data
- *   data is from csv file
- *   query is from csv file, single range
- *
- *
+ *  Test for integer compression library lemire/SIMDCompressionAndIntersection and it's integration into GENIE  
  */
 
-
-#include "GPUGenie.h"
+#include <GPUGenie.h>
 
 #include <algorithm>
 #include <assert.h>
@@ -18,31 +13,92 @@
 
 #include <sstream>
 #include <stdio.h>
-#include <stdlib.h>
 
-#pragma GCC diagnostic push 
-#pragma GCC diagnostic ignored "-Wall"
-#include "../fastpfor/headers/codecfactory.h"
-#include "../fastpfor/headers/deltautil.h"
-#pragma GCC diagnostic po
+#include "codecfactory.h"
+#include "intersection.h"
 
-using namespace std;
 using namespace GPUGenie;
-using namespace FastPForLib;
+using namespace SIMDCompressionLib;
+
+
+void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
+{
+    if (table->build_status() == GPUGenie::inv_table::not_builded)
+    {
+        Logger::log(Logger::DEBUG, "Inv table not built.");
+        return;
+    }
+
+    std::stringstream ss;    
+    std::vector<int> *ck = table->ck();
+    if (ck)
+    {
+        auto end = (ck->size() <= max_print_len) ? ck->end() : (ck->begin() + max_print_len); 
+        std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+    std::vector<int> *inv = table->inv();
+    if (inv)
+    {
+        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
+        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+    std::vector<int> *inv_index = table->inv_index();
+    if (inv_index)
+    {
+        auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
+        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+
+    std::vector<int> *inv_pos = table->inv_pos();
+    if (inv_pos)
+    {
+        auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
+        std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+}
+
+void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 256)
+{
+    std::stringstream ss;
+    auto inv_it_end = (rawInvertedLists.size() <= max_print_len)
+                            ? rawInvertedLists.end() : (rawInvertedLists.begin() + max_print_len);
+    Logger::log(Logger::DEBUG, "rawInvertedLists.size(): %d", rawInvertedLists.size());
+    for (auto inv_it = rawInvertedLists.begin(); inv_it != inv_it_end; inv_it++)
+    {
+        const std::vector<uint32_t> &invList = *inv_it; 
+        auto end = (invList.size() <= max_print_len) ? invList.end() : (invList.begin() + max_print_len);
+        std::copy(invList.begin(), end, std::ostream_iterator<uint32_t>(ss, " "));
+        Logger::log(Logger::DEBUG, "*** [%s]", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+
+    }
+}
+
 
 int main(int argc, char* argv[])
 {
-
-    std::cout << "Available codecs: " << std::endl;
+    std::cout << "Available codecs (SIMDCompressionLib::CODECFactory::scodecmap):" << std::endl;
     for (auto &kv : CODECFactory::scodecmap)
         std::cout << "  " << kv.first << std::endl;
 
-    bool delta = true;
-    string dataFile = "/home/lubos/data/ocr.dat";
-    // string dataFile = "../static/sift_20.dat";
-    // string queryFile = "../static/sift_20.csv";
-    vector<vector<int> > queries;
-    // vector<vector<int> > data;
+    // string dataFile = "/home/lubos/data/ocr.dat";
+    string dataFile = "../static/sift_20.dat";
     inv_table * table = NULL;
     GPUGenie_Config config;
 
@@ -55,7 +111,7 @@ int main(int argc, char* argv[])
     config.use_adaptive_range = false;
     config.selectivity = 0.0f;
 
-    config.query_points = &queries;
+    // config.query_points = &queries;
     config.data_points = NULL;
 
     config.use_load_balance = false;
@@ -71,17 +127,14 @@ int main(int argc, char* argv[])
 
     assert(config.compression_type == GPUGenie_Config::NO_COMPRESSION);
 
-    std::cout << "Reading data file..." << std::endl;  
+    std::cout << "Reading data file " << dataFile << "..." << std::endl;  
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    // read_file(data, dataFile.c_str(), -1);
-
     assert(config.item_num > 0);
     assert(config.row_num > 0);
-
     std::cout << "Done reading data file!" << std::endl;  
 
 
-    std::cout << "Preprocessing data..." << std::endl;  
+    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
     preprocess_for_knn_binary(config, table);
     std::cout << "Done preprocessing data..." << std::endl;  
 
@@ -90,8 +143,7 @@ int main(int argc, char* argv[])
     assert(table->get_total_num_of_table() == 1);
 
     std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
-    std::cout << "inv_lists.size() (number of attributes): " << inv_lists->size() << std::endl;
-
+    Logger::log(Logger::DEBUG, "number of attributes (=inv_lists.size()): %d", inv_lists->size());
     // check inverted index of the tables using inv_list class
     for (int attr_index = 0; attr_index < config.dim; attr_index++)
     {
@@ -99,70 +151,16 @@ int main(int argc, char* argv[])
         int posting_list_length = invertedList.size();
         int posting_list_min = invertedList.min();
         int posting_list_max = invertedList.max();
-        std::cout << "attr_index " << attr_index << ", posting_list_length:" << posting_list_length
-                  << ", min: " << posting_list_min << ", max: " << posting_list_max << std::endl;
-        Logger::log(Logger::DEBUG, "attr_index %d, posting_list_length: %d, m in: %d, max: %d",
+        Logger::log(Logger::DEBUG, "  attr_index %d,\n    posting_list_length: %d, m in: %d, max: %d",
                         attr_index, posting_list_length, posting_list_min, posting_list_max);
-        // for (int value = posting_list_min; value <= posting_list_max; ++value)
-        // {
-        //     vector<int> *docIds = invertedList.index(value);
-        //     if (docIds->size())
-        //     {
-        //         std::stringstream strDocIds;
-        //         std::copy(docIds->begin(), docIds->end(), std::ostream_iterator<int>(strDocIds, " "));
-        //         Logger::log(Logger::DEBUG, "  value: %d, docIds: %s", value, strDocIds.str().c_str());
-        //     }
-        // }
-    }
-
-    // check what get_lowerbounf_of_list does exactly
-    for (int attr_index = 0; attr_index < config.dim; attr_index++)
-    {
-        Logger::log(Logger::DEBUG, "table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, table->get_lowerbound_of_list(attr_index),
+        Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, table->get_lowerbound_of_list(attr_index),
             attr_index, table->get_upperbound_of_list(attr_index));
     }
 
-    // std::stringstream ss;    
     std::vector<int> *ck = table->ck();
-    // if (ck)
-    // {
-    //     auto end = (ck->size() <= 256) ? ck->end() : (ck->begin() + 256); 
-    //     std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
-    //     Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
-    //     ss.str(std::string());
-    //     ss.clear();
-    // }
-
     std::vector<int> *inv = table->inv();
-    // if (inv)
-    // {
-    //     auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256); 
-    //     std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-    //     Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
-    //     ss.str(std::string());
-    //     ss.clear();
-    // }
-
     std::vector<int> *inv_index = table->inv_index();
-    // if (inv_index)
-    // {
-    //     auto end = (inv_index->size() <= 256) ? inv_index->end() : (inv_index->begin() + 256); 
-    //     std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
-    //     Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
-    //     ss.str(std::string());
-    //     ss.clear();
-    // }
-
-
     std::vector<int> *inv_pos = table->inv_pos();
-    // if (inv_pos)
-    // {
-    //     auto end = (inv_pos->size() <= 256) ? inv_pos->end() : (inv_pos->begin() + 256); 
-    //     std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
-    //     Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
-    //     ss.str(std::string());
-    //     ss.clear();
-    // }
 
     std::cout << "Copying inverted lists for compression..." << std::endl;
     std::vector<std::vector<uint32_t>> rawInvertedLists;
@@ -177,88 +175,84 @@ int main(int argc, char* argv[])
         std::vector<uint32_t> invList(inv_it, inv_it + offset);
         inv_it += offset;
         rawInvertedLists.push_back(invList);
-
-        // Debug printout
-        // std::copy(invList.begin(), invList.end(), std::ostream_iterator<int>(ss, " "));
-        // Logger::log(Logger::DEBUG, "  rawInvertedList:\n %s", ss.str().c_str());
-        // ss.str(std::string());
-        // ss.clear();
     }
+    log_inv_lists(rawInvertedLists);
     std::cout << "Done copying inverted lists for compression!" << std::endl;
     
     double avg_inv_list_length = ((double)rawInvertedListsSize) / ((double)inv_pos->size());
     Logger::log(Logger::DEBUG, "Total inverted lists: %d, Average length of inv list: %f",
         rawInvertedListsSize, avg_inv_list_length);
-
-    Logger::log(Logger::DEBUG, "Uncompressed size of inv (bytes): %d", inv->size() * 4);
-
-    Logger::log(Logger::DEBUG, "Uncompressed size of inv_pos (bytes): %d", inv_pos->size() * 4);
-
-    if (delta)
-    {
-        std::cout << "Delting inverted lists..." << std::endl;
-        for (auto it = rawInvertedLists.begin(); it != rawInvertedLists.end(); it++)
-            Delta::deltaSIMD(it->data(), it->size());
-        std::cout << "Done delting inverted lists..." << std::endl;
-    }
+    Logger::log(Logger::DEBUG, "Uncompressed size of inv: %d bytes", inv->size() * 4);
+    Logger::log(Logger::DEBUG, "Uncompressed size of inv_pos: %d bytes", inv_pos->size() * 4);
 
     std::cout << std::endl;
     std::cout << std::endl;
 
+    std::cout << "Compressing and decompressing inverted lists..." << std::endl;
     for (auto &kv : CODECFactory::scodecmap)
     {
         string compression_name = kv.first;
 
-        std::cout << "Compressing inverted lists using " << compression_name << "..." << std::endl;
+        // std::cout << "Compressing inverted lists using " << compression_name << "..." << std::endl;
         IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
-        // IntegerCODEC &codec = *CODECFactory::getFromName("simple8b");
+        
         size_t compressedsize_total = 0;
-        std::vector<uint32_t> compressed_output;
-        for (auto it = rawInvertedLists.begin(); it != rawInvertedLists.end(); it++)
+
+        std::vector<std::vector<uint32_t>> compressed_output(rawInvertedLists.size());
+        std::vector<size_t> inv_lists_orig_sizes(rawInvertedLists.size());
+
+        // Compress all inverted lists
+        unsigned long long time_compr_start = getTime(), time_compr_tight_start, time_compr_tight_stop;
+        for (size_t i = 0; i < rawInvertedLists.size(); i++)
         {
-            compressed_output.resize(it->size() + 1024);
-            size_t compressedsize = compressed_output.size();
-            codec.encodeArray(it->data(), it->size(), compressed_output.data(),compressedsize);
+            inv_lists_orig_sizes[i] = rawInvertedLists[i].size();
+            compressed_output[i].resize(rawInvertedLists[i].size() + 1024);
+            size_t compressedsize = compressed_output[i].size();
+
+            time_compr_tight_start = getTime();
+            codec.encodeArray(
+                    rawInvertedLists[i].data(), rawInvertedLists[i].size(),
+                    compressed_output[i].data(),compressedsize);
+            time_compr_tight_stop = getTime();
+
+            compressed_output[i].resize(compressedsize);
             compressedsize_total += compressedsize;
-            // std::cout << "  orig size: " << it->size() << ", compressed size: " << compressedsize << std::endl;
         }
-        std::cout << "Done compressing inverted lists..." << std::endl;
-        std::cout << "----------------------------------" << std::endl;
-        std::cout << std::setprecision(3);
-        std::cout << "Ratio: "
-                  << 32.0 * static_cast<double>(compressedsize_total) / static_cast<double>(rawInvertedListsSize)
-                  << " bits per integer. " << std::endl;
-        std::cout << "Compression type: " << compression_name << std::endl;
-        std::cout << "Delta: " << (delta ? "SIMD" : "no") << std::endl;
-        std::cout << "Data file: " << dataFile << std::endl;
-        std::cout << std::endl;
+        unsigned long long time_compr_stop = getTime();
+        double time_compr = getInterval(time_compr_start, time_compr_stop);
+        double time_compr_tight = getInterval(time_compr_tight_start, time_compr_tight_stop);
+
+        // Decompress all inverted lists
+        unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;
+        for (size_t i = 0; i < rawInvertedLists.size(); i++)
+        {
+            size_t decompressedsize = rawInvertedLists[i].size();
+
+            time_decompr_tight_start = getTime();
+            codec.decodeArray(
+                compressed_output[i].data(), compressed_output[i].size(),
+                rawInvertedLists[i].data(),decompressedsize);
+            time_decompr_tight_stop = getTime();
+
+            assert(decompressedsize == inv_lists_orig_sizes[i]);
+        }
+        unsigned long long time_decompr_stop = getTime();
+        double time_decompr = getInterval(time_decompr_start, time_decompr_stop);
+        double time_decompr_tight = getInterval(time_decompr_tight_start, time_decompr_tight_stop);
+
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "File: " << dataFile
+                  << ", Compr: " << compression_name
+                  << ", Ratio: "
+                        << 32.0 * static_cast<double>(compressedsize_total) / static_cast<double>(rawInvertedListsSize)
+                        << " bpi "
+                  << ", CTime: " << time_compr
+                  << ", DTime: " << time_decompr
+                  << ", CXTime: " << time_compr_tight
+                  << ", DXTime: " << time_decompr_tight
+                  << std::endl;
     }
-    //
-    // You are done!... with the compression...
-    //
-
-    // ///
-    // // decompressing is also easy:
-    // //
-    // std::vector<uint32_t> mydataback(N);
-    // size_t recoveredsize = mydataback.size();
-    // //
-    // codec.decodeArray(compressed_output.data(), compressed_output.size(),
-    //             mydataback.data(), recoveredsize);
-    // mydataback.resize(recoveredsize);
-    // //
-    // // That's it!
-    // //
-    // if (mydataback != mydata)
-    // throw std::runtime_error("bug!");
-
-    // // If you need to use differential coding, you can use
-    // // calls like these to get the deltas and recover the original
-    // // data from the deltas:
-    // Delta::deltaSIMD(mydata.data(), mydata.size());
-    // Delta::inverseDeltaSIMD(mydata.data(), mydata.size());
-    // be mindful of CPU caching issues
-
+    std::cout << "DONE compressing and decompressing inverted lists..." << std::endl;
     return 0;
 }
 
