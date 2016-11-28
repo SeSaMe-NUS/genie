@@ -20,6 +20,7 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
+const std::string DEFAULT_TEST_DATASET = "../static/tweets_20.dat";
 
 void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
 {
@@ -72,7 +73,7 @@ void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
     }
 }
 
-void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 256)
+void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 16)
 {
     std::stringstream ss;
     auto inv_it_end = (rawInvertedLists.size() <= max_print_len)
@@ -97,33 +98,17 @@ int main(int argc, char* argv[])
     for (auto &kv : CODECFactory::scodecmap)
         std::cout << "  " << kv.first << std::endl;
 
-    // string dataFile = "/home/lubos/data/ocr.dat";
-    string dataFile = "../static/sift_20.dat";
+    
+    string dataFile = DEFAULT_TEST_DATASET;
+    if (argc == 2)
+        dataFile = std::string(argv[1]);
+
     inv_table * table = NULL;
     GPUGenie_Config config;
 
-    config.dim = 5;
-    config.count_threshold = 14;
-    config.num_of_topk = 5;
-    config.hashtable_size = 14*config.num_of_topk*1.5;
-    config.query_radius = 0;
-    config.use_device = 0;
-    config.use_adaptive_range = false;
-    config.selectivity = 0.0f;
-
-    // config.query_points = &queries;
     config.data_points = NULL;
-
     config.use_load_balance = false;
-    config.posting_list_max_length = 6400;
-    config.multiplier = 1.5f;
-    config.use_multirange = false;
-
     config.data_type = 1;
-    config.search_type = 0;
-    config.max_data_size = 0;
-
-    config.num_of_queries = 3;
 
     assert(config.compression_type == GPUGenie_Config::NO_COMPRESSION);
 
@@ -131,6 +116,8 @@ int main(int argc, char* argv[])
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
     assert(config.item_num > 0);
     assert(config.row_num > 0);
+    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
+    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
     std::cout << "Done reading data file!" << std::endl;  
 
 
@@ -143,9 +130,8 @@ int main(int argc, char* argv[])
     assert(table->get_total_num_of_table() == 1);
 
     std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
-    Logger::log(Logger::DEBUG, "number of attributes (=inv_lists.size()): %d", inv_lists->size());
     // check inverted index of the tables using inv_list class
-    for (int attr_index = 0; attr_index < config.dim; attr_index++)
+    for (int attr_index = 0; attr_index < inv_lists->size(); attr_index++)
     {
         GPUGenie::inv_list invertedList = (*inv_lists)[attr_index];
         int posting_list_length = invertedList.size();
@@ -203,6 +189,7 @@ int main(int argc, char* argv[])
 
         // Compress all inverted lists
         unsigned long long time_compr_start = getTime(), time_compr_tight_start, time_compr_tight_stop;
+        double time_compr_tight = 0.0;
         for (size_t i = 0; i < rawInvertedLists.size(); i++)
         {
             inv_lists_orig_sizes[i] = rawInvertedLists[i].size();
@@ -217,13 +204,14 @@ int main(int argc, char* argv[])
 
             compressed_output[i].resize(compressedsize);
             compressedsize_total += compressedsize;
+            time_compr_tight += getInterval(time_compr_tight_start, time_compr_tight_stop);
         }
         unsigned long long time_compr_stop = getTime();
         double time_compr = getInterval(time_compr_start, time_compr_stop);
-        double time_compr_tight = getInterval(time_compr_tight_start, time_compr_tight_stop);
 
         // Decompress all inverted lists
         unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;
+        double time_decompr_tight = 0.0;
         for (size_t i = 0; i < rawInvertedLists.size(); i++)
         {
             size_t decompressedsize = rawInvertedLists[i].size();
@@ -235,10 +223,10 @@ int main(int argc, char* argv[])
             time_decompr_tight_stop = getTime();
 
             assert(decompressedsize == inv_lists_orig_sizes[i]);
+            time_decompr_tight += getInterval(time_decompr_tight_start, time_decompr_tight_stop);
         }
         unsigned long long time_decompr_stop = getTime();
         double time_decompr = getInterval(time_decompr_start, time_decompr_stop);
-        double time_decompr_tight = getInterval(time_decompr_tight_start, time_decompr_tight_stop);
 
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "File: " << dataFile

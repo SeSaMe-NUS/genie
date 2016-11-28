@@ -1,6 +1,7 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
 if (COMPR)
-    include_directories("${SIMDCAI_INSTALL_DIR}/include")
+    SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
+    include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include")
 endif()
 
 link_directories(${PROJECT_SOURCE_DIR}/lib /usr/local/lib)
