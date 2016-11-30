@@ -178,6 +178,11 @@ int main(int argc, char* argv[])
     for (auto &kv : CODECFactory::scodecmap)
     {
         string compression_name = kv.first;
+        bool manualDelta = false;
+
+        if (compression_name == "for" || compression_name == "frameofreference"
+                || compression_name == "simdframeofreference")
+            manualDelta = true;
 
         // std::cout << "Compressing inverted lists using " << compression_name << "..." << std::endl;
         IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
@@ -197,6 +202,8 @@ int main(int argc, char* argv[])
             size_t compressedsize = compressed_output[i].size();
 
             time_compr_tight_start = getTime();
+            if (manualDelta)
+                delta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[i].data(), rawInvertedLists[i].size());
             codec.encodeArray(
                     rawInvertedLists[i].data(), rawInvertedLists[i].size(),
                     compressed_output[i].data(),compressedsize);
@@ -220,6 +227,9 @@ int main(int argc, char* argv[])
             codec.decodeArray(
                 compressed_output[i].data(), compressed_output[i].size(),
                 rawInvertedLists[i].data(),decompressedsize);
+            if (manualDelta)
+                inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[i].data(),
+                        rawInvertedLists[i].size());
             time_decompr_tight_stop = getTime();
 
             assert(decompressedsize == inv_lists_orig_sizes[i]);
