@@ -142,9 +142,13 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            		_table = new inv_table[1];
-            		_table[0].set_table_index(0);
-            		_table[0].set_total_num_of_table(1);
+            if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+                _table = new inv_table[1];
+            else
+                _table = new inv_compr_table[1];
+
+    		_table[0].set_table_index(0);
+    		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
@@ -181,7 +185,10 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-		_table = new inv_table[table_num];
+        if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+            _table = new inv_table[table_num];
+        else
+            _table = new inv_compr_table[table_num];
 
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
@@ -257,9 +264,13 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            		_table = new inv_table[1];
-            		_table[0].set_table_index(0);
-            		_table[0].set_total_num_of_table(1);
+            if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+                _table = new inv_table[1];
+            else
+    		    _table = new inv_compr_table[1];
+
+    		_table[0].set_table_index(0);
+    		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
@@ -296,7 +307,11 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-		_table = new inv_table[table_num];
+        if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+            _table = new inv_table[table_num];
+        else
+            _table = new inv_compr_table[table_num];
+
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
 			unsigned int item_num = 0;

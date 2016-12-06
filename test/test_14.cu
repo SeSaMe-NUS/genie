@@ -5,7 +5,6 @@
  */
 
 #include <GPUGenie.h>
-#include <GPUGenie/compr_interface.h> 
 
 #include <algorithm>
 #include <assert.h>
@@ -28,12 +27,11 @@ int main(int argc, char* argv[])
 {
     Logger::log(Logger::INFO, "Available codecs (SIMDCompressionLib::CODECFactory::scodecmap):");
     for (auto &kv : CODECFactory::scodecmap)
-        Logger::log(Logger::INFO, "  %s", kv.first);
+        Logger::log(Logger::INFO, "  %s", kv.first.c_str());
     
-    Logger::log(Logger::INFO, "Available compressions in GENIE (GPUGenie_Config::):");
-    for (auto &kv : CODECFactory::scodecmap)
-        Logger::log(Logger::INFO, "  %s", kv.first);
-
+    // Logger::log(Logger::INFO, "Available compressions in GENIE (GPUGenie_Config::):");
+    // for (auto &kv : GPUGenie_Config::compression_types)
+    //     Logger::log(Logger::INFO, "  %s", kv.first);
 
 
     string dataFile = DEFAULT_TEST_DATASET;
@@ -65,7 +63,8 @@ int main(int argc, char* argv[])
 
     config.num_of_queries = 3;
 
-    config.compression_type == GPUGenie_Config::DELTA;
+    config.compression_type = GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION;
+
 
     std::cout << "Reading data file " << dataFile << "..." << std::endl;  
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
@@ -77,7 +76,7 @@ int main(int argc, char* argv[])
 
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
-    preprocess_for_knn_binary_compressed(config, table);
+    preprocess_for_knn_binary(config, table);
     // check how many tables we have
     assert(table != NULL);
     assert(table->get_total_num_of_table() == 1);
@@ -87,7 +86,7 @@ int main(int argc, char* argv[])
     std::cout << "Running queries on compressed table..." << std::endl;
     vector<int> result;
     vector<int> result_count;
-    knn_search_after_preprocess_compressed(config, table, result, result_count);
+    knn_search_after_preprocess(config, table, result, result_count);
     assert(result[0] == 0);
     assert(result_count[0] == 5);
     assert(result[1] == 4);
@@ -99,7 +98,7 @@ int main(int argc, char* argv[])
     std::cout << "Done running queries on compressed table..." << std::endl;
 
 
-    std::cout << "Examining inverted lists..."
+    std::cout << "Examining inverted lists...";
     std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
     // check inverted index of the tables using inv_list class
     for (int attr_index = 0; attr_index < inv_lists->size(); attr_index++)
@@ -114,6 +113,7 @@ int main(int argc, char* argv[])
             attr_index, table->get_upperbound_of_list(attr_index));
     }
     std::cout << "Done examining  inverted lists..." << std::endl;
+
 
     return 0;
 }

@@ -7,6 +7,9 @@ typedef unsigned long long u64;
 //for ide: to revert it as system file later, change <> to ""
 #include <GPUGenie/inv_list.h>
 #include <GPUGenie/inv_table.h>
+#ifdef COMPR
+    #include <GPUGenie/inv_compr_table.h>
+#endif
 #include <GPUGenie/query.h>
 #include <GPUGenie/match.h>
 #include <GPUGenie/heap_count.h>

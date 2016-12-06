@@ -36,6 +36,8 @@ SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=
 
 
 if (COMPR)
+    add_definitions(-DCOMPR)
+
     message(STATUS "Compression module enable -- compiling compression interface")
     # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
     # integer compression, delta encoding and intersections of posting lists

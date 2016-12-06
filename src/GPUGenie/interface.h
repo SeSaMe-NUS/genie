@@ -49,9 +49,9 @@
 /*! \def GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
  */
 #define GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
-/*! \def GPUGENIE_DEFAULT_COMPRESSION _GPUGenie_Config::NO_COMPRESSION
+/*! \def GPUGENIE_DEFAULT_COMPRESSION COMPRESSION_TYPE::NO_COMPRESSION
  */
-#define GPUGENIE_DEFAULT_COMPRESSION _GPUGenie_Config::NO_COMPRESSION
+#define GPUGENIE_DEFAULT_COMPRESSION COMPRESSION_TYPE::NO_COMPRESSION
 
 namespace GPUGenie
 {
@@ -100,7 +100,7 @@ typedef struct _GPUGenie_Config
     unsigned int num_of_iteration;/*!< Number of iterations. This parameter is used major in sequence search, to cut off obtained knn.*/
 
 	/*! compression type used for posting lists */ 
-    enum {
+    enum class COMPRESSION_TYPE {
     	NO_COMPRESSION,
     	DELTA_PLAIN,
     	DELTA_SIMPLE_FAMILY,
