@@ -60,3 +60,4 @@ Doxyfile
 .idea
 *.sublime-project
 *.sublime-workspace
+.settings
