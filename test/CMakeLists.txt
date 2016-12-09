@@ -29,6 +29,7 @@ add_test_case(test_9_csv_multiload_tweets test_9.cu)
 add_test_case(test_10_binary_multiload_tweets test_10.cu)
 add_test_case(test_11_subsequence_search_csv_input test_11.cu)
 add_test_case(test_12_subsequence_search_binary_input test_12.cu)
+add_test_case(test_16_hashtable_overflow test_16.cu)
 
 if (COMPR)
     # # This is possibly a bug in CMake - target_link_libraries does not add -I<path> parameter to nvcc
