@@ -20,9 +20,28 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const size_t MAX_PRINT_LEN = 128;
+const int MAX_PRINT_LEN = 128;
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
+
+void printResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
+{
+    size_t resultsBeginIdx = 0;
+    for (query &q : queries)
+    {
+        Logger::log(Logger::DEBUG, "---");
+        Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
+                    q.index(), q.topk(), q.count_ranges(), q.selectivity());
+        q.print(MAX_PRINT_LEN);
+
+        std::stringstream ss;
+        size_t noResultsToPrint = std::min(q.topk(),MAX_PRINT_LEN);
+        for (size_t i = 0; i < noResultsToPrint; ++i)
+            ss << result[resultsBeginIdx+i] << "~" << result_count[resultsBeginIdx+i] << " ";
+        Logger::log(Logger::DEBUG, "Results: %s", ss.str().c_str());
+        resultsBeginIdx += q.topk();
+    }
+}
 
 int main(int argc, char* argv[])
 {
@@ -179,31 +198,14 @@ int main(int argc, char* argv[])
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
 
     std::vector<query> queries;
-    std::vector<int> result;
-    std::vector<int> result_count;
+    std::vector<int> results;
+    std::vector<int> results_count;
 
     load_query(*table, queries, config);
 
-    for (query &q : queries)
-    {
-        q.print(MAX_PRINT_LEN);
-    }
+    knn_search(*table, queries, results, results_count, config);
 
-    knn_search(*table, queries, result, result_count, config);
-
-    {   
-        std::stringstream ss;
-        auto end = (result_count.size() <= MAX_PRINT_LEN) ? result_count.end() : (result_count.begin()+MAX_PRINT_LEN);
-        std::copy(result_count.begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "Results count: %s", ss.str().c_str());
-    }
-    
-    {
-        std::stringstream ss;
-        auto end = (result.size() <= MAX_PRINT_LEN) ? result.end() : (result.begin() + MAX_PRINT_LEN); 
-        std::copy(result.begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "Results: %s", ss.str().c_str());
-    }
+    printResults(queries, results, results_count);
 
     // // Decompress all inverted lists
     // unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;
