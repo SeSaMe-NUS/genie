@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
     config.use_load_balance = false;
     config.data_type = 1;
 
-    assert(config.compression_type == GPUGenie_Config::NO_COMPRESSION);
+    assert(config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION);
 
     std::cout << "Reading data file " << dataFile << "..." << std::endl;  
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
     std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
     // check inverted index of the tables using inv_list class
-    for (int attr_index = 0; attr_index < inv_lists->size(); attr_index++)
+    for (size_t attr_index = 0; attr_index < inv_lists->size(); attr_index++)
     {
         GPUGenie::inv_list invertedList = (*inv_lists)[attr_index];
         int posting_list_length = invertedList.size();
