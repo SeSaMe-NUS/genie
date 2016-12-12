@@ -24,7 +24,7 @@ const int MAX_PRINT_LEN = 128;
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
 
-void printResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
+void logResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
 {
     size_t resultsBeginIdx = 0;
     for (query &q : queries)
@@ -34,14 +34,92 @@ void printResults(std::vector<query> &queries, std::vector<int> &result, std::ve
                     q.index(), q.topk(), q.count_ranges(), q.selectivity());
         q.print(MAX_PRINT_LEN);
 
+        std::vector<query::dim> dims;
+        q.dump(dims);
+
+        for (query::dim &d : dims){
+            Logger::log(Logger::DEBUG, "  dim -- query: %d, order: %d, start_pos: %d, end_pos: %d",
+                    d.query, d.order, d.start_pos, d.end_pos);
+        }
+
         std::stringstream ss;
         size_t noResultsToPrint = std::min(q.topk(),MAX_PRINT_LEN);
         for (size_t i = 0; i < noResultsToPrint; ++i)
-            ss << result[resultsBeginIdx+i] << "~" << result_count[resultsBeginIdx+i] << " ";
+            ss << result[resultsBeginIdx+i] << "(" << result_count[resultsBeginIdx+i] << ") ";
         Logger::log(Logger::DEBUG, "Results: %s", ss.str().c_str());
         resultsBeginIdx += q.topk();
     }
 }
+
+void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
+{
+    if (table->build_status() == GPUGenie::inv_table::not_builded)
+    {
+        Logger::log(Logger::DEBUG, "Inv table not built.");
+        return;
+    }
+
+    std::stringstream ss;    
+    std::vector<int> *ck = table->ck();
+    if (ck)
+    {
+        auto end = (ck->size() <= max_print_len) ? ck->end() : (ck->begin() + max_print_len); 
+        std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+    std::vector<int> *inv = table->inv();
+    if (inv)
+    {
+        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
+        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+    std::vector<int> *inv_index = table->inv_index();
+    if (inv_index)
+    {
+        auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
+        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+
+
+    std::vector<int> *inv_pos = table->inv_pos();
+    if (inv_pos)
+    {
+        auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
+        std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+}
+
+void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 16)
+{
+    std::stringstream ss;
+    auto inv_it_end = (rawInvertedLists.size() <= max_print_len)
+                            ? rawInvertedLists.end() : (rawInvertedLists.begin() + max_print_len);
+    Logger::log(Logger::DEBUG, "rawInvertedLists.size(): %d", rawInvertedLists.size());
+    for (auto inv_it = rawInvertedLists.begin(); inv_it != inv_it_end; inv_it++)
+    {
+        const std::vector<uint32_t> &invList = *inv_it; 
+        auto end = (invList.size() <= max_print_len) ? invList.end() : (invList.begin() + max_print_len);
+        std::copy(invList.begin(), end, std::ostream_iterator<uint32_t>(ss, " "));
+        Logger::log(Logger::DEBUG, "*** [%s]", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+
+    }
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -116,11 +194,14 @@ int main(int argc, char* argv[])
         int posting_list_length = invertedList.size();
         int posting_list_min = invertedList.min();
         int posting_list_max = invertedList.max();
-        Logger::log(Logger::DEBUG, "  attr_index %d, posting_list_length: %d, m in: %d, max: %d",
+        Logger::log(Logger::DEBUG, "  attr_index %d, posting_list_length: %d, min: %d, max: %d",
                         attr_index, posting_list_length, posting_list_min, posting_list_max);
         Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, table->get_lowerbound_of_list(attr_index),
             attr_index, table->get_upperbound_of_list(attr_index));
     }
+
+    log_table(table);
+
     std::cout << "Done examining inverted lists..." << std::endl;
 
     std::cout << "Copying inverted lists for compression..." << std::endl;
@@ -143,6 +224,9 @@ int main(int argc, char* argv[])
         inv_it += offset;
         rawInvertedLists.push_back(invList);
     }
+
+    log_inv_lists(rawInvertedLists);
+
     std::cout << "Done copying inverted lists for compression!" << std::endl;
     
     double avg_inv_list_length = ((double)rawInvertedListsSize) / ((double)inv_pos->size());
@@ -205,7 +289,8 @@ int main(int argc, char* argv[])
 
     knn_search(*table, queries, results, results_count, config);
 
-    printResults(queries, results, results_count);
+    logResults(queries, results, results_count);
+
 
     // // Decompress all inverted lists
     // unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;
