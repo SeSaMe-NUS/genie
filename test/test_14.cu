@@ -293,55 +293,56 @@ int main(int argc, char* argv[])
     logResults(queries, results, results_count);
 
 
-    void GPUGenie::query::build()
-{
-    int low, up, min, max, dimShifted;
     int shifter = table->shifter();
-
     for (query &q : queries)
     {
         std::vector<int> invListsTocount;
         std::vector<query::range> ranges;
-        int index = q.index();
-        int dimShifted = index << shifter;
-        Logger::log(Logger::DEBUG, "Processing query %d", index);
+        int queryIndex = q.index();
 
         q.dump(ranges);
-        Logger::log(Logger::DEBUG, "  query %d has %d ranges, dimShifted: %d", index, ranges.size(), dimShifted);
+        Logger::log(Logger::DEBUG, "Processing query %d, has %d ranges", queryIndex, ranges.size());
 
         if (ranges.empty())
         {
-            Logger::log(Logger::ALERT, "Query %d has no ranges!", index);
+            Logger::log(Logger::ALERT, "Query %d has no ranges!", queryIndex);
             continue;
         }
 
         for (query::range &r : ranges)
         {
             int low = r.low;
-            int up = return.up;
+            int up = r.up;
+
+            int dimShifted = r.dim << shifter;
             
             Logger::log(Logger::DEBUG, "  range %d, query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
                 r.dim, r.low, r.up);
 
-            if(low > up || low > table.get_upperbound_of_list(index) ||
-                up < table.get_lowerbound_of_list(index))
+            if(low > up || low > table->get_upperbound_of_list(r.dim) || up < table->get_lowerbound_of_list(r.dim))
+            {
+                Logger::log(Logger::DEBUG, "  range %d out of bounds of inverted lists in dim %d", r.order, r.dim); 
                 continue;
+            }
 
-            low = low < table.get_lowerbound_of_list(index) ? table.get_lowerbound_of_list(index) : low;
-            up = up > table.get_upperbound_of_list(index) ? table.get_upperbound_of_list(index) : up;
+            low = low < table->get_lowerbound_of_list(r.dim) ? table->get_lowerbound_of_list(r.dim) : low;
+            up = up > table->get_upperbound_of_list(r.dim) ? table->get_upperbound_of_list(r.dim) : up;
 
-            int min = dimShifted + low - table.get_lowerbound_of_list(index);
-            int max = dimShifted + up - table.get_lowerbound_of_list(index);
+            int min = dimShifted + low - table->get_lowerbound_of_list(r.dim);
+            int max = dimShifted + up - table->get_lowerbound_of_list(r.dim);
+            Logger::log(Logger::DEBUG, "  low %d, up: %d, min: %d, max: %d", low, up, min, max);
 
             // Record ids of inverted lists to be counted
-            for (int i = inv_index[min], i < inv_index[max+1]; i++)
-                invListsTocount.push_back(i);
+            int invList = (*inv_index)[min];
+            do
+            {
+                Logger::log(Logger::DEBUG, "  adding inverted list %d", invList);
+                invListsTocount.push_back(invList++);
+            }
+            while (invList < (*inv_index)[max+1]);
         }
 
     }
-
-}
-
 
     // // Decompress all inverted lists
     // unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;

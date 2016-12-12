@@ -440,14 +440,14 @@ int GPUGenie::query::dump(vector<dim>& vout)
 }
 
 
-int GPUGenie::query::dump(vector<ranges>& ranges)
+int GPUGenie::query::dump(vector<range>& ranges)
 {
     int count = 0;
     ranges.clear();
     for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
             di != _attr_map.end(); ++di)
     {
-        std::vector<dim>& rangesInAttr = *(di->second);
+        std::vector<range>& rangesInAttr = *(di->second);
         count += rangesInAttr.size();
 
         for (range &r : rangesInAttr)
