@@ -213,6 +213,7 @@ int main(int argc, char* argv[])
 
     std::vector<std::vector<uint32_t>> rawInvertedLists;
     size_t rawInvertedListsSize = inv_pos->back();
+
     auto inv_it = inv->begin();
     size_t prev_inv_pos = *(inv_pos->begin());
     for (auto inv_pos_it = (inv_pos->begin()+1); inv_pos_it != inv_pos->end(); inv_pos_it++)
@@ -290,6 +291,56 @@ int main(int argc, char* argv[])
     knn_search(*table, queries, results, results_count, config);
 
     logResults(queries, results, results_count);
+
+
+    void GPUGenie::query::build()
+{
+    int low, up, min, max, dimShifted;
+    int shifter = table->shifter();
+
+    for (query &q : queries)
+    {
+        std::vector<int> invListsTocount;
+        std::vector<query::range> ranges;
+        int index = q.index();
+        int dimShifted = index << shifter;
+        Logger::log(Logger::DEBUG, "Processing query %d", index);
+
+        q.dump(ranges);
+        Logger::log(Logger::DEBUG, "  query %d has %d ranges, dimShifted: %d", index, ranges.size(), dimShifted);
+
+        if (ranges.empty())
+        {
+            Logger::log(Logger::ALERT, "Query %d has no ranges!", index);
+            continue;
+        }
+
+        for (query::range &r : ranges)
+        {
+            int low = r.low;
+            int up = return.up;
+            
+            Logger::log(Logger::DEBUG, "  range %d, query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
+                r.dim, r.low, r.up);
+
+            if(low > up || low > table.get_upperbound_of_list(index) ||
+                up < table.get_lowerbound_of_list(index))
+                continue;
+
+            low = low < table.get_lowerbound_of_list(index) ? table.get_lowerbound_of_list(index) : low;
+            up = up > table.get_upperbound_of_list(index) ? table.get_upperbound_of_list(index) : up;
+
+            int min = dimShifted + low - table.get_lowerbound_of_list(index);
+            int max = dimShifted + up - table.get_lowerbound_of_list(index);
+
+            // Record ids of inverted lists to be counted
+            for (int i = inv_index[min], i < inv_index[max+1]; i++)
+                invListsTocount.push_back(i);
+        }
+
+    }
+
+}
 
 
     // // Decompress all inverted lists

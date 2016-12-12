@@ -415,27 +415,44 @@ void GPUGenie::query::build_sequence()
 
 int GPUGenie::query::dump(vector<dim>& vout)
 {
-	if (is_load_balanced)
-	{
+    if (is_load_balanced)
+    {
         for(unsigned int i = 0; i < _dims.size(); ++i)
         {
-			vout.push_back(_dims[i]);
-		}
-		return _dims.size();
-	}
-	int count = 0;
-	for (std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin();
-			di != _dim_map.end(); ++di)
-	{
-		std::vector<dim>& ranges = *(di->second);
-		count += ranges.size();
+            vout.push_back(_dims[i]);
+        }
+        return _dims.size();
+    }
+    int count = 0;
+    for (std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin();
+            di != _dim_map.end(); ++di)
+    {
+        std::vector<dim>& ranges = *(di->second);
+        count += ranges.size();
 
-        	//vector<int>& _inv_ = *_ref_table->inv();
-		for (unsigned int i = 0; i < ranges.size(); ++i)
-		{
-			vout.push_back(ranges[i]);
-		}
-	}
+            //vector<int>& _inv_ = *_ref_table->inv();
+        for (unsigned int i = 0; i < ranges.size(); ++i)
+        {
+            vout.push_back(ranges[i]);
+        }
+    }
+    return count;
+}
+
+
+int GPUGenie::query::dump(vector<ranges>& ranges)
+{
+    int count = 0;
+    ranges.clear();
+    for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
+            di != _attr_map.end(); ++di)
+    {
+        std::vector<dim>& rangesInAttr = *(di->second);
+        count += rangesInAttr.size();
+
+        for (range &r : rangesInAttr)
+            ranges.push_back(r);
+    }
 	return count;
 }
 

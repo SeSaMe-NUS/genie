@@ -269,6 +269,9 @@ public:
 	int
 	dump(vector<dim>& vout);
 
+    int
+    dump(vector<range>& ranges);
+
     /*! \fn void print(int limit)
      *  \brief Print out the information of all dims.
      *
