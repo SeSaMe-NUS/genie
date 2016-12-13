@@ -47,7 +47,6 @@ void logResults(std::vector<query> &queries, std::vector<int> &result, std::vect
     size_t resultsBeginIdx = 0;
     for (query &q : queries)
     {
-        Logger::log(Logger::DEBUG, "---");
         Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
                     q.index(), q.topk(), q.count_ranges(), q.selectivity());
 
@@ -287,22 +286,29 @@ int main(int argc, char* argv[])
     std::cout << "Done compressing inverted lists..." << std::endl;
 
 
-    std::cout << "Preprocessing queries..." << std::endl;
+    std::cout << "Loading queries..." << std::endl;
 
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
-
     std::vector<query> queries;
-    std::vector<int> results;
-    std::vector<int> results_count;
-
     load_query(*table, queries, config);
 
-    knn_search(*table, queries, results, results_count, config);
+    std::cout << "Done loading queries..." << std::endl;
 
-    logResults(queries, results, results_count);
 
-    std::vector<uint32_t> tmpResultCounts(config.row_num), resultCounts;
-    std::vector<uint32_t> tmpResultIdxs(config.row_num), resultIdxs;
+    std::cout << "Running KNN on GPU..." << std::endl;
+
+    std::vector<int> gpuResultIdxs;
+    std::vector<int> gpuResultCounts;
+    knn_search(*table, queries, gpuResultIdxs, gpuResultCounts, config);
+    logResults(queries, gpuResultIdxs, gpuResultCounts);
+
+    std::cout << "Done running KNN on GPU..." << std::endl;
+
+
+    std::cout << "Running KNN on CPU..." << std::endl;
+
+    std::vector<int> tmpResultCounts(config.row_num), resultCounts;
+    std::vector<int> tmpResultIdxs(config.row_num), resultIdxs;
     resultCounts.reserve(config.num_of_topk * config.num_of_queries);
     resultIdxs.reserve(config.num_of_topk * config.num_of_queries);
 
@@ -329,7 +335,7 @@ int main(int argc, char* argv[])
 
             int dimShifted = r.dim << shifter;
             
-            Logger::log(Logger::DEBUG, "  range %d, query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
+            Logger::log(Logger::DEBUG, "  range %d orig -- query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
                 r.dim, r.low, r.up);
 
             if(low > up || low > table->get_upperbound_of_list(r.dim) || up < table->get_lowerbound_of_list(r.dim))
@@ -343,25 +349,27 @@ int main(int argc, char* argv[])
 
             int min = dimShifted + low - table->get_lowerbound_of_list(r.dim);
             int max = dimShifted + up - table->get_lowerbound_of_list(r.dim);
-            Logger::log(Logger::DEBUG, "  low %d, up: %d, min: %d, max: %d", low, up, min, max);
+            Logger::log(Logger::DEBUG, "     processed -- query: %d, dim: %d, low: %d, up: %d, min: %d, max: %d",
+                     r.query, r.dim, low, up, min, max);
 
             // Record ids of inverted lists to be counted
             int invList = (*inv_index)[min];
             do
-            {
-                Logger::log(Logger::DEBUG, "  adding inverted list %d", invList);
                 invListsTocount.push_back(invList++);
-            }
             while (invList < (*inv_index)[max+1]);
         }
 
-        Logger::log(Logger::DEBUG, " inverted lists to count for query %d", queryIndex);
-        for (int i : invListsTocount)
-            Logger::log(Logger::DEBUG, "  inverted list %d", i);
+
+        {
+            std::stringstream ss;
+            for (int i : invListsTocount)
+                ss << i << " ";
+            Logger::log(Logger::DEBUG, "  inverted lists to count: %s", ss.str().c_str());
+        }
 
         // Reset temporary count and index vector -- these vectors are used directly for counting
-        std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),static_cast<uint32_t>(0));
-        std::iota(tmpResultIdxs.begin(), tmpResultIdxs.end(),static_cast<uint32_t>(0));
+        std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),0);
+        std::iota(tmpResultIdxs.begin(), tmpResultIdxs.end(),0);
 
         for (int invListIndex : invListsTocount)
         {
@@ -384,7 +392,7 @@ int main(int argc, char* argv[])
 
         // Sort tmpResultIdxs according to tmpResultCount
         std::sort(tmpResultIdxs.begin(), tmpResultIdxs.end(),
-           [&tmpResultCounts](uint32_t lhs, uint32_t rhs) {return tmpResultCounts[lhs] < tmpResultCounts[rhs];});
+           [&tmpResultCounts](int lhs, int rhs) {return tmpResultCounts[lhs] > tmpResultCounts[rhs];});
 
         // Copy the first q.topk() results into the final results vectors resultCounts and resultIdxs
         for (auto it = tmpResultIdxs.begin(); it < tmpResultIdxs.begin() + q.topk(); it++)
@@ -394,7 +402,18 @@ int main(int argc, char* argv[])
         }
     }
 
-    logResults(queries, results, results_count);
+    logResults(queries, resultIdxs, resultCounts);
+
+    std::cout << "Done running KNN on CPU..." << std::endl;
+
+    // Compare the first docId from the GPU and CPU results -- note since we use points from the data file as queries,
+    // one of the resutls is a full-dim count match (self match), which is what we compare here
+    assert(gpuResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+        && gpuResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+    assert(gpuResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+        && gpuResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+    assert(gpuResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+        && gpuResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
 
     return 0;
 }
