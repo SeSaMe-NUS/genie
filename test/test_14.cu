@@ -24,12 +24,10 @@ const int MAX_PRINT_LEN = 128;
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
 
-void logResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
+void logQueries(std::vector<query> &queries)
 {
-    size_t resultsBeginIdx = 0;
     for (query &q : queries)
     {
-        Logger::log(Logger::DEBUG, "---");
         Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
                     q.index(), q.topk(), q.count_ranges(), q.selectivity());
         q.print(MAX_PRINT_LEN);
@@ -38,15 +36,26 @@ void logResults(std::vector<query> &queries, std::vector<int> &result, std::vect
         q.dump(dims);
 
         for (query::dim &d : dims){
-            Logger::log(Logger::DEBUG, "  dim -- query: %d, order: %d, start_pos: %d, end_pos: %d",
+            Logger::log(Logger::DEBUG, "  Dim -- query: %d, order: %d, start_pos: %d, end_pos: %d",
                     d.query, d.order, d.start_pos, d.end_pos);
         }
+    }
+}
+
+void logResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
+{
+    size_t resultsBeginIdx = 0;
+    for (query &q : queries)
+    {
+        Logger::log(Logger::DEBUG, "---");
+        Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
+                    q.index(), q.topk(), q.count_ranges(), q.selectivity());
 
         std::stringstream ss;
         size_t noResultsToPrint = std::min(q.topk(),MAX_PRINT_LEN);
         for (size_t i = 0; i < noResultsToPrint; ++i)
             ss << result[resultsBeginIdx+i] << "(" << result_count[resultsBeginIdx+i] << ") ";
-        Logger::log(Logger::DEBUG, "Results: %s", ss.str().c_str());
+        Logger::log(Logger::DEBUG, "  Results: %s", ss.str().c_str());
         resultsBeginIdx += q.topk();
     }
 }
@@ -292,6 +301,10 @@ int main(int argc, char* argv[])
 
     logResults(queries, results, results_count);
 
+    std::vector<uint32_t> tmpResultCounts(config.row_num), resultCounts;
+    std::vector<uint32_t> tmpResultIdxs(config.row_num), resultIdxs;
+    resultCounts.reserve(config.num_of_topk * config.num_of_queries);
+    resultIdxs.reserve(config.num_of_topk * config.num_of_queries);
 
     int shifter = table->shifter();
     for (query &q : queries)
@@ -342,50 +355,46 @@ int main(int argc, char* argv[])
             while (invList < (*inv_index)[max+1]);
         }
 
+        Logger::log(Logger::DEBUG, " inverted lists to count for query %d", queryIndex);
+        for (int i : invListsTocount)
+            Logger::log(Logger::DEBUG, "  inverted list %d", i);
+
+        // Reset temporary count and index vector -- these vectors are used directly for counting
+        std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),static_cast<uint32_t>(0));
+        std::iota(tmpResultIdxs.begin(), tmpResultIdxs.end(),static_cast<uint32_t>(0));
+
+        for (int invListIndex : invListsTocount)
+        {
+            size_t decompressedsize = rawInvertedLists[invListIndex].size();
+
+            // Decompress the compressed inverted list with index invListIndex
+            codec.decodeArray(
+                comprInvertedLists[invListIndex].data(), comprInvertedLists[invListIndex].size(),
+                rawInvertedLists[invListIndex].data(),decompressedsize);
+            if (manualDelta)
+                inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[invListIndex].data(),
+                        rawInvertedLists[invListIndex].size());
+
+            assert(rawInvertedLists[invListIndex].size() == decompressedsize);
+
+            // Count docId from the decompressed list
+            for (int docId : rawInvertedLists[invListIndex])
+                ++tmpResultCounts[docId];
+        }
+
+        // Sort tmpResultIdxs according to tmpResultCount
+        std::sort(tmpResultIdxs.begin(), tmpResultIdxs.end(),
+           [&tmpResultCounts](uint32_t lhs, uint32_t rhs) {return tmpResultCounts[lhs] < tmpResultCounts[rhs];});
+
+        // Copy the first q.topk() results into the final results vectors resultCounts and resultIdxs
+        for (auto it = tmpResultIdxs.begin(); it < tmpResultIdxs.begin() + q.topk(); it++)
+        {
+            resultCounts.push_back(tmpResultCounts[*it]);
+            resultIdxs.push_back(*it);
+        }
     }
 
-    // // Decompress all inverted lists
-    // unsigned long long time_decompr_start = getTime(), time_decompr_tight_start, time_decompr_tight_stop;
-    // double time_decompr_tight = 0.0;
-    // for (size_t i = 0; i < rawInvertedLists.size(); i++)
-    // {
-    //     size_t decompressedsize = rawInvertedLists[i].size();
-
-    //     time_decompr_tight_start = getTime();
-    //     codec.decodeArray(
-    //         comprInvertedLists[i].data(), comprInvertedLists[i].size(),
-    //         rawInvertedLists[i].data(),decompressedsize);
-    //     if (manualDelta)
-    //         inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[i].data(),
-    //                 rawInvertedLists[i].size());
-    //     time_decompr_tight_stop = getTime();
-
-    //     assert(decompressedsize == inv_lists_orig_sizes[i]);
-    //     time_decompr_tight += getInterval(time_decompr_tight_start, time_decompr_tight_stop);
-    // }
-    // unsigned long long time_decompr_stop = getTime();
-    // double time_decompr = getInterval(time_decompr_start, time_decompr_stop);
-
-    // std::cout << std::fixed << std::setprecision(3);
-    // std::cout << "File: " << dataFile
-    //           << ", Compr: " << compression_name
-    //           << ", Ratio: "
-    //                 << 32.0 * static_cast<double>(compressedsize_total) / static_cast<double>(rawInvertedListsSize)
-    //                 << " bpi "
-    //           << ", DTime: " << time_decompr
-    //           << ", DXTime: " << time_decompr_tight
-    //           << std::endl;
-    // // }
-    // std::cout << "DONE compressing and decompressing inverted lists..." << std::endl;
-    // return 0;
-
-
-    // take a query 
-
-    // uncompress one block of all relevant inverted lists
-
-    // do counting (naively)
-
+    logResults(queries, results, results_count);
 
     return 0;
 }
