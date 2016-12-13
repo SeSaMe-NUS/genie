@@ -128,6 +128,53 @@ void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, s
     }
 }
 
+/**
+ *  Sorts GENIE top-k results for each query independently. The top-k results returned from GENIE are in random order,
+ *  and if (top-k > number of resutls with match count greater than 0), then remaining docIds in the result vector are
+ *  set to 0, thus the result and count vectors cannot be soreted conventionally. 
+ */
+void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
+                            std::vector<int> &gpuResultCounts)
+{
+    std::vector<int> gpuResultHelper(config.num_of_topk),
+                     gpuResultHelperTmp(config.num_of_topk);
+    for (size_t queryIndex = 0; queryIndex < config.num_of_queries; queryIndex++)
+    {
+        int offsetBegin = queryIndex*config.num_of_topk;
+        int offsetEnd = (queryIndex+1)*config.num_of_topk;
+        // Fint first zero element
+        auto firstZeroIt = std::find(gpuResultCounts.begin()+offsetBegin, gpuResultCounts.begin()+offsetEnd, 0);
+        // Only sort elements that have non-zero count. This is because GENIE does not return indexed of elements with
+        // zero count
+        offsetEnd = std::min(offsetEnd,static_cast<int>(
+                                    std::distance(gpuResultCounts.begin(),firstZeroIt)));
+        
+        // Create helper index from 0 to offsetEnd-offsetBegin
+        gpuResultHelper.resize(offsetEnd-offsetBegin);
+        gpuResultHelperTmp.resize(offsetEnd-offsetBegin);
+        std::iota(gpuResultHelper.begin(), gpuResultHelper.end(),0);
+
+        // Sort the helper index according to gpuResultCounts[...+offsetBegin]
+        std::sort(gpuResultHelper.begin(),
+                  gpuResultHelper.end(),
+                  [&gpuResultCounts,offsetBegin](int lhs, int rhs){
+                        return (gpuResultCounts[lhs+offsetBegin] > gpuResultCounts[rhs+offsetBegin]);
+                    });
+
+        // Shuffle the gpuResultIdxs according to gpuResultHelper
+        for (size_t i = 0; i < gpuResultHelper.size(); i++)
+            gpuResultHelperTmp[i] = gpuResultIdxs[gpuResultHelper[i]+offsetBegin];
+        // Copy back into gpuResultIndex
+        std::copy(gpuResultHelperTmp.begin(), gpuResultHelperTmp.end(), gpuResultIdxs.begin()+offsetBegin);
+
+        // Shuffle the gpuResultCounts according to gpuResultHelper
+        for (size_t i = 0; i < gpuResultHelper.size(); i++)
+            gpuResultHelperTmp[i] = gpuResultCounts[gpuResultHelper[i]+offsetBegin];
+        // Copy back into gpuResultIndex
+        std::copy(gpuResultHelperTmp.begin(), gpuResultHelperTmp.end(), gpuResultCounts.begin()+offsetBegin); 
+    }
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -151,7 +198,7 @@ int main(int argc, char* argv[])
 
     config.dim = 5;
     config.count_threshold = 14;
-    config.num_of_topk = 5;
+    config.num_of_topk = 20;
     config.hashtable_size = 14*config.num_of_topk*1.5;
     config.query_radius = 0;
     config.use_device = 0;
@@ -300,6 +347,14 @@ int main(int argc, char* argv[])
     std::vector<int> gpuResultIdxs;
     std::vector<int> gpuResultCounts;
     knn_search(*table, queries, gpuResultIdxs, gpuResultCounts, config);
+
+    // logResults(queries, gpuResultIdxs, gpuResultCounts);
+
+    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to sort
+    // the results from individual queries => sort subsequence relevant to each query independently
+    sortGenieResults(config, gpuResultIdxs, gpuResultCounts);
+
+    Logger::log(Logger::DEBUG, "Results from GENIE:");
     logResults(queries, gpuResultIdxs, gpuResultCounts);
 
     std::cout << "Done running KNN on GPU..." << std::endl;
@@ -402,6 +457,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
     logResults(queries, resultIdxs, resultCounts);
 
     std::cout << "Done running KNN on CPU..." << std::endl;
