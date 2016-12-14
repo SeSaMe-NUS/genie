@@ -138,7 +138,7 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
 {
     std::vector<int> gpuResultHelper(config.num_of_topk),
                      gpuResultHelperTmp(config.num_of_topk);
-    for (size_t queryIndex = 0; queryIndex < config.num_of_queries; queryIndex++)
+    for (int queryIndex = 0; queryIndex < config.num_of_queries; queryIndex++)
     {
         int offsetBegin = queryIndex*config.num_of_topk;
         int offsetEnd = (queryIndex+1)*config.num_of_topk;
@@ -172,6 +172,173 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
             gpuResultHelperTmp[i] = gpuResultCounts[gpuResultHelper[i]+offsetBegin];
         // Copy back into gpuResultIndex
         std::copy(gpuResultHelperTmp.begin(), gpuResultHelperTmp.end(), gpuResultCounts.begin()+offsetBegin); 
+    }
+}
+
+
+void getRawInvListSizes(inv_table &table, std::vector<size_t> &rawInvertedListsSizes)
+{
+    assert(table.build_status() == GPUGenie::inv_table::status::builded);
+    std::vector<int> *inv_pos = table.inv_pos();
+
+    rawInvertedListsSizes.clear();
+    rawInvertedListsSizes.reserve(inv_pos->size()-1);
+
+    size_t prev_inv_pos = *(inv_pos->begin());
+    assert(prev_inv_pos == 0);
+    for (auto inv_pos_it = (inv_pos->begin()+1); inv_pos_it != inv_pos->end(); inv_pos_it++)
+    {
+        size_t sizeOfInvList = (*inv_pos_it) - prev_inv_pos;
+        rawInvertedListsSizes.push_back(sizeOfInvList);
+        prev_inv_pos = (*inv_pos_it);
+    }
+}
+
+void knn_search_cpu(
+            inv_table &table,
+            std::vector<std::vector<uint32_t>> &comprInvertedLists, // TODO make part of compressed inv_table
+            std::vector<query> &queries,
+            std::vector<int> &resultIdxs,
+            std::vector<int> &resultCounts,
+            GPUGenie_Config &config,
+            IntegerCODEC &codec, // TODO make string name of compression part of config 
+            bool manualDelta = false)
+{
+    assert(config.row_num > 0);
+    assert((int)config.row_num >= config.num_of_topk);
+    assert(table.build_status() == GPUGenie::inv_table::status::builded);
+
+    std::vector<int> tmpResultIdxs(config.row_num);
+    std::vector<int> tmpResultCounts(config.row_num);
+    resultCounts.clear();
+    resultIdxs.clear();
+    resultCounts.reserve(config.num_of_topk * config.num_of_queries);
+    resultIdxs.reserve(config.num_of_topk * config.num_of_queries);
+
+    std::vector<size_t> rawInvertedListsSizes;
+    getRawInvListSizes(table, rawInvertedListsSizes);
+    assert(rawInvertedListsSizes.size());
+
+    std::vector<std::vector<uint32_t>> rawInvertedLists(rawInvertedListsSizes.size());
+
+    {
+        std::stringstream ss;
+        for (int i : rawInvertedListsSizes)
+            ss << i << " ";
+        Logger::log(Logger::DEBUG, "  rawInvertedListsSizes: %s", ss.str().c_str());
+    }
+
+    int shifter = table.shifter();
+    std::vector<int> *inv_index = table.inv_index();
+
+    for (query &q : queries)
+    {
+        std::vector<int> invListsTocount;
+        std::vector<query::range> ranges;
+        int queryIndex = q.index();
+
+        q.dump(ranges);
+        Logger::log(Logger::DEBUG, "Processing query %d, has %d ranges", queryIndex, ranges.size());
+
+        if (ranges.empty())
+        {
+            Logger::log(Logger::ALERT, "Query %d has no ranges!", queryIndex);
+            continue;
+        }
+
+        for (query::range &r : ranges)
+        {
+            int low = r.low;
+            int up = r.up;
+
+            int dimShifted = r.dim << shifter;
+            
+            Logger::log(Logger::DEBUG, "  range %d orig -- query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
+                r.dim, r.low, r.up);
+
+            if(low > up || low > table.get_upperbound_of_list(r.dim) || up < table.get_lowerbound_of_list(r.dim))
+            {
+                Logger::log(Logger::DEBUG, "  range %d out of bounds of inverted lists in dim %d", r.order, r.dim); 
+                continue;
+            }
+
+            low = low < table.get_lowerbound_of_list(r.dim) ? table.get_lowerbound_of_list(r.dim) : low;
+            up = up > table.get_upperbound_of_list(r.dim) ? table.get_upperbound_of_list(r.dim) : up;
+
+            int min = dimShifted + low - table.get_lowerbound_of_list(r.dim);
+            int max = dimShifted + up - table.get_lowerbound_of_list(r.dim);
+            Logger::log(Logger::DEBUG, "     processed -- query: %d, dim: %d, low: %d, up: %d, min: %d, max: %d",
+                     r.query, r.dim, low, up, min, max);
+
+            // Record ids of inverted lists to be counted
+            int invList = (*inv_index)[min];
+            do
+                invListsTocount.push_back(invList++);
+            while (invList < (*inv_index)[max+1]);
+        }
+
+
+        {
+            std::stringstream ss;
+            for (int i : invListsTocount)
+                ss << i << " ";
+            Logger::log(Logger::DEBUG, "  inverted lists to count: %s", ss.str().c_str());
+        }
+
+        // Reset temporary count and index vector -- these vectors are used directly for counting
+        std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),0);
+        std::iota(tmpResultIdxs.begin(), tmpResultIdxs.end(),0);
+
+        for (int invListIndex : invListsTocount)
+        {
+            // Decompress the list if we are using compressed table and if it has not been decompressed already
+            // if (config.compression_type && rawInvertedLists[invListIndex].size() == 0){
+            if (rawInvertedLists[invListIndex].size() == 0){
+
+                Logger::log(Logger::DEBUG, "  decompressing inverted list: %d", invListIndex);
+                // Get the decompressed size
+                // TODO: this should be integral part of the compressed table interface
+                size_t decompressedsize = rawInvertedListsSizes[invListIndex];
+                // Allocate enough space for the decompressed lists
+                rawInvertedLists[invListIndex].resize(decompressedsize);
+
+                // Decompress the compressed inverted list with index invListIndex
+                codec.decodeArray(
+                    comprInvertedLists[invListIndex].data(), comprInvertedLists[invListIndex].size(),
+                    rawInvertedLists[invListIndex].data(),decompressedsize);
+                rawInvertedLists[invListIndex].resize(decompressedsize);
+
+                if (manualDelta)
+                    inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[invListIndex].data(),
+                            rawInvertedLists[invListIndex].size());
+
+                assert(rawInvertedLists[invListIndex].size() == decompressedsize);
+                assert(rawInvertedLists[invListIndex].size() == rawInvertedListsSizes[invListIndex]);
+            }
+
+            {
+                std::stringstream ss;
+                for (int i : rawInvertedLists[invListIndex])
+                    ss << i << " ";
+                Logger::log(Logger::DEBUG, "  rawInvertedLists[%d]: %s", invListIndex, ss.str().c_str());
+            }
+
+
+            // Count docId from the decompressed list
+            for (int docId : rawInvertedLists[invListIndex])
+                ++tmpResultCounts[docId];
+        }
+
+        // Sort tmpResultIdxs according to tmpResultCount
+        std::sort(tmpResultIdxs.begin(), tmpResultIdxs.end(),
+           [&tmpResultCounts](int lhs, int rhs) {return tmpResultCounts[lhs] > tmpResultCounts[rhs];});
+
+        // Copy the first q.topk() results into the final results vectors resultCounts and resultIdxs
+        for (auto it = tmpResultIdxs.begin(); it < tmpResultIdxs.begin() + q.topk(); it++)
+        {
+            resultCounts.push_back(tmpResultCounts[*it]);
+            resultIdxs.push_back(*it);
+        }
     }
 }
 
@@ -301,8 +468,8 @@ int main(int argc, char* argv[])
     // {
     // string compression_name = "copy";
     string compression_name = "s4-bp128-d1";
-    bool manualDelta = false;
 
+    bool manualDelta = false;
     if (compression_name == "for" || compression_name == "frameofreference"
             || compression_name == "simdframeofreference")
         manualDelta = true;
@@ -362,100 +529,9 @@ int main(int argc, char* argv[])
 
     std::cout << "Running KNN on CPU..." << std::endl;
 
-    std::vector<int> tmpResultCounts(config.row_num), resultCounts;
-    std::vector<int> tmpResultIdxs(config.row_num), resultIdxs;
-    resultCounts.reserve(config.num_of_topk * config.num_of_queries);
-    resultIdxs.reserve(config.num_of_topk * config.num_of_queries);
-
-    int shifter = table->shifter();
-    for (query &q : queries)
-    {
-        std::vector<int> invListsTocount;
-        std::vector<query::range> ranges;
-        int queryIndex = q.index();
-
-        q.dump(ranges);
-        Logger::log(Logger::DEBUG, "Processing query %d, has %d ranges", queryIndex, ranges.size());
-
-        if (ranges.empty())
-        {
-            Logger::log(Logger::ALERT, "Query %d has no ranges!", queryIndex);
-            continue;
-        }
-
-        for (query::range &r : ranges)
-        {
-            int low = r.low;
-            int up = r.up;
-
-            int dimShifted = r.dim << shifter;
-            
-            Logger::log(Logger::DEBUG, "  range %d orig -- query: %d, dim: %d, low: %d, up: %d", r.order, r.query, 
-                r.dim, r.low, r.up);
-
-            if(low > up || low > table->get_upperbound_of_list(r.dim) || up < table->get_lowerbound_of_list(r.dim))
-            {
-                Logger::log(Logger::DEBUG, "  range %d out of bounds of inverted lists in dim %d", r.order, r.dim); 
-                continue;
-            }
-
-            low = low < table->get_lowerbound_of_list(r.dim) ? table->get_lowerbound_of_list(r.dim) : low;
-            up = up > table->get_upperbound_of_list(r.dim) ? table->get_upperbound_of_list(r.dim) : up;
-
-            int min = dimShifted + low - table->get_lowerbound_of_list(r.dim);
-            int max = dimShifted + up - table->get_lowerbound_of_list(r.dim);
-            Logger::log(Logger::DEBUG, "     processed -- query: %d, dim: %d, low: %d, up: %d, min: %d, max: %d",
-                     r.query, r.dim, low, up, min, max);
-
-            // Record ids of inverted lists to be counted
-            int invList = (*inv_index)[min];
-            do
-                invListsTocount.push_back(invList++);
-            while (invList < (*inv_index)[max+1]);
-        }
-
-
-        {
-            std::stringstream ss;
-            for (int i : invListsTocount)
-                ss << i << " ";
-            Logger::log(Logger::DEBUG, "  inverted lists to count: %s", ss.str().c_str());
-        }
-
-        // Reset temporary count and index vector -- these vectors are used directly for counting
-        std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),0);
-        std::iota(tmpResultIdxs.begin(), tmpResultIdxs.end(),0);
-
-        for (int invListIndex : invListsTocount)
-        {
-            size_t decompressedsize = rawInvertedLists[invListIndex].size();
-
-            // Decompress the compressed inverted list with index invListIndex
-            codec.decodeArray(
-                comprInvertedLists[invListIndex].data(), comprInvertedLists[invListIndex].size(),
-                rawInvertedLists[invListIndex].data(),decompressedsize);
-            if (manualDelta)
-                inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[invListIndex].data(),
-                        rawInvertedLists[invListIndex].size());
-
-            assert(rawInvertedLists[invListIndex].size() == decompressedsize);
-
-            // Count docId from the decompressed list
-            for (int docId : rawInvertedLists[invListIndex])
-                ++tmpResultCounts[docId];
-        }
-
-        // Sort tmpResultIdxs according to tmpResultCount
-        std::sort(tmpResultIdxs.begin(), tmpResultIdxs.end(),
-           [&tmpResultCounts](int lhs, int rhs) {return tmpResultCounts[lhs] > tmpResultCounts[rhs];});
-
-        // Copy the first q.topk() results into the final results vectors resultCounts and resultIdxs
-        for (auto it = tmpResultIdxs.begin(); it < tmpResultIdxs.begin() + q.topk(); it++)
-        {
-            resultCounts.push_back(tmpResultCounts[*it]);
-            resultIdxs.push_back(*it);
-        }
-    }
+    std::vector<int> resultIdxs;
+    std::vector<int> resultCounts;
+    knn_search_cpu(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, codec);
 
     Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
     logResults(queries, resultIdxs, resultCounts);
