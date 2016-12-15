@@ -219,17 +219,18 @@ void knn_search_cpu(
     getRawInvListSizes(table, rawInvertedListsSizes);
     assert(rawInvertedListsSizes.size());
 
-    std::vector<std::vector<uint32_t>> rawInvertedLists(rawInvertedListsSizes.size());
+    unsigned long long time_overall_start, time_overall_stop;
+    unsigned long long time_decompr_start, time_decompr_stop;
+    unsigned long long time_counting_start, time_counting_stop;
+    unsigned long long time_queryPreprocessing_start, time_queryPreprocessing_stop;
+    double time_overall = 0, time_decompr = 0, time_counting = 0, time_queryPreprocessing = 0;
 
-    {
-        std::stringstream ss;
-        for (int i : rawInvertedListsSizes)
-            ss << i << " ";
-        Logger::log(Logger::DEBUG, "  rawInvertedListsSizes: %s", ss.str().c_str());
-    }
+    std::vector<std::vector<uint32_t>> rawInvertedLists(rawInvertedListsSizes.size());
 
     int shifter = table.shifter();
     std::vector<int> *inv_index = table.inv_index();
+
+    time_overall_start = getTime();
 
     for (query &q : queries)
     {
@@ -245,6 +246,8 @@ void knn_search_cpu(
             Logger::log(Logger::ALERT, "Query %d has no ranges!", queryIndex);
             continue;
         }
+
+        time_queryPreprocessing_start = getTime();
 
         for (query::range &r : ranges)
         {
@@ -277,13 +280,8 @@ void knn_search_cpu(
             while (invList < (*inv_index)[max+1]);
         }
 
-
-        {
-            std::stringstream ss;
-            for (int i : invListsTocount)
-                ss << i << " ";
-            Logger::log(Logger::DEBUG, "  inverted lists to count: %s", ss.str().c_str());
-        }
+        time_queryPreprocessing_stop = getTime();
+        time_queryPreprocessing += getInterval(time_queryPreprocessing_start, time_queryPreprocessing_stop);
 
         // Reset temporary count and index vector -- these vectors are used directly for counting
         std::fill(tmpResultCounts.begin(),tmpResultCounts.end(),0);
@@ -296,6 +294,8 @@ void knn_search_cpu(
             if (rawInvertedLists[invListIndex].size() == 0){
 
                 Logger::log(Logger::DEBUG, "  decompressing inverted list: %d", invListIndex);
+                time_decompr_start = getTime();
+
                 // Get the decompressed size
                 // TODO: this should be integral part of the compressed table interface
                 size_t decompressedsize = rawInvertedListsSizes[invListIndex];
@@ -312,6 +312,9 @@ void knn_search_cpu(
                     inverseDelta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[invListIndex].data(),
                             rawInvertedLists[invListIndex].size());
 
+                time_decompr_stop = getTime();
+                time_decompr += getInterval(time_decompr_start,time_decompr_stop);
+
                 assert(rawInvertedLists[invListIndex].size() == decompressedsize);
                 assert(rawInvertedLists[invListIndex].size() == rawInvertedListsSizes[invListIndex]);
             }
@@ -323,10 +326,14 @@ void knn_search_cpu(
                 Logger::log(Logger::DEBUG, "  rawInvertedLists[%d]: %s", invListIndex, ss.str().c_str());
             }
 
+            time_counting_start = getTime();
 
             // Count docId from the decompressed list
             for (int docId : rawInvertedLists[invListIndex])
                 ++tmpResultCounts[docId];
+
+            time_counting_stop = getTime();
+            time_counting += getInterval(time_counting_start, time_counting_stop);
         }
 
         // Sort tmpResultIdxs according to tmpResultCount
@@ -340,6 +347,16 @@ void knn_search_cpu(
             resultIdxs.push_back(*it);
         }
     }
+
+    time_overall_stop = getTime();
+    time_overall = getInterval(time_overall_start, time_overall_stop);
+
+    std::cout << std::fixed << std::setprecision(3)
+              << "time_overall: " << time_overall
+              << ", time_decompr: " << time_decompr
+              << ", time_queryPreprocessing: " << time_queryPreprocessing
+              << ", time_counting: " << time_counting
+              << std::endl;
 }
 
 
@@ -531,6 +548,14 @@ int main(int argc, char* argv[])
 
     std::vector<int> resultIdxs;
     std::vector<int> resultCounts;
+
+    std::cout << "KNN_SEARCH_CPU"
+              << ", file: " << dataFile << " (" << config.row_num << " rows)" 
+              << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
+              << ", topk: " << config.num_of_topk
+              << ", compression: " << compression_name
+              << ", ";
+
     knn_search_cpu(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, codec);
 
     Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
