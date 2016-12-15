@@ -194,6 +194,35 @@ void getRawInvListSizes(inv_table &table, std::vector<size_t> &rawInvertedListsS
     }
 }
 
+void compressInvertedLists(
+            std::vector<std::vector<uint32_t>> &rawInvertedLists,
+            std::vector<std::vector<uint32_t>> &comprInvertedLists,
+            const std::string &compression_name,
+            bool manualDelta)
+{
+    IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
+    
+    size_t compressedsize_total = 0;
+
+    comprInvertedLists.resize(rawInvertedLists.size());
+
+    // Compress all inverted lists
+    for (size_t i = 0; i < rawInvertedLists.size(); i++)
+    {
+        comprInvertedLists[i].resize(rawInvertedLists[i].size() + 1024);
+        size_t compressedsize = comprInvertedLists[i].size();
+
+        if (manualDelta)
+            delta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[i].data(), rawInvertedLists[i].size());
+        codec.encodeArray(
+                rawInvertedLists[i].data(), rawInvertedLists[i].size(),
+                comprInvertedLists[i].data(),compressedsize);
+
+        comprInvertedLists[i].resize(compressedsize);
+        compressedsize_total += compressedsize;
+    }
+}
+
 void knn_search_cpu(
             inv_table &table,
             std::vector<std::vector<uint32_t>> &comprInvertedLists, // TODO make part of compressed inv_table
@@ -201,8 +230,8 @@ void knn_search_cpu(
             std::vector<int> &resultIdxs,
             std::vector<int> &resultCounts,
             GPUGenie_Config &config,
-            IntegerCODEC &codec, // TODO make string name of compression part of config 
-            bool manualDelta = false)
+            const std::string &compression_name, // TODO make string name of compression part of config 
+            bool manualDelta)
 {
     assert(config.row_num > 0);
     assert((int)config.row_num >= config.num_of_topk);
@@ -229,6 +258,8 @@ void knn_search_cpu(
 
     int shifter = table.shifter();
     std::vector<int> *inv_index = table.inv_index();
+
+    IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
 
     time_overall_start = getTime();
 
@@ -443,7 +474,7 @@ int main(int argc, char* argv[])
 
     std::cout << "Done examining inverted lists..." << std::endl;
 
-    std::cout << "Copying inverted lists for compression..." << std::endl;
+    std::cout << "Extracting inverted lists for compression..." << std::endl;
 
     std::vector<int> *ck = table->ck();
     std::vector<int> *inv = table->inv();
@@ -467,54 +498,13 @@ int main(int argc, char* argv[])
 
     log_inv_lists(rawInvertedLists);
 
-    std::cout << "Done copying inverted lists for compression!" << std::endl;
+    std::cout << "Done extracting inverted lists for compression!" << std::endl;
     
     double avg_inv_list_length = ((double)rawInvertedListsSize) / ((double)inv_pos->size());
     Logger::log(Logger::DEBUG, "Total inverted lists: %d, Average length of inv list: %f",
         rawInvertedListsSize, avg_inv_list_length);
     Logger::log(Logger::DEBUG, "Uncompressed size of inv: %d bytes", inv->size() * 4);
     Logger::log(Logger::DEBUG, "Uncompressed size of inv_pos: %d bytes", inv_pos->size() * 4);
-
-    std::cout << std::endl;
-    std::cout << std::endl;
-
-
-
-    std::cout << "Compressing inverted lists..." << std::endl;
-    // for (auto &kv : CODECFactory::scodecmap)
-    // {
-    // string compression_name = "copy";
-    string compression_name = "s4-bp128-d1";
-
-    bool manualDelta = false;
-    if (compression_name == "for" || compression_name == "frameofreference"
-            || compression_name == "simdframeofreference")
-        manualDelta = true;
-
-    // std::cout << "Compressing inverted lists using " << compression_name << "..." << std::endl;
-    IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
-    
-    size_t compressedsize_total = 0;
-
-    std::vector<std::vector<uint32_t>> comprInvertedLists(rawInvertedLists.size());
-
-    // Compress all inverted lists
-    for (size_t i = 0; i < rawInvertedLists.size(); i++)
-    {
-        comprInvertedLists[i].resize(rawInvertedLists[i].size() + 1024);
-        size_t compressedsize = comprInvertedLists[i].size();
-
-        if (manualDelta)
-            delta<uint32_t>(static_cast<uint32_t>(0), rawInvertedLists[i].data(), rawInvertedLists[i].size());
-        codec.encodeArray(
-                rawInvertedLists[i].data(), rawInvertedLists[i].size(),
-                comprInvertedLists[i].data(),compressedsize);
-
-        comprInvertedLists[i].resize(compressedsize);
-        compressedsize_total += compressedsize;
-    }
-
-    std::cout << "Done compressing inverted lists..." << std::endl;
 
 
     std::cout << "Loading queries..." << std::endl;
@@ -532,10 +522,8 @@ int main(int argc, char* argv[])
     std::vector<int> gpuResultCounts;
     knn_search(*table, queries, gpuResultIdxs, gpuResultCounts, config);
 
-    // logResults(queries, gpuResultIdxs, gpuResultCounts);
-
-    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to sort
-    // the results from individual queries => sort subsequence relevant to each query independently
+    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
+    // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, gpuResultIdxs, gpuResultCounts);
 
     Logger::log(Logger::DEBUG, "Results from GENIE:");
@@ -544,33 +532,58 @@ int main(int argc, char* argv[])
     std::cout << "Done running KNN on GPU..." << std::endl;
 
 
-    std::cout << "Running KNN on CPU..." << std::endl;
 
-    std::vector<int> resultIdxs;
-    std::vector<int> resultCounts;
+    for (auto &kv : CODECFactory::scodecmap)
+    {
+        string compression_name = kv.first;
+        bool manualDelta = false;
+        if (compression_name == "for" || compression_name == "frameofreference"
+                || compression_name == "simdframeofreference")
+            manualDelta = true;
 
-    std::cout << "KNN_SEARCH_CPU"
-              << ", file: " << dataFile << " (" << config.row_num << " rows)" 
-              << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
-              << ", topk: " << config.num_of_topk
-              << ", compression: " << compression_name
-              << ", ";
 
-    knn_search_cpu(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, codec);
+        std::vector<std::vector<uint32_t>> rawInvertedListsCopy(rawInvertedLists);
+        std::vector<std::vector<uint32_t>> comprInvertedLists;
 
-    Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
-    logResults(queries, resultIdxs, resultCounts);
+        std::cout << "Compressing inverted lists with " << compression_name << std::endl;
+        compressInvertedLists(rawInvertedListsCopy, comprInvertedLists, compression_name, manualDelta);
+        std::cout << "Done compressing inverted lists..." << std::endl;
 
-    std::cout << "Done running KNN on CPU..." << std::endl;
 
-    // Compare the first docId from the GPU and CPU results -- note since we use points from the data file as queries,
-    // one of the resutls is a full-dim count match (self match), which is what we compare here
-    assert(gpuResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
-        && gpuResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
-    assert(gpuResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
-        && gpuResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
-    assert(gpuResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
-        && gpuResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+        std::vector<int> resultIdxs;
+        std::vector<int> resultCounts;
+
+        std::cout << "Running KNN on CPU..." << std::endl;
+        std::cout << "KNN_SEARCH_CPU"
+                  << ", file: " << dataFile << " (" << config.row_num << " rows)" 
+                  << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
+                  << ", topk: " << config.num_of_topk
+                  << ", compression: " << compression_name
+                  << ", ";
+        knn_search_cpu(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, compression_name,
+                manualDelta);
+        Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
+        logResults(queries, resultIdxs, resultCounts);
+        std::cout << "Done running KNN on CPU..." << std::endl;
+
+        // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
+        // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
+        assert(gpuResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+            && gpuResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+        assert(gpuResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+            && gpuResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+        assert(gpuResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+            && gpuResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+        // if((gpuResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+        //         && gpuResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]) 
+        //         &&(gpuResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+        //         && gpuResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk])
+        //         &&(gpuResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+        //         && gpuResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]))
+        //     std::cout << "Compression " << compression_name << " succeeded!" << std::endl;
+        // else
+        //     std::cout << "Compression " << compression_name << " FAILED!" << std::endl;
+    }
 
     return 0;
 }
