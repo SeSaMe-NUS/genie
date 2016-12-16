@@ -8,7 +8,15 @@
 
 #define LOGGER_MAX_FILE_NAME_SIZE 256
 
+#include <stdint.h>
 #include <stdio.h>
+#include <vector>
+
+namespace GPUGenie
+{
+	struct query;
+	struct inv_table;
+}
 
 /*! \class Logger
  *  \brief A utility class to record logs into disk files.
@@ -74,6 +82,16 @@ public:
 	 *  \return 1 if the message is to be printed on screen or 0 otherwise.
 	 */
 	static int log(int level, const char *fmt, ...);
+
+	static void logQueries(int level, std::vector<GPUGenie::query> &queries, size_t max_print_len = 128);
+
+	static void logResults(int level, std::vector<GPUGenie::query> &queries, std::vector<int> &result,
+		std::vector<int> &result_count, size_t max_print_len = 128);
+
+	static void logTable(int level, GPUGenie::inv_table *table, size_t max_print_len = 128);
+
+	static void logInvLists(int level, const std::vector<std::vector<uint32_t> > &rawInvertedLists,
+		size_t max_print_len = 128);
 
 	/*! \fn static void set_level(int level)
 	 *  \brief Set the screen print level for the logger

@@ -10,7 +10,7 @@ set(LIB_SRC_LIST
   GPUGenie/genie_errors.cu
 
   GPUGenie/Logger.h
-  GPUGenie/Logger.cc
+  GPUGenie/Logger.cpp
   
   GPUGenie/Timing.h
   GPUGenie/Timing.cc

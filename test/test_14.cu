@@ -20,113 +20,8 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const int MAX_PRINT_LEN = 128;
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
-
-void logQueries(std::vector<query> &queries)
-{
-    for (query &q : queries)
-    {
-        Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
-                    q.index(), q.topk(), q.count_ranges(), q.selectivity());
-        q.print(MAX_PRINT_LEN);
-
-        std::vector<query::dim> dims;
-        q.dump(dims);
-
-        for (query::dim &d : dims){
-            Logger::log(Logger::DEBUG, "  Dim -- query: %d, order: %d, start_pos: %d, end_pos: %d",
-                    d.query, d.order, d.start_pos, d.end_pos);
-        }
-    }
-}
-
-void logResults(std::vector<query> &queries, std::vector<int> &result, std::vector<int> &result_count)
-{
-    size_t resultsBeginIdx = 0;
-    for (query &q : queries)
-    {
-        Logger::log(Logger::DEBUG, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
-                    q.index(), q.topk(), q.count_ranges(), q.selectivity());
-
-        std::stringstream ss;
-        size_t noResultsToPrint = std::min(q.topk(),MAX_PRINT_LEN);
-        for (size_t i = 0; i < noResultsToPrint; ++i)
-            ss << result[resultsBeginIdx+i] << "(" << result_count[resultsBeginIdx+i] << ") ";
-        Logger::log(Logger::DEBUG, "  Results: %s", ss.str().c_str());
-        resultsBeginIdx += q.topk();
-    }
-}
-
-void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
-{
-    if (table->build_status() == GPUGenie::inv_table::not_builded)
-    {
-        Logger::log(Logger::DEBUG, "Inv table not built.");
-        return;
-    }
-
-    std::stringstream ss;    
-    std::vector<int> *ck = table->ck();
-    if (ck)
-    {
-        auto end = (ck->size() <= max_print_len) ? ck->end() : (ck->begin() + max_print_len); 
-        std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-    std::vector<int> *inv = table->inv();
-    if (inv)
-    {
-        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
-        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-    std::vector<int> *inv_index = table->inv_index();
-    if (inv_index)
-    {
-        auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
-        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-
-    std::vector<int> *inv_pos = table->inv_pos();
-    if (inv_pos)
-    {
-        auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
-        std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-}
-
-void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 16)
-{
-    std::stringstream ss;
-    auto inv_it_end = (rawInvertedLists.size() <= max_print_len)
-                            ? rawInvertedLists.end() : (rawInvertedLists.begin() + max_print_len);
-    Logger::log(Logger::DEBUG, "rawInvertedLists.size(): %d", rawInvertedLists.size());
-    for (auto inv_it = rawInvertedLists.begin(); inv_it != inv_it_end; inv_it++)
-    {
-        const std::vector<uint32_t> &invList = *inv_it; 
-        auto end = (invList.size() <= max_print_len) ? invList.end() : (invList.begin() + max_print_len);
-        std::copy(invList.begin(), end, std::ostream_iterator<uint32_t>(ss, " "));
-        Logger::log(Logger::DEBUG, "*** [%s]", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-
-    }
-}
 
 /**
  *  Sorts GENIE top-k results for each query independently. The top-k results returned from GENIE are in random order,
@@ -350,13 +245,6 @@ void knn_search_cpu(
                 assert(rawInvertedLists[invListIndex].size() == rawInvertedListsSizes[invListIndex]);
             }
 
-            {
-                std::stringstream ss;
-                for (int i : rawInvertedLists[invListIndex])
-                    ss << i << " ";
-                Logger::log(Logger::DEBUG, "  rawInvertedLists[%d]: %s", invListIndex, ss.str().c_str());
-            }
-
             time_counting_start = getTime();
 
             // Count docId from the decompressed list
@@ -470,7 +358,7 @@ int main(int argc, char* argv[])
             attr_index, table->get_upperbound_of_list(attr_index));
     }
 
-    log_table(table);
+    Logger::logTable(Logger::DEBUG,table);
 
     std::cout << "Done examining inverted lists..." << std::endl;
 
@@ -496,7 +384,7 @@ int main(int argc, char* argv[])
         rawInvertedLists.push_back(invList);
     }
 
-    log_inv_lists(rawInvertedLists);
+    Logger::logInvLists(Logger::DEBUG,rawInvertedLists);
 
     std::cout << "Done extracting inverted lists for compression!" << std::endl;
     
@@ -527,7 +415,7 @@ int main(int argc, char* argv[])
     sortGenieResults(config, gpuResultIdxs, gpuResultCounts);
 
     Logger::log(Logger::DEBUG, "Results from GENIE:");
-    logResults(queries, gpuResultIdxs, gpuResultCounts);
+    Logger::logResults(Logger::DEBUG, queries, gpuResultIdxs, gpuResultCounts);
 
     std::cout << "Done running KNN on GPU..." << std::endl;
 
@@ -563,7 +451,7 @@ int main(int argc, char* argv[])
         knn_search_cpu(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, compression_name,
                 manualDelta);
         Logger::log(Logger::DEBUG, "Results from CPU naive decompressed counting:");
-        logResults(queries, resultIdxs, resultCounts);
+        Logger::logResults(Logger::DEBUG, queries, resultIdxs, resultCounts);
         std::cout << "Done running KNN on CPU..." << std::endl;
 
         // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
