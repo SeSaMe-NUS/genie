@@ -322,8 +322,6 @@ int main(int argc, char* argv[])
 
     config.num_of_queries = 3;
 
-    config.compression_type = GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION;
-
 
     std::cout << "Reading data file " << dataFile << "..." << std::endl;  
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
