@@ -7,6 +7,7 @@
 #define INTERFACE_H_
 
 #include <vector>
+#include <string>
 
 #include "../GPUGenie.h"
 
@@ -49,9 +50,9 @@
 /*! \def GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
  */
 #define GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
-/*! \def GPUGENIE_DEFAULT_COMPRESSION COMPRESSION_TYPE::NO_COMPRESSION
+/*! \def GPUGENIE_DEFAULT_COMPRESSION "copy"
  */
-#define GPUGENIE_DEFAULT_COMPRESSION COMPRESSION_TYPE::NO_COMPRESSION
+#define GPUGENIE_DEFAULT_COMPRESSION "copy"
 
 namespace GPUGenie
 {
@@ -99,18 +100,9 @@ typedef struct _GPUGenie_Config
 
     unsigned int num_of_iteration;/*!< Number of iterations. This parameter is used major in sequence search, to cut off obtained knn.*/
 
-	/*! compression type used for posting lists */ 
-    enum class COMPRESSION_TYPE {
-    	NO_COMPRESSION,
-    	DELTA_PLAIN,
-    	DELTA_SIMPLE_FAMILY,
-    	DELTA_BITPACKING,
-    	DELTA_PFOR,
-    	VEC_DELTA_PLAIN,
-    	VEC_DELTA_SIMPLE_FAMILY,
-    	VEC_DELTA_BITPACKING,
-    	VEC_DELTA_PFOR
-    } compression_type;
+	/*! compression type used for posting lists */
+    std::string compression;
+    std::vector<std::string> COMPRESSION_NAMES;
 
 	_GPUGenie_Config() :
 			num_of_topk(GPUGENIE_DEFAULT_TOPK), query_radius(
@@ -132,7 +124,7 @@ typedef struct _GPUGenie_Config
 					GPUGENIE_DEFAULT_USE_MULTIRANGE), num_of_queries(
 					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false),
                     data_gram_length(3), num_of_iteration(1),
-            compression_type(GPUGENIE_DEFAULT_COMPRESSION)
+                    compression(GPUGENIE_DEFAULT_COMPRESSION)
 	{}
 } GPUGenie_Config;
 

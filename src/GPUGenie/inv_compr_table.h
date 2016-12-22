@@ -17,19 +17,25 @@ namespace GPUGenie
 {
 
 
-/*! \class inv_table
- *  \brief The declaration for class inv_table
- *
- *  The inv_table class includes the inverted index structure for a specific dataset
- *  to be searched. Also this class contains information for constructing query on this set.
- *  In one word, this class manages all information about the inverted index.
- */
+class inv_compr_list : public inv_list
+{
+    std::vector<std::vector<int>> m_comprInv;
+}
+
 
 class inv_compr_table : public inv_table
 {
 protected:
 
-    bool _is_compressed;
+    bool m_isCompressed;
+
+    std::vector<inv_compr_list> m_comprInvLists;
+
+    std::vector<int> m_comprInv;
+
+    std::vector<int> m_comprInvPos;
+
+    std::string m_compression;
 
 
 public:
@@ -37,12 +43,46 @@ public:
     /*! \fn inv_compr_table()
      *  \brief Default constructor of the inv_compr_table.
      */
-    inv_compr_table(): inv_table(),_is_compressed(false){}
+    inv_compr_table(): inv_table(),m_is_compressed(false),m_compression(GPUGENIE_DEFAULT_COMPRESSION){}
 
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
      */
     ~inv_compr_table();
+
+
+    const std::string& getCompression() const;
+
+    void setCompression(const std::string &compression);
+
+    /* 
+     * Returns a vector of compressed inverted lists.
+     * These lists are used to generate compressed posting lists array and compressed inv_pos index
+     */
+    std::vector<GPUGenie::inv_compr_list>* compressedInvLists();
+
+    /* 
+     * Returns compressed version of _inv (posting lists array)
+     */
+    std::vector<int>* compressedInv();
+
+    /* 
+     * Returns compressed version of _inv_pos (starting positions of inverted lists in posting lists array)
+     */
+    std::vector<int>* compressedInvPos();
+
+    /* 
+     * Returns _inv (the same as inv() function), as this index is on CPU and maps the domain of keys into the starting
+     * positions of inverted lists -- i.e. compressedInvPod()
+     */
+    std::vector<int>* compressedInvIndex();
+    
+    /* 
+     * Returns _ck
+     */
+    std::vector<int>* compressedCK();
+
+
 
 
     /*! \fn void build(u64 max_length, bool use_load_balance)
@@ -61,8 +101,7 @@ public:
          *  to positive infinity before it is used
          *
          */
-    void
-    build(u64 max_length, bool use_load_balance);
+    void build(u64 max_length, bool use_load_balance);
 
 };
 }

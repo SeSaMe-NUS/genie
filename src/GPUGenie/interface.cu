@@ -32,6 +32,9 @@
 using namespace GPUGenie;
 using namespace std;
 
+std::vector<std::string> GPUGenie_Config::COMPRESSION_NAMES = 
+    {"copy", "d1", "d1-bp128"};
+
 void swap(int * position, int offset1, int offset2)
 {
     int temp = *(position + offset1);
@@ -264,10 +267,12 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+            if (!config.compression_type.empty())
                 _table = new inv_table[1];
             else
-    		    _table = new inv_compr_table[1];
+                inv_compr_table * comprTable = new inv_compr_table[1];
+                comprTable[0].setCompression(config.compression);
+    		    _table = inv_compr_table;
 
     		_table[0].set_table_index(0);
     		_table[0].set_total_num_of_table(1);
@@ -980,23 +985,17 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			table.i_size(), config.hashtable_size);
 
 	if (config.hashtable_size <= 2)
-	{
 		hashtable_size = table.i_size() * config.hashtable_size + 1;
-	}
 	else
-	{
 		hashtable_size = config.hashtable_size;
-	}
-	thrust::device_vector<int> d_topk, d_topk_count;
+	
+    thrust::device_vector<int> d_topk, d_topk_count;
 
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
 
 	Logger::log(Logger::DEBUG, "max_load is %d", max_load);
 
-	GPUGenie::knn_bijectMap(
-			table, //basic API, since encode dimension and value is also finally transformed as a bijection map
-			queries, d_topk, d_topk_count, hashtable_size, max_load,
-			config.count_threshold);
+    GPUGenie::knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
 
 	Logger::log(Logger::INFO, "knn search is done!");
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());

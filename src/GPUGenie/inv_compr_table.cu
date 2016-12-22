@@ -74,3 +74,54 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
 }
 
+void GPUGenie::inv_compr_table::~inv_compr_table() {}
+
+
+const std::string&
+GPUGenie::inv_compr_table::getCompression() const
+{
+    return m_compression;
+}
+
+void
+GPUGenie::inv_compr_table::setCompression(const std::string &compression)
+{
+    if (_build_status == builded)
+    {
+        Logger::log(Logger::ALERT, "ERROR: Attempting to change compression type on already built table!");
+        return;
+    }
+    m_compression = compression;
+}
+
+std::vector<GPUGenie::inv_compr_list>*
+GPUGenie::inv_compr_table::compressedInvLists()
+{
+    return &m_comprInvLists;
+}
+
+std::vector<int>*
+GPUGenie::inv_compr_table::compressedInv()
+{
+    return m_comprInv;
+}
+
+std::vector<int>*
+GPUGenie::inv_compr_table::compressedInvPos()
+{
+    return m_comprInvPos;
+}
+
+std::vector<int>*
+GPUGenie::inv_compr_table::compressedInvIndex()
+{
+    return _inv_index;
+}
+
+std::vector<int>*
+GPUGenie::inv_compr_table::compressedCK()
+{
+    return _ck;
+}
+
+
