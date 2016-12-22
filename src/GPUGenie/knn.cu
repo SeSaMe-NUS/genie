@@ -44,38 +44,12 @@ void extract_index_and_count(data_t * data, int * id, int * count, int size)
 	count[tId] = (int) data[tId].aggregation;
 }
 
-void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
-		vector<GPUGenie::query>& queries, device_vector<int>& d_top_indexes,
-		device_vector<int>& d_top_count, int hash_table_size, int max_load,
-		int bitmap_bits)
-{
-	int qmax = 0;
-
-	for (unsigned int i = 0; i < queries.size(); ++i)
-	{
-		int count = queries[i].count_ranges();
-		if (count > qmax)
-			qmax = count;
-	}
-
-	u64 start = getTime();
-
-	knn(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load,
-			bitmap_bits, float(qmax + 1));
-
-	u64 end = getTime();
-	double elapsed = getInterval(start, end);
-	Logger::log(Logger::VERBOSE, ">>>>>>> knn takes %fms <<<<<<", elapsed);
-
-}
 void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
-		int hash_table_size, int max_load, int bitmap_bits, int dim)
+		int hash_table_size, int max_load, int bitmap_bits)
 {
 
-	Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size,
-			bitmap_bits, dim);
-	dim = 2;
+	Logger::log(Logger::DEBUG, "Parameters: %d,%d", hash_table_size, bitmap_bits);
 
 	device_vector<data_t> d_data;
 	device_vector<u32> d_bitmap;
@@ -103,7 +77,6 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();
 
-	//topk(d_data, queries, d_top_indexes, float(dim));
 	thrust::device_vector<data_t> d_topk;
 	heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
 			queries[0].topk(),queries.size());
