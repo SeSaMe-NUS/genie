@@ -457,9 +457,13 @@ u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 {
 	u32 value, count = 0, new_value;
 	int offset;
+
+    // This loop attemps to increase the count at the corresponding location in the bitmap array (this array counts
+    // the docIDs masked by first "bits" bits) until the increase is successfull, sincemany threads may be accessing
+    // this bitmap array in parallel.
 	while (1)
 	{
-		value = bitmap[access_id / (32 / bits)];
+		value = bitmap[access_id / (32 / bits)]; // Current value
 		offset = (access_id % (32 / bits)) * bits;
 		count = get_count(value, offset, bits);
 		count = count + 1; //always maintain the count in bitmap//for improve: change here for weighted distance
@@ -859,12 +863,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                     d_overflow,
                     shift_bits_subsequence);
 
-/*
-            if(!table.is_stored_in_gpu)
-            {
-                table.clear_gpu_mem();
-            }
-*/
             cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
@@ -1034,7 +1032,7 @@ void GPUGenie::match(
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
 
-		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
+		Logger::log(Logger::INFO,"[ 40%] Starting decompression & match kernels...");
 		cudaEventRecord(kernel_start);
 
 		bool h_overflow[1] = {false};
@@ -1044,51 +1042,65 @@ void GPUGenie::match(
         u32 loop_count = 1u;
 		do
 		{
-            // Set overflow to false
-			h_overflow[0] = false;
-			cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
+            // Decompression is done in batches of DECOMPRESSION_BLOCK = GPUGenie_device_DECOMPRESSION_BLOCKS *
+            // GPUGenie_device_THREADS_PER_BLOCK queries, so that the on GPU memory used for decompressed posting
+            // lists never exceeds config.max_posting_list_length * DECOMPRESSION_BLOCK
+            for (int decomprRun = 0; decomprRun < totalDecomprRuns; decomprRun++)
+            {
+                
+                // Call decompression kernel, where each thread decompresses one query's compressed posting list
+                device::decompressPostingLists_listPerThread<<<GPUGenie_device_DECOMPRESSION_BLOCKS,
+                                                               GPUGenie_device_THREADS_PER_BLOCK>>>
+                   (d_dims_p + sizeof(query::dim) * decomprRun * GPUGenie_device_DECOMPRESSION_BLOCKS,
+                    table.d_compr_inv_p,
+                    d_uncompr_inv_p);
 
-            // Set threshold to 1 for all queries
-            d_threshold.resize(queries.size());
-            thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
-            u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+                // Set overflow to false
+                h_overflow[0] = false;
+                cudaCheckErrors(cudaMemcpy(d_overflow, h_overflow, sizeof(bool), cudaMemcpyHostToDevice));
 
-            //which num_of_max_count should be used?
+                // Set threshold to 1 for all queries
+                d_threshold.resize(queries.size());
+                thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
+                u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
 
-            //num_of_max_count = dims.size();
-            
-            // Set d_passCount to 0 for all queries and all num_of_max_count
-            d_passCount.resize(queries.size()*num_of_max_count);
-            thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
-            u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
+                //which num_of_max_count should be used?
 
-            // Set d_topks to 0 for all queries
-            u32 max_topk = cal_max_topk(queries);
-            device_vector<u32> d_topks;
-            d_topks.resize(queries.size());
-            thrust::fill(d_topks.begin(), d_topks.end(), max_topk);
-            u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
+                //num_of_max_count = dims.size();
+                
+                // Set d_passCount to 0 for all queries and all num_of_max_count
+                d_passCount.resize(queries.size()*num_of_max_count);
+                thrust::fill(d_passCount.begin(), d_passCount.end(), 0u);
+                u32 * d_passCount_p = thrust::raw_pointer_cast(d_passCount.data());
+
+                // Set d_topks to 0 for all queries
+                u32 max_topk = cal_max_topk(queries);
+                device_vector<u32> d_topks;
+                d_topks.resize(queries.size());
+                thrust::fill(d_topks.begin(), d_topks.end(), max_topk);
+                u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
-            device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-            (table.m_size(),
-                    table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
-                    hash_table_size, // hash table size
-                    table.d_inv_p, // d_inv_p points to the start location for posting list array in GPU memory
-                    d_dims_p, // compiled queries (dim structure)
-                    d_hash_table, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
-                    d_bitmap_p, // of bitmap_size
-                    bitmap_bits,
-                    d_topks_p, // d_topks set to max_topk for all queries
-                    d_threshold_p,//initialized as 1, and increase gradually
-                    d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
-                    num_of_max_count,//number of maximum count per query
-                    d_noiih_p, // number of integers in a hash table set to 0 for all queries
-                    d_overflow, // bool
-                    shift_bits_subsequence);
+                device::match_AT<<<uncompressedDims, GPUGenie_device_THREADS_PER_BLOCK>>>
+                       (table.m_size(),
+                        table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
+                        hash_table_size, // hash table size
+                        table.d_inv_p, // d_inv_p points to the start location for posting list array in GPU memory
+                        d_dims_p, // compiled queries (dim structure)
+                        d_hash_table, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
+                        d_bitmap_p, // of bitmap_size
+                        bitmap_bits,
+                        d_topks_p, // d_topks set to max_topk for all queries
+                        d_threshold_p,//initialized as 1, and increase gradually
+                        d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+                        num_of_max_count,//number of maximum count per query
+                        d_noiih_p, // number of integers in a hash table set to 0 for all queries
+                        d_overflow, // bool
+                        shift_bits_subsequence);
 
-            cudaCheckErrors(cudaDeviceSynchronize());
-			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+                cudaCheckErrors(cudaDeviceSynchronize());
+                cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+            }
 
             // Increase hash table size in case there was an overflow
 			if(h_overflow[0])
@@ -1142,4 +1154,141 @@ void GPUGenie::match(
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());
 	}
+}
+
+__global__
+void decompressPostingLists_listPerThread(
+        query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
+        const int *d_compr_inv, // in; compressed posting list on GPU
+        int *d_uncompr_inv) // out: uncompressed posting list on GPU  
+{
+    return;
+}
+
+
+__global__
+void match_adaptiveThreshold_queryPerBlock_compressed(
+        int m_size, // number of dimensions, i.e. inv_table::m_size()
+        int i_size, // number of instances, i.e. inv_table::m_size() * (1u<<shift_bits_subsequence)
+        int hash_table_size, // hash table size
+        int* d_uncompr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
+        query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
+        T_HASHTABLE* hash_table_list, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
+        u32 * bitmap_list, // of bitmap_size
+        int bitmap_bits,
+        u32* d_topks, // d_topks set to max_topk for all queries
+        u32* d_threshold, //initialized as 1, and increase gradually
+        u32* d_passCount, //initialized as 0, count the number of items passing one d_threshold
+        u32 num_of_max_count, //number of maximum count per query
+        u32 * noiih, // number of integers in a hash table; set to 0 for all queries
+        bool * overflow,
+        unsigned int shift_bits_subsequence)
+{
+    if (m_size == 0 || i_size == 0)
+        return;
+    query::dim& myb_query = d_dims[blockIdx.x];
+    int query_index = myb_query.query;
+    u32* my_noiih = &noiih[query_index];
+    u32* my_threshold = &d_threshold[query_index];
+    u32* my_passCount = &d_passCount[query_index * num_of_max_count];         //
+    u32 my_topk = d_topks[query_index];                //for AT
+
+    T_HASHTABLE* hash_table = &hash_table_list[query_index * hash_table_size];
+    u32 * bitmap;
+    if (bitmap_bits)
+        bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
+    u32 access_id;
+    int min, max, order;
+    if(myb_query.start_pos >= myb_query.end_pos)
+        return;
+
+    min = myb_query.start_pos;
+    max = myb_query.end_pos;
+    order = myb_query.order;
+    bool key_eligible;                //
+    bool pass_threshold;    //to determine whether pass the check of my_theshold
+
+    // Iterate the posting lists array between q.start_pos and q.end_pos in blocks of GPUGenie_device_THREADS_PER_BLOCK
+    // docsIDs, where each thread reads one docID at a time
+    for (int i = 0; i < (max - min - 1) / GPUGenie_device_THREADS_PER_BLOCK + 1; ++i)
+    {
+        // index to read from the posting posts array
+        int tmp_id = threadIdx.x + i * GPUGenie_device_THREADS_PER_BLOCK + min;
+        if (tmp_id < max)
+        {
+            u32 count = 0;                //for AT
+            access_id = d_inv[tmp_id]; // retrieved docID from posting lists array
+
+            if(shift_bits_subsequence != 0)
+            {
+                int __offset = access_id & (((unsigned int)1<<shift_bits_subsequence) - 1);
+                int __new_offset = __offset - order;
+                if(__new_offset >= 0)
+                {
+                    access_id = access_id - __offset + __new_offset;
+                }
+                else
+                    continue;
+            }
+
+            u32 thread_threshold = *my_threshold;
+            if (bitmap_bits)
+            {
+
+                key_eligible = false;
+                //all count are store in the bitmap, and access the count
+                count = bitmap_kernel_AT(access_id, bitmap, bitmap_bits,
+                        thread_threshold, &key_eligible);
+
+                if (!key_eligible)
+                    continue;                //i.e. count< thread_threshold
+            }
+
+            key_eligible = false;
+            if (count < *my_threshold)
+            {
+                continue;      //threshold has been increased, no need to insert
+            }
+
+            //Try to find the entry in hash tables
+            access_kernel_AT(
+                    access_id,               
+                    hash_table, hash_table_size, myb_query, count, &key_eligible,
+                    my_threshold, &pass_threshold);
+
+            if (key_eligible)
+            {
+                if (pass_threshold)
+                {
+                    updateThreshold(my_passCount, my_threshold, my_topk, count);
+                }
+
+                continue;
+            }
+
+            if (!key_eligible)
+            {
+                //Insert the key into hash table
+                //access_id and its location are packed into a packed key
+
+                if (count < *my_threshold)
+                {
+                    continue;//threshold has been increased, no need to insert
+                }
+
+                hash_kernel_AT(access_id, hash_table, hash_table_size, myb_query, count,
+                        my_threshold, my_noiih, overflow, &pass_threshold);
+                if (*overflow)
+                {
+
+                    return;
+                }
+                if (pass_threshold)
+                {
+                    updateThreshold(my_passCount, my_threshold, my_topk, count);
+                }
+            }
+
+        }
+    }
 }
