@@ -20,7 +20,7 @@ namespace GPUGenie
 class inv_compr_list : public inv_list
 {
     std::vector<std::vector<int>> m_comprInv;
-}
+};
 
 
 class inv_compr_table : public inv_table
@@ -39,6 +39,8 @@ protected:
 
     int *m_d_compr_inv_p;
 
+    size_t m_uncompressedInvListsMaxLength;
+
 
 public:
 
@@ -46,9 +48,9 @@ public:
      *  \brief Default constructor of the inv_compr_table.
      */
     inv_compr_table(): inv_table(),
-            m_is_compressed(false),
-            m_compression(GPUGENIE_DEFAULT_COMPRESSION)
-            m_d_compr_inv_p(NULL){}
+            m_isCompressed(false),
+            m_d_compr_inv_p(NULL),
+            m_uncompressedInvListsMaxLength(0){}
 
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
@@ -60,8 +62,14 @@ public:
 
     void setCompression(const std::string &compression);
 
-    
     size_t getUncompressedPostingListMaxLength() const;
+
+    /*
+     * Return the equivalent of GPUGenie_Config::posting_list_max_length, indicating what is the maximum length of
+     * a single uncompressed posting lists.
+     * TODO: make this actually return the maximum length of an existing uncompressed inverted list
+     */
+    size_t uncompressedPostingListMaxLength() const;
 
     /* 
      * Returns a vector of compressed inverted lists.
@@ -128,6 +136,7 @@ public:
     void clear_gpu_mem();
 
 
+    void clear();
 
 };
 }

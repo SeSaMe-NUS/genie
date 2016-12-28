@@ -2,7 +2,6 @@
  *  \brief Implementation for interface declared in interface.h
  */
 
-#include "interface.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +16,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <string>
 #include <unordered_map>
 #include <list>
 
@@ -28,6 +26,8 @@
 
 #include "Logger.h"
 #include "Timing.h"
+
+#include "interface.h"
 
 using namespace GPUGenie;
 using namespace std;
@@ -145,10 +145,14 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+            if (config.compression.empty())
                 _table = new inv_table[1];
             else
-                _table = new inv_compr_table[1];
+            {
+                inv_compr_table * comprTable = new inv_compr_table[1];
+                comprTable[0].setCompression(config.compression);
+                _table = comprTable;
+            }
 
     		_table[0].set_table_index(0);
     		_table[0].set_total_num_of_table(1);
@@ -188,10 +192,10 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-        if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+        if (config.compression.empty())
             _table = new inv_table[table_num];
         else
-            _table = new inv_compr_table[table_num];
+            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
 
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
@@ -267,12 +271,14 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            if (!config.compression_type.empty())
+            if (config.compression.empty())
                 _table = new inv_table[1];
             else
+            {
                 inv_compr_table * comprTable = new inv_compr_table[1];
                 comprTable[0].setCompression(config.compression);
-    		    _table = inv_compr_table;
+                _table = comprTable;
+            }
 
     		_table[0].set_table_index(0);
     		_table[0].set_total_num_of_table(1);
@@ -312,10 +318,10 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-        if (config.compression_type == GPUGenie_Config::COMPRESSION_TYPE::NO_COMPRESSION)
+        if (config.compression.empty())
             _table = new inv_table[table_num];
         else
-            _table = new inv_compr_table[table_num];
+            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
 
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
@@ -995,7 +1001,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 
 	Logger::log(Logger::DEBUG, "max_load is %d", max_load);
 
-    GPUGenie::knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
+    knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
 
 	Logger::log(Logger::INFO, "knn search is done!");
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
@@ -1071,6 +1077,7 @@ void GPUGenie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<
         gram_data.push_back(line);
     }
 }
+
 void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
 {
     min_value = data[0][0];
@@ -1091,4 +1098,3 @@ void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vec
     
     }
 }
-

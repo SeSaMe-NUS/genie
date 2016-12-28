@@ -66,7 +66,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	u64 startMatch = getTime();
 
-	match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
+	GPUGenie::match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 
 	u64 endMatch = getTime();
@@ -78,7 +78,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	u64 start = getTime();
 
 	thrust::device_vector<data_t> d_topk;
-	heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+	GPUGenie::heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
 			queries[0].topk(),queries.size());
 
 	u64 end = getTime();

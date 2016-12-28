@@ -102,7 +102,7 @@ typedef struct _GPUGenie_Config
 
 	/*! compression type used for posting lists */
     std::string compression;
-    std::vector<std::string> COMPRESSION_NAMES;
+    static std::vector<std::string> COMPRESSION_NAMES;
 
 	_GPUGenie_Config() :
 			num_of_topk(GPUGENIE_DEFAULT_TOPK), query_radius(

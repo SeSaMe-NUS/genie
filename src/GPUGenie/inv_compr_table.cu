@@ -1,4 +1,11 @@
+#include <iostream>
+
+#include "Logger.h"
+#include "genie_errors.h"
+#include "Timing.h"
+
 #include "inv_compr_table.h"
+
 
 void
 GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
@@ -64,7 +71,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
     // _build_status = builded;
     //     u64 table_end = getTime();
-    // cout<<"build table time = "<<getInterval(table_start, table_end)<<"ms."<<endl;
+    // std::cout<<"build table time = "<<getInterval(table_start, table_end)<<"ms."<<std::endl;
     //     //Logger::log(Logger::DEBUG, "inv_index size %d:", _inv_index.size());
     // //Logger::log(Logger::DEBUG, "inv_pos size %d:", _inv_pos.size());
     // //Logger::log(Logger::DEBUG, "inv size %d:", _inv.size());
@@ -89,12 +96,18 @@ GPUGenie::inv_compr_table::getCompression() const
 void
 GPUGenie::inv_compr_table::setCompression(const std::string &compression)
 {
-    if (_build_status == builded)
+    if (this->build_status() == builded)
     {
         Logger::log(Logger::ALERT, "ERROR: Attempting to change compression type on already built table!");
         return;
     }
     m_compression = compression;
+}
+
+size_t
+GPUGenie::inv_compr_table::getUncompressedPostingListMaxLength() const
+{
+    return m_uncompressedInvListsMaxLength;
 }
 
 std::vector<GPUGenie::inv_compr_list>*
@@ -106,25 +119,25 @@ GPUGenie::inv_compr_table::compressedInvLists()
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedInv()
 {
-    return m_comprInv;
+    return &m_comprInv;
 }
 
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedInvPos()
 {
-    return m_comprInvPos;
+    return &m_comprInvPos;
 }
 
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedInvIndex()
 {
-    return _inv_index;
+    return this->inv_index();
 }
 
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedCK()
 {
-    return _ck;
+    return this->ck();
 }
 
 int*
@@ -142,7 +155,7 @@ bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
         cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(int) * m_comprInv.size(),
                 cudaMemcpyHostToDevice));
         u64 tt = getTime();
-        cout<<"The compressed inverted list(all data) transfer time = " << getInterval(t,tt) << "ms" <<endl;
+        std::cout<<"The compressed inverted list(all data) transfer time = " << getInterval(t,tt) << "ms" <<std::endl;
 
     } catch(std::bad_alloc &e){
         throw(GPUGenie::gpu_bad_alloc(e.what()));
@@ -153,11 +166,9 @@ bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
 
 void GPUGenie::inv_compr_table::clear()
 {
-    _build_status = not_builded;
-    _inv_lists.clear();
-    _ck.clear();
-    _inv.clear();
-    _inv_pos.clear();
+    inv_table::clear();
+
+    ck()->clear();
     m_comprInv.clear();
     m_comprInvPos.clear();
     m_comprInvLists.clear();
@@ -168,11 +179,11 @@ void GPUGenie::inv_compr_table::clear_gpu_mem()
     if (m_d_compr_inv_p == NULL)
         return;
 
-    cout << "cudaFreeTime: " ;
+    std::cout << "cudaFreeTime: " ;
     u64 t1 = getTime();
     cudaCheckErrors(cudaFree(m_d_compr_inv_p));
     u64 t2 = getTime();
-    cout << getInterval(t1, t2) << " ms."<< endl;
+    std::cout << getInterval(t1, t2) << " ms."<< std::endl;
 
 }
 

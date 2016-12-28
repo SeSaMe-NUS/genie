@@ -32,6 +32,8 @@ namespace GPUGenie
 void
 knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
         device_vector<int>& d_top_count, int hash_table_size, int max_load,
-        int bitmap_bits, int dim);
+        int bitmap_bits);
+
+}
 
 #endif //ifndef KNN_H_
