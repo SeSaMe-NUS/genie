@@ -37,13 +37,18 @@ protected:
 
     std::string m_compression;
 
+    int *m_d_compr_inv_p;
+
 
 public:
 
     /*! \fn inv_compr_table()
      *  \brief Default constructor of the inv_compr_table.
      */
-    inv_compr_table(): inv_table(),m_is_compressed(false),m_compression(GPUGENIE_DEFAULT_COMPRESSION){}
+    inv_compr_table(): inv_table(),
+            m_is_compressed(false),
+            m_compression(GPUGENIE_DEFAULT_COMPRESSION)
+            m_d_compr_inv_p(NULL){}
 
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
@@ -54,6 +59,9 @@ public:
     const std::string& getCompression() const;
 
     void setCompression(const std::string &compression);
+
+    
+    size_t getUncompressedPostingListMaxLength() const;
 
     /* 
      * Returns a vector of compressed inverted lists.
@@ -83,6 +91,8 @@ public:
     std::vector<int>* compressedCK();
 
 
+    int* deviceCompressedInv() const;
+
 
 
     /*! \fn void build(u64 max_length, bool use_load_balance)
@@ -102,6 +112,22 @@ public:
          *
          */
     void build(u64 max_length, bool use_load_balance);
+
+
+
+    /*! \fn bool cpy_data_to_gpu()
+     *  \brief Copy vector _inv to gpu memory which is referenced by d_inv_p
+     *
+     *  \return True if transferring is successful.
+     */
+    bool cpy_data_to_gpu();
+
+    /*! \fn void clear_gpu_mem()
+     *  \brief clear the corresponding gpu memory referenced by d_inv_p
+     */
+    void clear_gpu_mem();
+
+
 
 };
 }

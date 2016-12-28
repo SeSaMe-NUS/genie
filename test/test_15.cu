@@ -135,15 +135,16 @@ int main(int argc, char* argv[])
     assert(table != NULL);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
     comprTable = dynamic_cast<inv_compr_table*>(table);
-    assert(config.compression == comprTable.getCompression()); // check the compression was actually used in the table
+    assert(config.posting_list_max_length == comprTable->uncompressedPostingListMaxLength());
+    assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
     std::cout << "Done preprocessing data..." << std::endl; 
 
 
 
     std::cout << "Examining compressed index and lists..."
 
-    std::vector<GPUGenie::inv_list> *invLists = table->inv_lists();
-    std::vector<GPUGenie::inv_compr_list> *comprInvLists = table->compressedInvLists();
+    std::vector<GPUGenie::inv_list> *invLists = comprTable->inv_lists();
+    std::vector<GPUGenie::inv_compr_list> *comprInvLists = comprTable->compressedInvLists();
     assert(invLists.size() == comprInvLists.size()); // Compression does not change the amount of inverted lists
     int rawInvertedListsSize = 0;
     for (size_t attr_index = 0; attr_index < comprInvLists->size(); attr_index++)
@@ -157,17 +158,18 @@ int main(int argc, char* argv[])
         assert(invList.size() == comprList.originalsize());
         assert(invList.size() >= comprList.size());
         assert(invList.min() == comprList.min());
+        assert(invList.max() == comprList.max());
 
         rawInvertedListsSize += omprList.size();
 
         Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d",
-                        attr_index, table->get_lowerbound_of_list(attr_index),
-                        attr_index, table->get_upperbound_of_list(attr_index));
+                        attr_index, comprTable->get_lowerbound_of_list(attr_index),
+                        attr_index, comprTable->get_upperbound_of_list(attr_index));
     }
     log_table(comprTable);
 
-    std::vector<int> *compressedInv = table->compressedInv();
-    std::vector<int> *compressedInvPos = table->compressedInvPos();
+    std::vector<int> *compressedInv = comprTable->compressedInv();
+    std::vector<int> *compressedInvPos = comprTable->compressedInvPos();
     assert(compressedInvPos->back() == rawInvertedListsSize); // the last elm in inv_pos should be the compressed size
 
     double avg_inv_list_length = ((double)rawInvertedListsSize) / ((double)inv_pos->size());
@@ -184,6 +186,7 @@ int main(int argc, char* argv[])
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
     std::vector<query> queries;
     load_query(*table, queries, config);
+    assert
     std::cout << "Done loading queries..." << std::endl;
 
 

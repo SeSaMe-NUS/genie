@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include <thrust/copy.h>
+#include <thrust/vector.h>
 
 #include "Logger.h"
 #include "Timing.h"
@@ -19,9 +20,9 @@
 
 
 
-#ifndef GPUGenie_device_THREADS_PER_BLOCK
-#define GPUGenie_device_THREADS_PER_BLOCK 256
-#endif
+const size_t GPUGenie_device_THREADS_PER_BLOCK = 256;
+const size_t GPUGenie_device_DECOMPRESSION_BLOCKS = 1;
+const size_t DECOMPRESSION_BATCH = GPUGenie_device_DECOMPRESSION_BLOCKS * GPUGenie_device_THREADS_PER_BLOCK;
 
 #define OFFSETS_TABLE_16 {0u, 		3949349u, 8984219u, 9805709u,\
 						  7732727u, 1046459u, 9883879u, 4889399u,\
@@ -1012,21 +1013,30 @@ void GPUGenie::match(
         u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
 
 
+
         Logger::log(Logger::INFO, "[ 30%] Allocating device memory to tables...");
 
-		data_t nulldata;
-		nulldata.id = 0u;
-		nulldata.aggregation = 0.0f;
-		T_HASHTABLE* d_hash_table;
-		data_t* d_data_table;
-		d_data.clear();
+        data_t nulldata;
+        nulldata.id = 0u;
+        nulldata.aggregation = 0.0f;
+        T_HASHTABLE* d_hash_table;
+        data_t* d_data_table;
+        d_data.clear();
 
-		d_data.resize(queries.size() * hash_table_size, nulldata);
-		d_data_table = thrust::raw_pointer_cast(d_data.data());
-		d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+        d_data.resize(queries.size() * hash_table_size, nulldata);
+        d_data_table = thrust::raw_pointer_cast(d_data.data());
+        d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 
 
-		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
+		Logger::log(Logger::INFO, "[ 32%] Allocating device memory for uncompressed posting lists...");
+
+        size_t d_uncompr_inv_size = GPUGenie_device_DECOMPRESSION_BLOCKS * GPUGenie_device_THREADS_PER_BLOC *
+                                        table.uncompressedPostingListMaxLength();
+        thrust::device_vector<data_t> d_uncompr_inv(d_uncompr_inv_size);
+        uint32_t *d_uncompr_inv_p = thrust::raw_pointer_cast(d_uncompr_inv.data());
+
+
+        Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
@@ -1042,17 +1052,23 @@ void GPUGenie::match(
         u32 loop_count = 1u;
 		do
 		{
-            // Decompression is done in batches of DECOMPRESSION_BLOCK = GPUGenie_device_DECOMPRESSION_BLOCKS *
+            // Decompression is done in batches of DECOMPRESSION_BATCH = GPUGenie_device_DECOMPRESSION_BLOCKS *
             // GPUGenie_device_THREADS_PER_BLOCK queries, so that the on GPU memory used for decompressed posting
             // lists never exceeds config.max_posting_list_length * DECOMPRESSION_BLOCK
+            
+            int totalDecomprRuns = (dims.size() / DECOMPRESSION_BATCH) + 1;
             for (int decomprRun = 0; decomprRun < totalDecomprRuns; decomprRun++)
             {
-                
+                size_t dimsOffset = decomprRun * DECOMPRESSION_BATCH;
+
                 // Call decompression kernel, where each thread decompresses one query's compressed posting list
+                // Compiled queries d_dims_p are changed accordingly to point into the uncompressed posting lists
+                // array d_uncompr_inv_p
                 device::decompressPostingLists_listPerThread<<<GPUGenie_device_DECOMPRESSION_BLOCKS,
                                                                GPUGenie_device_THREADS_PER_BLOCK>>>
-                   (d_dims_p + sizeof(query::dim) * decomprRun * GPUGenie_device_DECOMPRESSION_BLOCKS,
-                    table.d_compr_inv_p,
+                   (d_dims_p,
+                    dimsOffset,
+                    d_compr_inv_p,
                     d_uncompr_inv_p);
 
                 // Set overflow to false
@@ -1081,12 +1097,17 @@ void GPUGenie::match(
                 u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
-                device::match_AT<<<uncompressedDims, GPUGenie_device_THREADS_PER_BLOCK>>>
+                device::match_adaptiveThreshold_queryPerBlock_compressed<<<DECOMPRESSION_BATCH,
+                                                                           GPUGenie_device_THREADS_PER_BLOCK>>>
                        (table.m_size(),
                         table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
                         hash_table_size, // hash table size
-                        table.d_inv_p, // d_inv_p points to the start location for posting list array in GPU memory
-                        d_dims_p, // compiled queries (dim structure)
+                        // d_uncompr_inv_p points to the start location for uncompressed posting list array in GPU mem
+                        table.deviceCompressedInv(), 
+                        // compiled queries (dim structure)
+                        d_dims_p,
+                        // offset into compiled queries
+                        dimsOffset,
                         d_hash_table, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
                         d_bitmap_p, // of bitmap_size
                         bitmap_bits,
@@ -1173,6 +1194,7 @@ void match_adaptiveThreshold_queryPerBlock_compressed(
         int hash_table_size, // hash table size
         int* d_uncompr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
         query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
+        size_t decomprDimsOffset, // offset for d_dims to be used
         T_HASHTABLE* hash_table_list, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
         u32 * bitmap_list, // of bitmap_size
         int bitmap_bits,
@@ -1186,7 +1208,7 @@ void match_adaptiveThreshold_queryPerBlock_compressed(
 {
     if (m_size == 0 || i_size == 0)
         return;
-    query::dim& myb_query = d_dims[blockIdx.x];
+    query::dim& myb_query = d_dims[blockIdx.x + decomprDimsOffset];
     int query_index = myb_query.query;
     u32* my_noiih = &noiih[query_index];
     u32* my_threshold = &d_threshold[query_index];
