@@ -1175,7 +1175,7 @@ void GPUGenie::match(
 		Logger::log(Logger::INFO, "[ 32%] Allocating device memory for uncompressed posting lists...");
 
         size_t d_uncompr_inv_size = GPUGenie_device_DECOMPR_BLOCKS * GPUGenie_device_THREADS_PER_BLOCK *
-                                        table.uncompressedPostingListMaxLength();
+                                        table.getUncompressedPostingListMaxLength();
         thrust::device_vector<int> d_uncompr_inv(d_uncompr_inv_size);
         int *d_uncompr_inv_p = thrust::raw_pointer_cast(d_uncompr_inv.data());
 

@@ -110,12 +110,6 @@ GPUGenie::inv_compr_table::getUncompressedPostingListMaxLength() const
     return m_uncompressedInvListsMaxLength;
 }
 
-std::vector<GPUGenie::inv_compr_list>*
-GPUGenie::inv_compr_table::compressedInvLists()
-{
-    return &m_comprInvLists;
-}
-
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedInv()
 {
@@ -171,7 +165,6 @@ void GPUGenie::inv_compr_table::clear()
     ck()->clear();
     m_comprInv.clear();
     m_comprInvPos.clear();
-    m_comprInvLists.clear();
 }
 
 void GPUGenie::inv_compr_table::clear_gpu_mem()

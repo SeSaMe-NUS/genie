@@ -207,7 +207,7 @@ public:
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
      */
-	~inv_table();
+	virtual ~inv_table();
 
 
     /*! \fn vector<vector<int> >* distinct_value()

@@ -20,7 +20,6 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const int MAX_PRINT_LEN = 128;
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
 
@@ -135,58 +134,54 @@ int main(int argc, char* argv[])
     assert(table != NULL);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
     comprTable = dynamic_cast<inv_compr_table*>(table);
-    assert(config.posting_list_max_length == comprTable->uncompressedPostingListMaxLength());
+    assert(config.posting_list_max_length == (int)comprTable->getUncompressedPostingListMaxLength());
     assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
     std::cout << "Done preprocessing data..." << std::endl; 
 
 
-
-    std::cout << "Examining compressed index and lists..."
-
-    std::vector<GPUGenie::inv_list> *invLists = comprTable->inv_lists();
-    std::vector<GPUGenie::inv_compr_list> *comprInvLists = comprTable->compressedInvLists();
-    assert(invLists.size() == comprInvLists.size()); // Compression does not change the amount of inverted lists
-    int rawInvertedListsSize = 0;
-    for (size_t attr_index = 0; attr_index < comprInvLists->size(); attr_index++)
+    std::cout << "Examining inverted lists...";
+    std::vector<GPUGenie::inv_list> *invLists = table->inv_lists();
+    // check inverted index of the tables using inv_list class
+    for (size_t attr_index = 0; attr_index < invLists->size(); attr_index++)
     {
         GPUGenie::inv_list invertedList = (*invLists)[attr_index];
-        GPUGenie::inv_compr_list comprList = (*comprInvLists)[attr_index];
-
-        Logger::log(Logger::DEBUG, "  attr_index %d, size: %d, originalsize: min: %d, max: %d",
-                        attr_index, comprList.size(), comprList.origSize(), comprList.min(), comprList.max());
-        
-        assert(invList.size() == comprList.originalsize());
-        assert(invList.size() >= comprList.size());
-        assert(invList.min() == comprList.min());
-        assert(invList.max() == comprList.max());
-
-        rawInvertedListsSize += omprList.size();
-
-        Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d",
-                        attr_index, comprTable->get_lowerbound_of_list(attr_index),
-                        attr_index, comprTable->get_upperbound_of_list(attr_index));
+        int posting_list_length = invertedList.size();
+        int posting_list_min = invertedList.min();
+        int posting_list_max = invertedList.max();
+        Logger::log(Logger::DEBUG, "  attr_index %d, posting_list_length: %d, min: %d, max: %d",
+                        attr_index, posting_list_length, posting_list_min, posting_list_max);
+        Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, table->get_lowerbound_of_list(attr_index),
+            attr_index, table->get_upperbound_of_list(attr_index));
     }
-    log_table(comprTable);
 
+    Logger::logTable(Logger::DEBUG,table);
+
+    std::cout << "Done examining inverted lists..." << std::endl;
+
+
+    std::cout << "Examining compressed index..." << std::endl;
+
+    std::vector<int> *inv = table->inv();
+    std::vector<int> *invPos = table->inv_pos();
     std::vector<int> *compressedInv = comprTable->compressedInv();
     std::vector<int> *compressedInvPos = comprTable->compressedInvPos();
-    assert(compressedInvPos->back() == rawInvertedListsSize); // the last elm in inv_pos should be the compressed size
+    // the last elm in inv_pos should be the compressed size, which is <= to the original size
+    assert(compressedInvPos->back() == (int)compressedInvPos->size()); 
+    assert(compressedInvPos->back() <= inv->back()); 
 
-    double avg_inv_list_length = ((double)rawInvertedListsSize) / ((double)inv_pos->size());
-    Logger::log(Logger::DEBUG, "Total inverted lists: %d, Average length of inv list: %f",
-        rawInvertedListsSize, avg_inv_list_length);
+    double avg_inv_list_length = ((double)inv->size()) / ((double)invPos->size());
+    Logger::log(Logger::DEBUG, "Total inverted list length: %d, Inverted lists: %d, Average length of inv list: %f",
+            inv->size(), invPos->size(), avg_inv_list_length);
     Logger::log(Logger::DEBUG, "Compressed size of posting lists array Z: %d bytes", compressedInv->size() * 4);
     Logger::log(Logger::DEBUG, "Uncompressed size of compressedInvPos index: %d bytes", compressedInvPos->size() * 4);
 
-    std::cout << "Done examining compressed index and lists..."
-
+    std::cout << "Done examining compressed index..." << std::endl;
 
 
     std::cout << "Loading queries..." << std::endl;
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
     std::vector<query> queries;
     load_query(*table, queries, config);
-    assert
     std::cout << "Done loading queries..." << std::endl;
 
 
@@ -198,7 +193,7 @@ int main(int argc, char* argv[])
     // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, gpuResultIdxs, gpuResultCounts);
     Logger::log(Logger::DEBUG, "Results from GENIE:");
-    logResults(queries, gpuResultIdxs, gpuResultCounts);
+    Logger::logResults(Logger::DEBUG, queries, gpuResultIdxs, gpuResultCounts);
     std::cout << "Done running KNN on GPU..." << std::endl;
 
 
@@ -212,9 +207,10 @@ int main(int argc, char* argv[])
               << ", topk: " << config.num_of_topk
               << ", compression: " << config.compression
               << ", ";
-    knn_search(*table, comprInvertedLists, queries, resultIdxs, resultCounts, config, config.compression, manualDelta);
+
+    knn_search(*table, queries, resultIdxs, resultCounts, config);
     Logger::log(Logger::DEBUG, "Results from GPU naive decompressed counting:");
-    logResults(queries, resultIdxs, resultCounts);
+    Logger::logResults(Logger::DEBUG, queries, resultIdxs, resultCounts);
     std::cout << "Done running KNN on CPU..." << std::endl;
 
     // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
