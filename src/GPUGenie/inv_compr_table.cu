@@ -10,8 +10,38 @@
 void
 GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 {
+    Logger::log(Logger::DEBUG, "Bulding uncompressed inv_table...");
     inv_table::build(max_length, use_load_balance);
 
+
+    Logger::log(Logger::DEBUG, "Bulding compressed inv_table...");
+
+    std::vector<int> &inv = *(inv_table::inv());
+    std::vector<int> &invPos = *(inv_table::inv_pos());
+    std::vector<int> &compressedInv = m_comprInv;
+    std::vector<int> &compressedInvPos = m_comprInvPos;
+
+    compressedInv.clear();
+    compressedInvPos.clear();
+
+    uint64_t compressionStart = getTime();
+
+    switch (this->m_compression){
+        case "copy":
+            copy(inv,invPod,compressedInv,compressedInvPos);
+            break;
+        case "d1":
+            delta1Encode(inv,invPod,compressedInv,compressedInvPos);
+            break;
+        case "d1-bp128":
+            delta1Encode(inv,invPod,compressedInv,compressedInvPos);
+            bp128Encode(inv,invPod,compressedInv,compressedInvPos);
+            break;
+        default:
+            Logger::log(Logger::ALERT, "Unsupported inverted table compression %s", this->m_compression);
+    }
+
+    uint64_t compressionEnd = getTime();
 
     //  u64 table_start = getTime();
     // _ck.clear();
@@ -81,6 +111,45 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
 }
 
+
+void bp32(uint32_t *in, const size_t length, uint32_t *out,
+                   size_t &nvalue) {
+    checkifdivisibleby(length, BlockSize);
+    const uint32_t *const initout(out);
+    *out++ = static_cast<uint32_t>(length);
+    uint32_t Bs[HowManyMiniBlocks];
+    uint32_t init = 0;
+    const uint32_t *const final = in + length;
+    for (; in + HowManyMiniBlocks * MiniBlockSize <= final;
+         in += HowManyMiniBlocks * MiniBlockSize) {
+      uint32_t tmpinit = init;
+      for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
+        Bs[i] = BlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
+      }
+      *out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
+      for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
+        BlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
+                                          init);
+        out += Bs[i];
+      }
+    }
+    if (in < final) {
+      size_t howmany = (final - in) / MiniBlockSize;
+      uint32_t tmpinit = init;
+      memset(&Bs[0], 0, HowManyMiniBlocks * sizeof(uint32_t));
+      for (uint32_t i = 0; i < howmany; ++i) {
+        Bs[i] = BlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
+      }
+      *out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
+      for (uint32_t i = 0; i < howmany; ++i) {
+        BlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
+                                          init);
+        out += Bs[i];
+      }
+    }
+    nvalue = out - initout;
+  }
+
 GPUGenie::inv_compr_table::~inv_compr_table()
 {
     clear_gpu_mem();
@@ -108,6 +177,12 @@ size_t
 GPUGenie::inv_compr_table::getUncompressedPostingListMaxLength() const
 {
     return m_uncompressedInvListsMaxLength;
+}
+
+void
+GPUGenie::inv_compr_table::setUncompressedPostingListMaxLength(size_t length)
+{
+    this->m_uncompressedInvListsMaxLength = length;
 }
 
 std::vector<int>*
