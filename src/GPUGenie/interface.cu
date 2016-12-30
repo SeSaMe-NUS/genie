@@ -151,6 +151,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
             {
                 inv_compr_table * comprTable = new inv_compr_table[1];
                 comprTable[0].setCompression(config.compression);
+                comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
                 _table = comprTable;
             }
 
@@ -277,6 +278,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
             {
                 inv_compr_table * comprTable = new inv_compr_table[1];
                 comprTable[0].setCompression(config.compression);
+                comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
                 _table = comprTable;
             }
 

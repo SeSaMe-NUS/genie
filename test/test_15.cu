@@ -73,10 +73,6 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
 
 int main(int argc, char* argv[])
 {
-    Logger::log(Logger::INFO, "Available codecs (SIMDCompressionLib::CODECFactory::scodecmap):");
-    for (auto &kv : CODECFactory::scodecmap)
-        Logger::log(Logger::INFO, "  %s", kv.first.c_str());
-    
     Logger::log(Logger::INFO, "Available compressions in GENIE (GPUGenie_Config::COMPRESSION_NAMES):");
     for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES)
         Logger::log(Logger::INFO, "  %s", compr.c_str());
@@ -166,6 +162,7 @@ int main(int argc, char* argv[])
     std::vector<int> *compressedInv = comprTable->compressedInv();
     std::vector<int> *compressedInvPos = comprTable->compressedInvPos();
     // the last elm in inv_pos should be the compressed size, which is <= to the original size
+    assert(compressedInvPos->size() == invPos->size());
     assert(compressedInvPos->back() == (int)compressedInvPos->size()); 
     assert(compressedInvPos->back() <= inv->back()); 
 

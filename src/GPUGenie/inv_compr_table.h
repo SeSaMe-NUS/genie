@@ -62,6 +62,8 @@ public:
      */
     size_t getUncompressedPostingListMaxLength() const;
 
+    void setUncompressedPostingListMaxLength(size_t length);
+
     /* 
      * Returns compressed version of _inv (posting lists array)
      */
@@ -104,7 +106,7 @@ public:
          *  to positive infinity before it is used
          *
          */
-    void build(u64 max_length, bool use_load_balance);
+    virtual void build(u64 max_length, bool use_load_balance);
 
 
 

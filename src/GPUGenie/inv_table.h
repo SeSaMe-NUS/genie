@@ -456,7 +456,7 @@ public:
          *
          */
 	void
-	build(u64 max_length, bool use_load_balance);
+	virtual build(u64 max_length, bool use_load_balance);
 
 
     /*! \fn int get_posting_list_size(int attr_index, int value)
