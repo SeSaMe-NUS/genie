@@ -47,10 +47,16 @@ public:
 	{
 		not_builded, builded
 	};
-    /*! \var int *d_inv_p
+    /*! \var static int *d_inv_p
      *  \brief d_inv_p points to the start location for posting list array in GPU memory.
      */
 	static int *d_inv_p;
+
+    /*! \var static int max_inv_Size
+     *  \brief This variable is used in multi-load mode. Yhe device pointer is repeatedly used, thus it should be able to contain maximum
+     *  inverted list among all inv_tables.
+     */
+    static int max_inv_size;
 
     /*! \var bool is_stored_in_gpu
      *  \brief is_stored_in_gpu tell whether inverted index structure is pre-stored inside gpu memory
@@ -64,7 +70,10 @@ public:
     /*! \var int shift_bits_sequence
      *  \brief This variable is used to tell the number of bits shifted for recording gram in different position.
      */
-    	int shift_bits_sequence;
+    int shift_bits_sequence;
+
+
+
 private:
 
     /*! \var int table_index
