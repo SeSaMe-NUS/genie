@@ -23,7 +23,7 @@ protected:
 
     bool m_isCompressed;
 
-    std::vector<int> m_comprInv;
+    std::vector<uint32_t> m_comprInv;
 
     std::vector<int> m_comprInvPos;
 

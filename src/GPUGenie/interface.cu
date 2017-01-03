@@ -33,7 +33,7 @@ using namespace GPUGenie;
 using namespace std;
 
 std::vector<std::string> GPUGenie_Config::COMPRESSION_NAMES = 
-    {"copy", "d1", "d1-bp128"};
+    {"copy", "d1", "d1-bp32", "d1-varint", "d1-bp32-varint"};
 
 void swap(int * position, int offset1, int offset2)
 {

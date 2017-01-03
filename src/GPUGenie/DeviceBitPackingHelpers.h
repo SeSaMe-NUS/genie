@@ -219,9 +219,9 @@ void __integratedfastpack32(const uint32_t initoffset, const uint32_t *__restric
 struct DeviceBitPackingHelpers {
     const static unsigned BlockSize = 32;
 
-    static void inline fastunpack(const uint32_t *__restrict__ in,
-                                  uint32_t *__restrict__ out,
-                                  const uint32_t bit) {
+    __device__ __host__ static void inline
+    fastunpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit)
+    {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.
@@ -330,8 +330,9 @@ struct DeviceBitPackingHelpers {
         }
     }
 
-    static void inline fastpack(const uint32_t *__restrict__ in,
-                                uint32_t *__restrict__ out, const uint32_t bit) {
+    static void inline
+    fastpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit)
+    {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.
@@ -441,9 +442,8 @@ struct DeviceBitPackingHelpers {
     }
 
     /*assumes that integers fit in the prescribed number of bits*/
-    static void inline fastpackwithoutmask(const uint32_t *__restrict__ in,
-                                           uint32_t *__restrict__ out,
-                                           const uint32_t bit) {
+    static void inline
+    fastpackwithoutmask(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit) {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.
@@ -552,10 +552,10 @@ struct DeviceBitPackingHelpers {
         }
     }
 
-    static void inline integratedfastunpack(const uint32_t initoffset,
-                                            const uint32_t *__restrict__ in,
-                                            uint32_t *__restrict__ out,
-                                            const uint32_t bit) {
+    __device__ __host__ static void inline
+    integratedfastunpack(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
+                         const uint32_t bit)
+    {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.
@@ -665,9 +665,10 @@ struct DeviceBitPackingHelpers {
     }
 
     /*assumes that integers fit in the prescribed number of bits*/
-    static void inline integratedfastpackwithoutmask(
-        const uint32_t initoffset, const uint32_t *__restrict__ in,
-        uint32_t *__restrict__ out, const uint32_t bit) {
+    static void inline
+    integratedfastpackwithoutmask(const uint32_t initoffset, const uint32_t *__restrict__ in,
+                                  uint32_t *__restrict__ out, const uint32_t bit)
+    {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.

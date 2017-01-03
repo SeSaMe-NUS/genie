@@ -18,102 +18,77 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
     std::vector<int> &inv = *(inv_table::inv());
     std::vector<int> &invPos = *(inv_table::inv_pos());
-    std::vector<int> &compressedInv = m_comprInv;
+    std::vector<uint32_t> &compressedInv = m_comprInv;
     std::vector<int> &compressedInvPos = m_comprInvPos;
 
-    compressedInv.clear();
-    compressedInvPos.clear();
+    uint64_t compressionStartTime = getTime();
 
-    uint64_t compressionStart = getTime();
-
+    shared_ptr<DeviceIntegerCODEC> codec;
     switch (this->m_compression){
         case "copy":
-            copy(inv,invPod,compressedInv,compressedInvPos);
+            codec = std::shared_ptr<IntegerCODEC>(
+                        new DeviceJustCopy());
             break;
         case "d1":
-            delta1Encode(inv,invPod,compressedInv,compressedInvPos);
+            codec = std::shared_ptr<IntegerCODEC>(
+                        new DeviceDeltaCodec());
             break;
-        case "d1-bp128":
-            delta1Encode(inv,invPod,compressedInv,compressedInvPos);
-            bp128Encode(inv,invPod,compressedInv,compressedInvPos);
+        case "d1-bp32":
+            codec = std::shared_ptr<IntegerCODEC>(
+                        new DeviceCompositeCodec<DeviceBinaryPacking,DeviceJustCopy>());
             break;
+        case "d1-varint":
+        case "d1-bp32-varint":
         default:
             Logger::log(Logger::ALERT, "Unsupported inverted table compression %s", this->m_compression);
     }
 
-    uint64_t compressionEnd = getTime();
+    // make uint32_t copy of uncompressed inv array
+    std::vector<uint32_t> inv32(inv.begin(), inv.end());
 
-    //  u64 table_start = getTime();
-    // _ck.clear();
-    // _inv.clear();
-    // _inv_index.clear();
-    // _inv_pos.clear();
-    // if(!use_load_balance)
-    // {
-    //     max_length = (u64)0 - (u64)1;
-    // }
-    // unsigned int last;
-    // int key, dim, value;
-    // for (unsigned int i = 0; i < _inv_lists.size(); i++)
-    // {
-    //     dim = i << _shifter;
-    //     for (value = _inv_lists[i].min(); value <= _inv_lists[i].max(); value++)
-    //     {
-    //         key = dim + value - _inv_lists[i].min();
-            
-    //         vector<int>* _index;
-            
-    //         _index = _inv_lists[i].index(value);
+    compressedInv.resize(inv.size());
+    compressedInvPos.resize(invPos.size());
+    compressedInvPos.push_back(0);
+
     
-    //         vector<int> index;
-    //         index.clear();
-    //         if(_index != NULL)
-    //             index = *_index;
-    //         if(_inv_lists.size() <= 1)//used int subsequence search
-    //             shift_bits_subsequence = _inv_lists[i]._shift_bits_subsequence();
+    int compressedInvCurrentPos = 0;
+    int compressedInvSize = 0;
+    int compressedInvCapacity = compressedInv.size();
 
-    //         if (_ck.size() <= (unsigned int) key)
-    //         {
-    //             last = _ck.size();
-    //             _ck.resize(key + 1);
-    //             _inv_index.resize(key + 1);
-    //             for (; last < _ck.size(); ++last)
-    //             {
-    //                 _ck[last] = _inv.size();
-    //                 _inv_index[last] = _inv_pos.size();
-    //             }
-    //         }
-    //         for (unsigned int j = 0; j < index.size(); ++j)
-    //         {
-    //             if (j % max_length == 0)
-    //             {
-    //                 _inv_pos.push_back(_inv.size());
-    //             }
-    //             _inv.push_back(index[j]);
-    //             _ck[key] = _inv.size();
-    //         }
+    uint32_t *out = compressedInv.data();
+    for (int pos = 0; pos < invPos.size(); pos++)
+    {
+        int invStart = invPos[pos];
+        int invEnd = invPos[pos+1];
+        size_t invLength = invEnd - invStart;
+        assert(invEnd > invStart);
 
-    //     }
+        uint32_t *in = inv32.data() + sizeof(uint32_t) * invStart; // compression input
+        size_t nvalue = compressedInvCapacity; // nvalue is the compressed size
 
-    // }
-    // _inv_index.push_back(_inv_pos.size());
-    // _inv_pos.push_back(_inv.size());
+        codec->encodeArray(in, invLength, out, nvalue);
 
-    // _build_status = builded;
-    //     u64 table_end = getTime();
-    // std::cout<<"build table time = "<<getInterval(table_start, table_end)<<"ms."<<std::endl;
-    //     //Logger::log(Logger::DEBUG, "inv_index size %d:", _inv_index.size());
-    // //Logger::log(Logger::DEBUG, "inv_pos size %d:", _inv_pos.size());
-    // //Logger::log(Logger::DEBUG, "inv size %d:", _inv.size());
-    //     Logger::log(Logger::INFO, "inv_index size %d:", _inv_index.size());
-    // Logger::log(Logger::INFO, "inv_pos size %d:", _inv_pos.size());
-    // Logger::log(Logger::INFO, "inv size %d:", _inv.size());
+        out += sizeof(int) * nvalue; // shift compression output pointer
+        compressedInvCapacity -= nvalue;
+        compressedInvSize += nvalue;
 
+        compressedInvPos.push_back(compressedInvSize);
+    }
+
+    compressedInv.resize(compressedInvSize); // shrink to used space only
+    assert(compressedInvSize == compressedInvPos.back());
+
+    uint64_t compressionEndTime = getTime();
+
+    Logger::log(Logger::DEBUG, "Done bulding compressed inv_compr_table in time %f",
+        getInterval(compressionStartTime, compressionEndTime));
+
+    Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f", m_compression.c_str(),
+        codec->name(), 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size()));
 }
 
 
-void bp32(uint32_t *in, const size_t length, uint32_t *out,
-                   size_t &nvalue) {
+void GPUGenie::inv_compr_table::bp32(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
     checkifdivisibleby(length, BlockSize);
     const uint32_t *const initout(out);
     *out++ = static_cast<uint32_t>(length);

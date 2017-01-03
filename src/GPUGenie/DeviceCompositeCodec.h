@@ -7,120 +7,106 @@
 
 namespace GPUGenie {
 
-/**
- *  This class defines an integer coded for binary packing of blocks of 32 integers. Based on BlockPacker optionally
- *  uses delta encoding.
- *  The decoding methods are runnable from within a CUDA kernel or from the host
- *
- *  TODO define a more generic DeviceIntegerCODEC class first
- */
-class DeviceBinaryPacking : public IntegerCODEC {
 
-public:
-	static const uint32_t MiniBlockSize = 32;
-	static const uint32_t HowManyMiniBlocks = 4;
-	static const uint32_t BlockSize = MiniBlockSize; // HowManyMiniBlocks * MiniBlockSize;
-	static const uint32_t bits32 = 8;
+class DeviceIntegerCODEC : public IntegerCODEC {
 
-	struct DeviceIntegratedBlockPacker {
-		PURE_FUNCTION
-		static uint32_t maxbits(const uint32_t *in, uint32_t &initoffset) {
-			uint32_t accumulator = in[0] - initoffset;
-			for (uint32_t k = 1; k < BitPackingHelpers::BlockSize; ++k) {
-				accumulator |= in[k] - in[k - 1];
-			}
-			initoffset = in[BitPackingHelpers::BlockSize - 1];
-			return gccbits(accumulator);
-		}
+	virtual void
+	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
 
-		static void inline packblockwithoutmask(const uint32_t *in, uint32_t *out,
-		                                        const uint32_t bit,
-		                                        uint32_t &initoffset) {
-			BitPackingHelpers::integratedfastpackwithoutmask(initoffset, in, out, bit);
-			initoffset = *(in + BitPackingHelpers::BlockSize - 1);
-		}
-		static void inline unpackblock(const uint32_t *in, uint32_t *out,
-		                               const uint32_t bit, uint32_t &initoffset) {
-			BitPackingHelpers::integratedfastunpack(initoffset, in, out, bit);
-			initoffset = *(out + BitPackingHelpers::BlockSize - 1);
-		}
-	};
+	virtual const uint32_t*
+	decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
 
-	void encodeArray(uint32_t *in, const size_t length, uint32_t *out,
-	                 size_t &nvalue) {
-		checkifdivisibleby(length, BlockSize);
-		const uint32_t *const initout(out);
-		*out++ = static_cast<uint32_t>(length);
-		uint32_t Bs[HowManyMiniBlocks];
-		uint32_t init = 0;
-		const uint32_t *const final = in + length;
-		for (; in + HowManyMiniBlocks * MiniBlockSize <= final;
-		        in += HowManyMiniBlocks * MiniBlockSize) {
-			uint32_t tmpinit = init;
-			for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
-				Bs[i] = DeviceIntegratedBlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
-			}
-			*out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
-			for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
-				DeviceIntegratedBlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
-				                                  init);
-				out += Bs[i];
-			}
-		}
-		if (in < final) {
-			size_t howmany = (final - in) / MiniBlockSize;
-			uint32_t tmpinit = init;
-			memset(&Bs[0], 0, HowManyMiniBlocks * sizeof(uint32_t));
-			for (uint32_t i = 0; i < howmany; ++i) {
-				Bs[i] = DeviceIntegratedBlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
-			}
-			*out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
-			for (uint32_t i = 0; i < howmany; ++i) {
-				DeviceIntegratedBlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
-				                                  init);
-				out += Bs[i];
-			}
-		}
-		nvalue = out - initout;
+	__device__ virtual const uint32_t*
+	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
+
+	virtual
+	~DeviceIntegerCODEC() {}
+
+	/** Convenience function not supported */
+	virtual vector<uint32_t>
+	compress(vector<uint32_t> &data) {
+		throw std::logic_error("DeviceIntegerCODEC::compress not supported!");
 	}
 
-	__device__ __host__
-	const uint32_t *decodeArray(const uint32_t *in, const size_t /*length*/,
-	                            uint32_t *out, size_t &nvalue) {
-		const uint32_t actuallength = *in++;
-		checkifdivisibleby(actuallength, BlockSize);
-		const uint32_t *const initout(out);
-		uint32_t Bs[HowManyMiniBlocks];
-		uint32_t init = 0;
-		for (; out < initout +
-		        actuallength / (HowManyMiniBlocks * MiniBlockSize) *
-		        HowManyMiniBlocks * MiniBlockSize;
-		        out += HowManyMiniBlocks * MiniBlockSize) {
-			Bs[0] = static_cast<uint8_t>(in[0] >> 24);
-			Bs[1] = static_cast<uint8_t>(in[0] >> 16);
-			Bs[2] = static_cast<uint8_t>(in[0] >> 8);
-			Bs[3] = static_cast<uint8_t>(in[0]);
-			++in;
-			for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
-				DeviceIntegratedBlockPacker::unpackblock(in, out + i * MiniBlockSize, Bs[i], init);
-				in += Bs[i];
-			}
+	/** Convenience function not supported */
+	virtual vector<uint32_t>
+	uncompress(vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0){
+		throw std::logic_error("DeviceIntegerCODEC::uncompress not supported!");
+	}
+
+	virtual string
+	name() const = 0;
+};
+
+/**
+ * Same as SIMDCAI::CompositeCodes, but support decoding on GPU
+ *
+ * This is a useful class for CODEC that only compress data having length a multiple of some unit length.
+ */
+template <class Codec1, class Codec2>
+class DeviceCompositeCodec : public DeviceIntegerCODEC {
+public:
+
+	DeviceCompositeCodec() : codec1(), codec2() {}
+	Codec1 codec1;
+	Codec2 codec2;
+
+	virtual void
+	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
+		const size_t roundedlength = length / Codec1::BlockSize * Codec1::BlockSize;
+		size_t nvalue1 = nvalue;
+		codec1.encodeArray(in, roundedlength, out, nvalue1);
+
+		if (roundedlength < length) {
+			ASSERT(nvalue >= nvalue1, nvalue << " " << nvalue1);
+			size_t nvalue2 = nvalue - nvalue1;
+			codec2.encodeArray(in + roundedlength, length - roundedlength, out + nvalue1, nvalue2);
+			nvalue = nvalue1 + nvalue2;
+		} else {
+			nvalue = nvalue1;
 		}
-		if (out < initout + actuallength) {
-			size_t howmany = (initout + actuallength - out) / MiniBlockSize;
-			Bs[0] = static_cast<uint8_t>(in[0] >> 24);
-			Bs[1] = static_cast<uint8_t>(in[0] >> 16);
-			Bs[2] = static_cast<uint8_t>(in[0] >> 8);
-			Bs[3] = static_cast<uint8_t>(in[0]);
-			++in;
-			for (uint32_t i = 0; i < howmany; ++i) {
-				DeviceIntegratedBlockPacker::unpackblock(in, out + i * MiniBlockSize, Bs[i], init);
-				in += Bs[i];
-			}
-			out += howmany * MiniBlockSize;
+	}
+
+	virtual const uint32_t*
+	decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
+		const uint32_t *const initin(in);
+		size_t mynvalue1 = nvalue;
+		const uint32_t *in2 = codec1.decodeArray(in, length, out, mynvalue1);
+		if (length + in > in2) {
+			assert(nvalue > mynvalue1);
+			size_t nvalue2 = nvalue - mynvalue1;
+			const uint32_t *in3 = codec2.decodeArray(in2, length - (in2 - in), out + mynvalue1, nvalue2);
+			nvalue = mynvalue1 + nvalue2;
+			assert(initin + length >= in3);
+			return in3;
 		}
-		nvalue = out - initout;
-		return in;
+		nvalue = mynvalue1;
+		assert(initin + length >= in2);
+		return in2;
+	}
+
+	__device__ virtual const uint32_t*
+	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
+		const uint32_t *const initin(in);
+		size_t mynvalue1 = nvalue;
+		const uint32_t *in2 = codec1.decodeArrayOnGPU(in, length, out, mynvalue1);
+		if (length + in > in2) {
+			assert(nvalue > mynvalue1);
+			size_t nvalue2 = nvalue - mynvalue1;
+			const uint32_t *in3 = codec2.decodeArrayOnGPu(in2, length - (in2 - in), out + mynvalue1, nvalue2);
+			nvalue = mynvalue1 + nvalue2;
+			assert(initin + length >= in3);
+			return in3;
+		}
+		nvalue = mynvalue1;
+		assert(initin + length >= in2);
+		return in2;
+	}
+
+	string name() const {
+		ostringstream convert;
+		convert << "DeviceCompositeCodec_" codec1.name() << "+" << codec2.name();
+		return convert.str();
 	}
 };
 
