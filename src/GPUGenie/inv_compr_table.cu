@@ -27,7 +27,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     switch (this->m_compression){
         case "copy":
             codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceJustCopy());
+                        new DeviceJustCopyCodec());
             break;
         case "d1":
             codec = std::shared_ptr<IntegerCODEC>(
@@ -35,7 +35,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
             break;
         case "d1-bp32":
             codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceCompositeCodec<DeviceBinaryPacking,DeviceJustCopy>());
+                        new DeviceCompositeCodec<DeviceBitPackingCODEC,DeviceJustCopyCodec>());
             break;
         case "d1-varint":
         case "d1-bp32-varint":
@@ -87,43 +87,6 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
         codec->name(), 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size()));
 }
 
-
-void GPUGenie::inv_compr_table::bp32(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
-    checkifdivisibleby(length, BlockSize);
-    const uint32_t *const initout(out);
-    *out++ = static_cast<uint32_t>(length);
-    uint32_t Bs[HowManyMiniBlocks];
-    uint32_t init = 0;
-    const uint32_t *const final = in + length;
-    for (; in + HowManyMiniBlocks * MiniBlockSize <= final;
-         in += HowManyMiniBlocks * MiniBlockSize) {
-      uint32_t tmpinit = init;
-      for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
-        Bs[i] = BlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
-      }
-      *out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
-      for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
-        BlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
-                                          init);
-        out += Bs[i];
-      }
-    }
-    if (in < final) {
-      size_t howmany = (final - in) / MiniBlockSize;
-      uint32_t tmpinit = init;
-      memset(&Bs[0], 0, HowManyMiniBlocks * sizeof(uint32_t));
-      for (uint32_t i = 0; i < howmany; ++i) {
-        Bs[i] = BlockPacker::maxbits(in + i * MiniBlockSize, tmpinit);
-      }
-      *out++ = (Bs[0] << 24) | (Bs[1] << 16) | (Bs[2] << 8) | Bs[3];
-      for (uint32_t i = 0; i < howmany; ++i) {
-        BlockPacker::packblockwithoutmask(in + i * MiniBlockSize, out, Bs[i],
-                                          init);
-        out += Bs[i];
-      }
-    }
-    nvalue = out - initout;
-  }
 
 GPUGenie::inv_compr_table::~inv_compr_table()
 {

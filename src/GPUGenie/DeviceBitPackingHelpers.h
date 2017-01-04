@@ -1,8 +1,6 @@
 /**
- * This code is released under the
- * Apache License Version 2.0 http://www.apache.org/licenses/.
- *
- * (c) Leonid Boytsov, Nathan Kurz and Daniel Lemire
+ * This code is a modification of code from SIMDIntersectionAndCompression library by Leonid Boytsov, Nathan Kurz and
+ * Daniel Lemire
  */
 
 #ifndef DEVICE_BIT_PACKING_HELPERS_H_

@@ -5,6 +5,8 @@
 #include <SIMDCAI/util.h>
 #include <SIMDCAI/codecs.h>
 
+#include "DeviceDeltaHelper.h"
+
 namespace GPUGenie {
 
 
@@ -30,13 +32,83 @@ class DeviceIntegerCODEC : public IntegerCODEC {
 
 	/** Convenience function not supported */
 	virtual vector<uint32_t>
-	uncompress(vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0){
+	uncompress(vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0) {
 		throw std::logic_error("DeviceIntegerCODEC::uncompress not supported!");
 	}
 
 	virtual string
 	name() const = 0;
 };
+
+class DeviceJustCopyCodec : public IntegerCODEC {
+
+	virtual void
+	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+	{
+		std::memcpy(out, in, sizeof(uint32_t) * length);
+		nvalue = length;
+	}
+
+	virtual const uint32_t*
+	decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+	{
+		std::memcpy(out, in, sizeof(uint32_t) * length);
+		nvalue = length;
+		return in + length;
+	}
+
+	__device__ virtual const uint32_t*
+	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+	{
+		cudaCheckErrors(cudaMemCpy(d_out, d_in, sizeof(uint32_t) * length, cudaDeviceToDevice));
+		nvalue = length;
+		return d_in + length;
+	}
+
+	virtual
+	~DeviceIntegerCODEC() {}
+
+	virtual string
+	name() const { return "DeviceJustCopyCodec"; }
+};
+
+
+class DeviceDeltaCodec : public IntegerCODEC {
+
+	virtual void
+	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+	{
+		std::memcpy(out, in, sizeof(uint32_t) * length);
+		DeviceDeltaHelper<uint32_t>::delta(0 , out, const size_t length) 
+		nvalue = length;
+	}
+
+	virtual const uint32_t*
+	decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+	{
+		std::memcpy(out, in, sizeof(uint32_t) * length);
+		DeviceDeltaHelper<uint32_t>::inversedelta(0 , out, const size_t length) 
+		nvalue = length;
+		return in + length;
+	}
+
+	__device__ virtual const uint32_t*
+	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+	{
+		cudaCheckErrors(cudaMemCpy(d_out, d_in, sizeof(uint32_t) * length, cudaDeviceToDevice));
+		DeviceDeltaHelper<uint32_t>::inversedeltaOnGPU(0 , out, const size_t length) 
+		nvalue = length;
+		return d_in + length;
+	}
+
+	virtual
+	~DeviceIntegerCODEC() {}
+
+	virtual string
+	name() const { return "DeviceDeltaCodec"; }
+};
+
+
 
 /**
  * Same as SIMDCAI::CompositeCodes, but support decoding on GPU
