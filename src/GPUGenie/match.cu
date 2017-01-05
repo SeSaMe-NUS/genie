@@ -638,13 +638,29 @@ void convert_to_data(T_HASHTABLE* table, u32 size)
 
 
 __global__
-void decompressPostingLists_listPerThread(
+void decompressPostingLists_listPerThread_JustCopyCODEC(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
-        size_t dimsOffset,
-        const int *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv) // out: uncompressed posting list on GPU  
+        int dimsOffset,
+        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
+        int *d_uncompr_inv
+        size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
-    return;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    assert(dimsOffset == 0 || dimsOffset > idx);
+    assert(sizeof(int) == sizeof(uint32_t));
+
+    int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
+    int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
+    int *d_compr_inv_start = d_compr_inv + sizeof(uint32_t) * comprInvListStart;
+    int length = sizeof(uint32_t) + (comprInvListEnd - comprInvListStart);
+    int *d_uncompr_inv_start = d_uncompr_inv + sizeof(int) * comprInvListStart;
+    size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
+    DeviceJustCopyCodec codec;
+    codec.decodeArrayOnGPU(d_compr_inv_start, length, static_cast<uint32_t*>(d_uncompr_inv_start), nvalue)
+
+    // Convert the uin32_t array from decompression into an int array for matching and counting
+    for (int *i = d_uncompr_inv_start; i < d_uncompr_inv_start + sizeof(int) * nvalue; i++)
+        (*(static_cast<uint32_t*>(i))) = static_cast<uint32_t>(*i);
 }
 
 
@@ -1174,8 +1190,7 @@ void GPUGenie::match(
 
 		Logger::log(Logger::INFO, "[ 32%] Allocating device memory for uncompressed posting lists...");
 
-        size_t d_uncompr_inv_size = GPUGenie_device_DECOMPR_BLOCKS * GPUGenie_device_THREADS_PER_BLOCK *
-                                        table.getUncompressedPostingListMaxLength();
+        size_t d_uncompr_inv_size = DECOMPR_BATCH * table.getUncompressedPostingListMaxLength();
         thrust::device_vector<int> d_uncompr_inv(d_uncompr_inv_size);
         int *d_uncompr_inv_p = thrust::raw_pointer_cast(d_uncompr_inv.data());
 
@@ -1222,20 +1237,28 @@ void GPUGenie::match(
             // so that the on GPU memory used for decompressed posting lists never exceeds
             // config.max_posting_list_length * DECOMPR_BATCH
             
-            int totalDecomprRuns = (dims.size() / DECOMPR_BATCH) + 1;
+            int totalDecomprRuns = (dims.size() + DECOMPR_BATCH - 1) / DECOMPR_BATCH;
             for (int decomprRun = 0; decomprRun < totalDecomprRuns; decomprRun++)
             {
-                size_t dimsOffset = decomprRun * DECOMPR_BATCH;
+                int dimsOffset = decomprRun * DECOMPR_BATCH;
 
                 // Call decompression kernel, where each THREAD decompresses one compiled query compressed posting list
                 // Compiled queries d_dims_p are changed accordingly to point into the uncompressed posting lists
                 // vector d_uncompr_inv_p
-                device::decompressPostingLists_listPerThread<<<GPUGenie_device_DECOMPR_BLOCKS,
-                                                               GPUGenie_device_DECOMPR_THREADS_PER_BLOCK>>>
-                       (d_dims_p,
-                        dimsOffset,
-                        table.deviceCompressedInv(),
-                        d_uncompr_inv_p);
+                swtich (table.getCompression()){
+                    case "copy":
+                        device::decompressPostingLists_listPerThread_JustCopyCODEC
+                                    <<<GPUGenie_device_DECOMPR_BLOCKS,
+                                       GPUGenie_device_DECOMPR_THREADS_PER_BLOCK>>>
+                               (d_dims_p,
+                                dimsOffset,
+                                table.deviceCompressedInv(),
+                                d_uncompr_inv_p,
+                                table.getUncompressedPostingListMaxLength());
+                        break;
+                    default:
+                        throw std::logic_error("No decompression kernel available!");
+                }
 
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
                 // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to
