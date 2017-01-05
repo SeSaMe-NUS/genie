@@ -29,7 +29,7 @@ protected:
 
     std::string m_compression;
 
-    int *m_d_compr_inv_p;
+    uint32_t *m_d_compr_inv_p;
 
     size_t m_uncompressedInvListsMaxLength;
 
@@ -42,7 +42,11 @@ public:
     inv_compr_table(): inv_table(),
             m_isCompressed(false),
             m_d_compr_inv_p(NULL),
-            m_uncompressedInvListsMaxLength(0){}
+            m_uncompressedInvListsMaxLength(0)
+    {
+        assert(sizeof(int) == sizeof(uint32_t)); // this is to make sure that virtual function inv() is correct
+        // TODO: make runtime check and possible copy of m_compressedInv, if sizeof(int) == 8 bytes
+    }
 
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
@@ -66,27 +70,39 @@ public:
 
     /* 
      * Returns compressed version of _inv (posting lists array)
+     * Note that the compressed table, decompression and matching modules all treat the compressed data as uint32_t,
+     * so to avoid casts, use inv_compr_table::compressedInv() convenience function.
      */
-    std::vector<int>* compressedInv();
+    virtual std::vector<int>* inv();
+    /*
+     * Returns compressed version of _inv (posting lists array)
+     */
+    std::vector<uint32_t>* compressedInv();
+    /* 
+     * Returns uncompressed version of _inv (posting lists array).
+     * This is an alias for inv_table::inv()
+     * Note that inv_compt_table keeps a copy of uncompressed posting lists array.
+     */
+    std::vector<int>* uncompressedInv();
 
+    /*
+     * Returns compressed version of _inv_pos (starting positions of inverted lists in posting lists array)
+     */
+    virtual std::vector<int>* inv_pos(); 
     /* 
      * Returns compressed version of _inv_pos (starting positions of inverted lists in posting lists array)
+     * This is an alias for inv_compr_table::inv_pos()
      */
     std::vector<int>* compressedInvPos();
 
     /* 
-     * Returns _inv (the same as inv() function), as this index is on CPU and maps the domain of keys into the starting
-     * positions of inverted lists -- i.e. compressedInvPod()
+     * Returns uncompressed version of _inv_pos (starting positions of inverted lists in posting lists array)
+     * This is an alias for inv_table::inv_pos()
      */
-    std::vector<int>* compressedInvIndex();
-    
-    /* 
-     * Returns _ck
-     */
-    std::vector<int>* compressedCK();
+    std::vector<int>* uncompressedInvPos();
 
 
-    int* deviceCompressedInv() const;
+    uint32_t* deviceCompressedInv() const;
 
 
 

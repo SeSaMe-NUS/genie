@@ -393,28 +393,28 @@ public:
 	 *
          *  \return The pointer points to _ck vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	ck();
 
 	/*! \fn vector<int>* inv()
 	 *
          *  \return The pointer points to _inv vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv();
 
 	/*! \fn vector<int>* inv_index()
 	 *
          *  \return The pointer points to _inv_index vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv_index();
 
         /*! \fn vector<int>* inv_pos()
 	 *
          *  \return The pointer points to _inv_pos vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv_pos();
 
 

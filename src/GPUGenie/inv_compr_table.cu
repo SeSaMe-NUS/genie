@@ -40,7 +40,10 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
         case "d1-varint":
         case "d1-bp32-varint":
         default:
-            Logger::log(Logger::ALERT, "Unsupported inverted table compression %s", this->m_compression);
+            Logger::log(Logger::ALERT, "Unsupported inverted table compression %s. Fallback to copy codec.",
+                this->m_compression);
+            codec = std::shared_ptr<IntegerCODEC>(
+                        new DeviceJustCopyCodec());
     }
 
     // make uint32_t copy of uncompressed inv array
@@ -124,11 +127,28 @@ GPUGenie::inv_compr_table::setUncompressedPostingListMaxLength(size_t length)
 }
 
 std::vector<int>*
+GPUGenie::inv_compr_table::inv()
+{
+    return static_cast<std::vector<int>*>(&m_comprInv);
+}
+
+std::vector<uint32_t>*
 GPUGenie::inv_compr_table::compressedInv()
 {
     return &m_comprInv;
 }
 
+std::vector<int>*
+GPUGenie::inv_compr_table::uncompressedInv()
+{
+    return &_inv;
+}
+
+std::vector<int>*
+GPUGenie::inv_compr_table::inv_pos()()
+{
+    return &m_comprInvPos;
+}
 std::vector<int>*
 GPUGenie::inv_compr_table::compressedInvPos()
 {
@@ -136,18 +156,12 @@ GPUGenie::inv_compr_table::compressedInvPos()
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::compressedInvIndex()
+GPUGenie::inv_compr_table::uncompressedInvPos()
 {
-    return this->inv_index();
+    return &_inv_pos;;
 }
 
-std::vector<int>*
-GPUGenie::inv_compr_table::compressedCK()
-{
-    return this->ck();
-}
-
-int*
+uint32_t*
 GPUGenie::inv_compr_table::deviceCompressedInv() const
 {
     return m_d_compr_inv_p;
@@ -157,9 +171,9 @@ bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
 {
     try{
         if(m_d_compr_inv_p == NULL)
-            cudaCheckErrors(cudaMalloc(&m_d_compr_inv_p, sizeof(int) * m_comprInv.size()));
+            cudaCheckErrors(cudaMalloc(&m_d_compr_inv_p, sizeof(uint32_t) * m_comprInv.size()));
         u64 t = getTime();
-        cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(int) * m_comprInv.size(),
+        cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(uint32_t) * m_comprInv.size(),
                 cudaMemcpyHostToDevice));
         u64 tt = getTime();
         std::cout<<"The compressed inverted list(all data) transfer time = " << getInterval(t,tt) << "ms" <<std::endl;

@@ -40,7 +40,7 @@ class DeviceIntegerCODEC : public IntegerCODEC {
 	name() const = 0;
 };
 
-class DeviceJustCopyCodec : public IntegerCODEC {
+class DeviceJustCopyCodec : public DeviceIntegerCODEC {
 
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
@@ -73,7 +73,7 @@ class DeviceJustCopyCodec : public IntegerCODEC {
 };
 
 
-class DeviceDeltaCodec : public IntegerCODEC {
+class DeviceDeltaCodec : public DeviceIntegerCODEC {
 
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)

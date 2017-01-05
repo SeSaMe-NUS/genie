@@ -157,20 +157,25 @@ int main(int argc, char* argv[])
 
     std::cout << "Examining compressed index..." << std::endl;
 
-    std::vector<int> *inv = table->inv();
-    std::vector<int> *invPos = table->inv_pos();
-    std::vector<int> *compressedInv = comprTable->compressedInv();
+    std::vector<int> *uncompressedInv = table->uncompressedInv();
+    std::vector<int> *uncompressedInvPos = table->uncompressedInvPos();
+    std::vector<uint32_t> *compressedInv = comprTable->compressedInv();
     std::vector<int> *compressedInvPos = comprTable->compressedInvPos();
     // the last elm in inv_pos should be the compressed size, which is <= to the original size
-    assert(compressedInvPos->size() == invPos->size());
+    assert(compressedInvPos->size() == uncompressedInvPos->size());
     assert(compressedInvPos->back() == (int)compressedInvPos->size()); 
-    assert(compressedInvPos->back() <= inv->back()); 
+    assert(compressedInvPos->back() <= uncompressedInv->back()); 
+    assert(compressedInv == comprTable->inv()); // test alias function
+    assert(compressedInvPos == comprTable->inv_pos()); // test alias function
 
-    double avg_inv_list_length = ((double)inv->size()) / ((double)invPos->size());
-    Logger::log(Logger::DEBUG, "Total inverted list length: %d, Inverted lists: %d, Average length of inv list: %f",
-            inv->size(), invPos->size(), avg_inv_list_length);
+    double avg_inv_list_length = ((double)uncompressedInv->size()) / ((double)uncompressedInvPos->size());
+    double avg_compr_inv_list_length = ((double)compressedInv->size()) / ((double)compressedInvPos->size());
+    Logger::log(Logger::DEBUG,
+            "Uncompressed inverted list length: %d, Inverted lists: %d, Average length of uncompressed inv list: %f",
+            uncompressedInv->size(), uncompressedInvPos->size(), avg_inv_list_length);
     Logger::log(Logger::DEBUG, "Compressed size of posting lists array Z: %d bytes", compressedInv->size() * 4);
     Logger::log(Logger::DEBUG, "Uncompressed size of compressedInvPos index: %d bytes", compressedInvPos->size() * 4);
+    Logger::log(Logger::DEBUG, "Average size of compressed posting list: %d", avg_compr_inv_list_length);
 
     std::cout << "Done examining compressed index..." << std::endl;
 
