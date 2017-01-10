@@ -1,10 +1,33 @@
 #include <iostream>
+#include <map>
+#include <memory>
 
 #include "Logger.h"
 #include "genie_errors.h"
 #include "Timing.h"
+#include "DeviceCompositeCodec.h"
+#include "DeviceBitPackingCodec.h"
 
 #include "inv_compr_table.h"
+
+
+std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
+GPUGenie::inv_compr_table::initCodecs() {
+  std::map<std::string, shared_ptr<DeviceIntegerCODEC>> codecs;
+
+  codecs["copy"] = std::shared_ptr<DeviceIntegerCODEC>(
+                        new DeviceJustCopyCodec());
+  codecs["d1"] = std::shared_ptr<DeviceIntegerCODEC>(
+                        new DeviceDeltaCodec());
+  codecs["d1-bp32"] = std::shared_ptr<DeviceIntegerCODEC>(
+                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>());
+  codecs["copy"] = std::shared_ptr<DeviceIntegerCODEC>(
+                        new DeviceJustCopyCodec());
+  return codecs;
+}
+
+std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
+GPUGenie::inv_compr_table::m_codecs = GPUGenie::inv_compr_table::initCodecs();
 
 
 void
@@ -24,26 +47,15 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     uint64_t compressionStartTime = getTime();
 
     shared_ptr<DeviceIntegerCODEC> codec;
-    switch (this->m_compression){
-        case "copy":
-            codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceJustCopyCodec());
-            break;
-        case "d1":
-            codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceDeltaCodec());
-            break;
-        case "d1-bp32":
-            codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceCompositeCodec<DeviceBitPackingCODEC,DeviceJustCopyCodec>());
-            break;
-        case "d1-varint":
-        case "d1-bp32-varint":
-        default:
-            Logger::log(Logger::ALERT, "Unsupported inverted table compression %s. Fallback to copy codec.",
-                this->m_compression);
-            codec = std::shared_ptr<IntegerCODEC>(
-                        new DeviceJustCopyCodec());
+
+    // Retrieve coded based on compression string 
+    if(m_codecs.find(this->m_compression) == m_codecs.end()) {
+        Logger::log(Logger::ALERT, "Unsupported inverted table compression %s. Fallback to copy codec.",
+                this->m_compression.c_str());
+        codec = m_codecs["copy"];
+    }
+    else {
+        codec = m_codecs[this->m_compression];
     }
 
     // make uint32_t copy of uncompressed inv array
@@ -87,7 +99,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
         getInterval(compressionStartTime, compressionEndTime));
 
     Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f", m_compression.c_str(),
-        codec->name(), 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size()));
+        codec->name().c_str(), 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size()));
 }
 
 
@@ -129,7 +141,7 @@ GPUGenie::inv_compr_table::setUncompressedPostingListMaxLength(size_t length)
 std::vector<int>*
 GPUGenie::inv_compr_table::inv()
 {
-    return static_cast<std::vector<int>*>(&m_comprInv);
+    return reinterpret_cast<std::vector<int>*>(&m_comprInv);
 }
 
 std::vector<uint32_t>*
@@ -141,11 +153,11 @@ GPUGenie::inv_compr_table::compressedInv()
 std::vector<int>*
 GPUGenie::inv_compr_table::uncompressedInv()
 {
-    return &_inv;
+    return inv();
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::inv_pos()()
+GPUGenie::inv_compr_table::inv_pos()
 {
     return &m_comprInvPos;
 }
@@ -158,7 +170,7 @@ GPUGenie::inv_compr_table::compressedInvPos()
 std::vector<int>*
 GPUGenie::inv_compr_table::uncompressedInvPos()
 {
-    return &_inv_pos;;
+    return inv_pos();;
 }
 
 uint32_t*

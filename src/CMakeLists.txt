@@ -1,4 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/simdcai/src)
 cuda_include_directories(${PROJECT_SOURCE_DIR}/src)
 link_directories(${PROJECT_SOURCE_DIR}/src /usr/local/lib)
 
@@ -33,6 +33,11 @@ set(LIB_SRC_LIST
   GPUGenie/heap_count.cu  
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cu
+  GPUGenie/DeviceCompositeCodec.h
+  GPUGenie/DeviceDeltaHelper.h
+  GPUGenie/DeviceBitPackingCodec.h
+  GPUGenie/DeviceBitPackingHelpers.h
+  GPUGenie/DeviceBitPackingHelpers.cu
 )
 
 cuda_add_library(

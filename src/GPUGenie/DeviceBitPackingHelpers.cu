@@ -1,4 +1,4 @@
-#include "DeviceBitPackingHelper.h"
+#include "DeviceBitPackingHelpers.h"
 
 namespace GPUGENIE
 {

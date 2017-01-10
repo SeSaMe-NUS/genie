@@ -6,7 +6,9 @@
 #ifndef DEVICE_BIT_PACKING_HELPERS_H_
 #define DEVICE_BIT_PACKING_HELPERS_H_
 
-#include <SIMDCAI/util.h>
+#include <SIMDCAI/include/util.h>
+
+#include "DeviceDeltaHelper.h"
 
 namespace GPUGenie {
 
@@ -775,7 +777,8 @@ struct DeviceBitPackingHelpers {
         }
     }
 
-    template <class T> void delta(const T initoffset, T *data, const size_t size) {
+    template <class T> static
+    void delta(const T initoffset, T *data, const size_t size) {
         if (size == 0)
             return; // nothing to do
         if (size > 1)
@@ -785,7 +788,8 @@ struct DeviceBitPackingHelpers {
         data[0] -= initoffset;
     }
 
-    template <size_t size, class T> void delta(const T initoffset, T *data) {
+    template <size_t size, class T>
+    static void delta(const T initoffset, T *data) {
         if (size == 0)
             return; // nothing to do
         if (size > 1)
@@ -796,7 +800,7 @@ struct DeviceBitPackingHelpers {
     }
 
     template <class T>
-    void inverseDelta(const T initoffset, T *data, const size_t size) {
+    static void inverseDelta(const T initoffset, T *data, const size_t size) {
         if (size == 0)
             return; // nothing to do
         data[0] += initoffset;
@@ -817,7 +821,8 @@ struct DeviceBitPackingHelpers {
             data[i] += data[i - 1];
         }
     }
-    template <size_t size, class T> void inverseDelta(const T initoffset, T *data) {
+    template <size_t size, class T>
+    static void inverseDelta(const T initoffset, T *data) {
         if (size == 0)
             return; // nothing to do
         data[0] += initoffset;
@@ -863,7 +868,7 @@ struct DeviceBitPackingHelpers {
         for (size_t k = 0; k < Qty / BlockSize; ++k) {
             const uint32_t nextoffset = *(in + k * BlockSize + BlockSize - 1);
             if (bit < 32)
-                delta<BlockSize>(initoffset, in + k * BlockSize);
+                delta<BlockSize,uint32_t>(initoffset, in + k * BlockSize);
             fastpack(in + k * BlockSize, out + k * bit, bit);
             initoffset = nextoffset;
         }
@@ -886,7 +891,7 @@ struct DeviceBitPackingHelpers {
         for (size_t k = 0; k < Qty / BlockSize; ++k) {
             fastunpack(in + k * bit, out + k * BlockSize, bit);
             if (bit < 32)
-                inverseDelta<BlockSize>(initoffset, out + k * BlockSize);
+                inverseDelta<BlockSize,uint32_t>(initoffset, out + k * BlockSize);
             initoffset = *(out + k * BlockSize + BlockSize - 1);
         }
     }
@@ -908,7 +913,7 @@ struct DeviceBitPackingHelpers {
         for (size_t k = 0; k < Qty / BlockSize; ++k) {
             const uint32_t nextoffset = *(in + k * BlockSize + BlockSize - 1);
             if (bit < 32)
-                delta<BlockSize>(initoffset, in + k * BlockSize);
+                delta<BlockSize,uint32_t>(initoffset, in + k * BlockSize);
             fastpackwithoutmask(in + k * BlockSize, out + k * bit, bit);
             initoffset = nextoffset;
         }
@@ -937,7 +942,7 @@ struct DeviceBitPackingHelpers {
 
     static void CheckMaxDiff(const std::vector<uint32_t> &refdata, unsigned bit) {
         for (size_t i = 1; i < refdata.size(); ++i) {
-            if (gccbits(refdata[i] - refdata[i - 1]) > bit)
+            if (SIMDCompressionLib::gccbits(refdata[i] - refdata[i - 1]) > bit)
                 throw std::runtime_error("bug");
         }
     }

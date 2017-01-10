@@ -1,9 +1,11 @@
 #ifndef DEVICE_BIT_PACKING_CODEC_H_
 #define DEVICE_BIT_PACKING_CODEC_H_
 
-#include <SIMDCAI/common.h>
-#include <SIMDCAI/util.h>
-#include <SIMDCAI/codecs.h>
+#include <SIMDCAI/include/common.h>
+#include <SIMDCAI/include/util.h>
+#include <SIMDCAI/include/codecs.h>
+
+#include "DeviceBitPackingHelpers.h"
 
 namespace GPUGenie {
 
@@ -14,7 +16,7 @@ namespace GPUGenie {
  *
  *  Support decoding from withing a CUDA kernel.
  */
-class DeviceBitPackingCODEC : public DeviceIntegerCODEC {
+class DeviceBitPackingCodec : public DeviceIntegerCODEC {
 
 public:
     static const uint32_t MiniBlockSize = 32;
@@ -27,11 +29,11 @@ public:
         PURE_FUNCTION static uint32_t
         maxbits(const uint32_t *in, uint32_t &initoffset) {
             uint32_t accumulator = in[0] - initoffset;
-            for (uint32_t k = 1; k < BitPackingHelpers::BlockSize; ++k) {
+            for (uint32_t k = 1; k < BlockSize; ++k) {
                 accumulator |= in[k] - in[k - 1];
             }
-            initoffset = in[BitPackingHelpers::BlockSize - 1];
-            return gccbits(accumulator);
+            initoffset = in[BlockSize - 1];
+            return SIMDCompressionLib::gccbits(accumulator);
         }
 
         static void inline
@@ -39,19 +41,20 @@ public:
                                                 const uint32_t bit,
                                                 uint32_t &initoffset) {
             DeviceBitPackingHelpers::integratedfastpackwithoutmask(initoffset, in, out, bit);
-            initoffset = *(in + BitPackingHelpers::BlockSize - 1);
+            initoffset = *(in + BlockSize - 1);
         }
 
         __device__ __host__ static void inline
         unpackblock(const uint32_t *in, uint32_t *out,
                                        const uint32_t bit, uint32_t &initoffset) {
             DeviceBitPackingHelpers::integratedfastunpack(initoffset, in, out, bit);
-            initoffset = *(out + BitPackingHelpers::BlockSize - 1);
+            initoffset = *(out + BlockSize - 1);
         }
     };
 
-    void encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
-        checkifdivisibleby(length, BlockSize);
+    virtual void
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
+        SIMDCompressionLib::checkifdivisibleby(length, BlockSize);
         const uint32_t *const initout(out);
         *out++ = static_cast<uint32_t>(length);
         uint32_t Bs[HowManyMiniBlocks];
@@ -84,9 +87,10 @@ public:
         nvalue = out - initout;
     }
 
-    const uint32_t *decodeArray(const uint32_t *in, const size_t /*length*/, uint32_t *out, size_t &nvalue) {
+    virtual const uint32_t*
+    decodeArray(const uint32_t *in, const size_t /*length*/, uint32_t *out, size_t &nvalue) {
         const uint32_t actuallength = *in++;
-        checkifdivisibleby(actuallength, BlockSize);
+        SIMDCompressionLib::checkifdivisibleby(actuallength, BlockSize);
         const uint32_t *const initout(out);
         uint32_t Bs[HowManyMiniBlocks];
         uint32_t init = 0;
@@ -121,9 +125,10 @@ public:
         return in;
     }
 
-    const uint32_t *decodeArrayGPU(const uint32_t *d_in, const size_t /*length*/, uint32_t *out, size_t &nvalue) {
+    __device__ virtual const uint32_t*
+    decodeArrayOnGPU(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
         const uint32_t actuallength = *d_in++;
-        checkifdivisibleby(actuallength, BlockSize);
+        SIMDCompressionLib::checkifdivisibleby(actuallength, BlockSize);
         const uint32_t *const initout(d_out);
         uint32_t Bs[HowManyMiniBlocks];
         uint32_t init = 0;
@@ -157,6 +162,12 @@ public:
         nvalue = d_out - initout;
         return d_in;
     }
+
+    virtual
+    ~DeviceBitPackingCodec() {}
+
+    virtual std::string
+    name() const { return "DeviceBitPackingCodec"; }
 };
 
 }

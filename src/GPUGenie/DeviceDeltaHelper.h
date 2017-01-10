@@ -49,12 +49,12 @@ struct DeviceDeltaHelper {
     inverseDeltaOnGPU(const T initoffset, T *d_data, const size_t size) {
         if (size == 0)
             return; // nothing to do
-        data[0] += initoffset;
+        d_data[0] += initoffset;
         for (size_t i = 1; i != size; ++i) {
-            data[i] += data[i - 1];
+            d_data[i] += d_data[i - 1];
         }
     }
-}
+};
 
 }
 

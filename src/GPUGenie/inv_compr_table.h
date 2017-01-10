@@ -8,7 +8,13 @@
 #ifndef GPUGenie_inv_compr_table_h
 #define GPUGenie_inv_compr_table_h
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "inv_table.h"
+
+#include "DeviceCompositeCodec.h"
 
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
@@ -32,6 +38,10 @@ protected:
     uint32_t *m_d_compr_inv_p;
 
     size_t m_uncompressedInvListsMaxLength;
+
+    static std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>> initCodecs();
+
+    static std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>> m_codecs;
 
 
 public:

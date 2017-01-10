@@ -1,17 +1,20 @@
 #ifndef DEVICE_COMPOSITE_CODEC_H_
 #define DEVICE_COMPOSITE_CODEC_H_
 
-#include <SIMDCAI/common.h>
-#include <SIMDCAI/util.h>
-#include <SIMDCAI/codecs.h>
+#include <string>
+#include <vector>
+
+#include <SIMDCAI/include/common.h>
+#include <SIMDCAI/include/util.h>
+#include <SIMDCAI/include/codecs.h>
 
 #include "DeviceDeltaHelper.h"
 
 namespace GPUGenie {
 
 
-class DeviceIntegerCODEC : public IntegerCODEC {
-
+class DeviceIntegerCODEC : public SIMDCompressionLib::IntegerCODEC {
+public:
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
 
@@ -25,23 +28,23 @@ class DeviceIntegerCODEC : public IntegerCODEC {
 	~DeviceIntegerCODEC() {}
 
 	/** Convenience function not supported */
-	virtual vector<uint32_t>
-	compress(vector<uint32_t> &data) {
+	virtual std::vector<uint32_t>
+	compress(std::vector<uint32_t> &data) {
 		throw std::logic_error("DeviceIntegerCODEC::compress not supported!");
 	}
 
 	/** Convenience function not supported */
-	virtual vector<uint32_t>
-	uncompress(vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0) {
+	virtual std::vector<uint32_t>
+	uncompress(std::vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0) {
 		throw std::logic_error("DeviceIntegerCODEC::uncompress not supported!");
 	}
 
-	virtual string
+	virtual std::string
 	name() const = 0;
 };
 
 class DeviceJustCopyCodec : public DeviceIntegerCODEC {
-
+public:
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 	{
@@ -60,26 +63,26 @@ class DeviceJustCopyCodec : public DeviceIntegerCODEC {
 	__device__ virtual const uint32_t*
 	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
 	{
-		cudaCheckErrors(cudaMemCpy(d_out, d_in, sizeof(uint32_t) * length, cudaDeviceToDevice));
+		cudaCheckErrors(cudaMemcpy(d_out, d_in, sizeof(uint32_t) * length, cudaMemcpyDeviceToDevice));
 		nvalue = length;
 		return d_in + length;
 	}
 
 	virtual
-	~DeviceIntegerCODEC() {}
+	~DeviceJustCopyCodec() {}
 
-	virtual string
+	virtual std::string
 	name() const { return "DeviceJustCopyCodec"; }
 };
 
 
 class DeviceDeltaCodec : public DeviceIntegerCODEC {
-
+public:
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 	{
 		std::memcpy(out, in, sizeof(uint32_t) * length);
-		DeviceDeltaHelper<uint32_t>::delta(0 , out, const size_t length) 
+		DeviceDeltaHelper<uint32_t>::delta(0, out, length);
 		nvalue = length;
 	}
 
@@ -87,7 +90,7 @@ class DeviceDeltaCodec : public DeviceIntegerCODEC {
 	decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 	{
 		std::memcpy(out, in, sizeof(uint32_t) * length);
-		DeviceDeltaHelper<uint32_t>::inversedelta(0 , out, const size_t length) 
+		DeviceDeltaHelper<uint32_t>::inverseDelta(0, out, length);
 		nvalue = length;
 		return in + length;
 	}
@@ -95,16 +98,16 @@ class DeviceDeltaCodec : public DeviceIntegerCODEC {
 	__device__ virtual const uint32_t*
 	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
 	{
-		cudaCheckErrors(cudaMemCpy(d_out, d_in, sizeof(uint32_t) * length, cudaDeviceToDevice));
-		DeviceDeltaHelper<uint32_t>::inversedeltaOnGPU(0 , out, const size_t length) 
+		cudaCheckErrors(cudaMemcpy(d_out, d_in, sizeof(uint32_t) * length, cudaMemcpyDeviceToDevice));
+		DeviceDeltaHelper<uint32_t>::inverseDeltaOnGPU(0, d_out, length);
 		nvalue = length;
 		return d_in + length;
 	}
 
 	virtual
-	~DeviceIntegerCODEC() {}
+	~DeviceDeltaCodec() {}
 
-	virtual string
+	virtual std::string
 	name() const { return "DeviceDeltaCodec"; }
 };
 
@@ -122,6 +125,7 @@ public:
 	DeviceCompositeCodec() : codec1(), codec2() {}
 	Codec1 codec1;
 	Codec2 codec2;
+	virtual ~DeviceCompositeCodec() {}
 
 	virtual void
 	encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
@@ -159,25 +163,25 @@ public:
 
 	__device__ virtual const uint32_t*
 	decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
-		const uint32_t *const initin(in);
+		const uint32_t *const initin(d_in);
 		size_t mynvalue1 = nvalue;
-		const uint32_t *in2 = codec1.decodeArrayOnGPU(in, length, out, mynvalue1);
-		if (length + in > in2) {
+		const uint32_t *d_in2 = codec1.decodeArrayOnGPU(d_in, length, d_out, mynvalue1);
+		if (length + d_in > d_in2) {
 			assert(nvalue > mynvalue1);
 			size_t nvalue2 = nvalue - mynvalue1;
-			const uint32_t *in3 = codec2.decodeArrayOnGPu(in2, length - (in2 - in), out + mynvalue1, nvalue2);
+			const uint32_t *in3 = codec2.decodeArrayOnGPU(d_in2, length - (d_in2 - d_in), d_out + mynvalue1, nvalue2);
 			nvalue = mynvalue1 + nvalue2;
 			assert(initin + length >= in3);
 			return in3;
 		}
 		nvalue = mynvalue1;
-		assert(initin + length >= in2);
-		return in2;
+		assert(initin + length >= d_in2);
+		return d_in2;
 	}
 
-	string name() const {
-		ostringstream convert;
-		convert << "DeviceCompositeCodec_" codec1.name() << "+" << codec2.name();
+	std::string name() const {
+		std::ostringstream convert;
+		convert << "DeviceCompositeCodec_" << codec1.name() << "+" << codec2.name();
 		return convert.str();
 	}
 };
