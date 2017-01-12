@@ -45,7 +45,7 @@ struct DeviceDeltaHelper {
         }
     }
 
-    static void
+    __device__ static void
     inverseDeltaOnGPU(const T initoffset, T *d_data, const size_t size) {
         if (size == 0)
             return; // nothing to do

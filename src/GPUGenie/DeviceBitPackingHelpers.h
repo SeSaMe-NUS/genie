@@ -12,215 +12,182 @@
 
 namespace GPUGenie {
 
-void __inline__ __device__ __host__ __fastunpack0 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack1 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack2 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack3 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack4 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack5 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack6 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack7 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack8 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack9 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack10(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack11(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack12(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack13(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack14(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack15(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack16(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack17(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack18(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack19(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack20(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack21(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack22(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack23(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack24(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack25(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack26(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack27(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack28(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack29(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack30(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack31(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__ __fastunpack32(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
+void __device__ __host__ __fastunpack0 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack1 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack2 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack3 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack4 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack5 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack6 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack7 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack8 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack9 (const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack10(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack11(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack12(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack13(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack14(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack15(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack16(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack17(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack18(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack19(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack20(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack21(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack22(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack23(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack24(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack25(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack26(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack27(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack28(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack29(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack30(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack31(const uint32_t * in, uint32_t * out);
+void __device__ __host__ __fastunpack32(const uint32_t * in, uint32_t * out);
 
-void __fastpack0 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack1 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack2 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack3 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack4 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack5 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack6 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack7 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack8 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack9 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack10(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack11(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack12(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack13(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack14(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack15(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack16(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack17(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack18(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack19(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack20(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack21(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack22(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack23(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack24(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack25(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack26(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack27(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack28(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack29(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack30(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack31(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpack32(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
+void __fastpack0 (const uint32_t * in, uint32_t * out);
+void __fastpack1 (const uint32_t * in, uint32_t * out);
+void __fastpack2 (const uint32_t * in, uint32_t * out);
+void __fastpack3 (const uint32_t * in, uint32_t * out);
+void __fastpack4 (const uint32_t * in, uint32_t * out);
+void __fastpack5 (const uint32_t * in, uint32_t * out);
+void __fastpack6 (const uint32_t * in, uint32_t * out);
+void __fastpack7 (const uint32_t * in, uint32_t * out);
+void __fastpack8 (const uint32_t * in, uint32_t * out);
+void __fastpack9 (const uint32_t * in, uint32_t * out);
+void __fastpack10(const uint32_t * in, uint32_t * out);
+void __fastpack11(const uint32_t * in, uint32_t * out);
+void __fastpack12(const uint32_t * in, uint32_t * out);
+void __fastpack13(const uint32_t * in, uint32_t * out);
+void __fastpack14(const uint32_t * in, uint32_t * out);
+void __fastpack15(const uint32_t * in, uint32_t * out);
+void __fastpack16(const uint32_t * in, uint32_t * out);
+void __fastpack17(const uint32_t * in, uint32_t * out);
+void __fastpack18(const uint32_t * in, uint32_t * out);
+void __fastpack19(const uint32_t * in, uint32_t * out);
+void __fastpack20(const uint32_t * in, uint32_t * out);
+void __fastpack21(const uint32_t * in, uint32_t * out);
+void __fastpack22(const uint32_t * in, uint32_t * out);
+void __fastpack23(const uint32_t * in, uint32_t * out);
+void __fastpack24(const uint32_t * in, uint32_t * out);
+void __fastpack25(const uint32_t * in, uint32_t * out);
+void __fastpack26(const uint32_t * in, uint32_t * out);
+void __fastpack27(const uint32_t * in, uint32_t * out);
+void __fastpack28(const uint32_t * in, uint32_t * out);
+void __fastpack29(const uint32_t * in, uint32_t * out);
+void __fastpack30(const uint32_t * in, uint32_t * out);
+void __fastpack31(const uint32_t * in, uint32_t * out);
+void __fastpack32(const uint32_t * in, uint32_t * out);
 
-void __fastpackwithoutmask0 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask1 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask2 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask3 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask4 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask5 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask6 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask7 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask8 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask9 (const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask10(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask11(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask12(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask13(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask14(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask15(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask16(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask17(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask18(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask19(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask20(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask21(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask22(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask23(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask24(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask25(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask26(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask27(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask28(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask29(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask30(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask31(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __fastpackwithoutmask32(const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
+void __fastpackwithoutmask0 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask1 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask2 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask3 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask4 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask5 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask6 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask7 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask8 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask9 (const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask10(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask11(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask12(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask13(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask14(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask15(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask16(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask17(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask18(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask19(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask20(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask21(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask22(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask23(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask24(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask25(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask26(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask27(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask28(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask29(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask30(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask31(const uint32_t * in, uint32_t * out);
+void __fastpackwithoutmask32(const uint32_t * in, uint32_t * out);
 
-void __inline__ __device__ __host__
-__integratedfastunpack0(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack1(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack2(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack3(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack4(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack5(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack6(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack7(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack8(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack9(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack10(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack11(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack12(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack13(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack14(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack15(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack16(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack17(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack18(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack19(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack20(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack21(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack22(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack23(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack24(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack25(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack26(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack27(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack28(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack29(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack30(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack31(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __inline__ __device__ __host__
-__integratedfastunpack32(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
+void __device__ __host__ __integratedfastunpack0(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack1(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack2(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack3(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack4(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack5(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack6(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack7(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack8(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack9(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack10(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack11(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack12(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack13(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack14(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack15(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack16(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack17(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack18(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack19(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack20(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack21(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack22(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack23(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack24(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack25(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack26(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack27(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack28(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack29(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack30(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack31(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __device__ __host__ __integratedfastunpack32(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
 
-void __integratedfastpack0 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack1 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack2 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack3 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack4 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack5 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack6 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack7 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack8 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack9 (const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack10(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack11(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack12(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack13(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack14(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack15(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack16(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack17(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack18(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack19(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack20(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack21(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack22(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack23(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack24(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack25(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack26(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack27(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack28(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack29(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack30(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack31(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
-void __integratedfastpack32(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out);
+void __integratedfastpack0 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack1 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack2 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack3 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack4 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack5 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack6 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack7 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack8 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack9 (const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack10(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack11(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack12(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack13(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack14(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack15(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack16(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack17(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack18(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack19(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack20(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack21(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack22(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack23(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack24(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack25(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack26(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack27(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack28(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack29(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack30(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack31(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
+void __integratedfastpack32(const uint32_t initoffset, const uint32_t * in, uint32_t * out);
 
 
 struct DeviceBitPackingHelpers {
     const static unsigned BlockSize = 32;
 
     __device__ __host__ static void inline
-    fastunpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit)
+    fastunpack(const uint32_t * in, uint32_t * out, const uint32_t bit)
     {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
@@ -331,7 +298,7 @@ struct DeviceBitPackingHelpers {
     }
 
     static void inline
-    fastpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit)
+    fastpack(const uint32_t * in, uint32_t * out, const uint32_t bit)
     {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
@@ -443,7 +410,7 @@ struct DeviceBitPackingHelpers {
 
     /*assumes that integers fit in the prescribed number of bits*/
     static void inline
-    fastpackwithoutmask(const uint32_t *__restrict__ in, uint32_t *__restrict__ out, const uint32_t bit) {
+    fastpackwithoutmask(const uint32_t * in, uint32_t * out, const uint32_t bit) {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in
         // theory. In this case, it makes no difference with a good compiler.
@@ -553,7 +520,7 @@ struct DeviceBitPackingHelpers {
     }
 
     __device__ __host__ static void inline
-    integratedfastunpack(const uint32_t initoffset, const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
+    integratedfastunpack(const uint32_t initoffset, const uint32_t * in, uint32_t * out,
                          const uint32_t bit)
     {
         // Could have used function pointers instead of switch.
@@ -666,8 +633,8 @@ struct DeviceBitPackingHelpers {
 
     /*assumes that integers fit in the prescribed number of bits*/
     static void inline
-    integratedfastpackwithoutmask(const uint32_t initoffset, const uint32_t *__restrict__ in,
-                                  uint32_t *__restrict__ out, const uint32_t bit)
+    integratedfastpackwithoutmask(const uint32_t initoffset, const uint32_t * in,
+                                  uint32_t * out, const uint32_t bit)
     {
         // Could have used function pointers instead of switch.
         // Switch calls do offer the compiler more opportunities for optimization in

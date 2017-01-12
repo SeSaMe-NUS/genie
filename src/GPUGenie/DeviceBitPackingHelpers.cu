@@ -1,34 +1,34 @@
 #include "DeviceBitPackingHelpers.h"
 
-namespace GPUGENIE
+namespace GPUGenie
 {
 
-void __fastunpack0(const uint32_t *__restrict__, uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack0(const uint32_t *, uint32_t * out) {
     for (uint32_t i = 0; i < 32; ++i)
         *(out++) = 0;
 }
-void __fastpack0(const uint32_t *__restrict__, uint32_t *__restrict__) {}
-void __fastpackwithoutmask0(const uint32_t *__restrict__,
-                            uint32_t *__restrict__) {}
+void __fastpack0(const uint32_t *, uint32_t *) {}
+void __fastpackwithoutmask0(const uint32_t *,
+                            uint32_t *) {}
 
-void __fastunpack32(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack32(const uint32_t * in,
+                    uint32_t * out) {
     for (int k = 0; k < 32; ++k)
         out[k] = in[k];
 }
-void __fastpack32(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
-    for (int k = 0; k < 32; ++k)
-        out[k] = in[k];
-}
-
-void __fastpackwithoutmask32(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpack32(const uint32_t * in, uint32_t * out) {
     for (int k = 0; k < 32; ++k)
         out[k] = in[k];
 }
 
-void __fastunpack1(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __fastpackwithoutmask32(const uint32_t * in,
+                             uint32_t * out) {
+    for (int k = 0; k < 32; ++k)
+        out[k] = in[k];
+}
+
+void __device__ __host__ __fastunpack1(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) & 1;
     out++;
     *out = ((*in) >> 1) & 1;
@@ -94,8 +94,8 @@ void __fastunpack1(const uint32_t *__restrict__ in,
     *out = ((*in) >> 31);
 }
 
-void __fastunpack2(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack2(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 2);
     out++;
     *out = ((*in) >> 2) % (1U << 2);
@@ -162,8 +162,8 @@ void __fastunpack2(const uint32_t *__restrict__ in,
     *out = ((*in) >> 30);
 }
 
-void __fastunpack3(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack3(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 3);
     out++;
     *out = ((*in) >> 3) % (1U << 3);
@@ -233,8 +233,8 @@ void __fastunpack3(const uint32_t *__restrict__ in,
     *out = ((*in) >> 29);
 }
 
-void __fastunpack5(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack5(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 5);
     out++;
     *out = ((*in) >> 5) % (1U << 5);
@@ -308,8 +308,8 @@ void __fastunpack5(const uint32_t *__restrict__ in,
     *out = ((*in) >> 27);
 }
 
-void __fastunpack6(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack6(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 6);
     out++;
     *out = ((*in) >> 6) % (1U << 6);
@@ -384,8 +384,8 @@ void __fastunpack6(const uint32_t *__restrict__ in,
     *out = ((*in) >> 26);
 }
 
-void __fastunpack7(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack7(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 7);
     out++;
     *out = ((*in) >> 7) % (1U << 7);
@@ -463,8 +463,8 @@ void __fastunpack7(const uint32_t *__restrict__ in,
     *out = ((*in) >> 25);
 }
 
-void __fastunpack9(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack9(const uint32_t * in,
+                   uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 9);
     out++;
     *out = ((*in) >> 9) % (1U << 9);
@@ -546,8 +546,8 @@ void __fastunpack9(const uint32_t *__restrict__ in,
     *out = ((*in) >> 23);
 }
 
-void __fastunpack10(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack10(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 10);
     out++;
     *out = ((*in) >> 10) % (1U << 10);
@@ -630,8 +630,8 @@ void __fastunpack10(const uint32_t *__restrict__ in,
     *out = ((*in) >> 22);
 }
 
-void __fastunpack11(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack11(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 11);
     out++;
     *out = ((*in) >> 11) % (1U << 11);
@@ -717,8 +717,8 @@ void __fastunpack11(const uint32_t *__restrict__ in,
     *out = ((*in) >> 21);
 }
 
-void __fastunpack12(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack12(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 12);
     out++;
     *out = ((*in) >> 12) % (1U << 12);
@@ -803,8 +803,8 @@ void __fastunpack12(const uint32_t *__restrict__ in,
     *out = ((*in) >> 20);
 }
 
-void __fastunpack13(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack13(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 13);
     out++;
     *out = ((*in) >> 13) % (1U << 13);
@@ -894,8 +894,8 @@ void __fastunpack13(const uint32_t *__restrict__ in,
     *out = ((*in) >> 19);
 }
 
-void __fastunpack14(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack14(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 14);
     out++;
     *out = ((*in) >> 14) % (1U << 14);
@@ -986,8 +986,8 @@ void __fastunpack14(const uint32_t *__restrict__ in,
     *out = ((*in) >> 18);
 }
 
-void __fastunpack15(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack15(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 15);
     out++;
     *out = ((*in) >> 15) % (1U << 15);
@@ -1081,8 +1081,8 @@ void __fastunpack15(const uint32_t *__restrict__ in,
     *out = ((*in) >> 17);
 }
 
-void __fastunpack17(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack17(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 17);
     out++;
     *out = ((*in) >> 17);
@@ -1180,8 +1180,8 @@ void __fastunpack17(const uint32_t *__restrict__ in,
     *out = ((*in) >> 15);
 }
 
-void __fastunpack18(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack18(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 18);
     out++;
     *out = ((*in) >> 18);
@@ -1280,8 +1280,8 @@ void __fastunpack18(const uint32_t *__restrict__ in,
     *out = ((*in) >> 14);
 }
 
-void __fastunpack19(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack19(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 19);
     out++;
     *out = ((*in) >> 19);
@@ -1383,8 +1383,8 @@ void __fastunpack19(const uint32_t *__restrict__ in,
     *out = ((*in) >> 13);
 }
 
-void __fastunpack20(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack20(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 20);
     out++;
     *out = ((*in) >> 20);
@@ -1485,8 +1485,8 @@ void __fastunpack20(const uint32_t *__restrict__ in,
     *out = ((*in) >> 12);
 }
 
-void __fastunpack21(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack21(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 21);
     out++;
     *out = ((*in) >> 21);
@@ -1592,8 +1592,8 @@ void __fastunpack21(const uint32_t *__restrict__ in,
     *out = ((*in) >> 11);
 }
 
-void __fastunpack22(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack22(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 22);
     out++;
     *out = ((*in) >> 22);
@@ -1700,8 +1700,8 @@ void __fastunpack22(const uint32_t *__restrict__ in,
     *out = ((*in) >> 10);
 }
 
-void __fastunpack23(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack23(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 23);
     out++;
     *out = ((*in) >> 23);
@@ -1811,8 +1811,8 @@ void __fastunpack23(const uint32_t *__restrict__ in,
     *out = ((*in) >> 9);
 }
 
-void __fastunpack24(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack24(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 24);
     out++;
     *out = ((*in) >> 24);
@@ -1917,8 +1917,8 @@ void __fastunpack24(const uint32_t *__restrict__ in,
     *out = ((*in) >> 8);
 }
 
-void __fastunpack25(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack25(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 25);
     out++;
     *out = ((*in) >> 25);
@@ -2032,8 +2032,8 @@ void __fastunpack25(const uint32_t *__restrict__ in,
     *out = ((*in) >> 7);
 }
 
-void __fastunpack26(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack26(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 26);
     out++;
     *out = ((*in) >> 26);
@@ -2148,8 +2148,8 @@ void __fastunpack26(const uint32_t *__restrict__ in,
     *out = ((*in) >> 6);
 }
 
-void __fastunpack27(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack27(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 27);
     out++;
     *out = ((*in) >> 27);
@@ -2267,8 +2267,8 @@ void __fastunpack27(const uint32_t *__restrict__ in,
     *out = ((*in) >> 5);
 }
 
-void __fastunpack28(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack28(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 28);
     out++;
     *out = ((*in) >> 28);
@@ -2385,8 +2385,8 @@ void __fastunpack28(const uint32_t *__restrict__ in,
     *out = ((*in) >> 4);
 }
 
-void __fastunpack29(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack29(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 29);
     out++;
     *out = ((*in) >> 29);
@@ -2508,8 +2508,8 @@ void __fastunpack29(const uint32_t *__restrict__ in,
     *out = ((*in) >> 3);
 }
 
-void __fastunpack30(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack30(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 30);
     out++;
     *out = ((*in) >> 30);
@@ -2632,8 +2632,8 @@ void __fastunpack30(const uint32_t *__restrict__ in,
     *out = ((*in) >> 2);
 }
 
-void __fastunpack31(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack31(const uint32_t * in,
+                    uint32_t * out) {
     *out = ((*in) >> 0) % (1U << 31);
     out++;
     *out = ((*in) >> 31);
@@ -2759,8 +2759,8 @@ void __fastunpack31(const uint32_t *__restrict__ in,
     *out = ((*in) >> 1);
 }
 
-void __fastunpack4(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack4(const uint32_t * in,
+                   uint32_t * out) {
     for (uint32_t outer = 0; outer < 4; ++outer) {
         for (uint32_t inwordpointer = 0; inwordpointer < 32; inwordpointer += 4)
             * (out++) = ((*in) >> inwordpointer) % (1U << 4);
@@ -2768,8 +2768,8 @@ void __fastunpack4(const uint32_t *__restrict__ in,
     }
 }
 
-void __fastunpack8(const uint32_t *__restrict__ in,
-                   uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack8(const uint32_t * in,
+                   uint32_t * out) {
     for (uint32_t outer = 0; outer < 8; ++outer) {
         for (uint32_t inwordpointer = 0; inwordpointer < 32; inwordpointer += 8)
             * (out++) = ((*in) >> inwordpointer) % (1U << 8);
@@ -2777,8 +2777,8 @@ void __fastunpack8(const uint32_t *__restrict__ in,
     }
 }
 
-void __fastunpack16(const uint32_t *__restrict__ in,
-                    uint32_t *__restrict__ out) {
+void __device__ __host__ __fastunpack16(const uint32_t * in,
+                    uint32_t * out) {
     for (uint32_t outer = 0; outer < 16; ++outer) {
         for (uint32_t inwordpointer = 0; inwordpointer < 32; inwordpointer += 16)
             * (out++) = ((*in) >> inwordpointer) % (1U << 16);
@@ -2786,7 +2786,7 @@ void __fastunpack16(const uint32_t *__restrict__ in,
     }
 }
 
-void __fastpack1(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack1(const uint32_t * in, uint32_t * out) {
     *out = (*in) & 1;
     ++in;
     *out |= ((*in) & 1) << 1;
@@ -2852,7 +2852,7 @@ void __fastpack1(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 31;
 }
 
-void __fastpack2(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack2(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 2);
     ++in;
     *out |= ((*in) % (1U << 2)) << 2;
@@ -2919,7 +2919,7 @@ void __fastpack2(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 30;
 }
 
-void __fastpack3(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack3(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 3);
     ++in;
     *out |= ((*in) % (1U << 3)) << 3;
@@ -2989,7 +2989,7 @@ void __fastpack3(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 29;
 }
 
-void __fastpack4(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack4(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 4);
     ++in;
     *out |= ((*in) % (1U << 4)) << 4;
@@ -3058,7 +3058,7 @@ void __fastpack4(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 28;
 }
 
-void __fastpack5(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack5(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 5);
     ++in;
     *out |= ((*in) % (1U << 5)) << 5;
@@ -3132,7 +3132,7 @@ void __fastpack5(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 27;
 }
 
-void __fastpack6(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack6(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 6);
     ++in;
     *out |= ((*in) % (1U << 6)) << 6;
@@ -3207,7 +3207,7 @@ void __fastpack6(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 26;
 }
 
-void __fastpack7(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack7(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 7);
     ++in;
     *out |= ((*in) % (1U << 7)) << 7;
@@ -3285,7 +3285,7 @@ void __fastpack7(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 25;
 }
 
-void __fastpack8(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack8(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 8);
     ++in;
     *out |= ((*in) % (1U << 8)) << 8;
@@ -3358,7 +3358,7 @@ void __fastpack8(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 24;
 }
 
-void __fastpack9(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack9(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 9);
     ++in;
     *out |= ((*in) % (1U << 9)) << 9;
@@ -3440,7 +3440,7 @@ void __fastpack9(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 23;
 }
 
-void __fastpack10(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack10(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 10);
     ++in;
     *out |= ((*in) % (1U << 10)) << 10;
@@ -3523,7 +3523,7 @@ void __fastpack10(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 22;
 }
 
-void __fastpack11(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack11(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 11);
     ++in;
     *out |= ((*in) % (1U << 11)) << 11;
@@ -3609,7 +3609,7 @@ void __fastpack11(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 21;
 }
 
-void __fastpack12(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack12(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 12);
     ++in;
     *out |= ((*in) % (1U << 12)) << 12;
@@ -3694,7 +3694,7 @@ void __fastpack12(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 20;
 }
 
-void __fastpack13(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack13(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 13);
     ++in;
     *out |= ((*in) % (1U << 13)) << 13;
@@ -3784,7 +3784,7 @@ void __fastpack13(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 19;
 }
 
-void __fastpack14(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack14(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 14);
     ++in;
     *out |= ((*in) % (1U << 14)) << 14;
@@ -3875,7 +3875,7 @@ void __fastpack14(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 18;
 }
 
-void __fastpack15(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack15(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 15);
     ++in;
     *out |= ((*in) % (1U << 15)) << 15;
@@ -3969,7 +3969,7 @@ void __fastpack15(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 17;
 }
 
-void __fastpack16(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack16(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 16);
     ++in;
     *out |= ((*in)) << 16;
@@ -4050,7 +4050,7 @@ void __fastpack16(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 16;
 }
 
-void __fastpack17(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack17(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 17);
     ++in;
     *out |= ((*in)) << 17;
@@ -4148,7 +4148,7 @@ void __fastpack17(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 15;
 }
 
-void __fastpack18(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack18(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 18);
     ++in;
     *out |= ((*in)) << 18;
@@ -4247,7 +4247,7 @@ void __fastpack18(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 14;
 }
 
-void __fastpack19(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack19(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 19);
     ++in;
     *out |= ((*in)) << 19;
@@ -4349,7 +4349,7 @@ void __fastpack19(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 13;
 }
 
-void __fastpack20(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack20(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 20);
     ++in;
     *out |= ((*in)) << 20;
@@ -4450,7 +4450,7 @@ void __fastpack20(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 12;
 }
 
-void __fastpack21(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack21(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 21);
     ++in;
     *out |= ((*in)) << 21;
@@ -4556,7 +4556,7 @@ void __fastpack21(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 11;
 }
 
-void __fastpack22(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack22(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 22);
     ++in;
     *out |= ((*in)) << 22;
@@ -4663,7 +4663,7 @@ void __fastpack22(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 10;
 }
 
-void __fastpack23(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack23(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 23);
     ++in;
     *out |= ((*in)) << 23;
@@ -4773,7 +4773,7 @@ void __fastpack23(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 9;
 }
 
-void __fastpack24(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack24(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 24);
     ++in;
     *out |= ((*in)) << 24;
@@ -4878,7 +4878,7 @@ void __fastpack24(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 8;
 }
 
-void __fastpack25(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack25(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 25);
     ++in;
     *out |= ((*in)) << 25;
@@ -4992,7 +4992,7 @@ void __fastpack25(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 7;
 }
 
-void __fastpack26(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack26(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 26);
     ++in;
     *out |= ((*in)) << 26;
@@ -5107,7 +5107,7 @@ void __fastpack26(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 6;
 }
 
-void __fastpack27(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack27(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 27);
     ++in;
     *out |= ((*in)) << 27;
@@ -5225,7 +5225,7 @@ void __fastpack27(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 5;
 }
 
-void __fastpack28(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack28(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 28);
     ++in;
     *out |= ((*in)) << 28;
@@ -5342,7 +5342,7 @@ void __fastpack28(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 4;
 }
 
-void __fastpack29(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack29(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 29);
     ++in;
     *out |= ((*in)) << 29;
@@ -5464,7 +5464,7 @@ void __fastpack29(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 3;
 }
 
-void __fastpack30(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack30(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 30);
     ++in;
     *out |= ((*in)) << 30;
@@ -5587,7 +5587,7 @@ void __fastpack30(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
     *out |= ((*in)) << 2;
 }
 
-void __fastpack31(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
+void __fastpack31(const uint32_t * in, uint32_t * out) {
     *out = (*in) % (1U << 31);
     ++in;
     *out |= ((*in)) << 31;
@@ -5714,8 +5714,8 @@ void __fastpack31(const uint32_t *__restrict__ in, uint32_t *__restrict__ out) {
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask1(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask1(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 1;
@@ -5782,8 +5782,8 @@ void __fastpackwithoutmask1(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask2(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask2(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 2;
@@ -5851,8 +5851,8 @@ void __fastpackwithoutmask2(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask3(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask3(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 3;
@@ -5923,8 +5923,8 @@ void __fastpackwithoutmask3(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask4(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask4(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 4;
@@ -5994,8 +5994,8 @@ void __fastpackwithoutmask4(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask5(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask5(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 5;
@@ -6070,8 +6070,8 @@ void __fastpackwithoutmask5(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask6(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask6(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 6;
@@ -6147,8 +6147,8 @@ void __fastpackwithoutmask6(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask7(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask7(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 7;
@@ -6227,8 +6227,8 @@ void __fastpackwithoutmask7(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask8(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask8(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 8;
@@ -6302,8 +6302,8 @@ void __fastpackwithoutmask8(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask9(const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __fastpackwithoutmask9(const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 9;
@@ -6386,8 +6386,8 @@ void __fastpackwithoutmask9(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask10(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask10(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 10;
@@ -6471,8 +6471,8 @@ void __fastpackwithoutmask10(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask11(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask11(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 11;
@@ -6559,8 +6559,8 @@ void __fastpackwithoutmask11(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask12(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask12(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 12;
@@ -6646,8 +6646,8 @@ void __fastpackwithoutmask12(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask13(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask13(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 13;
@@ -6738,8 +6738,8 @@ void __fastpackwithoutmask13(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask14(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask14(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 14;
@@ -6831,8 +6831,8 @@ void __fastpackwithoutmask14(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask15(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask15(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 15;
@@ -6927,8 +6927,8 @@ void __fastpackwithoutmask15(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask16(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask16(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 16;
@@ -7010,8 +7010,8 @@ void __fastpackwithoutmask16(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask17(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask17(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 17;
@@ -7110,8 +7110,8 @@ void __fastpackwithoutmask17(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask18(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask18(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 18;
@@ -7211,8 +7211,8 @@ void __fastpackwithoutmask18(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask19(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask19(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 19;
@@ -7315,8 +7315,8 @@ void __fastpackwithoutmask19(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask20(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask20(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 20;
@@ -7418,8 +7418,8 @@ void __fastpackwithoutmask20(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask21(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask21(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 21;
@@ -7526,8 +7526,8 @@ void __fastpackwithoutmask21(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask22(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask22(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 22;
@@ -7635,8 +7635,8 @@ void __fastpackwithoutmask22(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask23(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask23(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 23;
@@ -7747,8 +7747,8 @@ void __fastpackwithoutmask23(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask24(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask24(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 24;
@@ -7854,8 +7854,8 @@ void __fastpackwithoutmask24(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask25(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask25(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 25;
@@ -7970,8 +7970,8 @@ void __fastpackwithoutmask25(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask26(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask26(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 26;
@@ -8087,8 +8087,8 @@ void __fastpackwithoutmask26(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask27(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask27(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 27;
@@ -8207,8 +8207,8 @@ void __fastpackwithoutmask27(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask28(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask28(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 28;
@@ -8326,8 +8326,8 @@ void __fastpackwithoutmask28(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask29(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask29(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 29;
@@ -8450,8 +8450,8 @@ void __fastpackwithoutmask29(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask30(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask30(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 30;
@@ -8575,8 +8575,8 @@ void __fastpackwithoutmask30(const uint32_t *__restrict__ in,
 }
 
 /*assumes that integers fit in the prescribed number of bits */
-void __fastpackwithoutmask31(const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __fastpackwithoutmask31(const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in);
     ++in;
     *out |= ((*in)) << 31;
@@ -8702,7 +8702,7 @@ void __fastpackwithoutmask31(const uint32_t *__restrict__ in,
     *out |= ((*in)) << 1;
 }
 
-void fastunpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
+void fastunpack(const uint32_t * in, uint32_t * out,
                 const uint32_t bit) {
     // Could have used function pointers instead of switch.
     // Switch calls do offer the compiler more opportunities for optimization in
@@ -8812,7 +8812,7 @@ void fastunpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
     }
 }
 
-void fastpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
+void fastpack(const uint32_t * in, uint32_t * out,
               const uint32_t bit) {
     // Could have used function pointers instead of switch.
     // Switch calls do offer the compiler more opportunities for optimization in
@@ -8923,8 +8923,8 @@ void fastpack(const uint32_t *__restrict__ in, uint32_t *__restrict__ out,
 }
 
 /*assumes that integers fit in the prescribed number of bits*/
-void fastpackwithoutmask(const uint32_t *__restrict__ in,
-                         uint32_t *__restrict__ out, const uint32_t bit) {
+void fastpackwithoutmask(const uint32_t * in,
+                         uint32_t * out, const uint32_t bit) {
     // Could have used function pointers instead of switch.
     // Switch calls do offer the compiler more opportunities for optimization in
     // theory. In this case, it makes no difference with a good compiler.
@@ -9033,30 +9033,31 @@ void fastpackwithoutmask(const uint32_t *__restrict__ in,
     }
 }
 
-void __integratedfastunpack0(const uint32_t initoffset,
+void __host__ __device__ __integratedfastunpack0(const uint32_t initoffset,
                              const uint32_t *__restrict__,
                              uint32_t *__restrict__ out) {
     for (uint32_t i = 0; i < 32; ++i)
         *(out++) = initoffset;
 }
-void __integratedfastpack0(const uint32_t, const uint32_t *__restrict__,
-                           uint32_t *__restrict__) {}
 
-void __integratedfastunpack32(const uint32_t, const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __integratedfastpack0(const uint32_t, const uint32_t *,
+                           uint32_t *) {}
+
+void __device__ __host__ __integratedfastunpack32(const uint32_t, const uint32_t * in,
+                              uint32_t * out) {
     for (int k = 0; k < 32; ++k)
         out[k] = in[k]; // no sense in wasting time with deltas
 }
 
-void __integratedfastpack32(const uint32_t, const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+void __integratedfastpack32(const uint32_t, const uint32_t * in,
+                            uint32_t * out) {
     for (int k = 0; k < 32; ++k)
         out[k] = in[k]; // no sense in wasting time with deltas
 }
 
-void __integratedfastunpack2(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack2(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 2);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9155,9 +9156,9 @@ void __integratedfastunpack2(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack3(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack3(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 3);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9259,9 +9260,9 @@ void __integratedfastunpack3(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack5(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack5(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 5);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9367,9 +9368,9 @@ void __integratedfastunpack5(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack6(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack6(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 6);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9476,9 +9477,9 @@ void __integratedfastunpack6(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack7(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack7(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 7);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9588,9 +9589,9 @@ void __integratedfastunpack7(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack9(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack9(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in >> 0) % (1U << 9);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9704,9 +9705,9 @@ void __integratedfastunpack9(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack10(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack10(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 10);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9821,9 +9822,9 @@ void __integratedfastunpack10(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack11(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack11(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 11);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -9941,9 +9942,9 @@ void __integratedfastunpack11(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack12(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack12(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 12);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10060,9 +10061,9 @@ void __integratedfastunpack12(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack13(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack13(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 13);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10184,9 +10185,9 @@ void __integratedfastunpack13(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack14(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack14(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 14);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10309,9 +10310,9 @@ void __integratedfastunpack14(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack15(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack15(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 15);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10437,9 +10438,9 @@ void __integratedfastunpack15(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack17(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack17(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 17);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10569,9 +10570,9 @@ void __integratedfastunpack17(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack18(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack18(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 18);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10702,9 +10703,9 @@ void __integratedfastunpack18(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack19(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack19(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 19);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10838,9 +10839,9 @@ void __integratedfastunpack19(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack20(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack20(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 20);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -10973,9 +10974,9 @@ void __integratedfastunpack20(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack21(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack21(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 21);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11113,9 +11114,9 @@ void __integratedfastunpack21(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack22(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack22(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 22);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11254,9 +11255,9 @@ void __integratedfastunpack22(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack23(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack23(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 23);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11398,9 +11399,9 @@ void __integratedfastunpack23(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack24(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack24(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 24);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11537,9 +11538,9 @@ void __integratedfastunpack24(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack25(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack25(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 25);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11685,9 +11686,9 @@ void __integratedfastunpack25(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack26(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack26(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 26);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11834,9 +11835,9 @@ void __integratedfastunpack26(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack27(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack27(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 27);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -11986,9 +11987,9 @@ void __integratedfastunpack27(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack28(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack28(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 28);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -12137,9 +12138,9 @@ void __integratedfastunpack28(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack29(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack29(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 29);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -12293,9 +12294,9 @@ void __integratedfastunpack29(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack30(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack30(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 30);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -12450,9 +12451,9 @@ void __integratedfastunpack30(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack31(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack31(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *out = (*in >> 0) % (1U << 31);
     *out += initoffset; // integrated delta decoding
     out++;
@@ -12610,9 +12611,9 @@ void __integratedfastunpack31(const uint32_t initoffset,
     *out += out[-1]; // integrated delta decoding
 }
 
-void __integratedfastunpack1(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack1(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *out = (*in & 1) + initoffset;
     ++out;
     *out = ((*in >> 1) & 1) + out[-1];
@@ -12626,9 +12627,9 @@ void __integratedfastunpack1(const uint32_t initoffset,
     }
 }
 
-void __integratedfastunpack4(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack4(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *(out++) = (*in % (1U << 4)) + initoffset;
     for (uint32_t i = 4; i < 32; i += 4) {
         *out = ((*in >> i) % (1U << 4)) + out[-1];
@@ -12651,9 +12652,9 @@ void __integratedfastunpack4(const uint32_t initoffset,
     }
 }
 
-void __integratedfastunpack8(const uint32_t initoffset,
-                             const uint32_t *__restrict__ in,
-                             uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack8(const uint32_t initoffset,
+                             const uint32_t * in,
+                             uint32_t * out) {
     *(out++) = (*in % (1U << 8)) + initoffset;
     for (uint32_t i = 8; i < 32; i += 8) {
         *out = ((*in >> i) % (1U << 8)) + out[-1];
@@ -12696,9 +12697,9 @@ void __integratedfastunpack8(const uint32_t initoffset,
     }
 }
 
-void __integratedfastunpack16(const uint32_t initoffset,
-                              const uint32_t *__restrict__ in,
-                              uint32_t *__restrict__ out) {
+void __device__ __host__ __integratedfastunpack16(const uint32_t initoffset,
+                              const uint32_t * in,
+                              uint32_t * out) {
     *(out++) = (*in % (1U << 16)) + initoffset;
     for (uint32_t i = 16; i < 32; i += 16) {
         *out = ((*in >> i) % (1U << 16)) + out[-1];
@@ -12782,8 +12783,8 @@ void __integratedfastunpack16(const uint32_t initoffset,
 }
 
 void __integratedfastpack2(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 2);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 2)) << 2;
@@ -12851,8 +12852,8 @@ void __integratedfastpack2(const uint32_t initoffset,
 }
 
 void __integratedfastpack3(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 3);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 3)) << 3;
@@ -12923,8 +12924,8 @@ void __integratedfastpack3(const uint32_t initoffset,
 }
 
 void __integratedfastpack5(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 5);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 5)) << 5;
@@ -12999,8 +13000,8 @@ void __integratedfastpack5(const uint32_t initoffset,
 }
 
 void __integratedfastpack6(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 6);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 6)) << 6;
@@ -13076,8 +13077,8 @@ void __integratedfastpack6(const uint32_t initoffset,
 }
 
 void __integratedfastpack7(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 7);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 7)) << 7;
@@ -13156,8 +13157,8 @@ void __integratedfastpack7(const uint32_t initoffset,
 }
 
 void __integratedfastpack9(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = (*in - initoffset) % (1U << 9);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 9)) << 9;
@@ -13240,8 +13241,8 @@ void __integratedfastpack9(const uint32_t initoffset,
 }
 
 void __integratedfastpack10(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 10);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 10)) << 10;
@@ -13325,8 +13326,8 @@ void __integratedfastpack10(const uint32_t initoffset,
 }
 
 void __integratedfastpack11(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 11);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 11)) << 11;
@@ -13413,8 +13414,8 @@ void __integratedfastpack11(const uint32_t initoffset,
 }
 
 void __integratedfastpack12(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 12);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 12)) << 12;
@@ -13500,8 +13501,8 @@ void __integratedfastpack12(const uint32_t initoffset,
 }
 
 void __integratedfastpack13(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 13);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 13)) << 13;
@@ -13592,8 +13593,8 @@ void __integratedfastpack13(const uint32_t initoffset,
 }
 
 void __integratedfastpack14(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 14);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 14)) << 14;
@@ -13685,8 +13686,8 @@ void __integratedfastpack14(const uint32_t initoffset,
 }
 
 void __integratedfastpack15(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 15);
     ++in;
     *out |= ((*in - in[-1]) % (1U << 15)) << 15;
@@ -13781,8 +13782,8 @@ void __integratedfastpack15(const uint32_t initoffset,
 }
 
 void __integratedfastpack17(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 17);
     ++in;
     *out |= ((*in - in[-1])) << 17;
@@ -13881,8 +13882,8 @@ void __integratedfastpack17(const uint32_t initoffset,
 }
 
 void __integratedfastpack18(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 18);
     ++in;
     *out |= ((*in - in[-1])) << 18;
@@ -13982,8 +13983,8 @@ void __integratedfastpack18(const uint32_t initoffset,
 }
 
 void __integratedfastpack19(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 19);
     ++in;
     *out |= ((*in - in[-1])) << 19;
@@ -14086,8 +14087,8 @@ void __integratedfastpack19(const uint32_t initoffset,
 }
 
 void __integratedfastpack20(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 20);
     ++in;
     *out |= ((*in - in[-1])) << 20;
@@ -14189,8 +14190,8 @@ void __integratedfastpack20(const uint32_t initoffset,
 }
 
 void __integratedfastpack21(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 21);
     ++in;
     *out |= ((*in - in[-1])) << 21;
@@ -14297,8 +14298,8 @@ void __integratedfastpack21(const uint32_t initoffset,
 }
 
 void __integratedfastpack22(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 22);
     ++in;
     *out |= ((*in - in[-1])) << 22;
@@ -14406,8 +14407,8 @@ void __integratedfastpack22(const uint32_t initoffset,
 }
 
 void __integratedfastpack23(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 23);
     ++in;
     *out |= ((*in - in[-1])) << 23;
@@ -14518,8 +14519,8 @@ void __integratedfastpack23(const uint32_t initoffset,
 }
 
 void __integratedfastpack24(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 24);
     ++in;
     *out |= ((*in - in[-1])) << 24;
@@ -14625,8 +14626,8 @@ void __integratedfastpack24(const uint32_t initoffset,
 }
 
 void __integratedfastpack25(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 25);
     ++in;
     *out |= ((*in - in[-1])) << 25;
@@ -14741,8 +14742,8 @@ void __integratedfastpack25(const uint32_t initoffset,
 }
 
 void __integratedfastpack26(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 26);
     ++in;
     *out |= ((*in - in[-1])) << 26;
@@ -14858,8 +14859,8 @@ void __integratedfastpack26(const uint32_t initoffset,
 }
 
 void __integratedfastpack27(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 27);
     ++in;
     *out |= ((*in - in[-1])) << 27;
@@ -14978,8 +14979,8 @@ void __integratedfastpack27(const uint32_t initoffset,
 }
 
 void __integratedfastpack28(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 28);
     ++in;
     *out |= ((*in - in[-1])) << 28;
@@ -15097,8 +15098,8 @@ void __integratedfastpack28(const uint32_t initoffset,
 }
 
 void __integratedfastpack29(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 29);
     ++in;
     *out |= ((*in - in[-1])) << 29;
@@ -15221,8 +15222,8 @@ void __integratedfastpack29(const uint32_t initoffset,
 }
 
 void __integratedfastpack30(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 30);
     ++in;
     *out |= ((*in - in[-1])) << 30;
@@ -15346,8 +15347,8 @@ void __integratedfastpack30(const uint32_t initoffset,
 }
 
 void __integratedfastpack31(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = (*in - initoffset) % (1U << 31);
     ++in;
     *out |= ((*in - in[-1])) << 31;
@@ -15475,8 +15476,8 @@ void __integratedfastpack31(const uint32_t initoffset,
 
 /*assumes that integers fit in the prescribed number of bits*/
 void __integratedfastpack1(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = *(in++) - initoffset;
     for (uint32_t i = 1; i < 32; i += 1) {
         *out |= (*in - in[-1]) << i;
@@ -15486,8 +15487,8 @@ void __integratedfastpack1(const uint32_t initoffset,
 
 /*assumes that integers fit in the prescribed number of bits*/
 void __integratedfastpack4(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = *(in++) - initoffset;
     for (uint32_t i = 4; i < 32; i += 4) {
         *out |= (*in - in[-1]) << i;
@@ -15519,8 +15520,8 @@ void __integratedfastpack4(const uint32_t initoffset,
 
 /*assumes that integers fit in the prescribed number of bits*/
 void __integratedfastpack8(const uint32_t initoffset,
-                           const uint32_t *__restrict__ in,
-                           uint32_t *__restrict__ out) {
+                           const uint32_t * in,
+                           uint32_t * out) {
     *out = *(in++) - initoffset;
     for (uint32_t i = 8; i < 32; i += 8) {
         *out |= (*in - in[-1]) << i;
@@ -15580,8 +15581,8 @@ void __integratedfastpack8(const uint32_t initoffset,
 
 /*assumes that integers fit in the prescribed number of bits*/
 void __integratedfastpack16(const uint32_t initoffset,
-                            const uint32_t *__restrict__ in,
-                            uint32_t *__restrict__ out) {
+                            const uint32_t * in,
+                            uint32_t * out) {
     *out = *(in++) - initoffset;
     for (uint32_t i = 16; i < 32; i += 16) {
         *out |= (*in - in[-1]) << i;
