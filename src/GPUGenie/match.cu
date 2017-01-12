@@ -642,7 +642,7 @@ void decompressPostingLists_listPerThread_JustCopyCODEC(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
         int dimsOffset,
         const uint32_t *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv
+        int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -651,16 +651,17 @@ void decompressPostingLists_listPerThread_JustCopyCODEC(
 
     int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
     int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    int *d_compr_inv_start = d_compr_inv + sizeof(uint32_t) * comprInvListStart;
-    int length = sizeof(uint32_t) + (comprInvListEnd - comprInvListStart);
-    int *d_uncompr_inv_start = d_uncompr_inv + sizeof(int) * comprInvListStart;
+    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    int length = comprInvListEnd - comprInvListStart;
+    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + comprInvListStart;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
     DeviceJustCopyCodec codec;
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, static_cast<uint32_t*>(d_uncompr_inv_start), nvalue)
+    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
 
     // Convert the uin32_t array from decompression into an int array for matching and counting
-    for (int *i = d_uncompr_inv_start; i < d_uncompr_inv_start + sizeof(int) * nvalue; i++)
-        (*(static_cast<uint32_t*>(i))) = static_cast<uint32_t>(*i);
+    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
+    for (int i = 0; i < nvalue; i++)
+        d_uncompr_inv[i] = static_cast<int>(d_uncompr_inv_uint[i]);
 }
 
 
@@ -1245,19 +1246,18 @@ void GPUGenie::match(
                 // Call decompression kernel, where each THREAD decompresses one compiled query compressed posting list
                 // Compiled queries d_dims_p are changed accordingly to point into the uncompressed posting lists
                 // vector d_uncompr_inv_p
-                swtich (table.getCompression()){
-                    case "copy":
-                        device::decompressPostingLists_listPerThread_JustCopyCODEC
-                                    <<<GPUGenie_device_DECOMPR_BLOCKS,
-                                       GPUGenie_device_DECOMPR_THREADS_PER_BLOCK>>>
-                               (d_dims_p,
-                                dimsOffset,
-                                table.deviceCompressedInv(),
-                                d_uncompr_inv_p,
-                                table.getUncompressedPostingListMaxLength());
-                        break;
-                    default:
-                        throw std::logic_error("No decompression kernel available!");
+                if (table.getCompression() == "copy"){
+                    device::decompressPostingLists_listPerThread_JustCopyCODEC
+                                <<<GPUGenie_device_DECOMPR_BLOCKS,
+                                   GPUGenie_device_DECOMPR_THREADS_PER_BLOCK>>>
+                           (d_dims_p,
+                            dimsOffset,
+                            table.deviceCompressedInv(),
+                            d_uncompr_inv_p,
+                            table.getUncompressedPostingListMaxLength());
+                }
+                else {
+                    throw std::logic_error("No decompression kernel available!");
                 }
 
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
@@ -1269,7 +1269,7 @@ void GPUGenie::match(
                         table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
                         hash_table_size, // hash table size
                         // d_uncompr_inv_p points to the start location for uncompressed posting list array in GPU mem
-                        table.deviceCompressedInv(), 
+                        d_uncompr_inv_p, 
                         // compiled queries (dim structure)
                         d_dims_p,
                         // offset into compiled queries
