@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5.1)
 
 set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
@@ -29,11 +29,10 @@ endif()
 
 find_package(CUDA QUIET REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-#set(BUILD_SHARED_LIBS ON)
+set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
-
-#SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
-SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}")
+set(CUDA_SEPARABLE_COMPILATION ON)
 
 
 if (COMPR)
