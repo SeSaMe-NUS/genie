@@ -11,6 +11,8 @@ include(ExternalProject)
 
 option(COMPR "Build compression module" ON)
 
+set(CMAKE_CXX_STANDARD 11)
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
@@ -22,7 +24,9 @@ endif()
 if (NOT CONFIGURED_ONCE)
   set(CMAKE_C_FLAGS "${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
-  set(CMAKE_CXX_FLAGS "${warnings} -std=c++11"
+  # We use -D_GLIBCXX_USE_CXX11_ABI=0 to disable C++11 ABI, since nvcc uses old ABI, generating undefined symbols,
+  # while raw g++ generates new ABI without old ABI, causing link time errors when linking host with device code. 
+  set(CMAKE_CXX_FLAGS "${warnings} -D_GLIBCXX_USE_CXX11_ABI=0"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 
@@ -31,9 +35,14 @@ find_package(CUDA QUIET REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}" -std=c++11)
+
+# Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
+# https://gitlab.kitware.com/cmake/cmake/issues/15157
 set(CUDA_SEPARABLE_COMPILATION ON)
 
+
+link_directories("/usr/local/cuda/lib64/")
 
 if (COMPR)
     add_definitions(-DCOMPR)

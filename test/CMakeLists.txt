@@ -1,4 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/simdcai/src)
 if (COMPR)
     SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
     include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include")
@@ -13,7 +13,8 @@ function(add_test_case TARGET)
    target_link_libraries(${TARGET}
                          -lpthread
                          -lboost_serialization
-                         -l${PROJECT_NAME})
+                         -l${PROJECT_NAME}
+                         -lcudadevrt)
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
 

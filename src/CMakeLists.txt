@@ -8,13 +8,6 @@ set(LIB_SRC_LIST
 
   GPUGenie/genie_errors.h
   GPUGenie/genie_errors.cu
-
-  GPUGenie/Logger.h
-  GPUGenie/Logger.cpp
-  
-  GPUGenie/Timing.h
-  GPUGenie/Timing.cc
-
   GPUGenie/inv_list.h
   GPUGenie/inv_list.cu
   GPUGenie/inv_table.h
@@ -38,13 +31,17 @@ set(LIB_SRC_LIST
   GPUGenie/DeviceBitPackingCodec.h
   GPUGenie/DeviceBitPackingHelpers.h
   GPUGenie/DeviceBitPackingHelpers.cu
+
+  GPUGenie/Logger.h
+  GPUGenie/Logger.cpp
+  GPUGenie/Timing.h
+  GPUGenie/Timing.cpp
 )
 
 cuda_add_library(
   ${PROJECT_NAME}
   STATIC
   ${LIB_SRC_LIST})
-
 
 set_target_properties(
   ${PROJECT_NAME}
