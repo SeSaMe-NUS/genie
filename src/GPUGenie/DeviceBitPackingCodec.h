@@ -38,15 +38,15 @@ public:
 
         static void inline
         packblockwithoutmask(const uint32_t *in, uint32_t *out,
-                                                const uint32_t bit,
-                                                uint32_t &initoffset) {
+                             const uint32_t bit,
+                             uint32_t &initoffset) {
             DeviceBitPackingHelpers::integratedfastpackwithoutmask(initoffset, in, out, bit);
             initoffset = *(in + BlockSize - 1);
         }
 
         __device__ __host__ static void inline
         unpackblock(const uint32_t *in, uint32_t *out,
-                                       const uint32_t bit, uint32_t &initoffset) {
+                    const uint32_t bit, uint32_t &initoffset) {
             DeviceBitPackingHelpers::integratedfastunpack(initoffset, in, out, bit);
             initoffset = *(out + BlockSize - 1);
         }
@@ -125,10 +125,16 @@ public:
         return in;
     }
 
+    __device__ static bool
+    divisibleby(size_t a, uint32_t x) {
+      return (a % x == 0);
+    }
+
     __device__ virtual const uint32_t*
     decodeArrayOnGPU(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
         const uint32_t actuallength = *d_in++;
-        SIMDCompressionLib::checkifdivisibleby(actuallength, BlockSize);
+        if (!divisibleby(actuallength, BlockSize))
+            return;
         const uint32_t *const initout(d_out);
         uint32_t Bs[HowManyMiniBlocks];
         uint32_t init = 0;
@@ -163,7 +169,7 @@ public:
         return d_in;
     }
 
-    virtual
+    virtual __device__ __host__
     ~DeviceBitPackingCodec() {}
 
     virtual std::string
