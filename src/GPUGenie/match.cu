@@ -2,7 +2,8 @@
  *  \brief Implementation for match.h
  */
 
-
+#include <algorithm>
+#include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <sstream>
@@ -33,6 +34,8 @@ const size_t DECOMPR_BATCH = GPUGenie_device_DECOMPR_BLOCKS * GPUGenie_device_TH
 
 #define NULL_AGE 0
 #define MAX_AGE 16u
+
+#define DEBUG_KERNELS
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -1159,7 +1162,7 @@ void GPUGenie::match(
 
         u64 query_start, query_end;
         query_start = getTime();
-        device_vector<query::dim> d_dims(dims);
+        thrust::device_vector<query::dim> d_dims(dims);
         query::dim* d_dims_p = thrust::raw_pointer_cast(d_dims.data());
         query_end  = getTime();
         Logger::log(Logger::DEBUG, "query_transfer time: %d",getInterval(query_start, query_end));
@@ -1259,6 +1262,53 @@ void GPUGenie::match(
                 else {
                     throw std::logic_error("No decompression kernel available!");
                 }
+
+                cudaCheckErrors(cudaDeviceSynchronize());
+
+                #ifdef DEBUG_KERNELS
+                // This vector contains the uncompressed (sparse) vector from decompression kernel
+                std::vector<int> h_uncompr_inv(d_uncompr_inv.size());
+                thrust::copy(d_uncompr_inv.begin(), d_uncompr_inv.end(), h_uncompr_inv.begin());
+
+                // This vector contains the uncompressed inverted lists array (dense)
+                std::vector<int>* uncompr_inv = table.uncompressedInv();
+                std::vector<int> orig_inv(uncompr_inv->begin() + dims[dimsOffset].start_pos,
+                                          uncompr_inv->begin() + dims[dimsOffset + DECOMPR_BATCH -1 ].end_pos);
+                // Compare if the uncompressed lists are the same the original lists before compression
+                // Note that the uncompressed lists always start at intervals of
+                bool mismatch = false;
+                for (int i = dimsOffset; i < dimsOffset + DECOMPR_BATCH; i++){
+                    query::dim d = dims[i];
+                    if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
+                            h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
+                    {
+                        mismatch = true;
+                        Logger::log(Logger::ALERT,"ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
+                                i, d.query, d.start_pos, d.end_pos);
+                        std::vector<int> *inv = uncompr_inv;
+
+                        
+                        {
+                            std::stringstream ss;
+                            auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256);
+                            std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+                            Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
+                            ss.str(std::string());
+                            ss.clear();
+                        }
+                        inv = &h_uncompr_inv;
+                        {
+                            std::stringstream ss;
+                            auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256);
+                            std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+                            Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
+                            ss.str(std::string());
+                            ss.clear();
+                        }
+                    }
+                }
+
+                #endif
 
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
                 // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to

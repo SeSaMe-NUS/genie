@@ -62,23 +62,22 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     std::vector<uint32_t> inv32(inv.begin(), inv.end());
 
     compressedInv.resize(inv.size());
-    compressedInvPos.resize(invPos.size());
+    compressedInvPos.clear();
+    compressedInvPos.reserve(invPos.size());
     compressedInvPos.push_back(0);
 
-    
-    int compressedInvCurrentPos = 0;
     int compressedInvSize = 0;
     int compressedInvCapacity = compressedInv.size();
 
     uint32_t *out = compressedInv.data();
-    for (int pos = 0; pos < invPos.size(); pos++)
+    for (int pos = 0; pos < (int)invPos.size()-1; pos++)
     {
         int invStart = invPos[pos];
         int invEnd = invPos[pos+1];
         size_t invLength = invEnd - invStart;
         assert(invEnd > invStart);
 
-        uint32_t *in = inv32.data() + sizeof(uint32_t) * invStart; // compression input
+        uint32_t *in = inv32.data() + invStart; // compression input
         size_t nvalue = compressedInvCapacity; // nvalue is the compressed size
 
         codec->encodeArray(in, invLength, out, nvalue);

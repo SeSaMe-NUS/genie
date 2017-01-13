@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
             attr_index, table->get_upperbound_of_list(attr_index));
     }
 
+
     Logger::logTable(Logger::DEBUG,table);
 
     std::cout << "Done examining inverted lists..." << std::endl;
@@ -157,15 +158,15 @@ int main(int argc, char* argv[])
 
     std::cout << "Examining compressed index..." << std::endl;
 
-    std::vector<int> *uncompressedInv = table->uncompressedInv();
-    std::vector<int> *uncompressedInvPos = table->uncompressedInvPos();
+    std::vector<int> *uncompressedInv = comprTable->uncompressedInv();
+    std::vector<int> *uncompressedInvPos = comprTable->uncompressedInvPos();
     std::vector<uint32_t> *compressedInv = comprTable->compressedInv();
     std::vector<int> *compressedInvPos = comprTable->compressedInvPos();
     // the last elm in inv_pos should be the compressed size, which is <= to the original size
     assert(compressedInvPos->size() == uncompressedInvPos->size());
-    assert(compressedInvPos->back() == (int)compressedInvPos->size()); 
-    assert(compressedInvPos->back() <= uncompressedInv->back()); 
-    assert(compressedInv == comprTable->inv()); // test alias function
+    assert(compressedInvPos->back() == (int)compressedInv->size()); 
+    assert(compressedInvPos->back() <= uncompressedInvPos->back()); // compression should not enlarge data
+    assert(compressedInv == reinterpret_cast<std::vector<uint32_t>*>(comprTable->inv())); // test alias function
     assert(compressedInvPos == comprTable->inv_pos()); // test alias function
 
     double avg_inv_list_length = ((double)uncompressedInv->size()) / ((double)uncompressedInvPos->size());
