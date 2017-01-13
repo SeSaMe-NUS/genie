@@ -13,7 +13,7 @@ function(add_test_case TARGET)
    target_link_libraries(${TARGET}
                          -lpthread
                          -lboost_serialization
-                         -l${PROJECT_NAME}
+                         ${PROJECT_SOURCE_DIR}/lib/libGPUGenie.a
                          -lcudadevrt)
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
