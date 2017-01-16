@@ -84,8 +84,6 @@ int main(int argc, char* argv[])
     string queryFile = DEFAULT_QUERY_DATASET;
 
     vector<vector<int>> queryPoints;
-    inv_table * table = NULL;
-    inv_compr_table * comprTable = NULL;
     GPUGenie_Config config;
 
     config.dim = 5;
@@ -111,7 +109,6 @@ int main(int argc, char* argv[])
 
     config.num_of_queries = 3;
 
-    config.compression = "d1"; // "d1" stands for sequential delta
 
 
 
@@ -121,22 +118,20 @@ int main(int argc, char* argv[])
     assert(config.row_num > 0);
     Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
     Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
-    std::cout << "Done reading data file!" << std::endl;  
 
 
+
+    std::cout << "--------------------------------------------------------" << std::endl;
+    std::cout << "Establishing reference solution on uncompressed table..." << std::endl;
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
-    preprocess_for_knn_binary(config, table);
-    assert(table != NULL);
-    assert(table->get_total_num_of_table() == 1); // check how many tables we have
-    comprTable = dynamic_cast<inv_compr_table*>(table);
-    assert(config.posting_list_max_length == (int)comprTable->getUncompressedPostingListMaxLength());
-    assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
-    std::cout << "Done preprocessing data..." << std::endl; 
-
+    inv_table * refTable = NULL;
+    preprocess_for_knn_binary(config, refTable);
+    assert(refTable != NULL);
+    assert(refTable->get_total_num_of_table() == 1); // check how many tables we have
 
     std::cout << "Examining inverted lists...";
-    std::vector<GPUGenie::inv_list> *invLists = table->inv_lists();
+    std::vector<GPUGenie::inv_list> *invLists = refTable->inv_lists();
     // check inverted index of the tables using inv_list class
     for (size_t attr_index = 0; attr_index < invLists->size(); attr_index++)
     {
@@ -146,15 +141,45 @@ int main(int argc, char* argv[])
         int posting_list_max = invertedList.max();
         Logger::log(Logger::DEBUG, "  attr_index %d, posting_list_length: %d, min: %d, max: %d",
                         attr_index, posting_list_length, posting_list_min, posting_list_max);
-        Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, table->get_lowerbound_of_list(attr_index),
-            attr_index, table->get_upperbound_of_list(attr_index));
+        Logger::log(Logger::DEBUG, "    table->get_lowerbound_of_list(%d): %d, table->get_upperbound_of_list(%d): %d", attr_index, refTable->get_lowerbound_of_list(attr_index),
+            attr_index, refTable->get_upperbound_of_list(attr_index));
     }
 
+    Logger::logTable(Logger::DEBUG,refTable);
 
-    Logger::logTable(Logger::DEBUG,table);
+    std::cout << "Loading queries..." << std::endl;
+    read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
+    std::vector<query> refQueries;
+    load_query(*refTable, refQueries, config);
 
-    std::cout << "Done examining inverted lists..." << std::endl;
+    std::cout << "Running KNN on GPU..." << std::endl;
+    std::vector<int> refResultIdxs;
+    std::vector<int> refResultCounts;
+    knn_search(*refTable, refQueries, refResultIdxs, refResultCounts, config);
+    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
+    // sort the results manually from individual queries => sort subsequence relevant to each query independently
+    sortGenieResults(config, refResultIdxs, refResultCounts);
+    Logger::log(Logger::DEBUG, "Results from GENIE:");
+    Logger::logResults(Logger::DEBUG, refQueries, refResultIdxs, refResultCounts);
 
+
+
+    std::cout << "---------------------------" << std::endl;
+    std::cout << "Testing compressed table..." << std::endl;
+
+    config.compression = "d1"; // "d1" stands for sequential delta
+
+    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
+
+    inv_table * table = NULL;
+    inv_compr_table * comprTable = NULL;
+    preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
+    assert(table != NULL);
+    assert(table->build_status() == inv_table::builded);
+    assert(table->get_total_num_of_table() == 1); // check how many tables we have
+    comprTable = dynamic_cast<inv_compr_table*>(table);
+    assert(config.posting_list_max_length == (int)comprTable->getUncompressedPostingListMaxLength());
+    assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
 
     std::cout << "Examining compressed index..." << std::endl;
 
@@ -178,27 +203,10 @@ int main(int argc, char* argv[])
     Logger::log(Logger::DEBUG, "Uncompressed size of compressedInvPos index: %d bytes", compressedInvPos->size() * 4);
     Logger::log(Logger::DEBUG, "Average size of compressed posting list: %d", avg_compr_inv_list_length);
 
-    std::cout << "Done examining compressed index..." << std::endl;
-
 
     std::cout << "Loading queries..." << std::endl;
-    read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
     std::vector<query> queries;
-    load_query(*table, queries, config);
-    std::cout << "Done loading queries..." << std::endl;
-
-
-    std::cout << "Running KNN on GPU..." << std::endl;
-    std::vector<int> gpuResultIdxs;
-    std::vector<int> gpuResultCounts;
-    knn_search(*table, queries, gpuResultIdxs, gpuResultCounts, config);
-    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
-    // sort the results manually from individual queries => sort subsequence relevant to each query independently
-    sortGenieResults(config, gpuResultIdxs, gpuResultCounts);
-    Logger::log(Logger::DEBUG, "Results from GENIE:");
-    Logger::logResults(Logger::DEBUG, queries, gpuResultIdxs, gpuResultCounts);
-    std::cout << "Done running KNN on GPU..." << std::endl;
-
+    load_query(*comprTable, queries, config);
 
     std::vector<int> resultIdxs;
     std::vector<int> resultCounts;
@@ -211,19 +219,25 @@ int main(int argc, char* argv[])
               << ", compression: " << config.compression
               << ", ";
 
-    knn_search(*table, queries, resultIdxs, resultCounts, config);
+    knn_search(*comprTable, queries, resultIdxs, resultCounts, config);
+    sortGenieResults(config, resultIdxs, resultCounts);
+
     Logger::log(Logger::DEBUG, "Results from GPU naive decompressed counting:");
     Logger::logResults(Logger::DEBUG, queries, resultIdxs, resultCounts);
-    std::cout << "Done running KNN on CPU..." << std::endl;
+
+
+
+    std::cout<< "---------------------------------------------" << std::endl;
+    std::cout<< "Comparing reference and compressed results..." << std::endl;
 
     // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
     // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
-    assert(gpuResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
-        && gpuResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
-    assert(gpuResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
-        && gpuResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
-    assert(gpuResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
-        && gpuResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+    assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+        && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+    assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+        && refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+    assert(refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+        && refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
 
     return 0;
 }

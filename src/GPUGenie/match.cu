@@ -662,7 +662,6 @@ void decompressPostingLists_listPerThread_JustCopyCODEC(
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
 
     // Convert the uin32_t array from decompression into an int array for matching and counting
-    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
     for (int i = 0; i < nvalue; i++)
         d_uncompr_inv[i] = static_cast<int>(d_uncompr_inv_uint[i]);
 }
@@ -810,7 +809,7 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 		for (unsigned int i = 0; i < queries.size(); ++i)
 		{
 			if (queries[i].ref_table() != &table)
-				throw GPUGenie::cpu_runtime_error("table not built!");
+				throw GPUGenie::cpu_runtime_error("Can't build queries. Queries constructed for different table!");
 			if (table.build_status() == inv_table::builded)
 			{
 				if(table.shift_bits_sequence != 0)
@@ -1277,7 +1276,7 @@ void GPUGenie::match(
                 // Compare if the uncompressed lists are the same the original lists before compression
                 // Note that the uncompressed lists always start at intervals of
                 bool mismatch = false;
-                for (int i = dimsOffset; i < dimsOffset + DECOMPR_BATCH; i++){
+                for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH; i++){
                     query::dim d = dims[i];
                     if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
                             h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
@@ -1287,7 +1286,7 @@ void GPUGenie::match(
                                 i, d.query, d.start_pos, d.end_pos);
                         std::vector<int> *inv = uncompr_inv;
 
-                        
+
                         {
                             std::stringstream ss;
                             auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256);
@@ -1307,7 +1306,8 @@ void GPUGenie::match(
                         }
                     }
                 }
-
+                if (mismatch)
+                    throw std::logic_error("Failed decompression check!");
                 #endif
 
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
