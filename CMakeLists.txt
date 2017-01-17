@@ -35,7 +35,7 @@ find_package(CUDA QUIET REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}" -std=c++11)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}" -std=c++11 -g -G)
 
 # Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
 # https://gitlab.kitware.com/cmake/cmake/issues/15157
