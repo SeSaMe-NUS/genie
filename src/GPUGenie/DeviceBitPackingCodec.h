@@ -134,7 +134,7 @@ public:
     decodeArrayOnGPU(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
         const uint32_t actuallength = *d_in++;
         if (!divisibleby(actuallength, BlockSize))
-            return;
+            return NULL;
         const uint32_t *const initout(d_out);
         uint32_t Bs[HowManyMiniBlocks];
         uint32_t init = 0;
