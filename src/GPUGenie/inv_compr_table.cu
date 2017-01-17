@@ -152,7 +152,7 @@ GPUGenie::inv_compr_table::compressedInv()
 std::vector<int>*
 GPUGenie::inv_compr_table::uncompressedInv()
 {
-    return inv();
+    return inv_table::inv();
 }
 
 std::vector<int>*
@@ -169,7 +169,7 @@ GPUGenie::inv_compr_table::compressedInvPos()
 std::vector<int>*
 GPUGenie::inv_compr_table::uncompressedInvPos()
 {
-    return inv_pos();;
+    return inv_table::inv_pos();;
 }
 
 uint32_t*

@@ -643,12 +643,15 @@ void convert_to_data(T_HASHTABLE* table, u32 size)
 __global__
 void decompressPostingLists_listPerThread_JustCopyCODEC(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
+        size_t d_dims_size,
         int dimsOffset,
         const uint32_t *d_compr_inv, // in; compressed posting list on GPU
         int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if((idx + dimsOffset) >= d_dims_size)
+        return;
     assert(dimsOffset == 0 || dimsOffset > idx);
     assert(sizeof(int) == sizeof(uint32_t));
 
@@ -656,14 +659,15 @@ void decompressPostingLists_listPerThread_JustCopyCODEC(
     int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     int length = comprInvListEnd - comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + comprInvListStart;
+    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + idx * uncompressedPostingListMaxLength;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-    DeviceJustCopyCodec codec;
+    DeviceJustCopyCodec codec; 
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
 
     // Convert the uin32_t array from decompression into an int array for matching and counting
+    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
     for (int i = 0; i < nvalue; i++)
-        d_uncompr_inv[i] = static_cast<int>(d_uncompr_inv_uint[i]);
+        d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
 }
 
 
@@ -1253,6 +1257,7 @@ void GPUGenie::match(
                                 <<<GPUGenie_device_DECOMPR_BLOCKS,
                                    GPUGenie_device_DECOMPR_THREADS_PER_BLOCK>>>
                            (d_dims_p,
+                            dims.size(),
                             dimsOffset,
                             table.deviceCompressedInv(),
                             d_uncompr_inv_p,
@@ -1271,39 +1276,52 @@ void GPUGenie::match(
 
                 // This vector contains the uncompressed inverted lists array (dense)
                 std::vector<int>* uncompr_inv = table.uncompressedInv();
-                std::vector<int> orig_inv(uncompr_inv->begin() + dims[dimsOffset].start_pos,
-                                          uncompr_inv->begin() + dims[dimsOffset + DECOMPR_BATCH -1 ].end_pos);
+                int startPositionOfFirstDim = dims[dimsOffset].start_pos;
+                int endPositionOfLastDim = dims[std::min(dimsOffset+DECOMPR_BATCH-1,dims.size()-1)].end_pos;
+                std::vector<int> orig_inv(uncompr_inv->begin() + startPositionOfFirstDim,
+                                          uncompr_inv->begin() + endPositionOfLastDim);
+
+                Logger::log(Logger::DEBUG, "Decompression check in range [%d,%d)",
+                        startPositionOfFirstDim, endPositionOfLastDim);
+
                 // Compare if the uncompressed lists are the same the original lists before compression
                 // Note that the uncompressed lists always start at intervals of
                 bool mismatch = false;
-                for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH; i++){
+                for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH && i < (int)dims.size(); i++){
                     query::dim d = dims[i];
+                    Logger::log(Logger::INFO, "dims[%d], start_pos: %d, end_pos: %d", i, d.start_pos, d.end_pos);
+                    assert(d.end_pos > d.start_pos);
                     if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
                             h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
                     {
                         mismatch = true;
-                        Logger::log(Logger::ALERT,"ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
+                        Logger::log(Logger::ALERT,
+                                "ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
                                 i, d.query, d.start_pos, d.end_pos);
-                        std::vector<int> *inv = uncompr_inv;
-
-
-                        {
-                            std::stringstream ss;
-                            auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256);
-                            std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-                            Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
-                            ss.str(std::string());
-                            ss.clear();
-                        }
-                        inv = &h_uncompr_inv;
-                        {
-                            std::stringstream ss;
-                            auto end = (inv->size() <= 256) ? inv->end() : (inv->begin() + 256);
-                            std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-                            Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
-                            ss.str(std::string());
-                            ss.clear();
-                        }
+                    }
+                    auto uncompr_inv_begin = uncompr_inv->begin()+d.start_pos;
+                    auto uncompr_inv_end = uncompr_inv->begin()+d.end_pos;
+                    if (uncompr_inv_end - uncompr_inv_begin > 256)
+                        uncompr_inv_end = uncompr_inv_begin + 256;
+                    {
+                        std::stringstream ss;
+                        std::copy(uncompr_inv_begin, uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
+                        Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
+                        ss.str(std::string());
+                        ss.clear();
+                    }
+                    auto h_uncompr_inv_begin = h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i;
+                    auto h_uncompr_inv_end = h_uncompr_inv_begin + (uncompr_inv_end - uncompr_inv_begin) + 4;
+                    if (h_uncompr_inv_end - h_uncompr_inv_begin > 256 + 4)
+                        h_uncompr_inv_end = h_uncompr_inv_begin + 256 + 4;
+                    if ((h_uncompr_inv_end-h_uncompr_inv_begin) > (int)table.getUncompressedPostingListMaxLength())
+                        h_uncompr_inv_end = h_uncompr_inv_begin + table.getUncompressedPostingListMaxLength();
+                    {
+                        std::stringstream ss;
+                        std::copy(h_uncompr_inv_begin, h_uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
+                        Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
+                        ss.str(std::string());
+                        ss.clear();
                     }
                 }
                 if (mismatch)

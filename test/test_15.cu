@@ -129,6 +129,7 @@ int main(int argc, char* argv[])
     preprocess_for_knn_binary(config, refTable);
     assert(refTable != NULL);
     assert(refTable->get_total_num_of_table() == 1); // check how many tables we have
+    assert(dynamic_cast<inv_compr_table*>(refTable) == NULL);
 
     std::cout << "Examining inverted lists...";
     std::vector<GPUGenie::inv_list> *invLists = refTable->inv_lists();
@@ -167,7 +168,7 @@ int main(int argc, char* argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << "Testing compressed table..." << std::endl;
 
-    config.compression = "d1"; // "d1" stands for sequential delta
+    config.compression = "copy"; // "d1" stands for sequential delta
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
 
