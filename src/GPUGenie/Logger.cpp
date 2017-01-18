@@ -3,6 +3,7 @@
  */
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <sstream>
 #include <stdarg.h>
@@ -13,6 +14,8 @@
 
 #include "Timing.h"
 #include "query.h"
+#include "inv_table.h"
+#include "inv_compr_table.h"
 
 #include "Logger.h"
 
@@ -108,18 +111,18 @@ int Logger::log(int level, const char *fmt, ...)
 
 	char currentTime[84];
 	sprintf(currentTime, "[%s:%03d %s] ", buffer, milli, LEVEL_NAMES[level]);
-	fprintf(_logger()->logger->logfile, currentTime);
+	fprintf(_logger()->logger->logfile, "%s", currentTime);
 
 	char message[1024];
 	vsprintf(message, fmt, args);
 	va_end(args);
 
-	fprintf(_logger()->logger->logfile, message);
+	fprintf(_logger()->logger->logfile, "%s", message);
 	fprintf(_logger()->logger->logfile, "\n");
 
 	if (_logger()->logger->log_level >= level)
 	{
-		printf(message);
+		printf("%s", message);
 		printf("\n");
 		return 1;
 	}
@@ -173,6 +176,11 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         Logger::log(level, "Inv table not built.");
         return;
     }
+    GPUGenie::inv_compr_table* comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+    if (comprTable)
+    	Logger::log(level,"Compressed table: %s", comprTable->getCompression().c_str());
+    else
+    	Logger::log(level,"Plain table: ");
 
     std::stringstream ss;    
     std::vector<int> *ck = table->ck();
@@ -180,40 +188,64 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
     {
         auto end = (ck->size() <= max_print_len) ? ck->end() : (ck->begin() + max_print_len); 
         std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(level, "CK:\n %s", ss.str().c_str());
+        Logger::log(level, "  CK:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
     }
-
-    std::vector<int> *inv = table->inv();
-    if (inv)
-    {
-        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
-        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(level, "INV:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
     std::vector<int> *inv_index = table->inv_index();
     if (inv_index)
     {
         auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
         std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(level, "INV_INDEX:\n %s", ss.str().c_str());
+        Logger::log(level, "  INV_INDEX:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
     }
-
-
-    std::vector<int> *inv_pos = table->inv_pos();
+    std::vector<int> *inv_pos = comprTable ? comprTable->uncompressedInvPos() : table->inv_pos();
     if (inv_pos)
     {
         auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
         std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(level, "INV_POS:\n %s", ss.str().c_str());
+        Logger::log(level, "  INV_POS:\n %s", ss.str().c_str());
         ss.str(std::string());
         ss.clear();
+    }
+    std::vector<int> *inv = comprTable ? comprTable->uncompressedInv() : table->inv();
+    if (inv)
+    {
+        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
+        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
+        Logger::log(level, "  INV:\n %s", ss.str().c_str());
+        ss.str(std::string());
+        ss.clear();
+    }
+    if (comprTable)
+    {
+    	std::vector<int> *compr_inv_pos = comprTable->inv_pos();
+	    if (compr_inv_pos)
+	    {
+	        auto end = (compr_inv_pos->size() <= max_print_len) ?
+	        					compr_inv_pos->end() : (compr_inv_pos->begin() + max_print_len); 
+	        std::copy(compr_inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
+	        Logger::log(level, "  COMPR_INV_POS:\n %s", ss.str().c_str());
+	        ss.str(std::string());
+	        ss.clear();
+	    }
+    	std::vector<uint32_t> *compr_inv = comprTable->compressedInv();
+	    if (compr_inv)
+	    {
+	        auto end = (compr_inv->size() <= max_print_len) ? compr_inv->end() : (compr_inv->begin() + max_print_len);
+	        int cnt = 0;
+	        for (auto it = compr_inv->begin(); it != end; it++){
+	        	ss << std::hex << std::setfill('0') << std::setw(8) << *it << " ";
+	        	if (cnt % 6 == 5)
+	        		ss << std::endl;
+	        	cnt++;
+	        }
+	        Logger::log(level, "  COMPR_INV:\n%s", ss.str().c_str());
+	        ss.str(std::string());
+	        ss.clear();
+	    }
     }
 }
 

@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << "Testing compressed table..." << std::endl;
 
-    config.compression = "copy"; // "d1" stands for sequential delta
+    config.compression = "copy";
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
 
@@ -203,6 +203,8 @@ int main(int argc, char* argv[])
     Logger::log(Logger::DEBUG, "Compressed size of posting lists array Z: %d bytes", compressedInv->size() * 4);
     Logger::log(Logger::DEBUG, "Uncompressed size of compressedInvPos index: %d bytes", compressedInvPos->size() * 4);
     Logger::log(Logger::DEBUG, "Average size of compressed posting list: %d", avg_compr_inv_list_length);
+
+    Logger::logTable(Logger::DEBUG,comprTable);
 
 
     std::cout << "Loading queries..." << std::endl;

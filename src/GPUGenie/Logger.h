@@ -16,6 +16,7 @@ namespace GPUGenie
 {
 	struct query;
 	struct inv_table;
+	struct inv_compr_table;
 }
 
 /*! \class Logger

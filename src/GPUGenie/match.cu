@@ -16,6 +16,7 @@
 #include "Logger.h"
 #include "Timing.h"
 #include "genie_errors.h"
+#include "DeviceCompositeCodec.h"
 
 #include "match.h"
 

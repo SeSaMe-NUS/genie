@@ -8,19 +8,19 @@
 #ifndef GPUGenie_inv_compr_table_h
 #define GPUGenie_inv_compr_table_h
 
+#include <assert.h>
 #include <map>
 #include <memory>
 #include <string>
 
 #include "inv_table.h"
 
-#include "DeviceCompositeCodec.h"
-
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
  */
 namespace GPUGenie
 {
+    struct DeviceIntegerCODEC;
 
 
 class inv_compr_table : public inv_table
