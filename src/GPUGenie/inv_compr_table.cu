@@ -82,8 +82,9 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
         codec->encodeArray(in, invLength, out, nvalue);
 
-        out += sizeof(int) * nvalue; // shift compression output pointer
+        out += nvalue; // shift compression output pointer
         compressedInvCapacity -= nvalue;
+        assert(nvalue > 0);
         compressedInvSize += nvalue;
 
         compressedInvPos.push_back(compressedInvSize);

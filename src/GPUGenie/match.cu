@@ -658,19 +658,27 @@ void decompressPostingLists_listPerThread_JustCopyCODEC(
 
     int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
     int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     int length = comprInvListEnd - comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + idx * uncompressedPostingListMaxLength;
+    int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
+
+    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
     DeviceJustCopyCodec codec; 
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
+
+    int uncomprInvListEnd = uncomprInvListStart + nvalue;
 
     // Convert the uin32_t array from decompression into an int array for matching and counting
     int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
     for (int i = 0; i < nvalue; i++)
         d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
-}
 
+    // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
+    // used by the matching kernel
+    d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
+    d_dims[idx + dimsOffset].end_pos = uncomprInvListEnd;
+}
 
 __global__
 void match_adaptiveThreshold_queryPerBlock_compressed(
@@ -863,6 +871,73 @@ int GPUGenie::cal_max_topk(vector<query>& queries)
 	}
 	return max_topk;
 }
+
+void debugCheck_decompressPostingLists_listPerThread_JustCopyCODEC(
+        GPUGenie::inv_compr_table &table,
+        thrust::device_vector<int> &d_uncompr_inv,
+        vector<GPUGenie::query::dim> &dims,
+        int dimsOffset)
+{  
+    #ifdef DEBUG_KERNELS
+    // This vector contains the uncompressed (sparse) vector from decompression kernel
+    std::vector<int> h_uncompr_inv(d_uncompr_inv.size());
+    thrust::copy(d_uncompr_inv.begin(), d_uncompr_inv.end(), h_uncompr_inv.begin());
+
+    // This vector contains the uncompressed inverted lists array (dense)
+    std::vector<int>* uncompr_inv = table.uncompressedInv();
+    int startPositionOfFirstDim = dims[dimsOffset].start_pos;
+    int endPositionOfLastDim = dims[std::min(dimsOffset+DECOMPR_BATCH-1,dims.size()-1)].end_pos;
+    std::vector<int> orig_inv(uncompr_inv->begin() + startPositionOfFirstDim,
+                              uncompr_inv->begin() + endPositionOfLastDim);
+
+    Logger::log(Logger::DEBUG, "Decompression check in range [%d,%d)",
+            startPositionOfFirstDim, endPositionOfLastDim);
+
+    // Compare if the uncompressed lists are the same the original lists before compression
+    // Note that the uncompressed lists always start at intervals of
+    bool mismatch = false;
+    for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH && i < (int)dims.size(); i++){
+        GPUGenie::query::dim d = dims[i];
+        Logger::log(Logger::INFO, "dims[%d], start_pos: %d, end_pos: %d", i, d.start_pos, d.end_pos);
+        assert(d.end_pos > d.start_pos);
+        if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
+                h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
+        {
+            mismatch = true;
+            Logger::log(Logger::ALERT,
+                    "ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
+                    i, d.query, d.start_pos, d.end_pos);
+        }
+        auto uncompr_inv_begin = uncompr_inv->begin()+d.start_pos;
+        auto uncompr_inv_end = uncompr_inv->begin()+d.end_pos;
+        if (uncompr_inv_end - uncompr_inv_begin > 256)
+            uncompr_inv_end = uncompr_inv_begin + 256;
+        {
+            std::stringstream ss;
+            std::copy(uncompr_inv_begin, uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
+            Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
+            ss.str(std::string());
+            ss.clear();
+        }
+        auto h_uncompr_inv_begin = h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i;
+        auto h_uncompr_inv_end = h_uncompr_inv_begin + (uncompr_inv_end - uncompr_inv_begin) + 4;
+        if (h_uncompr_inv_end - h_uncompr_inv_begin > 256 + 4)
+            h_uncompr_inv_end = h_uncompr_inv_begin + 256 + 4;
+        if ((h_uncompr_inv_end-h_uncompr_inv_begin) > (int)table.getUncompressedPostingListMaxLength())
+            h_uncompr_inv_end = h_uncompr_inv_begin + table.getUncompressedPostingListMaxLength();
+        {
+            std::stringstream ss;
+            std::copy(h_uncompr_inv_begin, h_uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
+            Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
+            ss.str(std::string());
+            ss.clear();
+        }
+    }
+    if (mismatch)
+        throw std::logic_error("Failed decompression check!");
+    #endif
+}
+
 
 void GPUGenie::match(inv_table& table, vector<query>& queries,
 		device_vector<data_t>& d_data, device_vector<u32>& d_bitmap,
@@ -1249,6 +1324,10 @@ void GPUGenie::match(
             for (int decomprRun = 0; decomprRun < totalDecomprRuns; decomprRun++)
             {
                 int dimsOffset = decomprRun * DECOMPR_BATCH;
+                int batch = std::min(DECOMPR_BATCH, dims.size() - dimsOffset);
+                assert(dimsOffset < (int)dims.size());
+                Logger::log(Logger::INFO, "Running decompression batch, starting at %d, batch size %d",
+                        dimsOffset, batch);
 
                 // Call decompression kernel, where each THREAD decompresses one compiled query compressed posting list
                 // Compiled queries d_dims_p are changed accordingly to point into the uncompressed posting lists
@@ -1263,6 +1342,12 @@ void GPUGenie::match(
                             table.deviceCompressedInv(),
                             d_uncompr_inv_p,
                             table.getUncompressedPostingListMaxLength());
+
+                    debugCheck_decompressPostingLists_listPerThread_JustCopyCODEC(
+                            table,
+                            d_uncompr_inv,
+                            dims,
+                            dimsOffset);
                 }
                 else {
                     throw std::logic_error("No decompression kernel available!");
@@ -1270,70 +1355,11 @@ void GPUGenie::match(
 
                 cudaCheckErrors(cudaDeviceSynchronize());
 
-                #ifdef DEBUG_KERNELS
-                // This vector contains the uncompressed (sparse) vector from decompression kernel
-                std::vector<int> h_uncompr_inv(d_uncompr_inv.size());
-                thrust::copy(d_uncompr_inv.begin(), d_uncompr_inv.end(), h_uncompr_inv.begin());
-
-                // This vector contains the uncompressed inverted lists array (dense)
-                std::vector<int>* uncompr_inv = table.uncompressedInv();
-                int startPositionOfFirstDim = dims[dimsOffset].start_pos;
-                int endPositionOfLastDim = dims[std::min(dimsOffset+DECOMPR_BATCH-1,dims.size()-1)].end_pos;
-                std::vector<int> orig_inv(uncompr_inv->begin() + startPositionOfFirstDim,
-                                          uncompr_inv->begin() + endPositionOfLastDim);
-
-                Logger::log(Logger::DEBUG, "Decompression check in range [%d,%d)",
-                        startPositionOfFirstDim, endPositionOfLastDim);
-
-                // Compare if the uncompressed lists are the same the original lists before compression
-                // Note that the uncompressed lists always start at intervals of
-                bool mismatch = false;
-                for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH && i < (int)dims.size(); i++){
-                    query::dim d = dims[i];
-                    Logger::log(Logger::INFO, "dims[%d], start_pos: %d, end_pos: %d", i, d.start_pos, d.end_pos);
-                    assert(d.end_pos > d.start_pos);
-                    if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
-                            h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
-                    {
-                        mismatch = true;
-                        Logger::log(Logger::ALERT,
-                                "ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
-                                i, d.query, d.start_pos, d.end_pos);
-                    }
-                    auto uncompr_inv_begin = uncompr_inv->begin()+d.start_pos;
-                    auto uncompr_inv_end = uncompr_inv->begin()+d.end_pos;
-                    if (uncompr_inv_end - uncompr_inv_begin > 256)
-                        uncompr_inv_end = uncompr_inv_begin + 256;
-                    {
-                        std::stringstream ss;
-                        std::copy(uncompr_inv_begin, uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
-                        Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
-                        ss.str(std::string());
-                        ss.clear();
-                    }
-                    auto h_uncompr_inv_begin = h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i;
-                    auto h_uncompr_inv_end = h_uncompr_inv_begin + (uncompr_inv_end - uncompr_inv_begin) + 4;
-                    if (h_uncompr_inv_end - h_uncompr_inv_begin > 256 + 4)
-                        h_uncompr_inv_end = h_uncompr_inv_begin + 256 + 4;
-                    if ((h_uncompr_inv_end-h_uncompr_inv_begin) > (int)table.getUncompressedPostingListMaxLength())
-                        h_uncompr_inv_end = h_uncompr_inv_begin + table.getUncompressedPostingListMaxLength();
-                    {
-                        std::stringstream ss;
-                        std::copy(h_uncompr_inv_begin, h_uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
-                        Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
-                        ss.str(std::string());
-                        ss.clear();
-                    }
-                }
-                if (mismatch)
-                    throw std::logic_error("Failed decompression check!");
-                #endif
 
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
                 // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to
                 // the number of decompressed invereted lists
-                device::match_adaptiveThreshold_queryPerBlock_compressed<<<DECOMPR_BATCH,
-                                                                           GPUGenie_device_THREADS_PER_BLOCK>>>
+                device::match_adaptiveThreshold_queryPerBlock_compressed<<<batch,GPUGenie_device_THREADS_PER_BLOCK>>>
                        (table.m_size(),
                         table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
                         hash_table_size, // hash table size
