@@ -89,7 +89,7 @@ public:
 	static void logResults(int level, std::vector<GPUGenie::query> &queries, std::vector<int> &result,
 		std::vector<int> &result_count, size_t max_print_len = 128);
 
-	static void logTable(int level, GPUGenie::inv_table *table, size_t max_print_len = 128);
+	static void logTable(int level, GPUGenie::inv_table *table, size_t max_print_len = 32);
 
 	static void logInvLists(int level, const std::vector<std::vector<uint32_t> > &rawInvertedLists,
 		size_t max_print_len = 128);

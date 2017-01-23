@@ -19,10 +19,10 @@ GPUGenie::inv_compr_table::initCodecs() {
                         new DeviceJustCopyCodec());
   codecs["d1"] = std::shared_ptr<DeviceIntegerCODEC>(
                         new DeviceDeltaCodec());
+  codecs["bp32"] = std::shared_ptr<DeviceIntegerCODEC>(
+                        new DeviceBitPackingCodec());
   codecs["d1-bp32"] = std::shared_ptr<DeviceIntegerCODEC>(
                         new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>());
-  codecs["copy"] = std::shared_ptr<DeviceIntegerCODEC>(
-                        new DeviceJustCopyCodec());
   return codecs;
 }
 
@@ -61,13 +61,14 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     // make uint32_t copy of uncompressed inv array
     std::vector<uint32_t> inv32(inv.begin(), inv.end());
 
-    compressedInv.resize(inv.size());
+    compressedInv.resize(inv.size()*8);
     compressedInvPos.clear();
     compressedInvPos.reserve(invPos.size());
     compressedInvPos.push_back(0);
 
     int compressedInvSize = 0;
     int compressedInvCapacity = compressedInv.size();
+    int badCompressedLists = 0;
 
     uint32_t *out = compressedInv.data();
     for (int pos = 0; pos < (int)invPos.size()-1; pos++)
@@ -88,18 +89,26 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
         compressedInvSize += nvalue;
 
         compressedInvPos.push_back(compressedInvSize);
+
+        if (nvalue > invLength)
+            badCompressedLists++;
     }
 
     compressedInv.resize(compressedInvSize); // shrink to used space only
     assert(compressedInvSize == compressedInvPos.back());
 
     uint64_t compressionEndTime = getTime();
+    double compressionRatio = 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size());
 
     Logger::log(Logger::DEBUG, "Done bulding compressed inv_compr_table in time %f",
         getInterval(compressionStartTime, compressionEndTime));
 
     Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f", m_compression.c_str(),
-        codec->name().c_str(), 32.0 * static_cast<double>(compressedInv.size()) / static_cast<double>(inv.size()));
+        codec->name().c_str(), compressionRatio);
+
+    if (compressionRatio > 1.0 || badCompressedLists)
+        Logger::log(Logger::ALERT, "Bad compression! Bad compressed lists: %d / %d, compression ratio: %f",
+            badCompressedLists, compressedInvPos.size()-1, compressionRatio);
 }
 
 
