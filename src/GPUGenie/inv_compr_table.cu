@@ -52,11 +52,9 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     if(m_codecs.find(this->m_compression) == m_codecs.end()) {
         Logger::log(Logger::ALERT, "Unsupported inverted table compression %s. Fallback to copy codec.",
                 this->m_compression.c_str());
-        codec = m_codecs["copy"];
+        throw std::logic_error("No compression codec available!");
     }
-    else {
-        codec = m_codecs[this->m_compression];
-    }
+    codec = m_codecs[this->m_compression];
 
     // make uint32_t copy of uncompressed inv array
     std::vector<uint32_t> inv32(inv.begin(), inv.end());
