@@ -22,6 +22,8 @@ using namespace SIMDCompressionLib;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
+const int         DEFAULT_NUM_QUERIES = 3;
+const std::string DEFAULT_COMPRESSION = "copy";
 
 
 /**
@@ -77,11 +79,18 @@ int main(int argc, char* argv[])
     for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES)
         Logger::log(Logger::INFO, "  %s", compr.c_str());
 
-
     string dataFile = DEFAULT_TEST_DATASET;
-    if (argc == 2)
-        dataFile = std::string(argv[1]);
+    string compression = DEFAULT_COMPRESSION;
     string queryFile = DEFAULT_QUERY_DATASET;
+    int numberOfQueries = DEFAULT_NUM_QUERIES;
+    if (argc >= 2)
+        dataFile = std::string(argv[1]);
+    if (argc >= 3)
+        queryFile = std::string(argv[2]);
+    if (argc >= 4)
+        numberOfQueries = std::atoi(argv[3]);
+    if (argc >= 5)
+        compression = std::string(argv[4]);
 
     vector<vector<int>> queryPoints;
     GPUGenie_Config config;
@@ -107,8 +116,7 @@ int main(int argc, char* argv[])
     config.search_type = 0;
     config.max_data_size = 0;
 
-    config.num_of_queries = 3;
-
+    config.num_of_queries = numberOfQueries;
 
 
 
@@ -168,9 +176,7 @@ int main(int argc, char* argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << "Testing compressed table..." << std::endl;
 
-    config.compression = "copy";
-    config.compression = "d1";
-    config.compression = "bp32";
+    config.compression = compression;
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
 
