@@ -1319,8 +1319,16 @@ void GPUGenie::match(
         
         // Time measuring events
         cudaEvent_t kernel_start, kernel_stop;
+        cudaEvent_t startDecompr, stopDecompr, startMatching, stopMatching, startConvert, stopConvert;
+        cudaEventCreate(&startDecompr);
+        cudaEventCreate(&stopDecompr);
+        cudaEventCreate(&startMatching);
+        cudaEventCreate(&stopMatching);
+        cudaEventCreate(&startConvert);
+        cudaEventCreate(&stopConvert);
         cudaEventCreate(&kernel_start);
         cudaEventCreate(&kernel_stop);
+        float decomprTime = 0.0, matchTime = 0.0, convertTime, kernelsTime = 0.0;
         u64 match_stop, match_start;
         match_start = getTime();
 
@@ -1419,6 +1427,7 @@ void GPUGenie::match(
 
 
 		Logger::log(Logger::INFO,"[ 40%] Starting decompression & match kernels...");
+
 		cudaEventRecord(kernel_start);
 
 		bool h_overflow[1] = {false};
@@ -1467,6 +1476,7 @@ void GPUGenie::match(
                 // Call decompression kernel, where each THREAD decompresses one compiled query compressed posting list
                 // Compiled queries d_dims_p are changed accordingly to point into the uncompressed posting lists
                 // vector d_uncompr_inv_p
+                cudaEventRecord(startDecompr);
                 if (table.getCompression() == "copy"){
                     device::decompressPostingLists_listPerThread_JustCopyCodec
                                 <<<DECOMPR_BLOCKS, // Always run a fixed number of decompression blocks
@@ -1499,16 +1509,15 @@ void GPUGenie::match(
                 else {
                     throw std::logic_error("No decompression kernel available!");
                 }
+                cudaEventRecord(stopDecompr);
 
                 // debugCheck_decompressPostingLists_listPerThread(
                 //         table, d_uncompr_inv, queries, d_dims, dimsOffset);
 
-                cudaCheckErrors(cudaDeviceSynchronize());
-
-
                 // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
                 // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to
                 // the number of decompressed invereted lists
+                cudaEventRecord(startMatching);
                 device::match_adaptiveThreshold_queryPerBlock_compressed<<<batch,MATCH_THREADS_PER_BLOCK>>>
                        (table.m_size(),
                         table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
@@ -1529,9 +1538,19 @@ void GPUGenie::match(
                         d_noiih_p, // number of integers in a hash table set to 0 for all queries
                         d_overflow, // bool
                         shift_bits_subsequence);
+                cudaEventRecord(stopMatching);
 
                 cudaCheckErrors(cudaDeviceSynchronize());
                 cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
+                if (h_overflow[0])
+                    break;
+
+                cudaEventSynchronize(stopMatching);
+                float decomprTimeInc = 0.0, matchTimeInc = 0.0;
+                cudaEventElapsedTime(&decomprTimeInc, startDecompr, stopDecompr);
+                decomprTime += decomprTimeInc;
+                cudaEventElapsedTime(&matchTimeInc, startMatching, stopMatching);
+                matchTime += matchTimeInc;
             }
 
             // Increase hash table size in case there was an overflow
@@ -1563,26 +1582,41 @@ void GPUGenie::match(
 
         cudaCheckErrors(cudaFree(d_overflow));
 
-		cudaEventRecord(kernel_stop);
-		Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
+        cudaEventRecord(kernel_stop);
+        Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
-		device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(
+        cudaEventRecord(startConvert);
+        device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(
             d_hash_table,(u32)hash_table_size*queries.size());
+		cudaEventRecord(stopConvert);
 
-		Logger::log(Logger::INFO, "[100%] Matching is done!");
+		cudaEventSynchronize(stopConvert
+            );
+        Logger::log(Logger::INFO, "[100%] Matching is done!");
 
-		match_stop = getTime();
+        match_stop = getTime();
 
-		cudaEventSynchronize(kernel_stop);
-		float kernel_elapsed = 0.0f;
-		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
+        cudaEventElapsedTime(&kernelsTime, kernel_start, kernel_stop);
+		cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
+
+
+        Logger::log(Logger::INFO,
+                ">>>>[time profiling]: Decompresison kernels take %f ms. (GPU only) ",
+                decomprTime);
+        Logger::log(Logger::INFO,
+                ">>>>[time profiling]: Match kernels take %f ms. (GPU only) ",
+                matchTime);
+        Logger::log(Logger::INFO,
+                ">>>>[time profiling]: Decompression and match kernels take %f ms. (GPU only) ",
+                kernelsTime);
 		Logger::log(Logger::INFO,
-				">>>>[time profiling]: Match kernel takes %f ms. (GPU running) ",
-				kernel_elapsed);
+				">>>>[time profiling]: Conversion kernel takes %f ms. (GPU only) ",
+				convertTime);
 		Logger::log(Logger::INFO,
-				">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)",
+				">>>>[time profiling]: Match function takes %f ms. (GPU+CPU)",
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());
 	}
