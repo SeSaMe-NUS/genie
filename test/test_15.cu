@@ -22,6 +22,7 @@ using namespace SIMDCompressionLib;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
+const int         DEFAULT_DIMENSIONS = 5;
 const int         DEFAULT_NUM_QUERIES = 3;
 const std::string DEFAULT_COMPRESSION = "copy";
 
@@ -82,25 +83,28 @@ int main(int argc, char* argv[])
     string dataFile = DEFAULT_TEST_DATASET;
     string compression = DEFAULT_COMPRESSION;
     string queryFile = DEFAULT_QUERY_DATASET;
+    int dimensions = DEFAULT_DIMENSIONS;
     int numberOfQueries = DEFAULT_NUM_QUERIES;
     if (argc >= 2)
         dataFile = std::string(argv[1]);
     if (argc >= 3)
         queryFile = std::string(argv[2]);
     if (argc >= 4)
-        numberOfQueries = std::atoi(argv[3]);
+        dimensions = std::atoi(argv[3]);
     if (argc >= 5)
-        compression = std::string(argv[4]);
+        numberOfQueries = std::atoi(argv[4]);
+    if (argc >= 6)
+        compression = std::string(argv[5]);
 
     vector<vector<int>> queryPoints;
     GPUGenie_Config config;
 
-    config.dim = 5;
+    config.dim = dimensions;
     config.count_threshold = 14;
     config.num_of_topk = 10;
-    config.hashtable_size = 14*config.num_of_topk*1.5;
+    config.hashtable_size = 100*config.num_of_topk*1.5;
     config.query_radius = 0;
-    config.use_device = 0;
+    config.use_device = 2;
     config.use_adaptive_range = false;
     config.selectivity = 0.0f;
 

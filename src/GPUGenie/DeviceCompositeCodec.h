@@ -70,6 +70,11 @@ public:
     __device__ virtual const uint32_t*
     decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
+        if (length > nvalue){
+            // We do not have enough capacity in the decompressed array!
+            nvalue = length;
+            return d_in;
+        }
         for (int i = 0; i < length; i++)
             d_out[i] = d_in[i];
         nvalue = length;

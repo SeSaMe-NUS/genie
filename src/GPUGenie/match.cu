@@ -662,17 +662,35 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
     int length = comprInvListEnd - comprInvListStart;
     int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
 
+    printf("DECOMPR_KERNEL - STATUS: idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d"
+        ", uncomprInvListStart: %d \n",
+        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
+
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
-    size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-    DeviceJustCopyCodec codec; 
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
+    size_t usedLength = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
 
-    int uncomprInvListEnd = uncomprInvListStart + nvalue;
+    DeviceJustCopyCodec codec; 
+    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, usedLength);
+
+    if (usedLength > uncompressedPostingListMaxLength)
+    {
+        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
+            ,idx, usedLength, uncompressedPostingListMaxLength);
+
+        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
+        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
+
+        return;
+    }
+
+    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, usedLength);
+
+    int uncomprInvListEnd = uncomprInvListStart + usedLength;
 
     // Convert the uin32_t array from decompression into an int array for matching and counting
     int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
-    for (int i = 0; i < nvalue; i++)
+    for (int i = 0; i < usedLength; i++)
         d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
 
     // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
