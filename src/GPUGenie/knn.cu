@@ -67,7 +67,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	u64 startMatch = getTime();
 
 	if (dynamic_cast<inv_compr_table*>(&table)){
-		GPUGenie::match(dynamic_cast<inv_compr_table&>(table), queries, d_data, d_bitmap, hash_table_size, max_load,
+		GPUGenie::match(dynamic_cast<inv_compr_table&>(table), queries, d_data, d_bitmap, hash_table_size,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 	} else {
 		GPUGenie::match(table, queries, d_data, d_bitmap, hash_table_size, max_load,

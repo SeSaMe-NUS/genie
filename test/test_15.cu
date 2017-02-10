@@ -111,9 +111,9 @@ int main(int argc, char* argv[])
     config.query_points = &queryPoints;
     config.data_points = NULL;
 
-    config.use_load_balance = false;
+    config.use_load_balance = true;
     config.posting_list_max_length = 6400;
-    config.multiplier = 1.5f;
+    config.multiplier = 1.0f;
     config.use_multirange = false;
 
     config.data_type = 1;
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
     comprTable = dynamic_cast<inv_compr_table*>(table);
-    assert(config.posting_list_max_length == (int)comprTable->getUncompressedPostingListMaxLength());
+    assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
     assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
 
     std::cout << "Examining compressed index..." << std::endl;
@@ -247,6 +247,9 @@ int main(int argc, char* argv[])
 
     // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
     // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
+    // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
+    // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
+    // thereby this test may fail for large datasets.
     assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
         && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
     assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]

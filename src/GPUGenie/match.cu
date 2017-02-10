@@ -565,6 +565,8 @@ void match_AT(int m_size, int i_size, int hash_table_size,
             }
 
 			u32 thread_threshold = *my_threshold;
+            assert(thread_threshold < gridDim.x);
+
 			if (bitmap_bits)
 			{
 
@@ -660,7 +662,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
     int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
     int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
     int length = comprInvListEnd - comprInvListStart;
-    int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
+    int uncomprInvListStart = idx * uncompressedPostingListMaxLength;
 
     printf("DECOMPR_KERNEL - STATUS: idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d"
         ", uncomprInvListStart: %d \n",
@@ -676,7 +678,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
     if (usedLength > uncompressedPostingListMaxLength)
     {
         printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
-            ,idx, usedLength, uncompressedPostingListMaxLength);
+            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
 
         d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
         d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
@@ -684,7 +686,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
         return;
     }
 
-    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, usedLength);
+    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
 
     int uncomprInvListEnd = uncomprInvListStart + usedLength;
 
@@ -1320,7 +1322,6 @@ void GPUGenie::match(
 		        device_vector<data_t>& d_data,
                 device_vector<u32>& d_bitmap,
                 int hash_table_size,
-                int max_load,
                 int bitmap_bits, //or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
 		        device_vector<u32>& d_noiih,
                 device_vector<u32>& d_threshold,
@@ -1356,7 +1357,8 @@ void GPUGenie::match(
         u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
 
         vector<query::dim> dims;        
-        u32 num_of_max_count = build_queries(queries, table, dims, max_load); //number of maximum count per query
+        //number of maximum count per query
+        u32 num_of_max_count = build_queries(queries, table, dims, table.getUncompressedPostingListMaxLength());
 
         Logger::log(Logger::DEBUG, "num_of_max_count: %d", num_of_max_count);
 		
