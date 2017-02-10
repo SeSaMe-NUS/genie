@@ -492,7 +492,7 @@ public:
      *  which is a static member of inv_table class.
      *
      */
-    bool
+    virtual bool
     write_to_file(ofstream& ofs);
 
     /*! \fn bool read_from_file(ifstream& ifs)
@@ -504,7 +504,7 @@ public:
      *  which is a static member of inv_table class.
      *
      */
-    bool
+    virtual bool
     read_from_file(ifstream& ifs);
 
 

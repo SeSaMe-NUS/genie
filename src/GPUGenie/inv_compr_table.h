@@ -151,6 +151,28 @@ public:
 
     void clear();
 
+        /*! \fn bool write_to_file(ofstream& ofs)
+     *  \brief Write one table object to a binary file
+     *
+     *  \param ofs An ofstream object
+     *
+     *  This function is always called by static write function,
+     *  which is a static member of inv_table class.
+     *
+     */
+    virtual bool write_to_file(ofstream& ofs);
+
+    /*! \fn bool read_from_file(ifstream& ifs)
+     *  \brief Read one table from a binary file
+     *
+     *  \param ifs An ifstream object
+     *
+     *  This function is always called by static read function,
+     *  which is a static member of inv_table class.
+     *
+     */
+    virtual bool read_from_file(ifstream& ifs);
+
 };
 }
 

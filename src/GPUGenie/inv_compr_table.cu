@@ -226,3 +226,46 @@ void GPUGenie::inv_compr_table::clear_gpu_mem()
 
 }
 
+
+bool
+GPUGenie::inv_compr_table::write_to_file(ofstream& ofs)
+{
+    inv_table::write_to_file(ofs);
+
+    ofs.write((char*)&m_isCompressed, sizeof(bool));
+    ofs.write((char*)&m_compression, sizeof(char)*m_compression.size()+1);
+    ofs.write((char*)&m_uncompressedInvListsMaxLength, sizeof(size_t));
+
+    size_t comprInvSize = m_comprInv.size();
+    size_t comprInvPosSize = m_comprInvPos.size();
+    ofs.write((char*)&comprInvSize, sizeof(size_t));
+    ofs.write((char*)&comprInvPosSize, sizeof(size_t));
+    ofs.write((char*)m_comprInv.data(), sizeof(uint32_t)*m_comprInv.size());
+    ofs.write((char*)m_comprInvPos.data(), sizeof(int)*m_comprInvPos.size());
+
+    return true;
+}
+
+
+bool
+GPUGenie::inv_compr_table::read_from_file(ifstream& ifs)
+{
+    inv_table::read_from_file(ifs);
+
+    ifs.read((char*)&m_isCompressed, sizeof(bool));
+    std::getline(ifs, m_compression, '\0');
+    ifs.read((char*)&m_uncompressedInvListsMaxLength, sizeof(size_t));
+
+    size_t comprInvSize;
+    size_t comprInvPosSize;
+    ifs.read((char*)&comprInvSize, sizeof(size_t));
+    ifs.read((char*)&comprInvPosSize, sizeof(size_t));
+
+    m_comprInv.resize(comprInvSize);
+    m_comprInvPos.resize(comprInvPosSize);
+    ifs.read((char*)m_comprInv.data(), sizeof(uint32_t)*m_comprInv.size());
+    ifs.read((char*)m_comprInvPos.data(), sizeof(int)*m_comprInvPos.size());
+    
+    return true;
+}
+
