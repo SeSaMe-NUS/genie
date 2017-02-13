@@ -105,8 +105,9 @@ int main(int argc, char* argv[])
     std::string invSuffix(".inv");
     std::string cinvSuffix(".cinv");
 
-    std::string invTableFileBase = dataFile.substr(dataFile.find_last_of("/\\") + 1);
-    invTableFileBase = invTableFileBase.substr(0, invTableFileBase.find_last_of('.'));
+    // std::string invTableFileBase = dataFile.substr(dataFile.find_last_of("/") + 1);
+    // invTableFileBase = invTableFileBase.substr(0, invTableFileBase.find_last_of('.'));
+    std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
 
     if (dataFile.size() >= invSuffix.size() + 1
             && std::equal(invSuffix.rbegin(), invSuffix.rend(), dataFile.rbegin())){
