@@ -173,6 +173,18 @@ public:
      */
     virtual bool read_from_file(ifstream& ifs);
 
+        /*! \fn static bool read(const char* filename, inv_table*& table)
+     *  \brief static member function responsible for deserialize inv_table objects from a binary file
+     *
+     *  \param filename The file to read.
+     *  \param table The table pointer. If the function finishes successfully, the 'table' would points
+     *  to the table recorded by the binary file.
+     *
+     *  \return True for successful operations, false for unsuccessful.
+     */
+    static bool
+    read(const char* filename, inv_compr_table*& table);
+
 };
 }
 

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -233,7 +234,7 @@ GPUGenie::inv_compr_table::write_to_file(ofstream& ofs)
     inv_table::write_to_file(ofs);
 
     ofs.write((char*)&m_isCompressed, sizeof(bool));
-    ofs.write((char*)&m_compression, sizeof(char)*m_compression.size()+1);
+    ofs.write((char*)m_compression.c_str(), sizeof(char)*m_compression.size()+1);
     ofs.write((char*)&m_uncompressedInvListsMaxLength, sizeof(size_t));
 
     size_t comprInvSize = m_comprInv.size();
@@ -267,5 +268,32 @@ GPUGenie::inv_compr_table::read_from_file(ifstream& ifs)
     ifs.read((char*)m_comprInvPos.data(), sizeof(int)*m_comprInvPos.size());
     
     return true;
+}
+
+
+bool
+GPUGenie::inv_compr_table::read(const char* filename, inv_compr_table*& table)
+{
+    ifstream ifs(filename, ios::binary|ios::in);
+    if(!ifs.is_open())
+        return false;
+    
+    int _table_index, _total_num_of_table;
+    ifs.read((char*)&_table_index, sizeof(int));
+    ifs.read((char*)&_total_num_of_table, sizeof(int));
+    ifs.close();
+    if(_table_index!=0 || _total_num_of_table<1)
+        return false;
+    
+    table = new inv_compr_table[_total_num_of_table];
+    ifstream _ifs(filename, ios::binary|ios::in);
+    
+    bool success;
+    for(int i=0 ; i<_total_num_of_table ; ++i)
+    {
+         success = table[i].read_from_file(_ifs);
+    }
+    _ifs.close();
+    return !_ifs.is_open() && success;
 }
 

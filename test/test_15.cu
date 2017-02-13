@@ -83,6 +83,10 @@ int main(int argc, char* argv[])
     string dataFile = DEFAULT_TEST_DATASET;
     string compression = DEFAULT_COMPRESSION;
     string queryFile = DEFAULT_QUERY_DATASET;
+    std::string binaryInvTableFile;
+    std::string binaryComprInvTableFile;
+    bool convertTableToBinary = false;
+
     int dimensions = DEFAULT_DIMENSIONS;
     int numberOfQueries = DEFAULT_NUM_QUERIES;
     if (argc >= 2)
@@ -95,6 +99,51 @@ int main(int argc, char* argv[])
         numberOfQueries = std::atoi(argv[4]);
     if (argc >= 6)
         compression = std::string(argv[5]);
+
+    Logger::log(Logger::INFO, "Checking test arguments...", dataFile.c_str());
+
+    std::string invSuffix(".inv");
+    std::string cinvSuffix(".cinv");
+
+    std::string invTableFileBase = dataFile.substr(dataFile.find_last_of("/\\") + 1);
+    invTableFileBase = invTableFileBase.substr(0, invTableFileBase.find_last_of('.'));
+
+    if (dataFile.size() >= invSuffix.size() + 1
+            && std::equal(invSuffix.rbegin(), invSuffix.rend(), dataFile.rbegin())){
+        Logger::log(Logger::ALERT, "dataFile %s is an inv_table binary file", dataFile.c_str());
+        return 1;
+    }
+    if (dataFile.size() >= invSuffix.size() + 1
+            && std::equal(cinvSuffix.rbegin(), cinvSuffix.rend(), dataFile.rbegin())){
+        Logger::log(Logger::ALERT, "dataFile %s is an compr_inv_table binary file", dataFile.c_str());
+        return 1;
+    }
+
+    binaryInvTableFile = invTableFileBase + invSuffix;
+    binaryComprInvTableFile = invTableFileBase + cinvSuffix;
+
+    ifstream invBinFileStream(binaryInvTableFile.c_str());
+    bool invBinFileExists = invBinFileStream.good();
+    ifstream cinvBinFileStream(binaryComprInvTableFile.c_str());
+    bool cinvBinFileExists = cinvBinFileStream.good();
+
+    if (invBinFileExists && !cinvBinFileExists || !invBinFileExists && cinvBinFileExists){
+        Logger::log(Logger::ALERT, "Either inv_table or compr_inv_table binary file already exists, but not both");
+        return 2;
+    }
+
+    if (invBinFileExists && cinvBinFileExists){
+        Logger::log(Logger::ALERT, "Using existing binary tables. Remove files in order to regenerate them.");
+        convertTableToBinary = false;
+    }
+    else
+        convertTableToBinary = true;
+
+    if (dataFile.empty() && convertTableToBinary){
+        Logger::log(Logger::ALERT, "Either inv_table or compr_inv_table binary file already exists, but not both");
+        return 3;
+    }
+
 
     vector<vector<int>> queryPoints;
     GPUGenie_Config config;
@@ -124,24 +173,66 @@ int main(int argc, char* argv[])
 
 
 
-    std::cout << "Reading data file " << dataFile << "..." << std::endl;  
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    assert(config.item_num > 0);
-    assert(config.row_num > 0);
-    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
-    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
+
+    if (convertTableToBinary)
+    {
+
+        Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
+        
+        
+        read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
+        assert(config.item_num > 0);
+        assert(config.row_num > 0);
+        Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
+        Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
 
 
+
+        Logger::log(Logger::INFO, "Preprocessing as inv_table...");
+        std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
+        
+        inv_table * refTable = NULL;
+        preprocess_for_knn_binary(config, refTable);
+        assert(refTable != NULL);
+        assert(refTable->get_total_num_of_table() == 1); // check how many tables we have
+        assert(dynamic_cast<inv_compr_table*>(refTable) == NULL);
+
+        
+        Logger::log(Logger::INFO, "Writing inv_table to binary file %s ...", binaryInvTableFile.c_str());
+        if (!inv_table::write(binaryInvTableFile.c_str(), refTable)){
+            Logger::log(Logger::ALERT, "Error writing inv_table to binary file %s ...", binaryInvTableFile.c_str());
+            return 4;
+        }
+        
+
+        config.compression = compression;
+
+        Logger::log(Logger::INFO, "Preprocessing compr_inv_table from %s ...", dataFile.c_str());
+
+        std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
+
+        inv_table * table = NULL;
+        inv_compr_table * comprTable = NULL;
+        preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
+        assert(table != NULL);
+        assert(table->build_status() == inv_table::builded);
+        assert(table->get_total_num_of_table() == 1); // check how many tables we have
+        comprTable = dynamic_cast<inv_compr_table*>(table);
+        assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
+        // check the compression was actually used in the table
+        assert(config.compression == comprTable->getCompression());
+
+        inv_table::write(binaryComprInvTableFile.c_str(), table);
+
+    }
 
     std::cout << "--------------------------------------------------------" << std::endl;
     std::cout << "Establishing reference solution on uncompressed table..." << std::endl;
 
-    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
-    inv_table * refTable = NULL;
-    preprocess_for_knn_binary(config, refTable);
-    assert(refTable != NULL);
-    assert(refTable->get_total_num_of_table() == 1); // check how many tables we have
-    assert(dynamic_cast<inv_compr_table*>(refTable) == NULL);
+    Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
+    inv_table *refTable;
+    inv_table::read(binaryInvTableFile.c_str(), refTable);
+
 
     std::cout << "Examining inverted lists...";
     std::vector<GPUGenie::inv_list> *invLists = refTable->inv_lists();
@@ -180,19 +271,9 @@ int main(int argc, char* argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << "Testing compressed table..." << std::endl;
 
-    config.compression = compression;
-
-    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
-
-    inv_table * table = NULL;
-    inv_compr_table * comprTable = NULL;
-    preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
-    assert(table != NULL);
-    assert(table->build_status() == inv_table::builded);
-    assert(table->get_total_num_of_table() == 1); // check how many tables we have
-    comprTable = dynamic_cast<inv_compr_table*>(table);
-    assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
-    assert(config.compression == comprTable->getCompression()); // check the compression was actually used in the table
+    Logger::log(Logger::INFO, "Opening binary inv_compr_table from %s ...", binaryComprInvTableFile.c_str());
+    inv_compr_table *comprTable;
+    inv_compr_table::read(binaryComprInvTableFile.c_str(), comprTable);
 
     std::cout << "Examining compressed index..." << std::endl;
 
