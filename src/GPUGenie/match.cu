@@ -664,8 +664,8 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
     int length = comprInvListEnd - comprInvListStart;
     int uncomprInvListStart = idx * uncompressedPostingListMaxLength;
 
-    printf("DECOMPR_KERNEL - STATUS: idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d"
-        ", uncomprInvListStart: %d \n",
+    printf("DECOMPR_KERNEL_COPY - STATUS: "
+        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
         idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
 
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
@@ -722,11 +722,29 @@ void decompressPostingLists_listPerThread_DeviceDeltaCodec(
     int length = comprInvListEnd - comprInvListStart;
     int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
 
+    printf("DECOMPR_KERNEL_DELTA - STATUS: "
+        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
+        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
+
+
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
     DeviceDeltaCodec codec; 
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
+
+    if (usedLength > uncompressedPostingListMaxLength)
+    {
+        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
+            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
+
+        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
+        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
+
+        return;
+    }
+
+    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
 
     int uncomprInvListEnd = uncomprInvListStart + nvalue;
 
@@ -761,11 +779,28 @@ void decompressPostingLists_listPerThread_DeviceBitPackingCodec(
     int length = comprInvListEnd - comprInvListStart;
     int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
 
+    printf("DECOMPR_KERNEL_BP32 - STATUS: "
+        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
+        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
+
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
     DeviceBitPackingCodec codec; 
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
+
+    if (usedLength > uncompressedPostingListMaxLength)
+    {
+        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
+            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
+
+        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
+        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
+
+        return;
+    }
+
+    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
 
     int uncomprInvListEnd = uncomprInvListStart + nvalue;
 
@@ -800,11 +835,28 @@ void decompressPostingLists_listPerThread_d1_bp32(
     int length = comprInvListEnd - comprInvListStart;
     int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
 
+    printf("DECOMPR_KERNEL_D1-BP32 - STATUS: "
+        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
+        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
+
     const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
     DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec> codec; 
     codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
+
+    if (usedLength > uncompressedPostingListMaxLength)
+    {
+        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
+            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
+
+        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
+        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
+
+        return;
+    }
+
+    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
 
     int uncomprInvListEnd = uncomprInvListStart + nvalue;
 

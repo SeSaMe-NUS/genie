@@ -24,6 +24,10 @@ public:
     virtual const uint32_t*
     decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) { return NULL; };
 
+    /**
+        The function must make sure not to write in d_out[nvalue] and beyond. If decompressed size is greater than
+        the capacity (nvalue), there is no need to write any output at all.
+    **/
     __device__ virtual const uint32_t*
     decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
 
@@ -115,6 +119,11 @@ public:
     __device__ virtual const uint32_t*
     decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
+        if (length > nvalue){
+            // We do not have enough capacity in the decompressed array!
+            nvalue = length;
+            return d_in;
+        }
         for (int i = 0; i < length; i++)
             d_out[i] = d_in[i];
         DeviceDeltaHelper<uint32_t>::inverseDeltaOnGPU(0, d_out, length);
@@ -188,10 +197,18 @@ public:
         const uint32_t *const initin(d_in);
         size_t mynvalue1 = nvalue;
         const uint32_t *d_in2 = codec1.decodeArrayOnGPU(d_in, length, d_out, mynvalue1);
+        if (mynvalue1 > nvalue){ // Codec1 does not have enough capacity
+            nvalue = mynvalue1;
+            return d_in;
+        }
         if (length + d_in > d_in2) {
             assert(nvalue > mynvalue1);
             size_t nvalue2 = nvalue - mynvalue1;
             const uint32_t *in3 = codec2.decodeArrayOnGPU(d_in2, length - (d_in2 - d_in), d_out + mynvalue1, nvalue2);
+            if (nvalue2 > nvalue - mynvalue1){ // Codec2 does not have enough capacity
+                nvalue = mynvalue1 + nvalue2;
+                return d_in;
+            }
             nvalue = mynvalue1 + nvalue2;
             assert(initin + length >= in3);
             return in3;
