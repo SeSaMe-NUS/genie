@@ -167,7 +167,47 @@ public:
     }
 
     __device__ virtual const uint32_t*
-    decodeArrayOnGPU(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
+    decodeArraySequential(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
+        const uint32_t actuallength = *d_in++;
+        const uint32_t *const initout(d_out);
+        uint32_t Bs[HowManyMiniBlocks];
+        uint32_t init = 0;
+        for (;d_out < initout + actuallength / (HowManyMiniBlocks * MiniBlockSize) * HowManyMiniBlocks * MiniBlockSize;
+                d_out += HowManyMiniBlocks * MiniBlockSize) {
+            Bs[0] = static_cast<uint8_t>(d_in[0] >> 24);
+            Bs[1] = static_cast<uint8_t>(d_in[0] >> 16);
+            Bs[2] = static_cast<uint8_t>(d_in[0] >> 8);
+            Bs[3] = static_cast<uint8_t>(d_in[0]);
+            ++d_in;
+            for (uint32_t i = 0; i < HowManyMiniBlocks; ++i) {
+                DeviceIntegratedBlockPacker::unpackblock(d_in, d_out + i * MiniBlockSize, Bs[i], init);
+                d_in += Bs[i];
+            }
+        }
+        if (d_out < initout + actuallength) {
+            size_t howmany = ((initout + actuallength) - d_out + MiniBlockSize - 1) / MiniBlockSize;
+            Bs[0] = static_cast<uint8_t>(d_in[0] >> 24);
+            Bs[1] = static_cast<uint8_t>(d_in[0] >> 16);
+            Bs[2] = static_cast<uint8_t>(d_in[0] >> 8);
+            Bs[3] = static_cast<uint8_t>(d_in[0]);
+            ++d_in;
+
+            for (uint32_t i = 0; i < howmany; ++i) {
+                DeviceIntegratedBlockPacker::unpackblock(d_in, d_out + i * MiniBlockSize, Bs[i], init);
+                d_in += Bs[i];
+            }
+            if (divisibleby(actuallength, BlockSize))
+                d_out += howmany * MiniBlockSize;
+            else
+                d_out += ((initout + actuallength) - d_out);
+        }
+        nvalue = d_out - initout;
+        assert(nvalue == actuallength);
+        return d_in;
+    }
+
+    __device__ virtual const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
         const uint32_t actuallength = *d_in++;
         const uint32_t *const initout(d_out);
         uint32_t Bs[HowManyMiniBlocks];

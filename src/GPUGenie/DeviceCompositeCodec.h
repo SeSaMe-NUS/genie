@@ -29,7 +29,13 @@ public:
         the capacity (nvalue), there is no need to write any output at all.
     **/
     __device__ virtual const uint32_t*
-    decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
+
+    /**
+     * Decompress compressed list using thread parallelism.
+    **/
+    __device__ virtual const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
 
     virtual __device__ __host__
     ~DeviceIntegerCODEC() {}
@@ -72,7 +78,7 @@ public:
     }
 
     __device__ virtual const uint32_t*
-    decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
         if (length > nvalue){
             // We do not have enough capacity in the decompressed array!
@@ -83,6 +89,12 @@ public:
             d_out[i] = d_in[i];
         nvalue = length;
         return d_in + length;
+    }
+
+    __device__ virtual const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    {
+        return NULL;
     }
 
     virtual __device__ __host__
@@ -117,7 +129,7 @@ public:
     }
 
     __device__ virtual const uint32_t*
-    decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
         if (length > nvalue){
             // We do not have enough capacity in the decompressed array!
@@ -129,6 +141,12 @@ public:
         DeviceDeltaHelper<uint32_t>::inverseDeltaOnGPU(0, d_out, length);
         nvalue = length;
         return d_in + length;
+    }
+
+    __device__ virtual const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    {
+        return NULL;
     }
 
     virtual __device__ __host__
@@ -193,10 +211,10 @@ public:
     }
 
     __device__ virtual const uint32_t*
-    decodeArrayOnGPU(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
         const uint32_t *const initin(d_in);
         size_t mynvalue1 = nvalue;
-        const uint32_t *d_in2 = codec1.decodeArrayOnGPU(d_in, length, d_out, mynvalue1);
+        const uint32_t *d_in2 = codec1.decodeArraySequential(d_in, length, d_out, mynvalue1);
         if (mynvalue1 > nvalue){ // Codec1 does not have enough capacity
             nvalue = mynvalue1;
             return d_in;
@@ -204,7 +222,7 @@ public:
         if (length + d_in > d_in2) {
             assert(nvalue > mynvalue1);
             size_t nvalue2 = nvalue - mynvalue1;
-            const uint32_t *in3 = codec2.decodeArrayOnGPU(d_in2, length - (d_in2 - d_in), d_out + mynvalue1, nvalue2);
+            const uint32_t *in3 = codec2.decodeArraySequential(d_in2, length - (d_in2 - d_in), d_out + mynvalue1, nvalue2);
             if (nvalue2 > nvalue - mynvalue1){ // Codec2 does not have enough capacity
                 nvalue = mynvalue1 + nvalue2;
                 return d_in;
@@ -216,6 +234,11 @@ public:
         nvalue = mynvalue1;
         assert(initin + length >= d_in2);
         return d_in2;
+    }
+
+    __device__ virtual const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
+        return NULL;
     }
 
     std::string name() const {
