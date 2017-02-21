@@ -1,3 +1,4 @@
+## PROJECT SETTINGS
 cmake_minimum_required(VERSION 2.8)
 
 set(PROJECT_NAME GPUGenie)
@@ -9,6 +10,7 @@ enable_testing()
 include(CheckCXXCompilerFlag)
 
 
+## COMPILERS
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter") #-Werror
@@ -23,12 +25,9 @@ if (NOT CONFIGURED_ONCE)
 endif()
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+## DEPENDENCIES
 find_package(CUDA REQUIRED)
-find_package(BOOST 1.56.0 REQUIRED COMPONENTS serialization)
-if(Boost_FOUND)
-  message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}. Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}.")
-endif()
+find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
 
 include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
