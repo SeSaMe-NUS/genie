@@ -23,10 +23,18 @@ if (NOT CONFIGURED_ONCE)
 endif()
 
 
-find_package(CUDA QUIET REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+find_package(CUDA REQUIRED)
+find_package(BOOST 1.56.0 REQUIRED COMPONENTS serialization)
+if(Boost_FOUND)
+  message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}. Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}.")
+endif()
+
+include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
+
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-#set(BUILD_SHARED_LIBS ON)
-set(BUILD_STATIC_LIBS ON)
+option(BUILD_STATIC_LIBS ON)
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
