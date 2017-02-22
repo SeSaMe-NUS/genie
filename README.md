@@ -1,5 +1,5 @@
-GPUGenie
-===
+# GPUGenie
+
 GPUGenie is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then GPUGenie will consturct the inverted list table and transfer it to the device. GPUGenie provides a simple way to perform the similarity queries. User may define queries and their matching ranges, then directly call the matching funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k search can also be simply perfromed. GPUGenie uses parallel searching to determine the top k values in a vector. It is much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not required to configure the device function call. Please refer to the following documents:
 
 ```
@@ -8,57 +8,25 @@ Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/
 ```
 
 
-### Compiler and development
+## Compilation and development
 
-You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater tha nversion 2.8 and cuda 7.
+You are required to install gcc, g++, nvcc, boost and cmake. The minimum required versions are 3.5.1 for cmake, 7.0 for CUDA, and 1.56.0 for Boost.
 
 To compile the program, just type 
 
-```
-make
-```
-
-The library will be generated within the folder "build"
-
-After compiling, you can go to folder "example", and type "make". Some running examples will be compiled fnd generated for testing.
-
-To generate the documents of the project, just type
-
-
-```
-make doc
+```bash
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
 ```
 
-The documents (with html format and latex format) will be generated whinin the folder "doc"
+This creates an "out-of-source" build of GPUGenie containing both the GPUGenie library and some tests. To use Boost which is not in the system path, change `cmake` command to
 
-### Install
-
-You are required to install gcc, g++, nvcc and cmake. Please make sure that the cmake version is greater than version 2.8 and cuda 7.
-
-To install the libGPUGenie, directlly call the install script, `install.sh`.
-
-
-### Running example
-You can see a running example in the folder "example".
-Just command:
-
-```cpp
-cd example
-make
+```bash
+$ cmake -DBOOST_ROOT=/path/to/boost ..
 ```
 
-and then command
+## Running example
 
-```
- ./example_bin
-```
-
-
-You can see the query results based on the data file "sift_1k.csv". 
-The exaple also gives an comprehensive description about the parameter. 
-
-How to use the library is also shown in the the file /example/makefile
-
-
-
-
+Examples (tests) are available in the `bin` folder of your build directory.
