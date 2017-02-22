@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
+## PROJECT SETTINGS
+cmake_minimum_required(VERSION 3.5.1)
 
 set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
@@ -9,6 +10,7 @@ enable_testing()
 include(CheckCXXCompilerFlag)
 
 
+## COMPILERS
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter") #-Werror
@@ -23,10 +25,15 @@ if (NOT CONFIGURED_ONCE)
 endif()
 
 
-find_package(CUDA QUIET REQUIRED)
+## DEPENDENCIES
+find_package(CUDA REQUIRED)
+find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
+
+include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
+
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-#set(BUILD_SHARED_LIBS ON)
-set(BUILD_STATIC_LIBS ON)
+option(BUILD_STATIC_LIBS ON)
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
@@ -37,3 +44,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(static)
