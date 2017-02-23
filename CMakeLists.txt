@@ -31,7 +31,7 @@ if (NOT CONFIGURED_ONCE)
 endif()
 
 
-find_package(CUDA QUIET REQUIRED)
+find_package(CUDA REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
@@ -41,8 +41,23 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -genc
 # https://gitlab.kitware.com/cmake/cmake/issues/15157
 set(CUDA_SEPARABLE_COMPILATION ON)
 
-
 link_directories("/usr/local/cuda/lib64/")
+
+# set(BOOST_ROOT "/home/lubos/boost")
+# set(Boost_NO_BOOST_CMAKE TRUE)
+# # set(Boost_USE_STATIC_LIBS ON) 
+# # set(Boost_USE_MULTITHREADED ON)  
+# # set(Boost_USE_STATIC_RUNTIME OFF) 
+# find_package(Boost 1.55.0 COMPONENTS serialization) 
+# if(Boost_FOUND)
+#   include_directories(${Boost_INCLUDE_DIRS})
+#   message(STATUS "Boost found. Version: ${Boost_VERSION}. "
+#                  "INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}. LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}.")
+#   link_directories(${Boost_INCLUDE_DIRS})
+# else()
+#   message(FATAL_ERROR "Boost 1.55 (serialization lib) required!")
+# endif()
+
 
 if (COMPR)
     add_definitions(-DCOMPR)

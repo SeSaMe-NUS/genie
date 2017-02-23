@@ -2,8 +2,10 @@ include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/simdcai/src)
 if (COMPR)
     SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
     include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include")
+    include_directories("/usr/local/cuda/samples/common/inc /usr/local/lib")
 endif()
 
+link_directories(${Boost_LIBRARY_DIR})
 link_directories(${PROJECT_SOURCE_DIR}/lib /usr/local/lib)
 
 
@@ -30,6 +32,8 @@ add_test_case(test_9_csv_multiload_tweets test_9.cu)
 add_test_case(test_10_binary_multiload_tweets test_10.cu)
 add_test_case(test_11_subsequence_search_csv_input test_11.cu)
 add_test_case(test_12_subsequence_search_binary_input test_12.cu)
+add_test_case(test_16_hashtable_overflow test_16.cu)
+
 
 if (COMPR)
     # # This is possibly a bug in CMake - target_link_libraries does not add -I<path> parameter to nvcc
@@ -57,6 +61,7 @@ if (COMPR)
     add_test_case(test_13_compression_test test_13.cu)
     add_test_case(test_14_compression_query test_14.cu)
     add_test_case(test_15_compression_naive test_15.cu)
+    add_test_case(test_17_scan4 test_17.cu)
 
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS_BACKUP})
 
@@ -66,6 +71,6 @@ if (COMPR)
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
     target_link_libraries(test_15_compression_naive
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
+    target_link_libraries(test_17_scan4
+        ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
 endif()
-
-add_test_case(test_16_hashtable_overflow test_16.cu)

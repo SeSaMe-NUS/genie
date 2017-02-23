@@ -33,6 +33,8 @@ set(LIB_SRC_LIST
   GPUGenie/DeviceBitPackingCodec.h
   GPUGenie/DeviceBitPackingHelpers.h
   GPUGenie/DeviceBitPackingHelpers.cu
+  GPUGenie/scan.h
+  GPUGenie/scan.cu
 
   GPUGenie/Logger.h
   GPUGenie/Logger.cpp
@@ -44,6 +46,9 @@ cuda_add_library(
   ${PROJECT_NAME}
   STATIC
   ${LIB_SRC_LIST})
+
+target_link_libraries(
+  ${PROJECT_NAME} -lboost_serialization)
 
 set_target_properties(
   ${PROJECT_NAME}
