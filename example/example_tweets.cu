@@ -35,13 +35,13 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	// i.e. there is only one dimension, all words are considered as the values. 
 	//given a query, there can be multiple values for this dimension. 
 	//This is like a bag-of-word model for string search
-	config.dim = 14;
+	config.dim = 1;
 
 	//Points with dim counts lower than threshold will be discarded and not shown in topk.
 	//It is implemented as a bitmap filter.
 	//Set to 0 to disable the feature.
 	//set to <0, to use adaptiveThreshold, the absolute value of count_threshold is the maximum possible count sotred in the bitmap
-	config.count_threshold = -14;
+	config.count_threshold = 144;
 
 	//Number of topk items desired for each query.
 	config.num_of_topk = 10;
@@ -111,11 +111,11 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	u64 start = getTime();
 	GPUGenie::knn_search(result, result_count, config);
 	u64 end = getTime();
-	double elapsed = getInterval(start, end);
+	
+    double elapsed = getInterval(start, end);
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
-    GPUGenie::reset_device();
 	for(int i = 0; i < 5; ++i)
 
 	{

@@ -1,3 +1,4 @@
+## PROJECT SETTINGS
 cmake_minimum_required(VERSION 3.5.1)
 
 set(PROJECT_NAME GPUGenie)
@@ -13,6 +14,7 @@ option(COMPR "Build compression module" ON)
 
 set(CMAKE_CXX_STANDARD 11)
 
+## COMPILERS
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
@@ -31,8 +33,16 @@ if (NOT CONFIGURED_ONCE)
 endif()
 
 
+## DEPENDENCIES
+find_package(CUDA REQUIRED)
+find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
+
+include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
+
 find_package(CUDA REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
+option(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 --compiler-options "${warnings_cuda}" -std=c++11 -g -G)
@@ -92,3 +102,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(static)

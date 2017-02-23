@@ -1,13 +1,7 @@
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/simdcai/src)
 if (COMPR)
     SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
-    include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include")
-    include_directories("/usr/local/cuda/samples/common/inc /usr/local/lib")
+    include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src))
 endif()
-
-link_directories(${Boost_LIBRARY_DIR})
-link_directories(${PROJECT_SOURCE_DIR}/lib /usr/local/lib)
-
 
 function(add_test_case TARGET)
    cuda_add_executable(${TARGET} ${ARGN})

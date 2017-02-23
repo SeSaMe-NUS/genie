@@ -21,17 +21,22 @@ using namespace std;
 using namespace GPUGenie;
 
 int*  inv_table::d_inv_p = NULL;
-
+int inv_table::max_inv_size = 0;
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
 	try{
         if(d_inv_p == NULL)
         {
-            cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
+            cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * max_inv_size));
         }
             u64 t=getTime();
-		cudaCheckErrors(cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
+            
+            int *temp_inv = (int*)malloc(sizeof(int) * _inv.size());
+            std::copy(_inv.begin(), _inv.end(), temp_inv);
+		    cudaCheckErrors(cudaMemcpy(d_inv_p, temp_inv, sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
+            free(temp_inv);
+
         	u64 tt=getTime();
         	cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
 	} catch(std::bad_alloc &e){
@@ -321,6 +326,8 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 	_inv_index.push_back(_inv_pos.size());
 	_inv_pos.push_back(_inv.size());
 
+    max_inv_size = (int)_inv.size() > max_inv_size?(int)_inv.size():max_inv_size;
+
 	_build_status = builded;
     	u64 table_end = getTime();
 	cout<<"build table time = "<<getInterval(table_start, table_end)<<"ms."<<endl;
@@ -339,6 +346,7 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
 {
     if(_build_status == not_builded)
         return false;
+
 
     ofs.write((char*)&table_index, sizeof(int));
     ofs.write((char*)&total_num_of_table, sizeof(int));
@@ -476,7 +484,13 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
             ia>>_distinct_map[i];
         }
     }
+
+
+    if(table_index == total_num_of_table-1)
+        ifs.close();
     
+
+
     return true;
 }
 
@@ -523,6 +537,9 @@ GPUGenie::inv_table::read(const char* filename, inv_table*& table)
     for(int i=0 ; i<_total_num_of_table ; ++i)
     {
          success = table[i].read_from_file(_ifs);
+         if(success && (int)table[i].inv()->size() > inv_table::max_inv_size)
+             inv_table::max_inv_size = (int)table[i].inv()->size();
+            
     }
     _ifs.close();
     return !_ifs.is_open() && success;

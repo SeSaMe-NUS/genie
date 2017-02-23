@@ -1,6 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/simdcai/src)
-cuda_include_directories(${PROJECT_SOURCE_DIR}/src)
-link_directories(${PROJECT_SOURCE_DIR}/src /usr/local/lib)
+cuda_include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
 set(LIB_SRC_LIST
   GPUGenie.h
