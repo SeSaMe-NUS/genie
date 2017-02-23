@@ -21,6 +21,16 @@
  *	\param err The CUDA error.
  */
 #define cudaCheckErrors( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
+#define CUDA_CHECK_ERROR( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
+
+
+/*! \fn cudaCheckErrors( err )
+ *  \brief Check for existing cuda errors
+ *
+ *  Once a CUDA error is detected, a GPUGenie::gpu_runtime_error will be
+ *  thrown and the error will be logged.
+ */
+#define CUDA_LAST_ERROR() __cudaGetLastError (__FILE__, __LINE__)
 
 namespace GPUGenie
 {
@@ -141,8 +151,7 @@ inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 	if (cudaSuccess != err)
 	{
 		char errstr[1000];
-		sprintf(errstr, "cudaSafeCall() failed at %s:%i : %s", file, line,
-				cudaGetErrorString(err));
+		snprintf(errstr, 1000, "cudaSafeCall() failed at %s:%i : %s", file, line, cudaGetErrorString(err));
 		Logger::log(Logger::ALERT, "%s", errstr);
 		throw(GPUGenie::gpu_runtime_error(errstr));
 	}
@@ -150,4 +159,20 @@ inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 	return;
 }
 
-#endif /* GENIE_ERRORS_H_ */
+
+inline void __cudaGetLastError(const char *file, const int line)
+{
+    cudaError_t err = cudaGetLastError();
+
+    if (cudaSuccess != err)
+    {
+    	char errstr[1000];
+        snprintf(errstr, 1000, "cudaGetLastError() failed at %s:%i : ERR %d - %s.\n",
+        	file, line, (int)err, cudaGetErrorString(err));
+        Logger::log(Logger::ALERT, "%s", errstr);
+		throw(GPUGenie::gpu_runtime_error(errstr));
+    }
+}
+
+#endif
+
