@@ -4,7 +4,7 @@ function(add_test_case TARGET)
    target_link_libraries(${TARGET}
                          -lpthread
                          -lboost_serialization
-                         ${PROJECT_SOURCE_DIR}/lib/libGPUGenie.a
+                         -l${PROJECT_NAME}
                          -lcudadevrt)
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
@@ -59,7 +59,5 @@ if (COMPR)
     target_link_libraries(test_14_compression_query
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
     target_link_libraries(test_15_compression_naive
-        ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
-    target_link_libraries(test_17_scan4
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
 endif()
