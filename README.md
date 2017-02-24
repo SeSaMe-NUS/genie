@@ -30,3 +30,18 @@ $ cmake -DBOOST_ROOT=/path/to/boost ..
 ## Running example
 
 Examples (tests) are available in the `bin` folder of your build directory.
+
+## Documentation
+
+Documentation for GPUGenie could be generated with Doxygen. To generate manually, type
+
+```bash
+$ cd doc
+$ doxygen doxy.config
+```
+
+Documentation can also be generated with CMake. After you configure CMake following steps in [Compilation and development](#compilation-and-development), just type
+
+```bash
+$ make doc
+```
