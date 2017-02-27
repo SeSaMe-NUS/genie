@@ -7,15 +7,13 @@
 
 #include "scan.h"
 
-const uint THREADBLOCK_SIZE = 256;
+const uint THREADBLOCK_SIZE = GPUGENIE_SCAN_THREADBLOCK_SIZE;
 
-// // Theoretical maximal limit of the scan2 phase -- this is the maximal amount of scan sums from phase 1 we can save at
-// // the same time. Derived as 32768 (max power-of-two gridDim.x) * 4 * THREADBLOCK_SIZE
-// const uint MAX_BATCH_ELEMENTS = 64 * 1048576;
-const uint MIN_SHORT_ARRAY_SIZE = 4;
-const uint MAX_SHORT_ARRAY_SIZE = 4 * THREADBLOCK_SIZE; // 1024
-const uint MIN_LARGE_ARRAY_SIZE = 8 * THREADBLOCK_SIZE; // 2048
-const uint MAX_LARGE_ARRAY_SIZE = 4 * THREADBLOCK_SIZE * THREADBLOCK_SIZE;  // 262144
+const uint GPUGenie::SCAN_THREADBLOCK_SIZE     = GPUGENIE_SCAN_THREADBLOCK_SIZE;
+const uint GPUGenie::SCAN_MIN_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE;
+const uint GPUGenie::SCAN_MAX_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE;
+const uint GPUGenie::SCAN_MIN_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE;
+const uint GPUGenie::SCAN_MAX_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE;
 
 // Naive inclusive scan: O(N * log2(N)) operations
 // Allocate 2 * 'size' local memory, initialize the first half with 'size' zeros avoiding if(pos >= offset) condition
@@ -73,7 +71,28 @@ inline __device__ uint4 scan4Exclusive(uint4 idata4, volatile uint *s_Data, uint
     return odata4;
 }
 
-__global__ void scanExclusiveShared(
+__global__ void GPUGenie::g_scanExclusiveShared(
+    uint4 *d_Dst,
+    uint4 *d_Src,
+    uint activeThreads,
+    uint pow2size)
+{
+    __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
+
+    uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+
+    //Load data
+    uint4 idata4 = (pos < activeThreads) ? d_Src[pos] : uint4{0,0,0,0};
+
+    //Calculate exclusive scan
+    uint4 odata4 = scan4Exclusive(idata4, s_Data, pow2size);
+
+    //Write back
+    if (pos < activeThreads)
+        d_Dst[pos] = odata4;
+}
+
+__device__ void GPUGenie::d_scanExclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -161,19 +180,19 @@ __global__ void uniformUpdate(
 //Internal exclusive scan buffer
 static uint *d_Buf;
 
-void initScan(void)
+void GPUGenie::initScan(void)
 {
     cudaCheckErrors(cudaMalloc((void **)&d_Buf, THREADBLOCK_SIZE * sizeof(uint)));
 }
 
-void closeScan(void)
+void GPUGenie::closeScan(void)
 {
     cudaCheckErrors(cudaFree(d_Buf));
 }
 
 
 // Returns the first power of two greater or equal to x
-inline uint pow2ceil_32 (uint x)
+__device__ __host__ uint GPUGenie::pow2ceil_32 (uint x)
 {
     if (x == 0)
         return 0;
@@ -191,7 +210,7 @@ static uint iDivUp(uint dividend, uint divisor)
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
 }
 
-size_t scanExclusiveShort(
+size_t GPUGenie::scanExclusiveShort(
     uint *d_Dst,
     uint *d_Src,
     uint arrayLength)
@@ -205,12 +224,12 @@ size_t scanExclusiveShort(
     assert(pow2arrayLength >= arrayLength);
 
     // Check supported size range
-    assert((pow2arrayLength >= MIN_SHORT_ARRAY_SIZE) && (pow2arrayLength <= MAX_SHORT_ARRAY_SIZE));
+    assert((pow2arrayLength >= SCAN_MIN_SHORT_ARRAY_SIZE) && (pow2arrayLength <= SCAN_MAX_SHORT_ARRAY_SIZE));
 
     printf("running scanExclusiveShort on %d blocks each of %d threads, total active threads: %d\n",
         (pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE),THREADBLOCK_SIZE, arrayLength/4);
 
-    scanExclusiveShared<<<(pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
+    g_scanExclusiveShared<<<(pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint4 *)d_Src,
         arrayLength / 4,
@@ -221,7 +240,7 @@ size_t scanExclusiveShort(
     return THREADBLOCK_SIZE;
 }
 
-size_t scanExclusiveLarge(
+size_t GPUGenie::scanExclusiveLarge(
     uint *d_Dst,
     uint *d_Src,
     uint arrayLength)
@@ -235,12 +254,12 @@ size_t scanExclusiveLarge(
     assert(pow2arrayLength >= (arrayLength));
 
     //Check supported size range
-    assert((pow2arrayLength >= MIN_LARGE_ARRAY_SIZE) && (pow2arrayLength <= MAX_LARGE_ARRAY_SIZE));
+    assert((pow2arrayLength >= SCAN_MIN_LARGE_ARRAY_SIZE) && (pow2arrayLength <= SCAN_MAX_LARGE_ARRAY_SIZE));
 
     printf("running scanExclusiveLong on %d blocks each of %d threads\n",
         (pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
 
-    scanExclusiveShared<<<(pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE),
+    g_scanExclusiveShared<<<(pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE),
                            THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
         (uint4 *)d_Src,
@@ -271,7 +290,7 @@ size_t scanExclusiveLarge(
     return THREADBLOCK_SIZE;
 }
 
-void scanExclusiveHost(
+void GPUGenie::scanExclusiveHost(
     uint *dst,
     uint *src,
     uint arrayLength)
