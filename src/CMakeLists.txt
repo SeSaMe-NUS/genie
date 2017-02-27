@@ -27,6 +27,7 @@ set(LIB_SRC_LIST
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cu
   GPUGenie/DeviceCompositeCodec.h
+  GPUGenie/DeviceCompositeCodec.cu
   GPUGenie/DeviceDeltaHelper.h
   GPUGenie/DeviceBitPackingCodec.h
   GPUGenie/DeviceBitPackingHelpers.h

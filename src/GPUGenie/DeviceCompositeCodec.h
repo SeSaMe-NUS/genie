@@ -9,9 +9,12 @@
 #include <SIMDCAI/include/codecs.h>
 
 #include "DeviceDeltaHelper.h"
+#include "scan.h"
 
 namespace GPUGenie {
 
+template <class CODEC> __global__ void
+decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength);
 
 class DeviceIntegerCODEC {
 public:
@@ -94,7 +97,14 @@ public:
     __device__ virtual const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
-        return NULL;
+        assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
+        assert(length <= nvalue); // not enough capacity in the decompressed array!
+
+        uint idx = blockIdx.x * blockDim.x + threadIdx.x;
+        d_out[idx] = d_in[idx];
+
+        nvalue = length;
+        return d_in + length;
     }
 
     virtual __device__ __host__
@@ -146,7 +156,38 @@ public:
     __device__ virtual const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
-        return NULL;
+        assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
+        assert(length <= nvalue); // not enough capacity in the decompressed array!
+
+        uint idx = blockIdx.x * blockDim.x + threadIdx.x;
+        d_out[idx] = 0; // d_out should be shared memory
+
+        size_t arrayLength = (length + 3) / 4;
+        uint pow2arrayLength = pow2ceil_32(arrayLength);
+
+        // Check supported size range
+        assert((pow2arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) &&
+                (pow2arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
+        // Check parallel model compatibility
+        assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE && gridDim.x == 1);
+
+        __syncthreads();
+        d_scanExclusiveShared((uint4 *)d_in, (uint4 *)d_out, arrayLength / 4, pow2arrayLength);
+        __syncthreads();
+        
+        if (idx == 0)
+            assert(d_out[idx] == 0);
+        else
+            assert(d_out[idx] >= d_out[idx]-1);
+
+        // turn it into inclusice scan
+        uint32_t inc = d_in[0];
+        __syncthreads();
+        d_out[idx] += inc;
+        __syncthreads();
+
+        nvalue = length;
+        return d_in + length;
     }
 
     virtual __device__ __host__
