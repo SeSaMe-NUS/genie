@@ -4,13 +4,14 @@
 
 using namespace GPUGenie;
 
-template __global__ void GPUGenie::decodeArrayParallel<DeviceJustCopyCodec>(uint32_t*, uint32_t*, size_t);
-template __global__ void GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(uint32_t*, uint32_t*, size_t);
+template __global__ void GPUGenie::decodeArrayParallel<DeviceJustCopyCodec>(uint32_t*, uint32_t*, size_t, size_t);
+template __global__ void GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(uint32_t*, uint32_t*, size_t, size_t);
 
 template <class CODEC> __global__ void
-GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength)
+GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t &capacity)
 {
     assert((arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) && (arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
+    assert(capacity <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE);
     assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE);
     assert(gridDim.x == 1);
 
@@ -23,7 +24,6 @@ GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arra
     s_Output[idx] = 0;
     __syncthreads();
 
-    size_t capacity = GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE;
     CODEC codec;
     codec.decodeArrayParallel(s_Input, arrayLength, s_Output, capacity);
 

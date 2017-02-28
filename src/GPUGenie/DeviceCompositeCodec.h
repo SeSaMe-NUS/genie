@@ -14,7 +14,7 @@
 namespace GPUGenie {
 
 template <class CODEC> __global__ void
-decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength);
+decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t &capacity);
 
 class DeviceIntegerCODEC {
 public:
@@ -158,16 +158,17 @@ public:
     {
         assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
         assert(length <= nvalue); // not enough capacity in the decompressed array!
+        assert(blockIdx.x == 0) // currently only support single block
 
         uint idx = blockIdx.x * blockDim.x + threadIdx.x;
         d_out[idx] = 0; // d_out should be shared memory
 
         size_t arrayLength = (length + 3) / 4;
+        assert((arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) &&
+                (arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
         uint pow2arrayLength = pow2ceil_32(arrayLength);
 
         // Check supported size range
-        assert((pow2arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) &&
-                (pow2arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
         // Check parallel model compatibility
         assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE && gridDim.x == 1);
 
@@ -180,7 +181,7 @@ public:
         else
             assert(d_out[idx] >= d_out[idx]-1);
 
-        // turn it into inclusice scan
+        // turn it into inclusive scan
         uint32_t inc = d_in[0];
         __syncthreads();
         d_out[idx] += inc;
