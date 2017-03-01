@@ -14,7 +14,7 @@
 namespace GPUGenie {
 
 template <class CODEC> __global__ void
-decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t &capacity);
+decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t capacity);
 
 class DeviceIntegerCODEC {
 public:
@@ -158,7 +158,7 @@ public:
     {
         assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
         assert(length <= nvalue); // not enough capacity in the decompressed array!
-        assert(blockIdx.x == 0) // currently only support single block
+        assert(blockIdx.x == 0); // currently only support single block
 
         uint idx = blockIdx.x * blockDim.x + threadIdx.x;
         d_out[idx] = 0; // d_out should be shared memory
@@ -225,7 +225,7 @@ public:
         codec1.encodeArray(in, roundedlength, out, nvalue1);
 
         if (roundedlength < length) {
-            ASSERT(nvalue >= nvalue1, nvalue << " " << nvalue1);
+            assert(nvalue >= nvalue1);
             size_t nvalue2 = nvalue - nvalue1;
             codec2.encodeArray(in + roundedlength, length - roundedlength, out + nvalue1, nvalue2);
             nvalue = nvalue1 + nvalue2;

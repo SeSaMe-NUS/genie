@@ -1,14 +1,16 @@
 #include "scan.h"
 
 #include "DeviceCompositeCodec.h"
+#include "DeviceBitPackingCodec.h"
 
 using namespace GPUGenie;
 
 template __global__ void GPUGenie::decodeArrayParallel<DeviceJustCopyCodec>(uint32_t*, uint32_t*, size_t, size_t);
 template __global__ void GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(uint32_t*, uint32_t*, size_t, size_t);
+template __global__ void GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(uint32_t*, uint32_t*, size_t, size_t);
 
 template <class CODEC> __global__ void
-GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t &capacity)
+GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t capacity)
 {
     assert((arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) && (arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
     assert(capacity <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE);
@@ -32,4 +34,6 @@ GPUGenie::decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arra
         printf("Codec used %d of %d s_Output array.\n", capacity, GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE);
     }
 }
+
+
 
