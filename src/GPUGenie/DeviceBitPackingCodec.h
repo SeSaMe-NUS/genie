@@ -322,6 +322,10 @@ public:
 
     virtual std::string
     name() const { return "DeviceBitPackingCodec"; }
+
+    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 
@@ -456,6 +460,11 @@ public:
 
     virtual std::string
     name() const { return "DeviceBitPackingPrefixedCodec"; }
+
+
+    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 }

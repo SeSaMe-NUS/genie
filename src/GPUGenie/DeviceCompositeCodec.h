@@ -14,7 +14,13 @@
 namespace GPUGenie {
 
 template <class CODEC> __global__ void
-decodeArrayParallel(uint32_t *d_Input, uint32_t *d_Output, size_t arrayLength, size_t capacity);
+decodeArrayParallel(
+        uint32_t *d_Input,
+        size_t arrayLength,
+        uint32_t *d_Output,
+        size_t capacity,
+        size_t *decomprLength = NULL);
+
 
 class DeviceIntegerCODEC {
 public:
@@ -57,6 +63,18 @@ public:
 
     virtual std::string
     name() const = 0;
+
+    /** The amount of CUDA blocks this codec is able to operate on at the same time **/
+    virtual __device__ __host__
+    int decodeArrayParallel_maxBlocks() = 0;
+
+    /** Maximal uncompressed (or compressed) size of the array the codec is able to process **/
+    virtual __device__ __host__ int
+    decodeArrayParallel_lengthPerBlock() = 0;
+
+    /** Number of decompressed values extracted by a single thread **/
+    virtual __device__ __host__ int
+    decodeArrayParallel_threadLoad() = 0;
 };
 
 class DeviceJustCopyCodec : public DeviceIntegerCODEC {
@@ -100,8 +118,10 @@ public:
         assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
         assert(length <= nvalue); // not enough capacity in the decompressed array!
 
-        uint idx = blockIdx.x * blockDim.x + threadIdx.x;
-        d_out[idx] = d_in[idx];
+        int idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx < length)
+            d_out[idx] = d_in[idx];
+        __syncthreads();
 
         nvalue = length;
         return d_in + length;
@@ -112,6 +132,11 @@ public:
 
     virtual std::string
     name() const { return "DeviceJustCopyCodec"; }
+
+    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
+    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 1; }
+
 };
 
 
@@ -196,6 +221,10 @@ public:
 
     virtual std::string
     name() const { return "DeviceDeltaCodec"; }
+
+    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 
@@ -287,6 +316,24 @@ public:
         std::ostringstream convert;
         convert << "DeviceCompositeCodec_" << codec1.name() << "+" << codec2.name();
         return convert.str();
+    }
+
+    virtual __device__ __host__ int
+    decodeArrayParallel_maxBlocks() { 
+        assert(codec1.decodeArrayParallel_maxBlocks() == codec2.decodeArrayParallel_maxBlocks());
+        return codec1.decodeArrayParallel_maxBlocks();
+    }
+    
+    virtual __device__ __host__ int
+    decodeArrayParallel_lengthPerBlock() {
+        assert(codec1.decodeArrayParallel_lengthPerBlock() == codec2.decodeArrayParallel_lengthPerBlock());
+        return codec1.decodeArrayParallel_lengthPerBlock();
+    }
+
+    virtual __device__ __host__ int
+    decodeArrayParallel_threadLoad() {
+        assert(codec1.decodeArrayParallel_threadLoad() == codec2.decodeArrayParallel_threadLoad());
+        return codec1.decodeArrayParallel_threadLoad();
     }
 };
 

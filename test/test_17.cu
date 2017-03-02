@@ -21,6 +21,7 @@ bool testScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input
 {
     cudaCheckErrors(cudaMemcpy(d_Input, h_Input, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
     cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
+
     memset(h_OutputCPU, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     
     uint64_t scanStart = getTime();
@@ -68,51 +69,63 @@ bool testScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input
 
 template <class CODEC>
 bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_InputCompr,
-        uint *d_Output, size_t arrayLength)
+        uint *d_Output, size_t arrayLength, size_t *d_decomprLength)
 {
-    CODEC bpCodec;
+    CODEC codec;
 
     size_t comprLength = SCAN_MAX_LARGE_ARRAY_SIZE;
     memset(h_InputCompr, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
-    bpCodec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
+    codec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
     assert(comprLength <= arrayLength);
 
-    printf("h_Input: ");
-    for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-        printf("%d ", h_Input[i]);
-    printf("\n");
+    // printf("codec.name(): %s\n", codec.name().c_str());
+    // printf("arrayLength: %lu\n", arrayLength);
+    // printf("comprLength: %lu\n", comprLength);
 
-    printf("h_InputCompr: ");
-    for (uint i = 0; i < std::min((uint) comprLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-        printf("0x%08X ", h_InputCompr[i]);
-    printf("\n");
+    // printf("h_Input: ");
+    // for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
+    //     printf("%d ", h_Input[i]);
+    // printf("\n");
+
+    // printf("h_InputCompr: ");
+    // for (uint i = 0; i < std::min((uint) comprLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
+    //     printf("0x%08X ", h_InputCompr[i]);
+    // printf("\n");
 
     cudaCheckErrors(cudaMemcpy(d_InputCompr, h_InputCompr, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
     cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
+    cudaCheckErrors(cudaMemset(d_decomprLength, 0, sizeof(size_t)));
     memset(h_OutputCPU, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     
+    int threadsPerBlock = (codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
+    int blocks = (arrayLength + threadsPerBlock - 1) / threadsPerBlock;
+    assert(blocks <= codec.decodeArrayParallel_maxBlocks());
+
+    // run decompression on GPU
     uint64_t decomprStart = getTime();
-
-    decodeArrayParallel<CODEC><<<1,SCAN_THREADBLOCK_SIZE>>>(d_InputCompr, d_Output, comprLength, SCAN_MAX_LARGE_ARRAY_SIZE);
-    
+    decodeArrayParallel<CODEC><<<blocks,threadsPerBlock>>>(d_InputCompr, comprLength, d_Output, SCAN_MAX_SHORT_ARRAY_SIZE, d_decomprLength);
     uint64_t decomprEnd = getTime();
+    // copy decompression results from GPU
+    cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyDeviceToHost));
+    size_t decomprLengthGPU;
+    cudaCheckErrors(cudaMemcpy(&decomprLengthGPU, d_decomprLength, sizeof(size_t), cudaMemcpyDeviceToHost));
 
-    cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint),
-        cudaMemcpyDeviceToHost));
+    // run decompression on CPU
+    size_t decomprLengthCPU = SCAN_MAX_LARGE_ARRAY_SIZE;
+    codec.decodeArray(h_InputCompr, comprLength, h_OutputCPU, decomprLengthCPU);
 
-    size_t decomprLength = SCAN_MAX_LARGE_ARRAY_SIZE;
-    bpCodec.decodeArray(h_OutputCPU, comprLength, h_InputCompr, decomprLength);
-
-    // Check if lenth from CPU decompression matches the original length
-    assert(decomprLength == arrayLength);
+    // Check if lenth from CPU and GPU decompression matches the original length
+    assert(decomprLengthCPU == arrayLength);
+    assert(decomprLengthGPU == arrayLength);
 
     // Compare original array with CPU decompressed array and GPU decompressed array
     bool ok = true;
-    for (uint i = 0; i < SCAN_MAX_LARGE_ARRAY_SIZE; i++)
+    for (uint i = 0; i < arrayLength; i++)
     {
         if (h_OutputCPU[i] != h_OutputGPU[i] || h_OutputGPU[i] != h_Input[i])
         {
             ok = false;
+            printf ("mismatch: h_Input[%d]=%u, h_OutputCPU[%d]=%u, h_Input[%d]=%u\n", i, h_Input[i], i, h_OutputCPU[i], i, h_OutputGPU[i]);
             break;
         }
     }
@@ -120,18 +133,22 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     {
         printf("h_OutputGPU: ");
         for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-            printf("%d ", h_OutputGPU[i]);
+            printf("%u ", h_OutputGPU[i]);
         printf("\n");
 
         printf("h_OutputCPU: ");
         for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-            printf("%d ", h_OutputCPU[i]);
+            printf("%u ", h_OutputCPU[i]);
         printf("\n");
     }
 
     double decomprTime = getInterval(decomprStart, decomprEnd);
-    Logger::log(Logger::INFO, "Decompression on array of size %d took %.4ff ms. Throughput: %.4f milions of elements per second"
-        , arrayLength, decomprTime, 1.0e-6 * (double)arrayLength/decomprTime);
+    Logger::log(Logger::INFO, "Done parallel GPU decompression");
+    Logger::log(Logger::INFO, "Codec: %s", codec.name().c_str());
+    Logger::log(Logger::INFO, "Array size: %d, Compressed size: %d, Ratio: %f bpi", arrayLength, comprLength,
+            32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
+    Logger::log(Logger::INFO, "Time (decompr): %.4f ms, Throughput: %.4f mil. of elements per second",
+            decomprTime, 1.0e-6 * (double)arrayLength/decomprTime);
 
     return ok;
 }
@@ -145,6 +162,7 @@ int main(int argc, char **argv)
     // findCudaDevice(argc, (const char **)argv);
 
     uint *d_Input, *d_Output;
+    size_t *d_decomprLength;
     uint *h_Input, *h_InputCompr, *h_OutputCPU, *h_OutputGPU;
     const uint N = SCAN_MAX_LARGE_ARRAY_SIZE;
 
@@ -161,6 +179,7 @@ int main(int argc, char **argv)
     printf("Allocating and initializing CUDA arrays...\n");
     cudaCheckErrors(cudaMalloc((void **)&d_Input, N * sizeof(uint)));
     cudaCheckErrors(cudaMalloc((void **)&d_Output, N * sizeof(uint)));
+    cudaCheckErrors(cudaMalloc((void **)&d_decomprLength, sizeof(size_t)));
 
     printf("Initializing CUDA-C scan...\n\n");
     initScan();
@@ -175,13 +194,16 @@ int main(int argc, char **argv)
     ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE);
     assert(ok);
 
-
-    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8);
+    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
 
     printf("Shutting down...\n");
     closeScan();
     cudaCheckErrors(cudaFree(d_Output));
     cudaCheckErrors(cudaFree(d_Input));
+    cudaCheckErrors(cudaFree(d_decomprLength));
 
 }
