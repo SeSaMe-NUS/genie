@@ -33,7 +33,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
 
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-option(BUILD_STATIC_LIBS ON)
+option(BUILD_SHARED_LIBS OFF)
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
