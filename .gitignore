@@ -53,3 +53,6 @@ Makefile
 #Doxygen files
 doc/html
 Doxyfile
+
+#vim swap files
+*.swp
