@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 	knn_search_after_preprocess(config, table, result, result_count);
 
 	/*
-	 * TODO: merge results from all ranks
+	 * merge results from all ranks
 	 */
 	int *final_result = NULL;
 	int *final_result_count = NULL;
@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
 		vector<int> final_result_vec;
 		vector<int> final_result_count_vec;
 
+		// TODO: make the sort stable
 		for (int i = 0; i < config.num_of_queries; ++i) {
 			// gather result for a single query using priority queue
 			priority_queue<pii, vector<pii>, std::less<pii> > single_query_priority_queue; // count is key, id is value
@@ -115,6 +116,7 @@ int main(int argc, char *argv[])
 		cout << MPI_DEBUG << "final result vector size is " << final_result_vec.size() << endl;
 		for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
 			cout << MPI_DEBUG << "final result vector: " << *it << endl;
+		// TODO: save result to a file
 	}
 
 	MPI_Finalize();
@@ -135,7 +137,6 @@ void ParseConfigurationFile(
 	/*
 	 * read configurations from file and store them in a map
 	 */
-	cout << MPI_DEBUG << "Reading configurations from " << config_filename << endl;
 	map<string, string> config_map;
 	ifstream config_file(config_filename);
 	string line, key, value;
@@ -152,11 +153,15 @@ void ParseConfigurationFile(
 	 * create config structs from configuration map
 	 */
 	if (!ValidateConfiguration(config_map))
+	{
 		MPI_Finalize();
-	config.dim = 5;
-	config.count_threshold = 14;
-	config.num_of_topk = 3;
-	config.hashtable_size = 14*config.num_of_topk*1.5;
+		return;
+	}
+
+	config.dim = stoi(config_map.find("dim")->second);
+	config.count_threshold = stoi(config_map.find("count_threshold")->second);
+	config.num_of_topk = stoi(config_map.find("num_of_topk")->second);
+	config.hashtable_size = 14 * config.num_of_topk * 1.5;
 	config.query_radius = 0;
 	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
@@ -171,7 +176,7 @@ void ParseConfigurationFile(
 	config.search_type = 0;
 	config.max_data_size = 0;
 	
-	config.num_of_queries = 3;
+	config.num_of_queries = stoi(config_map.find("num_of_queries")->second);
 
 	extra_config.data_file = config_map.find("data_file")->second;
 	extra_config.query_file = config_map.find("query_file")->second;
@@ -187,6 +192,9 @@ bool ValidateConfiguration(map<string, string> config_map)
 	vector<string> compulsoryEntries;
 	compulsoryEntries.push_back("data_file");
 	compulsoryEntries.push_back("query_file");
+	compulsoryEntries.push_back("dim");
+	compulsoryEntries.push_back("count_threshold");
+	compulsoryEntries.push_back("num_of_topk");
 	compulsoryEntries.push_back("num_of_queries");
 
 	for (auto iterator = compulsoryEntries.begin(); iterator < compulsoryEntries.end(); ++iterator)
