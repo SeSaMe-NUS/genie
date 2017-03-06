@@ -4,11 +4,15 @@
 #include <sstream>
 #include <cstdio>
 #include <vector>
+#include <queue>
+#include <map>
+#include <utility>
 #include <algorithm>
 #include "GPUGenie.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
 #define MPI_DEBUG ">>>MPI DEBUG<<< "
+#define pii std::pair<int, int>
 
 using namespace std;
 using namespace GPUGenie;
@@ -69,52 +73,48 @@ int main(int argc, char *argv[])
 	preprocess_for_knn_csv(config, table);
 	knn_search_after_preprocess(config, table, result, result_count);
 
-	// debug
-	//for (auto it = result_count.begin(); it < result_count.end(); ++it)
-	//	cout << MPI_DEBUG << "result from rank " << MPI_rank << ": " << *(it) << endl;
-	//cout << MPI_DEBUG << "result from rank " << MPI_rank << ": " << result_count.size() << endl;
-
 	/*
 	 * TODO: merge results from all ranks
 	 */
-	int *final_result;
-	int *final_result_count;
+	int *final_result = NULL;
+	int *final_result_count = NULL;
 	int single_rank_result_size = config.num_of_topk * config.num_of_queries;
-	int result_size;
 	if (MPI_rank == 0) {
-		result_size = MPI_size * single_rank_result_size;
+		int result_size = MPI_size * single_rank_result_size;
 		final_result = (int *)malloc(sizeof(int) * result_size);
 		final_result_count = (int *)malloc(sizeof(int) * result_size);
 	}
-	MPI_Gather(&result[0], single_rank_result_size, MPI_INT, final_result, result_size, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Gather(&result_count[0], single_rank_result_size, MPI_INT, final_result_count, result_size, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Gather(&result[0], single_rank_result_size, MPI_INT, final_result, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Gather(&result_count[0], single_rank_result_size, MPI_INT, final_result_count, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	// sort after gather
+	// merge results for each query
 	if (MPI_rank == 0) {
-		vector<int> single_query_result;
-		vector<int> single_query_result_count;
 		vector<int> final_result_vec;
 		vector<int> final_result_count_vec;
 
-		// sort for each query and concatenate them
 		for (int i = 0; i < config.num_of_queries; ++i) {
-			single_query_result.clear();
+			// gather result for a single query using priority queue
+			priority_queue<pii, vector<pii>, std::less<pii> > single_query_priority_queue; // count is key, id is value
 			for (int j = 0; j < MPI_size; ++j) {
+				int offset = j * single_rank_result_size + i * config.num_of_topk;
 				for (int k = 0; k < config.num_of_topk; ++k) {
-					int offset = j * single_rank_result_size + i * config.num_of_topk + k; // k-th result on j-th rank for i-th query
-					single_query_result.push_back(final_result[offset]);
+					// k-th result on j-th rank for i-th query
+					single_query_priority_queue.push(std::pair<int, int>(final_result_count[offset + k], final_result[offset + k]));
 				}
 			}
-			sort(single_query_result.begin(), single_query_result.end(), std::greater<int>());
-			single_query_result.resize(config.num_of_topk); // only save the overall top-k results
-			cout << MPI_DEBUG << "single query of " << i << " has size " << single_query_result.size() << endl;
-			for (int x = 0; x < config.num_of_topk; ++x)
-				cout << MPI_DEBUG << "query[" << x << "]: " << single_query_result.at(x) << endl;
-			final_result_vec.insert(final_result_vec.end(), single_query_result.begin(), single_query_result.end()); // final vector contains top-k for all queries, so append to it
+
+			// append top k of i-th query to final result vector (which contains top k of all queries)
+			for (int j = 0; j < config.num_of_topk; ++j) {
+				std::pair<int, int> single_result = single_query_priority_queue.top();
+				single_query_priority_queue.pop();
+				final_result_vec.push_back(single_result.second);
+				final_result_count_vec.push_back(single_result.first);
+			}
 		}
 
+		cout << MPI_DEBUG << "final result vector size is " << final_result_vec.size() << endl;
 		for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
-			cout << MPI_DEBUG << "final result vec: " << *it << endl;
+			cout << MPI_DEBUG << "final result vector: " << *it << endl;
 	}
 
 	MPI_Finalize();
@@ -155,7 +155,7 @@ void ParseConfigurationFile(
 		MPI_Finalize();
 	config.dim = 5;
 	config.count_threshold = 14;
-	config.num_of_topk = 5;
+	config.num_of_topk = 3;
 	config.hashtable_size = 14*config.num_of_topk*1.5;
 	config.query_radius = 0;
 	config.use_device = LOCAL_RANK;
