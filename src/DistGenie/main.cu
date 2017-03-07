@@ -20,6 +20,7 @@ using namespace GPUGenie;
 struct ExtraConfig {
 	string data_file;
 	string query_file;
+	string output_file;
 };
 
 void ParseConfigurationFile(GPUGenie_Config &, ExtraConfig &, const string);
@@ -116,6 +117,14 @@ int main(int argc, char *argv[])
 		cout << MPI_DEBUG << "final result vector size is " << final_result_vec.size() << endl;
 		for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
 			cout << MPI_DEBUG << "final result vector: " << *it << endl;
+		for (auto it = final_result_count_vec.begin(); it < final_result_count_vec.end(); ++it)
+			cout << MPI_DEBUG << "final result count vector: " << *it << endl;
+		// write result to file
+		ofstream output(extra_config.output_file);
+		for (auto it1 = final_result_vec.begin(), it2 = final_result_count_vec.begin(); it1 != final_result_vec.end(); ++it1, ++it2) {
+			output << *it1 << "," << *it2 << endl;
+		}
+		output.close();
 		// TODO: save result to a file
 	}
 
@@ -127,7 +136,8 @@ int main(int argc, char *argv[])
  * Parse configuration file
  *
  * param config (OUTPUT) Config struct of GPUGenie
- * param configFileName (INPUT) Configuration file name
+ * param extra_config (OUTPUT) Extra configuration for MPIGenie
+ * param config_filename (INPUT) Configuration file name
  */
 void ParseConfigurationFile(
 		GPUGenie_Config &config,
@@ -172,14 +182,15 @@ void ParseConfigurationFile(
 	config.multiplier = 1.5f;
 	config.use_multirange = false;
 	
-	config.data_type = 0;
-	config.search_type = 0;
-	config.max_data_size = 0;
+	config.data_type = stoi(config_map.find("data_type")->second);
+	config.search_type = stoi(config_map.find("search_type")->second);
+	config.max_data_size = stoi(config_map.find("max_data_size")->second);
 	
 	config.num_of_queries = stoi(config_map.find("num_of_queries")->second);
 
 	extra_config.data_file = config_map.find("data_file")->second;
 	extra_config.query_file = config_map.find("query_file")->second;
+	extra_config.output_file = config_map.find("output_file")->second;
 }
 
 /*
@@ -196,6 +207,10 @@ bool ValidateConfiguration(map<string, string> config_map)
 	compulsoryEntries.push_back("count_threshold");
 	compulsoryEntries.push_back("num_of_topk");
 	compulsoryEntries.push_back("num_of_queries");
+	compulsoryEntries.push_back("data_type");
+	compulsoryEntries.push_back("search_type");
+	compulsoryEntries.push_back("max_data_size");
+	compulsoryEntries.push_back("output_file");
 
 	for (auto iterator = compulsoryEntries.begin(); iterator < compulsoryEntries.end(); ++iterator)
 	{
