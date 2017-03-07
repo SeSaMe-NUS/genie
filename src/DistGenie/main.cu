@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
 	/*
 	 * merge results from all ranks
 	 */
-	int *final_result = NULL;
-	int *final_result_count = NULL;
+	int *final_result = NULL;       // only for MPI
+	int *final_result_count = NULL; // only for MPI
 	int single_rank_result_size = config.num_of_topk * config.num_of_queries;
 	if (MPI_rank == 0) {
 		int result_size = MPI_size * single_rank_result_size;
@@ -88,44 +88,43 @@ int main(int argc, char *argv[])
 	MPI_Gather(&result[0], single_rank_result_size, MPI_INT, final_result, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Gather(&result_count[0], single_rank_result_size, MPI_INT, final_result_count, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	// merge results for each query
 	if (MPI_rank == 0) {
 		vector<int> final_result_vec;
 		vector<int> final_result_count_vec;
 
-		// TODO: make the sort stable
+		// merge results for each query
 		for (int i = 0; i < config.num_of_queries; ++i) {
-			// gather result for a single query using priority queue
-			priority_queue<pii, vector<pii>, std::less<pii> > single_query_priority_queue; // count is key, id is value
+			// count is first, id is second (sort by count)
+			priority_queue<pii, vector<pii>, std::less<pii> > single_query_priority_queue;
 			for (int j = 0; j < MPI_size; ++j) {
 				int offset = j * single_rank_result_size + i * config.num_of_topk;
 				for (int k = 0; k < config.num_of_topk; ++k) {
 					// k-th result on j-th rank for i-th query
-					single_query_priority_queue.push(std::pair<int, int>(final_result_count[offset + k], final_result[offset + k]));
+					single_query_priority_queue.push(pii(final_result_count[offset + k], final_result[offset + k]));
 				}
 			}
 
 			// append top k of i-th query to final result vector (which contains top k of all queries)
 			for (int j = 0; j < config.num_of_topk; ++j) {
-				std::pair<int, int> single_result = single_query_priority_queue.top();
+				pii single_result = single_query_priority_queue.top();
 				single_query_priority_queue.pop();
 				final_result_vec.push_back(single_result.second);
 				final_result_count_vec.push_back(single_result.first);
 			}
 		}
 
-		cout << MPI_DEBUG << "final result vector size is " << final_result_vec.size() << endl;
+		// debug
 		for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
 			cout << MPI_DEBUG << "final result vector: " << *it << endl;
 		for (auto it = final_result_count_vec.begin(); it < final_result_count_vec.end(); ++it)
 			cout << MPI_DEBUG << "final result count vector: " << *it << endl;
+
 		// write result to file
 		ofstream output(extra_config.output_file);
 		for (auto it1 = final_result_vec.begin(), it2 = final_result_count_vec.begin(); it1 != final_result_vec.end(); ++it1, ++it2) {
 			output << *it1 << "," << *it2 << endl;
 		}
 		output.close();
-		// TODO: save result to a file
 	}
 
 	MPI_Finalize();
