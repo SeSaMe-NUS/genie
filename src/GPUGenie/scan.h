@@ -25,15 +25,16 @@ extern const unsigned int SCAN_MAX_LARGE_ARRAY_SIZE;
 void initScan(void);
 void closeScan(void);
 
-__device__ __host__ uint pow2ceil_32(uint x);
+extern __device__ uint d_pow2ceil_32(uint x);
+uint h_pow2ceil_32(uint x);
 
-__global__ void g_scanExclusiveShared(
+extern __global__ void g_scanExclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
     uint pow2size);
 
-__device__ void d_scanExclusiveShared(
+extern __device__ void d_scanExclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,

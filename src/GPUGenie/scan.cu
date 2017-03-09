@@ -192,7 +192,21 @@ void GPUGenie::closeScan(void)
 
 
 // Returns the first power of two greater or equal to x
-__device__ __host__ uint GPUGenie::pow2ceil_32 (uint x)
+__device__ uint GPUGenie::d_pow2ceil_32 (uint x)
+{
+    if (x == 0)
+        return 0;
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return x+1;
+}
+
+// Returns the first power of two greater or equal to x
+uint GPUGenie::h_pow2ceil_32 (uint x)
 {
     if (x == 0)
         return 0;
@@ -219,7 +233,7 @@ size_t GPUGenie::scanExclusiveShort(
     assert(arrayLength % 4 == 0);
 
     //Check power-of-two factorization
-    uint pow2arrayLength = pow2ceil_32(arrayLength);
+    uint pow2arrayLength = h_pow2ceil_32(arrayLength);
     printf("power of two size: %u\n", pow2arrayLength);
     assert(pow2arrayLength >= arrayLength);
 
@@ -249,7 +263,7 @@ size_t GPUGenie::scanExclusiveLarge(
     assert(arrayLength % 4 == 0);
 
     //Check power-of-two factorization
-    uint pow2arrayLength = pow2ceil_32(arrayLength);
+    uint pow2arrayLength = h_pow2ceil_32(arrayLength);
     printf("power of two size: %u\n", pow2arrayLength);
     assert(pow2arrayLength >= (arrayLength));
 
@@ -300,4 +314,6 @@ void GPUGenie::scanExclusiveHost(
     for (uint j = 1; j < arrayLength; j++)
         dst[j] = src[j - 1] + dst[j - 1];
 }
+
+
 
