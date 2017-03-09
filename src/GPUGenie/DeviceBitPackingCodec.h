@@ -7,6 +7,8 @@
 
 #include "DeviceBitPackingHelpers.h"
 
+#include "scan.h"
+
 namespace GPUGenie {
 
 // threadblock size is 256, same for all codecs (can be up to 1024 for compute capability >= 2.0)
@@ -92,7 +94,7 @@ public:
     };
 
 
-    virtual void
+    void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
         const uint32_t *const initout(out);
         *out++ = static_cast<uint32_t>(length);
@@ -137,7 +139,7 @@ public:
         nvalue = out - initout;
     }
 
-    virtual const uint32_t*
+    const uint32_t*
     decodeArray(const uint32_t *in, const size_t /*length*/, uint32_t *out, size_t &nvalue) {
         const uint32_t actuallength = *in++;
         const uint32_t *const initout(out);
@@ -182,7 +184,7 @@ public:
         return (a % x == 0);
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArraySequential(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) {
         const uint32_t actuallength = *d_in++;
         const uint32_t *const initout(d_out);
@@ -222,7 +224,7 @@ public:
         return d_in;
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t /* comprLength */, uint32_t *d_out, size_t &capacity) {
         assert(gridDim.x == 1); // currently only support single block
 
@@ -317,15 +319,15 @@ public:
         return d_in + length;
     }
 
-    virtual __device__ __host__
+    __device__ __host__
     ~DeviceBitPackingCodec() {}
 
-    virtual std::string
+    std::string
     name() const { return "DeviceBitPackingCodec"; }
 
-    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
-    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
-    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
+    __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 
@@ -372,16 +374,25 @@ public:
         return (a % x == 0);
     }
 
-    virtual void
-    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
+    void
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+    {
+        return;
+    }
 
-    virtual const uint32_t*
-    decodeArray(const uint32_t *in, const size_t /*length*/, uint32_t *out, size_t &nvalue) = 0;
+    const uint32_t*
+    decodeArray(const uint32_t *in, const size_t /*length*/, uint32_t *out, size_t &nvalue)
+    {
+        return NULL;
+    }
 
-    __device__ virtual const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue) = 0;
+    __device__ const uint32_t*
+    decodeArraySequential(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue)
+    {
+        return NULL;
+    }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t comprLength, uint32_t *d_out, size_t &capacity) {
         assert(gridDim.x == 1); // currently only support single block
 
@@ -455,16 +466,16 @@ public:
         return d_in + length;
     }
 
-    virtual __device__ __host__
+    __device__ __host__
     ~DeviceBitPackingPrefixedCodec() {}
 
-    virtual std::string
+    std::string
     name() const { return "DeviceBitPackingPrefixedCodec"; }
 
 
-    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
-    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
-    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
+    __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 }

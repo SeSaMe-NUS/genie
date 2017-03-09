@@ -13,8 +13,18 @@
 
 namespace GPUGenie {
 
-template <class CODEC> __global__ void
+template <class CODEC> void
 decodeArrayParallel(
+        int blocks,
+        int threads, 
+        uint32_t *d_Input,
+        size_t arrayLength,
+        uint32_t *d_Output,
+        size_t capacity,
+        size_t *decomprLength = NULL);
+
+template <class CODEC> __global__ void
+g_decodeArrayParallel(
         uint32_t *d_Input,
         size_t arrayLength,
         uint32_t *d_Output,
@@ -27,54 +37,60 @@ public:
     __device__ __host__
     DeviceIntegerCODEC() {}
 
-    virtual void
+    void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {};
 
-    virtual const uint32_t*
-    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) { return NULL; };
+    const uint32_t*
+    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {return NULL;};
 
     /**
         The function must make sure not to write in d_out[nvalue] and beyond. If decompressed size is greater than
         the capacity (nvalue), there is no need to write any output at all.
+
+        Node, this function should be pure virtual, but CUDA doesn't allow combination of virtual functions on both 
+        __host__ and __device__. If a function is pure virtual, it has to be overridden on both __host__ and __device__
     **/
-    __device__ virtual const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
+    __device__ const uint32_t*
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {return NULL;}
 
     /**
-     * Decompress compressed list using thread parallelism.
-    **/
-    __device__ virtual const uint32_t*
-    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) = 0;
+        Decompress compressed list using thread parallelism.
 
-    virtual __device__ __host__
+        Node, this function should be pure virtual, but CUDA doesn't allow combination of virtual functions on both 
+        __host__ and __device__.
+    **/
+    __device__ const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {return NULL;}
+
+    __device__ __host__
     ~DeviceIntegerCODEC() {}
 
     /** Convenience function not supported */
-    virtual std::vector<uint32_t>
+    std::vector<uint32_t>
     compress(std::vector<uint32_t> &data) {
         throw std::logic_error("DeviceIntegerCODEC::compress not supported!");
     }
 
     /** Convenience function not supported */
-    virtual std::vector<uint32_t>
+    std::vector<uint32_t>
     uncompress(std::vector<uint32_t> &compresseddata, size_t expected_uncompressed_size = 0) {
         throw std::logic_error("DeviceIntegerCODEC::uncompress not supported!");
     }
 
-    virtual std::string
-    name() const = 0;
+    std::string
+    name() const {return std::string("DeviceIntegerCODEC");};
 
     /** The amount of CUDA blocks this codec is able to operate on at the same time **/
-    virtual __device__ __host__
-    int decodeArrayParallel_maxBlocks() = 0;
+    __device__ __host__
+    int decodeArrayParallel_maxBlocks() {return -1;}
 
     /** Maximal uncompressed (or compressed) size of the array the codec is able to process **/
-    virtual __device__ __host__ int
-    decodeArrayParallel_lengthPerBlock() = 0;
+    __device__ __host__ int
+    decodeArrayParallel_lengthPerBlock() {return -1;}
 
     /** Number of decompressed values extracted by a single thread **/
-    virtual __device__ __host__ int
-    decodeArrayParallel_threadLoad() = 0;
+    __device__ __host__ int
+    decodeArrayParallel_threadLoad() {return -1;}
 };
 
 class DeviceJustCopyCodec : public DeviceIntegerCODEC {
@@ -83,14 +99,14 @@ public:
     __device__ __host__
     DeviceJustCopyCodec() : DeviceIntegerCODEC() {}
 
-    virtual void
+    void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
     {
         std::memcpy(out, in, sizeof(uint32_t) * length);
         nvalue = length;
     }
 
-    virtual const uint32_t*
+    const uint32_t*
     decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
     {
         std::memcpy(out, in, sizeof(uint32_t) * length);
@@ -98,7 +114,7 @@ public:
         return in + length;
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
         if (length > nvalue){
@@ -112,7 +128,7 @@ public:
         return d_in + length;
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
         assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
@@ -127,15 +143,15 @@ public:
         return d_in + length;
     }
 
-    virtual __device__ __host__
+    __device__ __host__
     ~DeviceJustCopyCodec() {}
 
-    virtual std::string
+    std::string
     name() const { return "DeviceJustCopyCodec"; }
 
-    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
-    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
-    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 1; }
+    __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
+    __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadLoad() { return 1; }
 
 };
 
@@ -146,85 +162,27 @@ public:
     __device__ __host__
     DeviceDeltaCodec() : DeviceIntegerCODEC() {}
 
-    virtual void
-    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
-    {
-        std::memcpy(out, in, sizeof(uint32_t) * length);
-        DeviceDeltaHelper<uint32_t>::delta(0, out, length);
-        nvalue = length;
-    }
+    void
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue);
 
-    virtual const uint32_t*
-    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
-    {
-        std::memcpy(out, in, sizeof(uint32_t) * length);
-        DeviceDeltaHelper<uint32_t>::inverseDelta(0, out, length);
-        nvalue = length;
-        return in + length;
-    }
+    const uint32_t*
+    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue);
 
-    __device__ virtual const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
-    {
-        if (length > nvalue){
-            // We do not have enough capacity in the decompressed array!
-            nvalue = length;
-            return d_in;
-        }
-        for (int i = 0; i < length; i++)
-            d_out[i] = d_in[i];
-        DeviceDeltaHelper<uint32_t>::inverseDeltaOnGPU(0, d_out, length);
-        nvalue = length;
-        return d_in + length;
-    }
+    __device__ const uint32_t*
+    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue);
 
-    __device__ virtual const uint32_t*
-    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
-    {
-        assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
-        assert(length <= nvalue); // not enough capacity in the decompressed array!
-        assert(blockIdx.x == 0); // currently only support single block
+    __device__ const uint32_t*
+    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue);
 
-        uint idx = blockIdx.x * blockDim.x + threadIdx.x;
-        d_out[idx] = 0; // d_out should be shared memory
-
-        size_t arrayLength = (length + 3) / 4;
-        assert((arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) &&
-                (arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
-        uint pow2arrayLength = pow2ceil_32(arrayLength);
-
-        // Check supported size range
-        // Check parallel model compatibility
-        assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE && gridDim.x == 1);
-
-        __syncthreads();
-        d_scanExclusiveShared((uint4 *)d_in, (uint4 *)d_out, arrayLength / 4, pow2arrayLength);
-        __syncthreads();
-        
-        if (idx == 0)
-            assert(d_out[idx] == 0);
-        else
-            assert(d_out[idx] >= d_out[idx]-1);
-
-        // turn it into inclusive scan
-        uint32_t inc = d_in[0];
-        __syncthreads();
-        d_out[idx] += inc;
-        __syncthreads();
-
-        nvalue = length;
-        return d_in + length;
-    }
-
-    virtual __device__ __host__
+    __device__ __host__
     ~DeviceDeltaCodec() {}
 
-    virtual std::string
+    std::string
     name() const { return "DeviceDeltaCodec"; }
 
-    virtual __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
-    virtual __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
-    virtual __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
+    __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
 
@@ -244,10 +202,10 @@ public:
     Codec1 codec1;
     Codec2 codec2;
 
-    virtual __device__ __host__
+    __device__ __host__
     ~DeviceCompositeCodec() {}
 
-    virtual void
+    void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
         const size_t roundedlength = length / Codec1::BlockSize * Codec1::BlockSize;
         size_t nvalue1 = nvalue;
@@ -263,7 +221,7 @@ public:
         }
     }
 
-    virtual const uint32_t*
+    const uint32_t*
     decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
         const uint32_t *const initin(in);
         size_t mynvalue1 = nvalue;
@@ -281,7 +239,7 @@ public:
         return in2;
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
         const uint32_t *const initin(d_in);
         size_t mynvalue1 = nvalue;
@@ -307,7 +265,7 @@ public:
         return d_in2;
     }
 
-    __device__ virtual const uint32_t*
+    __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
         return NULL;
     }
@@ -318,19 +276,19 @@ public:
         return convert.str();
     }
 
-    virtual __device__ __host__ int
+    __device__ __host__ int
     decodeArrayParallel_maxBlocks() { 
         assert(codec1.decodeArrayParallel_maxBlocks() == codec2.decodeArrayParallel_maxBlocks());
         return codec1.decodeArrayParallel_maxBlocks();
     }
-    
-    virtual __device__ __host__ int
+
+    __device__ __host__ int
     decodeArrayParallel_lengthPerBlock() {
         assert(codec1.decodeArrayParallel_lengthPerBlock() == codec2.decodeArrayParallel_lengthPerBlock());
         return codec1.decodeArrayParallel_lengthPerBlock();
     }
 
-    virtual __device__ __host__ int
+    __device__ __host__ int
     decodeArrayParallel_threadLoad() {
         assert(codec1.decodeArrayParallel_threadLoad() == codec2.decodeArrayParallel_threadLoad());
         return codec1.decodeArrayParallel_threadLoad();
