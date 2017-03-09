@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 	/*
 	 * run the queries
 	 */
-	inv_table * table = NULL;
+	inv_table *table = NULL;
 	vector<int> result;
 	vector<int> result_count;
 	preprocess_for_knn_csv(config, table);
@@ -114,10 +114,10 @@ int main(int argc, char *argv[])
 		}
 
 		// debug
-		for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
-			cout << MPI_DEBUG << "final result vector: " << *it << endl;
-		for (auto it = final_result_count_vec.begin(); it < final_result_count_vec.end(); ++it)
-			cout << MPI_DEBUG << "final result count vector: " << *it << endl;
+		//for (auto it = final_result_vec.begin(); it < final_result_vec.end(); ++it)
+		//	cout << MPI_DEBUG << "final result vector: " << *it << endl;
+		//for (auto it = final_result_count_vec.begin(); it < final_result_count_vec.end(); ++it)
+		//	cout << MPI_DEBUG << "final result count vector: " << *it << endl;
 
 		// write result to file
 		ofstream output(extra_config.output_file);
@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
 		output.close();
 	}
 
+	delete[] table;
 	MPI_Finalize();
 	return EXIT_SUCCESS;
 }
@@ -158,14 +159,18 @@ void ParseConfigurationFile(
 	}
 	config_file.close();
 
-	/*
-	 * create config structs from configuration map
-	 */
 	if (!ValidateConfiguration(config_map))
 	{
 		MPI_Finalize();
 		return;
 	}
+
+	/*
+	 * set configuration structs accordingly
+	 */
+	extra_config.data_file = config_map.find("data_file")->second;
+	extra_config.query_file = config_map.find("query_file")->second;
+	extra_config.output_file = config_map.find("output_file")->second;
 
 	config.dim = stoi(config_map.find("dim")->second);
 	config.count_threshold = stoi(config_map.find("count_threshold")->second);
@@ -186,10 +191,6 @@ void ParseConfigurationFile(
 	config.max_data_size = stoi(config_map.find("max_data_size")->second);
 	
 	config.num_of_queries = stoi(config_map.find("num_of_queries")->second);
-
-	extra_config.data_file = config_map.find("data_file")->second;
-	extra_config.query_file = config_map.find("query_file")->second;
-	extra_config.output_file = config_map.find("output_file")->second;
 }
 
 /*
