@@ -14,6 +14,7 @@
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
+#include <GPUGenie/scan.h> 
 
 using namespace GPUGenie;
 
@@ -103,7 +104,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
 
     // run decompression on GPU
     uint64_t decomprStart = getTime();
-    decodeArrayParallel<CODEC><<<blocks,threadsPerBlock>>>(d_InputCompr, comprLength, d_Output, SCAN_MAX_SHORT_ARRAY_SIZE, d_decomprLength);
+    g_decodeArrayParallel<CODEC><<<blocks,threadsPerBlock>>>(d_InputCompr, comprLength, d_Output, SCAN_MAX_SHORT_ARRAY_SIZE, d_decomprLength);
     uint64_t decomprEnd = getTime();
     // copy decompression results from GPU
     cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyDeviceToHost));
@@ -185,6 +186,7 @@ int main(int argc, char **argv)
     initScan();
 
     bool ok = true;
+    ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 4);
     ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8);
     ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256);
     ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332);
@@ -194,11 +196,34 @@ int main(int argc, char **argv)
     ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE);
     assert(ok);
 
+    ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
     ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
     ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
     ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
     ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
+
+    ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    assert(ok);
+
+    ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    assert(ok);
+
+    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    assert(ok);
+
 
     printf("Shutting down...\n");
     closeScan();
