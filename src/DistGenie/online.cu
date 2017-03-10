@@ -8,6 +8,9 @@
 #include <map>
 #include <utility>
 #include <algorithm>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 #include "GPUGenie.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
@@ -74,11 +77,40 @@ int main(int argc, char *argv[])
 	/*
 	 * handle online queries
 	 */
-	bool cont = true;
 	int num_of_queries, top_k;
 	int *queries_array;
-	while (cont) {
+
+	// socket
+	int sock = socket(PF_INET, SOCK_STREAM, 0);
+	sockaddr_in address;
+	sockaddr client_address;
+	socklen_t address_len = sizeof(client_address);
+
+	address.sin_family = AF_INET;
+	address.sin_port = htons(9090);
+	address.sin_addr.s_addr = INADDR_ANY;
+
+	bind(sock, (struct sockaddr *)&address, sizeof(address));
+	int status = listen(sock, 1);
+	char *recv_buf = new char[1000];
+
+	while (true) {
 		// TODO: rank 0 listen for request, generate query from request (to queries_array)
+		// listen for request
+		int incoming = accept(sock, &client_address, &address_len);
+		memset(recv_buf, 0, 1000);
+		int count = recv(incoming, recv_buf, 1000, 0);
+		close(incoming);
+		//for(int i = 0; i < 1000;++i) {
+		//	if (recv_buf[i] == '\0') {cout << 'x'; break;}
+		//	cout << recv_buf[i];}
+		//cout << endl;
+		string msg(recv_buf);
+		string stop("stop\n");
+		cout << MPI_DEBUG << msg.length() << " " << stop.length() << endl;
+		if (msg == stop) break;
+		cout << MPI_DEBUG << "server received: " << msg << "endofmsg" << endl;
+
 		/*
 		 * prepare num of queries & k value
 		 */
@@ -116,8 +148,6 @@ int main(int argc, char *argv[])
 		delete[] queries_array;
 		// run the queries and write output to file
 		ExecuteQuery(config, extra_config, table);
-		// TODO: remove the next line
-		cont = false;
 	}
 
 	/*
