@@ -41,22 +41,32 @@ GPUGenie::g_decodeArrayParallel(uint32_t *d_Input, size_t arrayLength, uint32_t 
     assert(gridDim.x <= codec.decodeArrayParallel_maxBlocks());
     assert(capacity <= gridDim.x * blockDim.x * codec.decodeArrayParallel_threadLoad());
 
+    
     __shared__ uint32_t s_Input[GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE];
     __shared__ uint32_t s_Output[GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE];
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    printf("d_Input[%d] = 0x%08X \n", idx, d_Input[idx]);
+
     s_Input[idx] = (idx < (int)arrayLength) ? d_Input[idx] : 0;
     s_Output[idx] = 0;
-    __syncthreads();
 
+    printf("s_Input[%d] = 0x%08X \n", idx, s_Input[idx]);
+
+    __syncthreads();
     codec.decodeArrayParallel(s_Input, arrayLength, s_Output, capacity);
     __syncthreads();
+
+    printf("s_Output[%d] = 0x%08X \n", idx, s_Output[idx]);
 
     if (idx < (int)capacity)
         d_Output[idx] = s_Output[idx];
 
     if (idx == 0 && d_decomprLength != NULL)
             (*d_decomprLength) = capacity;
+
+    printf("d_Output[%d] = 0x%08X \n", idx, s_Output[idx]);
 }
 
 
@@ -92,8 +102,8 @@ GPUGenie::DeviceDeltaCodec::decodeArraySequential(const uint32_t *d_in, const si
     return d_in + length;
 }
 
-__device__ const uint32_t*
-GPUGenie::DeviceDeltaCodec::decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+__device__ uint32_t*
+GPUGenie::DeviceDeltaCodec::decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
     assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
     assert(length <= nvalue); // not enough capacity in the decompressed array!
@@ -102,29 +112,31 @@ GPUGenie::DeviceDeltaCodec::decodeArrayParallel(const uint32_t *d_in, const size
     uint idx = blockIdx.x * blockDim.x + threadIdx.x;
     d_out[idx] = 0; // d_out should be shared memory
 
-    size_t arrayLength = (length + 3) / 4;
-    assert((arrayLength >= GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE) &&
-            (arrayLength <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE));
-    uint pow2arrayLength = GPUGenie::d_pow2ceil_32(arrayLength);
+    assert(length > 0 && length <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE);
+    uint pow2arrayLength = GPUGenie::d_pow2ceil_32(length);
+    uint arrayLength = (length + 3) / 4;
+
 
     // Check supported size range
     // Check parallel model compatibility
     assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE && gridDim.x == 1);
 
     __syncthreads();
-    GPUGenie::d_scanExclusiveShared((uint4 *)d_in, (uint4 *)d_out, arrayLength / 4, pow2arrayLength);
+    GPUGenie::d_scanExclusiveShared((uint4 *)d_out, (uint4 *)d_in, arrayLength, pow2arrayLength);
     __syncthreads();
     
     if (idx == 0)
         assert(d_out[idx] == 0);
-    else
-        assert(d_out[idx] >= d_out[idx]-1);
+    else if (idx < arrayLength)
+        assert(d_out[idx] >= d_out[idx-1]);
 
     // turn it into inclusive scan
-    uint32_t inc = d_in[0];
+    uint32_t inc = 0;
+    if (idx < length)
+        inc = d_out[idx+1];
     __syncthreads();
-    d_out[idx] += inc;
-    __syncthreads();
+    if (idx < length)
+        d_out[idx] = inc;
 
     nvalue = length;
     return d_in + length;

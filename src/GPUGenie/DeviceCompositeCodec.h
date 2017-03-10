@@ -128,6 +128,9 @@ public:
         return d_in + length;
     }
 
+    /**
+        This function may access d_in[(length+3)/4] and d_out[(length+3)/4] due to scan4 optimization
+     */
     __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
     {
@@ -171,8 +174,8 @@ public:
     __device__ const uint32_t*
     decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue);
 
-    __device__ const uint32_t*
-    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue);
+    __device__ uint32_t*
+    decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
 
     __device__ __host__
     ~DeviceDeltaCodec() {}

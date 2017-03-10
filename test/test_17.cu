@@ -105,6 +105,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     // run decompression on GPU
     uint64_t decomprStart = getTime();
     g_decodeArrayParallel<CODEC><<<blocks,threadsPerBlock>>>(d_InputCompr, comprLength, d_Output, SCAN_MAX_SHORT_ARRAY_SIZE, d_decomprLength);
+    cudaCheckErrors(cudaDeviceSynchronize());
     uint64_t decomprEnd = getTime();
     // copy decompression results from GPU
     cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyDeviceToHost));
