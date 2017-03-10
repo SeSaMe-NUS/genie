@@ -1,4 +1,5 @@
 include_directories(${MPI_INCLUDE_PATH})
+include_directories(${PROJECT_SOURCE_DIR}/src/DistGenie)
 
 cuda_add_executable(dgenie offline.cu)
 target_link_libraries(dgenie

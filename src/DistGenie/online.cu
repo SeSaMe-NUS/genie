@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+//#include "json.hpp"
 #include "GPUGenie.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
@@ -19,6 +20,7 @@
 
 using namespace std;
 using namespace GPUGenie;
+//using json = nlohmann::json;
 
 struct ExtraConfig {
 	string data_file;
@@ -43,8 +45,7 @@ int main(int argc, char *argv[])
 	{
 		if (MPI_rank == 0)
 			cout << "Usage: mpirun -np <proc> --hostfile <hosts> ./dgenie config.file" << endl;
-		MPI_Finalize();
-		return EXIT_FAILURE;
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 	}
 
 	/*
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
 	int *queries_array;
 
 	// socket
+	// TODO: check socket success
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
 	sockaddr_in address;
 	sockaddr client_address;
@@ -89,48 +91,68 @@ int main(int argc, char *argv[])
 	address.sin_family = AF_INET;
 	address.sin_port = htons(9090);
 	address.sin_addr.s_addr = INADDR_ANY;
-
-	bind(sock, (struct sockaddr *)&address, sizeof(address));
-	int status = listen(sock, 1);
 	char *recv_buf = new char[1000];
+	int *recv_num;
+	if (MPI_rank == 0) {
+		bind(sock, (struct sockaddr *)&address, sizeof(address));
+		int status = listen(sock, 1);
+	}
 
 	while (true) {
-		// TODO: rank 0 listen for request, generate query from request (to queries_array)
-		// listen for request
-		int incoming = accept(sock, &client_address, &address_len);
-		memset(recv_buf, 0, 1000);
-		int count = recv(incoming, recv_buf, 1000, 0);
-		close(incoming);
-		//for(int i = 0; i < 1000;++i) {
-		//	if (recv_buf[i] == '\0') {cout << 'x'; break;}
-		//	cout << recv_buf[i];}
-		//cout << endl;
-		string msg(recv_buf);
-		string stop("stop\n");
-		cout << MPI_DEBUG << msg.length() << " " << stop.length() << endl;
-		if (msg == stop) break;
-		cout << MPI_DEBUG << "server received: " << msg << "endofmsg" << endl;
-
 		/*
 		 * prepare num of queries & k value
 		 */
 		if (MPI_rank == 0) {
-			num_of_queries = 1;
-			top_k = 3;
+			// listen for request
+			int incoming = accept(sock, &client_address, &address_len);
+			memset(recv_buf, 0, 1000);
+			int count = recv(incoming, recv_buf, 1000, 0);
+			close(incoming);
+
+			// parse the request (format: num topk xx xx xx xx xx)
+			string msg(recv_buf);
+			istringstream msg_sstream(msg);
+			int q_num;
+			msg_sstream >> num_of_queries;
+			if (num_of_queries == -1)
+				goto TERMINATE;
+			msg_sstream >> top_k;
+			recv_num = new int[num_of_queries * config.dim];
+			for (int i = 0; i < num_of_queries; ++i)
+				for (int j = 0; j < config.dim; ++j) {
+					msg_sstream >> q_num;
+					recv_num[i * config.dim + j] = q_num;	
+				}
+
+			// debug
+			cout << MPI_DEBUG << "num of queries: " << num_of_queries << endl;
+			cout << MPI_DEBUG << "topk: " << top_k << endl;
 		}
+TERMINATE:
 		MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
 		MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 		config.num_of_queries = num_of_queries;
 		config.num_of_topk = top_k;
+		// terminate program when num_of_queries == -1
+		if (num_of_queries == -1)
+			break;
+
 		/*
 		 * prepare actual queries
 		 */
 		cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
 		queries_array = new int[config.num_of_queries * config.dim];
 		if (MPI_rank == 0) {
-			int test_arr[5] = {10,6,52,62,0};
-			for (int i = 0; i < config.dim; ++i)
-				queries_array[i] = test_arr[i];
+			memcpy(queries_array, recv_num, sizeof(int) * config.dim * config.num_of_queries);
+			cout << MPI_DEBUG << "before delete" << endl;
+			delete[] recv_num;
+			cout << MPI_DEBUG << "after delete" << endl;
+			for (int i = 0; i < num_of_queries; ++i) {
+				cout << MPI_DEBUG;
+				for (int j = 0; j < config.dim; ++j)
+					cout << queries_array[i * config.dim + j] << " ";
+				cout << endl;
+			}
 		}
 		MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 
@@ -153,6 +175,8 @@ int main(int argc, char *argv[])
 	/*
 	 * clean up
 	 */
+	if (MPI_rank == 0)
+		close(sock);
 	delete[] table;
 	MPI_Finalize();
 	return EXIT_SUCCESS;
