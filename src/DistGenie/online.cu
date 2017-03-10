@@ -75,8 +75,7 @@ int main(int argc, char *argv[])
 	 * handle online queries
 	 */
 	bool cont = true;
-	int *num_of_queries = (int *)malloc(sizeof(int));
-	int *top_k = (int *)malloc(sizeof(int));
+	int num_of_queries, top_k;
 	int *queries_array;
 	while (cont) {
 		// TODO: rank 0 listen for request, generate query from request (to queries_array)
@@ -84,17 +83,18 @@ int main(int argc, char *argv[])
 		 * prepare num of queries & k value
 		 */
 		if (MPI_rank == 0) {
-			*num_of_queries = 1;
-			*top_k = 3;
+			num_of_queries = 1;
+			top_k = 3;
 		}
-		MPI_Bcast(num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
-		MPI_Bcast(top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
-		config.num_of_queries = *num_of_queries;
-		config.num_of_topk = *top_k;
+		MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
+		MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
+		config.num_of_queries = num_of_queries;
+		config.num_of_topk = top_k;
 		/*
 		 * prepare actual queries
 		 */
-		queries_array = (int *)malloc(sizeof(int) * config.num_of_queries * config.dim);
+		cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
+		queries_array = new int[config.num_of_queries * config.dim];
 		if (MPI_rank == 0) {
 			int test_arr[5] = {10,6,52,62,0};
 			for (int i = 0; i < config.dim; ++i)
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 				single_query.push_back(queries_array[i * config.dim + j]);
 			queries.push_back(single_query);
 		}
-		free(queries_array);
+		delete[] queries_array;
 		// run the queries and write output to file
 		ExecuteQuery(config, extra_config, table);
 		// TODO: remove the next line
@@ -123,8 +123,6 @@ int main(int argc, char *argv[])
 	/*
 	 * clean up
 	 */
-	free(num_of_queries);
-	free(top_k);
 	delete[] table;
 	MPI_Finalize();
 	return EXIT_SUCCESS;
@@ -191,7 +189,6 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 		//	cout << MPI_DEBUG << "final result count vector: " << *it << endl;
 
 		// write result to file
-		// TODO: create output file with different names
 		ofstream output(extra_config.output_file);
 		for (auto it1 = final_result_vec.begin(), it2 = final_result_count_vec.begin(); it1 != final_result_vec.end(); ++it1, ++it2) {
 			output << *it1 << "," << *it2 << endl;
