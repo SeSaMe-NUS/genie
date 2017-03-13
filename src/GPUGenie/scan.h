@@ -40,6 +40,18 @@ extern __device__ void d_scanExclusiveShared(
     uint activeThreads,
     uint pow2size);
 
+extern __global__ void g_scanInclusiveShared(
+    uint4 *d_Dst,
+    uint4 *d_Src,
+    uint activeThreads,
+    uint pow2size);
+
+extern __device__ void d_scanInclusiveShared(
+    uint4 *d_Dst,
+    uint4 *d_Src,
+    uint activeThreads,
+    uint pow2size);
+
 size_t scanExclusiveShort(
     unsigned int *d_Dst,
     unsigned int *d_Src,

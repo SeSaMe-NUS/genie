@@ -113,6 +113,48 @@ __device__ void GPUGenie::d_scanExclusiveShared(
         d_Dst[pos] = odata4;
 }
 
+__global__ void GPUGenie::g_scanInclusiveShared(
+    uint4 *d_Dst,
+    uint4 *d_Src,
+    uint activeThreads,
+    uint pow2size)
+{
+    __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
+
+    uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+
+    //Load data
+    uint4 idata4 = (pos < activeThreads) ? d_Src[pos] : uint4{0,0,0,0};
+
+    //Calculate exclusive scan
+    uint4 odata4 = scan4Inclusive(idata4, s_Data, pow2size);
+
+    //Write back
+    if (pos < activeThreads)
+        d_Dst[pos] = odata4;
+}
+
+__device__ void GPUGenie::d_scanInclusiveShared(
+    uint4 *d_Dst,
+    uint4 *d_Src,
+    uint activeThreads,
+    uint pow2size)
+{
+    __shared__ uint s_Data[2 * THREADBLOCK_SIZE];
+
+    uint pos = blockIdx.x * blockDim.x + threadIdx.x;
+
+    //Load data
+    uint4 idata4 = (pos < activeThreads) ? d_Src[pos] : uint4{0,0,0,0};
+
+    //Calculate exclusive scan
+    uint4 odata4 = scan4Inclusive(idata4, s_Data, pow2size);
+
+    //Write back
+    if (pos < activeThreads)
+        d_Dst[pos] = odata4;
+}
+
 //Exclusive scan of top elements of bottom-level scans (4 * THREADBLOCK_SIZE)
 __global__ void scanExclusiveShared2(
     uint *d_Buf,
