@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	/*
 	 * prepare the inverted list
 	 */
-	inv_table *table = NULL;
+	inv_table *table = nullptr;
 	preprocess_for_knn_csv(config, table);
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		address.sin_port = htons(9090);
 		address.sin_addr.s_addr = INADDR_ANY;
 		char *recv_buf = new char[1000];
-		int *recv_num;
+		int *queries_array;
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
 
@@ -111,99 +111,101 @@ int main(int argc, char *argv[])
 			string msg(recv_buf);
 			istringstream msg_sstream(msg);
 			int q_num;
+
+			// num of queries
 			msg_sstream >> num_of_queries;
-			if (num_of_queries == -1)
-				goto TERMINATE;
-			msg_sstream >> top_k;
-			recv_num = new int[num_of_queries * config.dim];
-			for (int i = 0; i < num_of_queries; ++i)
-				for (int j = 0; j < config.dim; ++j) {
-					msg_sstream >> q_num;
-					recv_num[i * config.dim + j] = q_num;	
-				}
-
-			// debug
-			cout << MPI_DEBUG << "num of queries: " << num_of_queries << endl;
-			cout << MPI_DEBUG << "topk: " << top_k << endl;
-
-			/*
-			 * broadcast query information
-			 */
-TERMINATE:
+			//cout << MPI_DEBUG << "num of queries: " << num_of_queries << endl;
 			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
-			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 			config.num_of_queries = num_of_queries;
-			config.num_of_topk = top_k;
-			// terminate program when num_of_queries == -1
 			if (num_of_queries == -1) {
 				close(sock);
 				break;
 			}
 
-			cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
-			queries_array = new int[config.num_of_queries * config.dim];
-			if (MPI_rank == 0) {
-				memcpy(queries_array, recv_num, sizeof(int) * config.dim * config.num_of_queries);
-				cout << MPI_DEBUG << "before delete" << endl;
-				delete[] recv_num;
-				cout << MPI_DEBUG << "after delete" << endl;
-				for (int i = 0; i < num_of_queries; ++i) {
-					cout << MPI_DEBUG;
-					for (int j = 0; j < config.dim; ++j)
-						cout << queries_array[i * config.dim + j] << " ";
-					cout << endl;
+			// top k
+			msg_sstream >> top_k;
+			//cout << MPI_DEBUG << "topk: " << top_k << endl;
+			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
+			config.num_of_topk = top_k;
+
+			// query content
+			queries_array = new int[num_of_queries * config.dim];
+			for (int i = 0; i < num_of_queries; ++i)
+				for (int j = 0; j < config.dim; ++j) {
+					msg_sstream >> q_num;
+					queries_array[i * config.dim + j] = q_num;	
 				}
-			}
+			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
 			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
-			// fill queries vector
+
+			// convert queries_array to vector
 			queries.clear();
+			vector<int> single_query;
 			for (int i = 0; i < config.num_of_queries; ++i) {
-				vector<int> single_query;
+				single_query.clear();
 				for (int j = 0; j < config.dim; ++j)
 					single_query.push_back(queries_array[i * config.dim + j]);
 				queries.push_back(single_query);
 			}
 			delete[] queries_array;
 			// run the queries and write output to file
+			cout << MPI_DEBUG << "before executing query" << endl;
 			ExecuteQuery(config, extra_config, table);
+			cout << MPI_DEBUG << "after executing query" << endl;
 		}
 	} else {
 		while (true) {
 			/*
 			 * receive query from master
 			 */
-			// receive num of queries & top k
+			// num of queries
 			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
-			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 			config.num_of_queries = num_of_queries;
-			config.num_of_topk = top_k;
-			// terminate program when num_of_queries == -1
+			cout << MPI_DEBUG << "num of queries: " << config.num_of_queries << endl;
 			if (num_of_queries == -1)
 				break;
 
-			cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
-			queries_array = new int[config.num_of_queries * config.dim];
+			// top k
+			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
+			config.num_of_topk = top_k;
+			cout << MPI_DEBUG << "topk: " << config.num_of_topk << endl;
+
+			// query content
+			try {
+				queries_array = new int[config.num_of_queries * config.dim];
+			} catch (bad_alloc&) {
+				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}
+			cout << MPI_DEBUG << "rank " << MPI_rank << " allocated query space" << endl;
+			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
+			cout << MPI_DEBUG << "rank " << MPI_rank << " after query broadcast" << endl;
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
-			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
+			cout << MPI_DEBUG << "rank " << MPI_rank << " after hash size update" << endl;
 
-			// fill queries vector
+			// convert queries_array to vector
 			queries.clear();
+			vector<int> single_query;
 			for (int i = 0; i < config.num_of_queries; ++i) {
-				vector<int> single_query;
-				for (int j = 0; j < config.dim; ++j)
+				single_query.clear();
+				for (int j = 0; j < config.dim; ++j) {
 					single_query.push_back(queries_array[i * config.dim + j]);
+					cout << MPI_DEBUG << MPI_rank << "Pushed 1 value into single_query" << endl;
+				}
 				queries.push_back(single_query);
 			}
+			cout << MPI_DEBUG << "rank: " << MPI_rank << " after vector conversion" << endl;
 			delete[] queries_array;
 			// run the queries and write output to file
+			cout << MPI_DEBUG << "before executing query" << endl;
 			ExecuteQuery(config, extra_config, table);
+			cout << MPI_DEBUG << "after executing query" << endl;
 		}
 	}
 
@@ -220,26 +222,34 @@ TERMINATE:
  */
 void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table *table)
 {
+	int MPI_rank, MPI_size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+	// debug
+	for (auto it1 = config.query_points->begin(); it1 != config.query_points->end(); ++it1) {
+		cout << MPI_DEBUG << "rank " << MPI_rank;
+		for (auto it2 = it1->begin(); it2 != it1->end(); ++it2)
+			cout << " " << *it2;
+		cout << endl;
+	}
 	/*
 	 * Search step
 	 */
 	vector<int> result;
 	vector<int> result_count;
 	knn_search_after_preprocess(config, table, result, result_count);
+	cout << MPI_DEBUG << "rank " << MPI_rank << " after search" << endl;
 
 	/*
 	 * merge results from all ranks
 	 */
-	int *final_result = NULL;       // only for MPI
-	int *final_result_count = NULL; // only for MPI
+	int *final_result = nullptr;       // only for MPI
+	int *final_result_count = nullptr; // only for MPI
 	int single_rank_result_size = config.num_of_topk * config.num_of_queries;
-	int MPI_rank, MPI_size;
-	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
 	if (MPI_rank == 0) {
 		int result_size = MPI_size * single_rank_result_size;
-		final_result = (int *)malloc(sizeof(int) * result_size);
-		final_result_count = (int *)malloc(sizeof(int) * result_size);
+		final_result = new int[result_size];
+		final_result_count = new int[result_size];
 	}
 	MPI_Gather(&result[0], single_rank_result_size, MPI_INT, final_result, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Gather(&result_count[0], single_rank_result_size, MPI_INT, final_result_count, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
@@ -281,8 +291,8 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 			output << *it1 << "," << *it2 << endl;
 		}
 		output.close();
-		free(final_result);
-		free(final_result_count);
+		delete[] final_result;
+		delete[] final_result_count;
 	}
 }
 
