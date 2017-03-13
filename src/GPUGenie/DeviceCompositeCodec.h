@@ -88,6 +88,10 @@ public:
     __device__ __host__ int
     decodeArrayParallel_lengthPerBlock() {return -1;}
 
+    /** Maximal number of threads per single block **/
+    __device__ __host__ int
+    decodeArrayParallel_threadsPerBlock() { return -1; }
+
     /** Number of decompressed values extracted by a single thread **/
     __device__ __host__ int
     decodeArrayParallel_threadLoad() {return -1;}
@@ -154,6 +158,7 @@ public:
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 1024; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 1; }
 
 };
@@ -185,6 +190,7 @@ public:
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
@@ -289,6 +295,12 @@ public:
     decodeArrayParallel_lengthPerBlock() {
         assert(codec1.decodeArrayParallel_lengthPerBlock() == codec2.decodeArrayParallel_lengthPerBlock());
         return codec1.decodeArrayParallel_lengthPerBlock();
+    }
+
+    __device__ __host__ int
+    decodeArrayParallel_threadsPerBlock() {
+        assert(codec1.decodeArrayParallel_threadsPerBlock() == codec2.decodeArrayParallel_threadsPerBlock());
+        return codec1.decodeArrayParallel_threadsPerBlock();
     }
 
     __device__ __host__ int

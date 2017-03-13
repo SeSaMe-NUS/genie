@@ -99,7 +99,8 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     memset(h_OutputCPU, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     
     int threadsPerBlock = (codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
-    int blocks = (arrayLength + threadsPerBlock - 1) / threadsPerBlock;
+    int blocks = (arrayLength + threadsPerBlock * codec.decodeArrayParallel_threadLoad() - 1) /
+            (threadsPerBlock * codec.decodeArrayParallel_threadLoad());
     assert(blocks <= codec.decodeArrayParallel_maxBlocks());
 
     // run decompression on GPU
@@ -107,6 +108,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     g_decodeArrayParallel<CODEC><<<blocks,threadsPerBlock>>>(d_InputCompr, comprLength, d_Output, SCAN_MAX_SHORT_ARRAY_SIZE, d_decomprLength);
     cudaCheckErrors(cudaDeviceSynchronize());
     uint64_t decomprEnd = getTime();
+
     // copy decompression results from GPU
     cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyDeviceToHost));
     size_t decomprLengthGPU;
@@ -122,7 +124,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
 
     // Compare original array with CPU decompressed array and GPU decompressed array
     bool ok = true;
-    for (uint i = 0; i < arrayLength; i++)
+    for (int i = 0; i < (int)arrayLength; i++)
     {
         if (h_OutputCPU[i] != h_OutputGPU[i] || h_OutputGPU[i] != h_Input[i])
         {
@@ -133,6 +135,11 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     }
     if (!ok)
     {
+        printf("h_Input:     ");
+        for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
+            printf("%u ", h_Input[i]);
+        printf("\n");
+
         printf("h_OutputGPU: ");
         for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
             printf("%u ", h_OutputGPU[i]);
@@ -149,8 +156,8 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     Logger::log(Logger::INFO, "Codec: %s", codec.name().c_str());
     Logger::log(Logger::INFO, "Array size: %d, Compressed size: %d, Ratio: %f bpi", arrayLength, comprLength,
             32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
-    Logger::log(Logger::INFO, "Time (decompr): %.4f ms, Throughput: %.4f mil. of elements per second",
-            decomprTime, 1.0e-6 * (double)arrayLength/decomprTime);
+    Logger::log(Logger::INFO, "Time (decompr): %.4f ms, Throughput: %.2f of elements per second",
+            decomprTime, (double)arrayLength/decomprTime);
 
     return ok;
 }

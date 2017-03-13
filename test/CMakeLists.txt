@@ -50,7 +50,7 @@ if (COMPR)
     add_test_case(test_13_compression_test test_13.cu)
     add_test_case(test_14_compression_query test_14.cu)
     add_test_case(test_15_compression_naive test_15.cu)
-    add_test_case(test_17_scan4 test_17.cu)
+    add_test_case(test_17_compression_codecs test_17.cu)
 
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS_BACKUP})
 

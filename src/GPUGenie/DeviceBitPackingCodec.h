@@ -327,6 +327,7 @@ public:
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
@@ -475,6 +476,7 @@ public:
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
