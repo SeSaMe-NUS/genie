@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <ctime>
 //#include "json.hpp"
 #include "GPUGenie.h"
 
@@ -81,29 +82,26 @@ int main(int argc, char *argv[])
 	int num_of_queries, top_k;
 	int *queries_array;
 
-	// socket
-	// TODO: check socket success
-	int sock = socket(PF_INET, SOCK_STREAM, 0);
-	sockaddr_in address;
-	sockaddr client_address;
-	socklen_t address_len = sizeof(client_address);
-
-	address.sin_family = AF_INET;
-	address.sin_port = htons(9090);
-	address.sin_addr.s_addr = INADDR_ANY;
-	char *recv_buf = new char[1000];
-	int *recv_num;
 	if (MPI_rank == 0) {
+		// socket
+		// TODO: check socket success
+		int sock = socket(PF_INET, SOCK_STREAM, 0);
+		sockaddr_in address;
+		sockaddr client_address;
+		socklen_t address_len = sizeof(client_address);
+
+		address.sin_family = AF_INET;
+		address.sin_port = htons(9090);
+		address.sin_addr.s_addr = INADDR_ANY;
+		char *recv_buf = new char[1000];
+		int *recv_num;
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
-	}
 
-	while (true) {
-		/*
-		 * prepare num of queries & k value
-		 */
-		if (MPI_rank == 0) {
-			// listen for request
+		while (true) {
+			/*
+			 * receive queries
+			 */
 			int incoming = accept(sock, &client_address, &address_len);
 			memset(recv_buf, 0, 1000);
 			int count = recv(incoming, recv_buf, 1000, 0);
@@ -127,56 +125,91 @@ int main(int argc, char *argv[])
 			// debug
 			cout << MPI_DEBUG << "num of queries: " << num_of_queries << endl;
 			cout << MPI_DEBUG << "topk: " << top_k << endl;
-		}
+
+			/*
+			 * broadcast query information
+			 */
 TERMINATE:
-		MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
-		MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
-		config.num_of_queries = num_of_queries;
-		config.num_of_topk = top_k;
-		// terminate program when num_of_queries == -1
-		if (num_of_queries == -1)
-			break;
-
-		/*
-		 * prepare actual queries
-		 */
-		cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
-		queries_array = new int[config.num_of_queries * config.dim];
-		if (MPI_rank == 0) {
-			memcpy(queries_array, recv_num, sizeof(int) * config.dim * config.num_of_queries);
-			cout << MPI_DEBUG << "before delete" << endl;
-			delete[] recv_num;
-			cout << MPI_DEBUG << "after delete" << endl;
-			for (int i = 0; i < num_of_queries; ++i) {
-				cout << MPI_DEBUG;
-				for (int j = 0; j < config.dim; ++j)
-					cout << queries_array[i * config.dim + j] << " ";
-				cout << endl;
+			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
+			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
+			config.num_of_queries = num_of_queries;
+			config.num_of_topk = top_k;
+			// terminate program when num_of_queries == -1
+			if (num_of_queries == -1) {
+				close(sock);
+				break;
 			}
-		}
-		MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 
-		// set up config values
-		config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
-		extra_config.output_file = "test.csv"; // TODO: change filename according to current time?
-		// fill queries vector
-		queries.clear();
-		for (int i = 0; i < config.num_of_queries; ++i) {
-			vector<int> single_query;
-			for (int j = 0; j < config.dim; ++j)
-				single_query.push_back(queries_array[i * config.dim + j]);
-			queries.push_back(single_query);
+			cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
+			queries_array = new int[config.num_of_queries * config.dim];
+			if (MPI_rank == 0) {
+				memcpy(queries_array, recv_num, sizeof(int) * config.dim * config.num_of_queries);
+				cout << MPI_DEBUG << "before delete" << endl;
+				delete[] recv_num;
+				cout << MPI_DEBUG << "after delete" << endl;
+				for (int i = 0; i < num_of_queries; ++i) {
+					cout << MPI_DEBUG;
+					for (int j = 0; j < config.dim; ++j)
+						cout << queries_array[i * config.dim + j] << " ";
+					cout << endl;
+				}
+			}
+			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
+
+			// set up config values
+			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
+			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
+			// fill queries vector
+			queries.clear();
+			for (int i = 0; i < config.num_of_queries; ++i) {
+				vector<int> single_query;
+				for (int j = 0; j < config.dim; ++j)
+					single_query.push_back(queries_array[i * config.dim + j]);
+				queries.push_back(single_query);
+			}
+			delete[] queries_array;
+			// run the queries and write output to file
+			ExecuteQuery(config, extra_config, table);
 		}
-		delete[] queries_array;
-		// run the queries and write output to file
-		ExecuteQuery(config, extra_config, table);
+	} else {
+		while (true) {
+			/*
+			 * receive query from master
+			 */
+			// receive num of queries & top k
+			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
+			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
+			config.num_of_queries = num_of_queries;
+			config.num_of_topk = top_k;
+			// terminate program when num_of_queries == -1
+			if (num_of_queries == -1)
+				break;
+
+			cout << MPI_DEBUG << "rank " << MPI_rank << ": allocating queries_array of size " << config.num_of_queries * config.dim << endl;
+			queries_array = new int[config.num_of_queries * config.dim];
+			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
+
+			// set up config values
+			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
+			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
+
+			// fill queries vector
+			queries.clear();
+			for (int i = 0; i < config.num_of_queries; ++i) {
+				vector<int> single_query;
+				for (int j = 0; j < config.dim; ++j)
+					single_query.push_back(queries_array[i * config.dim + j]);
+				queries.push_back(single_query);
+			}
+			delete[] queries_array;
+			// run the queries and write output to file
+			ExecuteQuery(config, extra_config, table);
+		}
 	}
 
 	/*
 	 * clean up
 	 */
-	if (MPI_rank == 0)
-		close(sock);
 	delete[] table;
 	MPI_Finalize();
 	return EXIT_SUCCESS;
