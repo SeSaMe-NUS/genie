@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 	/*
 	 * read in the config
 	 */
-	vector<vector<int> > queries;
+	//vector<vector<int> > queries;
 	vector<vector<int> > data;
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
 
-	config.query_points = &queries;
+	//config.query_points = &queries;
 	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
 	cout << MPI_DEBUG << "rank: " << MPI_rank << " using GPU " << config.use_device << endl;
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 			config.num_of_topk = top_k;
 
 			// query content
-			queries_array = new int[num_of_queries * config.dim];
+			queries_array = new int[config.num_of_queries * config.dim];
 			for (int i = 0; i < num_of_queries; ++i)
 				for (int j = 0; j < config.dim; ++j) {
 					msg_sstream >> q_num;
@@ -143,19 +143,18 @@ int main(int argc, char *argv[])
 			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
 
 			// convert queries_array to vector
-			queries.clear();
-			vector<int> single_query;
+			//queries.clear();
+			vector<vector<int> > queries;
 			for (int i = 0; i < config.num_of_queries; ++i) {
-				single_query.clear();
-				for (int j = 0; j < config.dim; ++j)
-					single_query.push_back(queries_array[i * config.dim + j]);
+				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
+				//for (int j = 0; j < config.dim; ++j)
+				//	single_query.push_back(queries_array[i * config.dim + j]);
 				queries.push_back(single_query);
 			}
+			config.query_points = &queries;
 			delete[] queries_array;
 			// run the queries and write output to file
-			cout << MPI_DEBUG << "before executing query" << endl;
 			ExecuteQuery(config, extra_config, table);
-			cout << MPI_DEBUG << "after executing query" << endl;
 		}
 	} else {
 		while (true) {
@@ -165,14 +164,14 @@ int main(int argc, char *argv[])
 			// num of queries
 			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
 			config.num_of_queries = num_of_queries;
-			cout << MPI_DEBUG << "num of queries: " << config.num_of_queries << endl;
+			cout << MPI_DEBUG << MPI_rank << " num of queries: " << config.num_of_queries << endl;
 			if (num_of_queries == -1)
 				break;
 
 			// top k
 			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 			config.num_of_topk = top_k;
-			cout << MPI_DEBUG << "topk: " << config.num_of_topk << endl;
+			cout << MPI_DEBUG << MPI_rank << " topk: " << config.num_of_topk << endl;
 
 			// query content
 			try {
@@ -180,32 +179,35 @@ int main(int argc, char *argv[])
 			} catch (bad_alloc&) {
 				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			}
-			cout << MPI_DEBUG << "rank " << MPI_rank << " allocated query space" << endl;
+			cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
 			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
-			cout << MPI_DEBUG << "rank " << MPI_rank << " after query broadcast" << endl;
+			cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
+			for (int i = 0; i < config.num_of_queries * config.dim; ++i)
+				cout << MPI_DEBUG << MPI_rank << queries_array[i] << endl;
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
-			cout << MPI_DEBUG << "rank " << MPI_rank << " after hash size update" << endl;
+			cout << MPI_DEBUG << MPI_rank << " after hash size update" << endl;
 
 			// convert queries_array to vector
-			queries.clear();
-			vector<int> single_query;
+			//queries.resize(config.num_of_queries);
+			//queries.clear();
+			vector<vector<int> > queries;
+			//vector<int> single_query;
 			for (int i = 0; i < config.num_of_queries; ++i) {
-				single_query.clear();
-				for (int j = 0; j < config.dim; ++j) {
-					single_query.push_back(queries_array[i * config.dim + j]);
-					cout << MPI_DEBUG << MPI_rank << "Pushed 1 value into single_query" << endl;
-				}
+				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
+				cout << MPI_DEBUG << MPI_rank << " before pushing one query" << endl;
 				queries.push_back(single_query);
+				cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
 			}
-			cout << MPI_DEBUG << "rank: " << MPI_rank << " after vector conversion" << endl;
+			config.query_points = &queries;
+			cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
 			delete[] queries_array;
 			// run the queries and write output to file
-			cout << MPI_DEBUG << "before executing query" << endl;
+			cout << MPI_DEBUG << MPI_rank << " before executing query" << endl;
 			ExecuteQuery(config, extra_config, table);
-			cout << MPI_DEBUG << "after executing query" << endl;
+			cout << MPI_DEBUG << MPI_rank << " after executing query" << endl;
 		}
 	}
 
@@ -238,7 +240,7 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	vector<int> result;
 	vector<int> result_count;
 	knn_search_after_preprocess(config, table, result, result_count);
-	cout << MPI_DEBUG << "rank " << MPI_rank << " after search" << endl;
+	cout << MPI_DEBUG << MPI_rank << " after search" << endl;
 
 	/*
 	 * merge results from all ranks

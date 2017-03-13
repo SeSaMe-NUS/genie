@@ -27,9 +27,19 @@ This creates an "out-of-source" build of GPUGenie containing both the GPUGenie l
 $ cmake -DBOOST_ROOT=/path/to/boost ..
 ```
 
+To compile with MPI support (**currently only OpenMPI is supported**), use
+
+```bash
+$ cmake -DUSE_MPI=on ..
+```
+
 ## Running example
 
-Examples (tests) are available in the `bin` folder of your build directory.
+Examples (tests) are available in the `bin` folder of your build directory. To run MPI GENIE, use
+
+```bash
+$ mpirun -np <n> ./bin/odgenie static/genie.config
+```
 
 ## Documentation
 
