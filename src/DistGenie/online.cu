@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	 * prepare the inverted list
 	 */
 	inv_table * table = nullptr;
-	//preprocess_for_knn_csv(config, table);
+	preprocess_for_knn_csv(config, table);
 
 	/*
 	 * handle online queries
@@ -149,18 +149,18 @@ int main(int argc, char *argv[])
 			config.num_of_topk = top_k;
 
 			// query content
-			//try {
-			//	queries_array = new int[num_of_queries * config.dim];
-			//} catch (bad_alloc&) {
-			//	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			//}
-			queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries * config.dim);
+			try {
+				queries_array = new int[num_of_queries * config.dim];
+			} catch (bad_alloc&) {
+				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}
+			//queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries * config.dim);
 			for (int i = 0; i < num_of_queries; ++i)
 				for (int j = 0; j < config.dim; ++j) {
 					msg_sstream >> q_num;
 					queries_array[i * config.dim + j] = q_num;	
 				}
-			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
+			MPI_Bcast(queries_array, config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
@@ -172,9 +172,9 @@ int main(int argc, char *argv[])
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
 				queries.push_back(single_query);
 			}
-			//delete[] queries_array;
+			delete[] queries_array;
 			// run the queries and write output to file
-			//ExecuteQuery(config, extra_config, table);
+			ExecuteQuery(config, extra_config, table);
 		}
 	} else {
 		while (true) {
@@ -184,48 +184,47 @@ int main(int argc, char *argv[])
 			// num of queries
 			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
 			config.num_of_queries = num_of_queries;
-			cout << MPI_DEBUG << MPI_rank << " num of queries: " << config.num_of_queries << endl;
+			//cout << MPI_DEBUG << MPI_rank << " num of queries: " << config.num_of_queries << endl;
 			if (num_of_queries == -1)
 				break;
 
 			// top k
 			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 			config.num_of_topk = top_k;
-			cout << MPI_DEBUG << MPI_rank << " topk: " << config.num_of_topk << endl;
+			//cout << MPI_DEBUG << MPI_rank << " topk: " << config.num_of_topk << endl;
 
 			// query content
-			//try {
-			//	queries_array = new int[config.num_of_queries * config.dim];
-			//} catch (bad_alloc&) {
-			//	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			//}
-			queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries + config.dim);
-			cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
-			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
-			cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
-			for (int i = 0; i < config.num_of_queries * config.dim; ++i)
-				cout << MPI_DEBUG << MPI_rank << " received: " << queries_array[i] << endl;
+			try {
+				queries_array = new int[config.num_of_queries * config.dim];
+			} catch (bad_alloc&) {
+				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}
+			//queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries + config.dim);
+			//cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
+			MPI_Bcast(queries_array, config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
+			//cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
+			//for (int i = 0; i < config.num_of_queries * config.dim; ++i)
+			//	cout << MPI_DEBUG << MPI_rank << " received: " << queries_array[i] << endl;
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
-			cout << MPI_DEBUG << MPI_rank << " after hash size update" << endl;
+			//cout << MPI_DEBUG << MPI_rank << " after hash size update" << endl;
 
 			// convert queries_array to vector
 			queries.clear();
 			for (int i = 0; i < config.num_of_queries; ++i) {
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
-				cout << MPI_DEBUG << MPI_rank << " before pushing one query" << endl;
+				//cout << MPI_DEBUG << MPI_rank << " before pushing one query" << endl;
 				//queries.push_back(single_query);
 				queries.push_back(single_query);
-				cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
+				//cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
 			}
-			cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
-			//delete[] queries_array;
-			//free(queries_array);
+			//cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
+			delete[] queries_array;
 			// run the queries and write output to file
-			cout << MPI_DEBUG << MPI_rank << " before executing query" << endl;
-			//ExecuteQuery(config, extra_config, table);
-			cout << MPI_DEBUG << MPI_rank << " after executing query" << endl;
+			//cout << MPI_DEBUG << MPI_rank << " before executing query" << endl;
+			ExecuteQuery(config, extra_config, table);
+			//cout << MPI_DEBUG << MPI_rank << " after executing query" << endl;
 		}
 	}
 
@@ -259,7 +258,7 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	vector<int> result;
 	vector<int> result_count;
 	knn_search_after_preprocess(config, table, result, result_count);
-	cout << MPI_DEBUG << MPI_rank << " after search" << endl;
+	//cout << MPI_DEBUG << MPI_rank << " after search" << endl;
 
 	/*
 	 * merge results from all ranks
