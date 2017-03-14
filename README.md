@@ -41,6 +41,23 @@ Examples (tests) are available in the `bin` folder of your build directory. To r
 $ mpirun -np <n> ./bin/odgenie static/genie.config
 ```
 
+## Attaching GDB to MPI
+
+Run MPI with ENABLE_GDB=1 environment variable:
+```
+mpirun -np 2 -x ENABLE_GDB=1 ./bin/odgenie ./static/genie.config
+```
+
+If there is only one batch of MPI processes running, we can find PID automatically. Note that we need to set variable i to non-zero value to start the process after we have attached all gdbs we want.
+```
+pid=$(pgrep odgenie | sed -n 1p); gdb -q --pid "${pid}" -ex "up 100" -ex "down 1" -ex "set variable gdb_attached=1" -ex "continue"
+```
+
+To attach other processes, use their corresponding PID (PID of rank 0 process + rank). Do this before starting the rank 0 process by setting variable i.
+```
+pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
+```
+
 ## Documentation
 
 Documentation for GPUGenie could be generated with Doxygen. To generate manually, type

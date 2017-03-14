@@ -29,6 +29,25 @@ struct ExtraConfig {
 	string output_file;
 };
 
+static void WaitForGDB()
+{
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	if(getenv("ENABLE_GDB") != NULL && rank == 0){
+		volatile int gdb_attached =0;
+		fprintf(stderr, "Process %ld waiting for GDB \n", (long)getpid());
+		fflush(stderr);
+		
+		while (gdb_attached==0)
+			sleep(5);
+
+		fprintf(stderr, "Process %ld got GDB \n", (long)getpid());
+		fflush(stderr);
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+}
+
 void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table *table);
 void ParseConfigurationFile(GPUGenie_Config &, ExtraConfig &, const string);
 bool ValidateConfiguration(map<string, string>);
@@ -40,6 +59,8 @@ int main(int argc, char *argv[])
 	 */
 	int MPI_rank, MPI_size;
 	MPI_Init(&argc, &argv);
+	WaitForGDB();
+
 	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
 	if (argc != 2)
