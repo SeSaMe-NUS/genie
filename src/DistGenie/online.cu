@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 	/*
 	 * read in the config
 	 */
-	//vector<vector<int> > queries;
+	vector<vector<int> > queries;
 	vector<vector<int> > data;
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
 
-	//config.query_points = &queries;
+	config.query_points = &queries;
 	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
 	cout << MPI_DEBUG << "rank: " << MPI_rank << " using GPU " << config.use_device << endl;
@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
 			config.num_of_queries = num_of_queries;
 			if (num_of_queries == -1) {
 				close(sock);
+				delete[] recv_buf;
 				break;
 			}
 
@@ -129,13 +130,16 @@ int main(int argc, char *argv[])
 			config.num_of_topk = top_k;
 
 			// query content
-			queries_array = new int[config.num_of_queries * config.dim];
+			try {
+				queries_array = new int[config.num_of_queries * config.dim];
+			} catch (bad_alloc&) {
+				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}
 			for (int i = 0; i < num_of_queries; ++i)
 				for (int j = 0; j < config.dim; ++j) {
 					msg_sstream >> q_num;
 					queries_array[i * config.dim + j] = q_num;	
 				}
-			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 
 			// set up config values
@@ -143,15 +147,11 @@ int main(int argc, char *argv[])
 			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
 
 			// convert queries_array to vector
-			//queries.clear();
-			vector<vector<int> > queries;
+			queries.clear();
 			for (int i = 0; i < config.num_of_queries; ++i) {
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
-				//for (int j = 0; j < config.dim; ++j)
-				//	single_query.push_back(queries_array[i * config.dim + j]);
 				queries.push_back(single_query);
 			}
-			config.query_points = &queries;
 			delete[] queries_array;
 			// run the queries and write output to file
 			ExecuteQuery(config, extra_config, table);
@@ -180,7 +180,6 @@ int main(int argc, char *argv[])
 				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			}
 			cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
-			MPI_Barrier(MPI_COMM_WORLD);
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 			cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
 			for (int i = 0; i < config.num_of_queries * config.dim; ++i)
@@ -191,17 +190,14 @@ int main(int argc, char *argv[])
 			cout << MPI_DEBUG << MPI_rank << " after hash size update" << endl;
 
 			// convert queries_array to vector
-			//queries.resize(config.num_of_queries);
-			//queries.clear();
-			vector<vector<int> > queries;
-			//vector<int> single_query;
+			queries.clear();
 			for (int i = 0; i < config.num_of_queries; ++i) {
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
 				cout << MPI_DEBUG << MPI_rank << " before pushing one query" << endl;
+				//queries.push_back(single_query);
 				queries.push_back(single_query);
 				cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
 			}
-			config.query_points = &queries;
 			cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
 			delete[] queries_array;
 			// run the queries and write output to file
@@ -228,6 +224,7 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
 	// debug
+	cout << MPI_DEBUG << MPI_rank << " query points has size " << config.query_points->size() << endl;
 	for (auto it1 = config.query_points->begin(); it1 != config.query_points->end(); ++it1) {
 		cout << MPI_DEBUG << "rank " << MPI_rank;
 		for (auto it2 = it1->begin(); it2 != it1->end(); ++it2)
