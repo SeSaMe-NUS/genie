@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 	/*
 	 * read in the config
 	 */
-	vector<vector<int> > queries;
-	vector<vector<int> > data;
+	vector< vector<int> > queries;
+	vector< vector<int> > data;
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
@@ -93,15 +93,14 @@ int main(int argc, char *argv[])
 	/*
 	 * prepare the inverted list
 	 */
-	inv_table *table = nullptr;
-	preprocess_for_knn_csv(config, table);
-	MPI_Barrier(MPI_COMM_WORLD);
+	inv_table * table = nullptr;
+	//preprocess_for_knn_csv(config, table);
 
 	/*
 	 * handle online queries
 	 */
 	int num_of_queries, top_k;
-	int *queries_array;
+	int * queries_array = nullptr;
 
 	if (MPI_rank == 0) {
 		// socket
@@ -114,8 +113,7 @@ int main(int argc, char *argv[])
 		address.sin_family = AF_INET;
 		address.sin_port = htons(9090);
 		address.sin_addr.s_addr = INADDR_ANY;
-		char *recv_buf = new char[1000];
-		int *queries_array;
+		char * recv_buf = new char[1000];
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
 
@@ -151,11 +149,12 @@ int main(int argc, char *argv[])
 			config.num_of_topk = top_k;
 
 			// query content
-			try {
-				queries_array = new int[config.num_of_queries * config.dim];
-			} catch (bad_alloc&) {
-				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}
+			//try {
+			//	queries_array = new int[num_of_queries * config.dim];
+			//} catch (bad_alloc&) {
+			//	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			//}
+			queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries * config.dim);
 			for (int i = 0; i < num_of_queries; ++i)
 				for (int j = 0; j < config.dim; ++j) {
 					msg_sstream >> q_num;
@@ -173,9 +172,9 @@ int main(int argc, char *argv[])
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
 				queries.push_back(single_query);
 			}
-			delete[] queries_array;
+			//delete[] queries_array;
 			// run the queries and write output to file
-			ExecuteQuery(config, extra_config, table);
+			//ExecuteQuery(config, extra_config, table);
 		}
 	} else {
 		while (true) {
@@ -195,16 +194,17 @@ int main(int argc, char *argv[])
 			cout << MPI_DEBUG << MPI_rank << " topk: " << config.num_of_topk << endl;
 
 			// query content
-			try {
-				queries_array = new int[config.num_of_queries * config.dim];
-			} catch (bad_alloc&) {
-				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}
+			//try {
+			//	queries_array = new int[config.num_of_queries * config.dim];
+			//} catch (bad_alloc&) {
+			//	MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			//}
+			queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries + config.dim);
 			cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
 			MPI_Bcast(queries_array, sizeof(int) * config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
 			cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
 			for (int i = 0; i < config.num_of_queries * config.dim; ++i)
-				cout << MPI_DEBUG << MPI_rank << queries_array[i] << endl;
+				cout << MPI_DEBUG << MPI_rank << " received: " << queries_array[i] << endl;
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
@@ -220,10 +220,11 @@ int main(int argc, char *argv[])
 				cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
 			}
 			cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
-			delete[] queries_array;
+			//delete[] queries_array;
+			//free(queries_array);
 			// run the queries and write output to file
 			cout << MPI_DEBUG << MPI_rank << " before executing query" << endl;
-			ExecuteQuery(config, extra_config, table);
+			//ExecuteQuery(config, extra_config, table);
 			cout << MPI_DEBUG << MPI_rank << " after executing query" << endl;
 		}
 	}

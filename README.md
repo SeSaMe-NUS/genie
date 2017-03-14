@@ -41,6 +41,20 @@ Examples (tests) are available in the `bin` folder of your build directory. To r
 $ mpirun -np <n> ./bin/odgenie static/genie.config
 ```
 
+The program will listen for question on port 9090. You can send queries to the program by executing
+
+```bash
+$ nc localhost 9090
+```
+
+The query format is `<num_of_queries> <topk> [query_values]`, for example, for 2 questions of dimension 5, you do
+
+```
+2 2 1 2 3 4 5 2 3 4 5 6
+```
+
+This sends query `1 2 3 4 5` and `2 3 4 5 6` with topk set to 2.
+
 ## Attaching GDB to MPI
 
 Run MPI with ENABLE_GDB=1 environment variable:
