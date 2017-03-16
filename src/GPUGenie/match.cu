@@ -17,6 +17,11 @@
 
 #include "match.h"
 
+#include "configure.h"
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
+
 
 
 #ifndef GPUGenie_device_THREADS_PER_BLOCK
@@ -656,6 +661,13 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 		
 			int prev_size = dims.size();
 			queries[i].dump(dims);
+			
+//#ifdef USE_MPI
+			// EXPERIMENT
+			// shuffles the query dims, should use rotate later
+			cout << "SHUFFLING DIMS" << endl;
+			random_shuffle(dims.begin(), dims.end());
+//#endif
 
 			int count = dims.size() - prev_size;
 
@@ -817,6 +829,12 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 
 		cudaCheckErrors(cudaMalloc((void**) &d_overflow, sizeof(bool)));
 
+#ifdef USE_MPI
+		// EXPERIMENT
+		cudaEvent_t kernel_finish;
+		cudaEventCreate(&kernel_finish);
+#endif
+
 		do
 		{
 			h_overflow[0] = false;
@@ -855,6 +873,17 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                     d_noiih_p,
                     d_overflow,
                     shift_bits_subsequence);
+
+#ifdef USE_MPI
+			// EXPERIMENT
+			// IDEAS:
+			// - use CUDA-aware MPI, but how to atomically update the device?
+			// - copy threshold back, but would it be too slow?
+			cudaEventRecord(kernel_finish);
+			//while (cudaEventQuery(kernel_finish) != cudaSuccess) {
+			//	cout << "Before all reduce" << endl;
+			//}
+#endif
 
 /*
             if(!table.is_stored_in_gpu)

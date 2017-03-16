@@ -3,8 +3,8 @@ function(add_test_case TARGET)
    add_dependencies(${TARGET} ${PROJECT_NAME})
    target_link_libraries(${TARGET}
                          -lpthread
-                         -lboost_serialization
-                         -l${PROJECT_NAME})
+                         ${PROJECT_NAME}
+						 ${Boost_LIBRARIES})
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
 

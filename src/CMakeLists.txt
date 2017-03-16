@@ -1,5 +1,17 @@
 cuda_include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
+)
+
+if (USE_MPI)
+  find_package(MPI REQUIRED)
+  MESSAGE(STATUS "Building GENIE with MPI support")
+  include_directories(${MPI_INCLUDE_PATH})
+  add_subdirectory(DistGenie)
+endif()
+
 set(LIB_SRC_LIST
   GPUGenie.h
 

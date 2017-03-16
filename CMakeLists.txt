@@ -34,6 +34,7 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
 
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 option(BUILD_SHARED_LIBS OFF)
+option(USE_MPI "Build distributed GENIE" OFF)
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52)
@@ -42,14 +43,9 @@ SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11 -gencode arch=compute_35,code=
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(static)
 add_subdirectory(doc)
 
-option(USE_MPI "Build distributed GENIE" OFF)
-if (USE_MPI)
-  find_package(MPI REQUIRED)
-  MESSAGE(STATUS "Building GENIE with MPI support")
-  add_subdirectory(src/DistGenie)
-endif()
