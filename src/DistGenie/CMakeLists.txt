@@ -8,7 +8,7 @@ target_link_libraries(dgenie
 	${Boost_LIBRARIES}
 	)
 
-cuda_add_executable(odgenie online.cu)
+cuda_add_executable(odgenie online.cu search.cu parser.cu)
 target_link_libraries(odgenie
 	${MPI_LIBRARIES}
 	-l${PROJECT_NAME}
