@@ -686,22 +686,20 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 		
 			int prev_size = dims.size();
 			queries[i].dump(dims);
-			
-#ifdef USE_DYNAMIC
-			// EXPERIMENT
-			//cout << "SHUFFLING DIMS" << endl;
-			//random_shuffle(dims.begin(), dims.end());
-			int MPI_rank, MPI_size;
-			MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-			MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-			int offset = dims.size() / MPI_size;
-			rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
-#endif
 
 			int count = dims.size() - prev_size;
 
 			if(count > max_count) max_count = count;
 		}
+			
+#ifdef USE_DYNAMIC
+		// EXPERIMENT
+		int MPI_rank, MPI_size;
+		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+		int offset = dims.size() / MPI_size;
+		rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
+#endif
 
 		return max_count;
 	} catch(std::bad_alloc &e){
