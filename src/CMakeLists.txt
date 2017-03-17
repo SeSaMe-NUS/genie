@@ -8,6 +8,7 @@ configure_file(
 if (USE_MPI)
   find_package(MPI REQUIRED)
   MESSAGE(STATUS "Building GENIE with MPI support")
+  option(USE_DYNAMIC "Dynamic update of threshold" OFF)
   include_directories(${MPI_INCLUDE_PATH})
   add_subdirectory(DistGenie)
 endif()

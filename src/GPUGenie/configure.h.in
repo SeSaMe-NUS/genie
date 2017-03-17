@@ -1,1 +1,1 @@
-#cmakedefine USE_MPI
+#cmakedefine USE_DYNAMIC

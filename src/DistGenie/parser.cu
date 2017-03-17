@@ -51,6 +51,7 @@ void ParseConfigurationFile(
 
 	config.dim = stoi(config_map.find("dim")->second);
 	config.count_threshold = stoi(config_map.find("count_threshold")->second);
+	config.hashtable_size = config.count_threshold * config.num_of_topk * 1.5;
 	config.query_radius = 0;
 	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
