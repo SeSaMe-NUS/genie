@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 	 * prepare the inverted list
 	 */
 	inv_table * table = nullptr;
+	init_genie(config);
 	preprocess_for_knn_csv(config, table);
 
 	/*

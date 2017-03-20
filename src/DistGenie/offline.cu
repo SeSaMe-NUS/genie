@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	inv_table *table = NULL;
 	vector<int> result;
 	vector<int> result_count;
+	init_genie(config);
 	preprocess_for_knn_csv(config, table);
 	knn_search_after_preprocess(config, table, result, result_count);
 

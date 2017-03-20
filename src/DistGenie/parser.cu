@@ -60,7 +60,7 @@ void ParseConfigurationFile(
 	config.posting_list_max_length = 6400;
 	config.multiplier = 1.5f;
 	config.use_multirange = false;
-	//config.save_to_gpu = true;
+	config.save_to_gpu = true;
 	
 	config.data_type = stoi(config_map.find("data_type")->second);
 	config.search_type = stoi(config_map.find("search_type")->second);
