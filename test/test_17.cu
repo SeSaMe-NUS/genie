@@ -77,7 +77,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     size_t comprLength = SCAN_MAX_LARGE_ARRAY_SIZE;
     memset(h_InputCompr, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     codec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
-    assert(comprLength <= arrayLength);
+    // assert(comprLength <= arrayLength);
 
     // printf("codec.name(): %s\n", codec.name().c_str());
     // printf("arrayLength: %lu\n", arrayLength);

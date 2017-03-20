@@ -30,6 +30,7 @@ set(LIB_SRC_LIST
   GPUGenie/DeviceCompositeCodec.cu
   GPUGenie/DeviceDeltaHelper.h
   GPUGenie/DeviceBitPackingCodec.h
+  GPUGenie/DeviceBitPackingCodec.cu
   GPUGenie/DeviceBitPackingHelpers.h
   GPUGenie/DeviceBitPackingHelpers.cu
   GPUGenie/scan.h
