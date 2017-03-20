@@ -527,7 +527,11 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 {
 	if (m_size == 0 || i_size == 0)
 		return;
+#ifdef USE_DYNAMIC
 	query::dim& q = d_dims[blockIdx.x + dim_offset];
+#else
+	query::dim& q = d_dims[blockIdx.x];
+#endif
 	int query_index = q.query;
 	u32* my_noiih = &noiih[query_index];
 	u32* my_threshold = &d_threshold[query_index];
