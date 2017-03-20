@@ -54,6 +54,7 @@ int main(int argc, char* argv[])
     read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
+	init_genie(config);
     preprocess_for_knn_binary(config, table);
 
     assert(table[0].get_total_num_of_table() == 2);

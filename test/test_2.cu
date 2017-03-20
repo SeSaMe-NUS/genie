@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     assert(config.item_num == 100);
     assert(config.row_num == 20);
 
+	init_genie(config);
     preprocess_for_knn_binary(config, table);
 
     /**test for table*/

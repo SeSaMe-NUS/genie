@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
     read_file(data, dataFile.c_str(), -1);
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
+	init_genie(config);
     preprocess_for_knn_csv(config, table);
 
     vector<int> & inv = *table[0].inv();
