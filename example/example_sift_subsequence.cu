@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
 
 
 
+	init_genie(config);
     preprocess_for_knn_binary(config, table);
    
 

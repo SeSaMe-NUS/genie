@@ -104,6 +104,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	*/
 
 
+	init_genie(config);
 	std::vector<int> result, result_count;
 
 	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
