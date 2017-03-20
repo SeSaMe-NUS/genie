@@ -136,6 +136,7 @@ int main(int argc, char * argv[])
 	                          */
 	/*** END OF NOTE ***/
 
+	init_genie(config);
 	std::vector<std::vector<int> > result;
     result.resize(5);
     GPUGenie::inv_table table[5];
