@@ -11,6 +11,7 @@
 #include "DistGenie.h"
 
 #define MPI_DEBUG ">>>MPI DEBUG<<< "
+#define BUFFER_SIZE 2 << 20
 
 using namespace GPUGenie;
 using namespace DistGenie;
@@ -97,7 +98,7 @@ int main(int argc, char *argv[])
 		address.sin_family = AF_INET;
 		address.sin_port = htons(9090);
 		address.sin_addr.s_addr = INADDR_ANY;
-		char * recv_buf = new char[1000];
+		char * recv_buf = new char[BUFFER_SIZE];
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
 
@@ -106,8 +107,8 @@ int main(int argc, char *argv[])
 			 * receive queries
 			 */
 			int incoming = accept(sock, &client_address, &address_len);
-			memset(recv_buf, 0, 1000);
-			int count = recv(incoming, recv_buf, 1000, 0);
+			memset(recv_buf, 0, BUFFER_SIZE);
+			int count = recv(incoming, recv_buf, BUFFER_SIZE, 0);
 			close(incoming);
 
 			// parse the request (format: num topk xx xx xx xx xx)

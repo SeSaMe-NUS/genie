@@ -51,7 +51,6 @@ void ParseConfigurationFile(
 
 	config.dim = stoi(config_map.find("dim")->second);
 	config.count_threshold = stoi(config_map.find("count_threshold")->second);
-	config.hashtable_size = config.count_threshold * config.num_of_topk * 1.5;
 	config.query_radius = 0;
 	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
@@ -61,6 +60,7 @@ void ParseConfigurationFile(
 	config.posting_list_max_length = 6400;
 	config.multiplier = 1.5f;
 	config.use_multirange = false;
+	//config.save_to_gpu = true;
 	
 	config.data_type = stoi(config_map.find("data_type")->second);
 	config.search_type = stoi(config_map.find("search_type")->second);
