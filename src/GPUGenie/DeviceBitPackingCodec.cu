@@ -31,7 +31,6 @@ GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, 
                 memcpy(&zeroedIn[0], in, (final - in) * sizeof(uint32_t));
                 assert(zeroedIn[HowManyMiniBlocks * MiniBlockSize - 1] == 0);
                 assert(zeroedIn[(final-in)] == 0);
-                assert(zeroedIn[(final-in)-1] == in[length-1]);
                 in = zeroedIn;
             }
             uint32_t tmpinit = init;
@@ -148,11 +147,11 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
     uint32_t blocks = (length + GPUGENIE_CODEC_BPP_BLOCK_LENGTH - 1) / GPUGENIE_CODEC_BPP_BLOCK_LENGTH; 
 
     __shared__ uint32_t s_bitSizes[GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH];
-    __shared__ uint32_t s_bitSizesSummed[GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH];
+    __shared__ uint32_t s_bitOffsets[GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH];
 
     if (idx == 0) // thread 0 has to do all the bit sizes summing sequentially
     {
-        uint32_t bitSizesAcc = 0;
+        uint32_t bitOffsetsAcc = 0;
         int inIt = 0;
         for (int b = 0; b < blocks; b+=4)
         {
@@ -161,20 +160,26 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
             s_bitSizes[b+2] = static_cast<uint8_t>(d_in[inIt] >> 8);
             s_bitSizes[b+3] = static_cast<uint8_t>(d_in[inIt]);
 
-            // exclusive scan
-            s_bitSizesSummed[b] = bitSizesAcc;
-            bitSizesAcc += s_bitSizes[b];
-            s_bitSizesSummed[b+1] = bitSizesAcc;
-            bitSizesAcc += s_bitSizes[b+1];
-            s_bitSizesSummed[b+2] = bitSizesAcc;
-            bitSizesAcc += s_bitSizes[b+2];
-            s_bitSizesSummed[b+3] = bitSizesAcc;
-            bitSizesAcc += s_bitSizes[b+3];
+            // account for next block of bitSizes
+            bitOffsetsAcc += 1;
 
-            printf("Block %d has bitSize %u\n", b, s_bitSizes[b]);
-            printf("Block %d has bitSize %u\n", b+1, s_bitSizes[b+1]);
-            printf("Block %d has bitSize %u\n", b+2, s_bitSizes[b+2]);
-            printf("Block %d has bitSize %u\n", b+3, s_bitSizes[b+3]);
+            // exclusive scan
+            s_bitOffsets[b] = bitOffsetsAcc;
+            bitOffsetsAcc += s_bitSizes[b];
+
+            s_bitOffsets[b+1] = bitOffsetsAcc;
+            bitOffsetsAcc += s_bitSizes[b+1];
+
+            s_bitOffsets[b+2] = bitOffsetsAcc;
+            bitOffsetsAcc += s_bitSizes[b+2];
+
+            s_bitOffsets[b+3] = bitOffsetsAcc;
+            bitOffsetsAcc += s_bitSizes[b+3];
+
+            printf("Block %d has bitSize %u and bitOffset %u \n", b, s_bitSizes[b], s_bitOffsets[b]);
+            printf("Block %d has bitSize %u and bitOffset %u \n", b+1, s_bitSizes[b+1], s_bitOffsets[b+1]);
+            printf("Block %d has bitSize %u and bitOffset %u \n", b+2, s_bitSizes[b+2], s_bitOffsets[b+2]);
+            printf("Block %d has bitSize %u and bitOffset %u \n", b+3, s_bitSizes[b+3], s_bitOffsets[b+3]);
 
             assert(s_bitSizes[b]   > 0 && s_bitSizes[b]   <= 32); // bit size has to be in [0,32] range
             assert(                       s_bitSizes[b+1] <= 32); // bit size has to be in [0,32] range
@@ -198,13 +203,11 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
             break;
 
         // every 32 threads process one block
-        const uint32_t *d_myIn = d_in + s_bitSizesSummed[idxUnpack / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
-
-        // add another input offset due to one uin32_t of block sizes (4 uint8_t values)
-        d_myIn += 1 + (idxUnpack / GPUGENIE_CODEC_BPP_BLOCK_LENGTH);
+        int blockNum = idxUnpack / GPUGENIE_CODEC_BPP_BLOCK_LENGTH;
+        const uint32_t *d_myIn = d_in + s_bitOffsets[blockNum];
 
         // read the bit size to unpack
-        int bitSize = s_bitSizes[idxUnpack / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
+        int bitSize = s_bitSizes[blockNum];
 
         // determine the index of the first and last (exclusive) bit that belongs to the packed number
         int firstBit = bitSize * (idxUnpack % GPUGENIE_CODEC_BPP_BLOCK_LENGTH);
