@@ -33,6 +33,12 @@ To compile with MPI support (**currently only OpenMPI is supported**), use
 $ cmake -DUSE_MPI=on ..
 ```
 
+To enable dynamic threshold update (**needs CUDA-aware MPI**), use
+
+```bash
+$ cmake -DUSE_MPI=on -DUSE_DYNAMIC=on ..
+```
+
 ## Running example
 
 Examples (tests) are available in the `bin` folder of your build directory. To run MPI GENIE, use
