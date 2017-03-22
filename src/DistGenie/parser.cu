@@ -91,4 +91,31 @@ bool ValidateConfiguration(const Document &json_config)
 	return true;
 }
 
+/*
+ * Parse query into vector
+ */
+void ParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int> > &queries, const string query)
+{
+	// TODO: add validation
+	int topk, num_of_queries;
+
+	Document json_query;
+	json_query.Parse(query.c_str());
+
+	topk = json_query["topk"].GetInt();
+	num_of_queries = json_query["queries"].Size();
+
+	queries.clear();
+	for (auto &single_query : json_query["queries"].GetArray()) {
+		vector<int> single_query_vector;
+		for (auto &query_value : single_query.GetArray()) 
+			single_query_vector.push_back(query_value.GetInt());
+		queries.push_back(single_query_vector);
+	}
+
+	config.num_of_queries = num_of_queries;
+	config.num_of_topk = topk;
+	config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
+}
+
 } // end of namespace DistGenie
