@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <chrono> // benchmarking purpose
 
 #include "GPUGenie.h"
 #include "DistGenie.h"
@@ -160,7 +161,13 @@ int main(int argc, char *argv[])
 			}
 			delete[] queries_array;
 			// run the queries and write output to file
-			ExecuteQuery(config, extra_config, table);
+			for (int i = 0; i < 10; ++i) {
+				auto start = chrono::steady_clock::now();
+				ExecuteQuery(config, extra_config, table);
+				auto stop = chrono::steady_clock::now();
+				auto diff = stop - start;
+				cout << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
+			}
 		}
 	} else {
 		while (true) {
@@ -170,14 +177,12 @@ int main(int argc, char *argv[])
 			// num of queries
 			MPI_Bcast(&num_of_queries, 1, MPI_INT, 0, MPI_COMM_WORLD); // number of queries
 			config.num_of_queries = num_of_queries;
-			//cout << MPI_DEBUG << MPI_rank << " num of queries: " << config.num_of_queries << endl;
 			if (num_of_queries == -1)
 				break;
 
 			// top k
 			MPI_Bcast(&top_k, 1, MPI_INT, 0, MPI_COMM_WORLD); // top k
 			config.num_of_topk = top_k;
-			//cout << MPI_DEBUG << MPI_rank << " topk: " << config.num_of_topk << endl;
 
 			// query content
 			try {
@@ -185,32 +190,21 @@ int main(int argc, char *argv[])
 			} catch (bad_alloc&) {
 				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			}
-			//queries_array = (int *)realloc(queries_array, sizeof(int) * num_of_queries + config.dim);
-			//cout << MPI_DEBUG << MPI_rank << " allocated query space " << config.num_of_queries * config.dim << endl;
 			MPI_Bcast(queries_array, config.num_of_queries * config.dim, MPI_INT, 0, MPI_COMM_WORLD); // actual queries as 1d array
-			//cout << MPI_DEBUG << MPI_rank << " after query broadcast" << endl;
-			//for (int i = 0; i < config.num_of_queries * config.dim; ++i)
-			//	cout << MPI_DEBUG << MPI_rank << " received: " << queries_array[i] << endl;
 
 			// set up config values
 			config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
-			//cout << MPI_DEBUG << MPI_rank << " after hash size update" << endl;
 
 			// convert queries_array to vector
 			queries.clear();
 			for (int i = 0; i < config.num_of_queries; ++i) {
 				vector<int> single_query(queries_array + i * config.dim, queries_array + (i + 1) * config.dim);
-				//cout << MPI_DEBUG << MPI_rank << " before pushing one query" << endl;
-				//queries.push_back(single_query);
 				queries.push_back(single_query);
-				//cout << MPI_DEBUG << MPI_rank << " pushed one query" << endl;
 			}
-			//cout << MPI_DEBUG << MPI_rank << " after vector conversion" << endl;
 			delete[] queries_array;
 			// run the queries and write output to file
-			//cout << MPI_DEBUG << MPI_rank << " before executing query" << endl;
-			ExecuteQuery(config, extra_config, table);
-			//cout << MPI_DEBUG << MPI_rank << " after executing query" << endl;
+			for (int i = 0; i < 10; ++i)
+				ExecuteQuery(config, extra_config, table);
 		}
 	}
 

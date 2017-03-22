@@ -3,14 +3,18 @@
 #include <vector>
 #include <mpi.h>
 
+#include "rapidjson/document.h"
 #include "parser.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
 
 using namespace GPUGenie;
+using namespace rapidjson;
+using namespace std;
 
 namespace DistGenie
 {
+bool ValidateConfiguration(const Document &);
 /*
  * Parse configuration file
  *
@@ -24,35 +28,33 @@ void ParseConfigurationFile(
 		const string config_filename)
 {
 	/*
-	 * read configurations from file and store them in a map
+	 * read json configuration and parse it
 	 */
-	map<string, string> config_map;
 	ifstream config_file(config_filename);
-	string line, key, value;
-	while (getline(config_file, line))
-	{
-		istringstream line_string_stream(line);
-		if (getline(line_string_stream, key, '='))
-			if (getline(line_string_stream, value))
-				config_map[key] = value;
-	}
+	string config_file_content((istreambuf_iterator<char>(config_file)), istreambuf_iterator<char>());
+	Document json_config;
+	json_config.Parse(config_file_content.c_str());
 	config_file.close();
 
-	if (!ValidateConfiguration(config_map))
+	/*
+	 * validate the configuration
+	 */
+	if (!ValidateConfiguration(json_config))
 	{
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		return;
 	}
+	cout << "Configuration validated" << endl;
 
 	/*
 	 * set configuration structs accordingly
 	 */
-	extra_config.data_file = config_map.find("data_file")->second;
+	extra_config.data_file = json_config["data_file"].GetString();
 
-	config.dim = stoi(config_map.find("dim")->second);
-	config.count_threshold = stoi(config_map.find("count_threshold")->second);
+	config.dim = json_config["dim"].GetInt();
+	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = 0;
-	config.use_device = LOCAL_RANK;
+	config.use_device = LOCAL_RANK + 1; // TODO: change it back to LOCAL_RANK
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
 	
@@ -62,18 +64,19 @@ void ParseConfigurationFile(
 	config.use_multirange = false;
 	config.save_to_gpu = true;
 	
-	config.data_type = stoi(config_map.find("data_type")->second);
-	config.search_type = stoi(config_map.find("search_type")->second);
-	config.max_data_size = stoi(config_map.find("max_data_size")->second);
+	config.data_type = json_config["data_type"].GetInt();
+	config.search_type = json_config["search_type"].GetInt();
+	config.max_data_size = json_config["max_data_size"].GetInt();
 }
 
 /*
  * Checks whether all compulsory entries are present
  *
- * param config_map (INPUT) map of configurations
+ * param json_config (INPUT) JSON config document
  */
-bool ValidateConfiguration(map<string, string> config_map)
+bool ValidateConfiguration(const Document &json_config)
 {
+	// TODO: validate data type
 	vector<string> compulsoryEntries;
 	compulsoryEntries.push_back("data_file");
 	compulsoryEntries.push_back("dim");
@@ -83,15 +86,9 @@ bool ValidateConfiguration(map<string, string> config_map)
 	compulsoryEntries.push_back("max_data_size");
 
 	for (auto iterator = compulsoryEntries.begin(); iterator < compulsoryEntries.end(); ++iterator)
-	{
-		if (config_map.find(*iterator) == config_map.end())
-		{
-			cout << "Configuration validation failed" << endl;
+		if (!json_config.HasMember((*iterator).c_str()))
 			return false;
-		}
-	}
-	cout << "Configuration validation succeeded" << endl;
 	return true;
 }
 
-}
+} // end of namespace DistGenie
