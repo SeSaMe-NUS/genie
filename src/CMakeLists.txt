@@ -1,5 +1,3 @@
-cuda_include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
-
 configure_file(
   ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
   ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
