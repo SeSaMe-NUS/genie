@@ -44,7 +44,7 @@ $ cmake -DUSE_MPI=on -DUSE_DYNAMIC=on ..
 Examples (tests) are available in the `bin` folder of your build directory. To run MPI GENIE, use
 
 ```bash
-$ mpirun -np <n> ./bin/odgenie static/genie.config
+$ mpirun -np <n> ./bin/odgenie static/online.config.json
 ```
 
 The program will listen for question on port 9090. You can send queries to the program by executing
@@ -53,29 +53,38 @@ The program will listen for question on port 9090. You can send queries to the p
 $ nc localhost 9090
 ```
 
-The query format is `<num_of_queries> <topk> [query_values]`, for example, for 2 questions of dimension 5, you do
+The query format is in JSON format, for 2 queries of dimension 5, you do
 
-```
-2 2 1 2 3 4 5 2 3 4 5 6
+```javascript
+{
+  "topk": 10,
+  "queries": [
+    [1, 2, 3, 4, 5],
+    [1, 3, 5, 7, 9]
+  ]
+}
 ```
 
-This sends query `1 2 3 4 5` and `2 3 4 5 6` with topk set to 2.
+This sends query `1 2 3 4 5` and `2 3 4 5 6` with topk set to 10.
 
 ## Attaching GDB to MPI
 
 Run MPI with ENABLE_GDB=1 environment variable:
-```
-mpirun -np 2 -x ENABLE_GDB=1 ./bin/odgenie ./static/genie.config
+
+```bash
+$ mpirun -np 2 -x ENABLE_GDB=1 ./bin/odgenie ./static/online.config.json
 ```
 
 If there is only one batch of MPI processes running, we can find PID automatically. Note that we need to set variable i to non-zero value to start the process after we have attached all gdbs we want.
-```
-pid=$(pgrep odgenie | sed -n 1p); gdb -q --pid "${pid}" -ex "up 100" -ex "down 1" -ex "set variable gdb_attached=1" -ex "continue"
+
+```bash
+$ pid=$(pgrep odgenie | sed -n 1p); gdb -q --pid "${pid}" -ex "up 100" -ex "down 1" -ex "set variable gdb_attached=1" -ex "continue"
 ```
 
 To attach other processes, use their corresponding PID (PID of rank 0 process + rank). Do this before starting the rank 0 process by setting variable i.
-```
-pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
+
+```bash
+$ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
 ```
 
 ## Documentation
