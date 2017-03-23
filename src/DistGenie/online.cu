@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
 			MPI_Bcast(recv_buf, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			ParseQuery(config, queries, string(recv_buf));
+			if (!ValidateAndParseQuery(config, queries, string(recv_buf)))
+				continue;
 
 			// set up config values
 			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
@@ -137,8 +138,10 @@ int main(int argc, char *argv[])
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			ParseQuery(config, queries, string(queries_array));
+			bool validated = ValidateAndParseQuery(config, queries, string(queries_array));
 			delete[] queries_array;
+			if (!validated)
+				continue;
 
 			// run the queries and write output to file
 			for (int i = 0; i < 10; ++i)

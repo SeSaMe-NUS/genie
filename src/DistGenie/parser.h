@@ -10,7 +10,7 @@ namespace DistGenie
 {
 
 void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, ExtraConfig &, const string);
-void ParseQuery(GPUGenie::GPUGenie_Config &, vector<vector<int> > &, const string);
+bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, vector<vector<int> > &, const string);
 
 }
 

@@ -7,7 +7,6 @@
 #include "parser.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
-#define ValidateType(document, entry, type) document[entry].Is ## type()
 
 using namespace GPUGenie;
 using namespace rapidjson;
@@ -30,9 +29,10 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	 */
 	ifstream config_file(config_filename);
 	string config_file_content((istreambuf_iterator<char>(config_file)), istreambuf_iterator<char>());
-	Document json_config;
-	json_config.Parse(config_file_content.c_str());
 	config_file.close();
+	Document json_config;
+	if (json_config.Parse(config_file_content.c_str()).HasParseError())
+		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 
 	/*
 	 * validate the configuration
@@ -90,7 +90,7 @@ bool ValidateConfiguration(const Document &json_config)
 			cout << "Entry " << it->c_str() << " is missing" << endl;
 			return false;
 		}
-		if (!ValidateType(json_config, it->c_str(), String)) {
+		if (!json_config[it->c_str()].IsString()) {
 			cout << "Entry " << it->c_str() << " has wrong type" << endl;
 			return false;
 		}	
@@ -100,7 +100,7 @@ bool ValidateConfiguration(const Document &json_config)
 			cout << "Entry " << it->c_str() << " is missing" << endl;
 			return false;
 		}
-		if (!ValidateType(json_config, it->c_str(), Int)) {
+		if (!json_config[it->c_str()].IsInt()) {
 			cout << "Entry " << it->c_str() << " has wrong type" << endl;
 			return false;
 		}	
@@ -111,14 +111,39 @@ bool ValidateConfiguration(const Document &json_config)
 /*
  * Parse query into vector
  */
-void ParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int> > &queries, const string query)
+bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int> > &queries, const string query)
 {
-	// TODO: add validation
-	int topk, num_of_queries;
-
 	Document json_query;
-	json_query.Parse(query.c_str());
+	if (json_query.Parse(query.c_str()).HasParseError()) {
+		cout << "Invalid query format" << endl;
+		return false;
+	}
 
+	// validation
+	if (!json_query.HasMember("topk")) {
+		cout << "Entry topk is missing" << endl;
+		return false;
+	}
+	if (!json_query["topk"].IsInt()) {
+		cout << "Entry topk has wrong type" << endl;
+		return false;
+	}
+	if (!json_query.HasMember("queries")) {
+		cout << "Entry query is missing" << endl;
+		return false;
+	}
+	if (!json_query["queries"].IsArray()) {
+		cout << "Entry queries has wrong type" << endl;
+		return false;
+	}
+	for (auto &single_query : json_query["queries"].GetArray()) {
+		if (!single_query.IsArray()) {
+			cout << "Entry queries has wrong type" << endl;
+			return false;
+		}
+	}
+
+	int topk, num_of_queries;
 	topk = json_query["topk"].GetInt();
 	num_of_queries = json_query["queries"].Size();
 
@@ -133,6 +158,8 @@ void ParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int> > &queries
 	config.num_of_queries = num_of_queries;
 	config.num_of_topk = topk;
 	config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
+
+	return true;
 }
 
 } // end of namespace DistGenie

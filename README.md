@@ -65,7 +65,7 @@ The query format is in JSON format, for 2 queries of dimension 5, you do
 }
 ```
 
-This sends query `1 2 3 4 5` and `2 3 4 5 6` with topk set to 10.
+This sends query `1 2 3 4 5` and `1 3 5 7 9` with topk set to 10.
 
 ## Attaching GDB to MPI
 
