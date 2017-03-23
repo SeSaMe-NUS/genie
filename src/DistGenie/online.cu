@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
 	config.query_points = &queries;
 	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
-	cout << MPI_DEBUG << "rank: " << MPI_rank << " using GPU " << config.use_device << endl;
 
 	/*
 	 * load data
@@ -132,9 +131,7 @@ int main(int argc, char *argv[])
 		}
 	} else {
 		while (true) {
-			/*
-			 * receive query from master
-			 */
+			// receive query from master
 			MPI_Bcast(&count, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			queries_array = new char[count];
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
@@ -148,10 +145,4 @@ int main(int argc, char *argv[])
 				ExecuteQuery(config, extra_config, table);
 		}
 	}
-
-	/*
-	 * clean up
-	 */
-	MPI_Finalize();
-	return EXIT_SUCCESS;
 }

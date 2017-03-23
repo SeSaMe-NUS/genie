@@ -7,6 +7,7 @@
 #include "parser.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
+#define ValidateType(document, entry, type) document[entry].Is ## type()
 
 using namespace GPUGenie;
 using namespace rapidjson;
@@ -22,13 +23,10 @@ bool ValidateConfiguration(const Document &);
  * param extra_config (OUTPUT) Extra configuration for MPIGenie
  * param config_filename (INPUT) Configuration file name
  */
-void ParseConfigurationFile(
-		GPUGenie_Config &config,
-		ExtraConfig &extra_config,
-		const string config_filename)
+void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, const string config_filename)
 {
 	/*
-	 * read json configuration and parse it
+	 * read json configuration from file and parse it
 	 */
 	ifstream config_file(config_filename);
 	string config_file_content((istreambuf_iterator<char>(config_file)), istreambuf_iterator<char>());
@@ -40,10 +38,7 @@ void ParseConfigurationFile(
 	 * validate the configuration
 	 */
 	if (!ValidateConfiguration(json_config))
-	{
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-		return;
-	}
 	cout << "Configuration validated" << endl;
 
 	/*
@@ -76,18 +71,40 @@ void ParseConfigurationFile(
  */
 bool ValidateConfiguration(const Document &json_config)
 {
-	// TODO: validate data type
-	vector<string> compulsoryEntries;
-	compulsoryEntries.push_back("data_file");
-	compulsoryEntries.push_back("dim");
-	compulsoryEntries.push_back("count_threshold");
-	compulsoryEntries.push_back("data_type");
-	compulsoryEntries.push_back("search_type");
-	compulsoryEntries.push_back("max_data_size");
+	/*
+	 * maintain entries of different type in different vectors
+	 */
+	vector<string> string_entries, int_entries;
+	string_entries.push_back("data_file");
+	int_entries.push_back("dim");
+	int_entries.push_back("count_threshold");
+	int_entries.push_back("data_type");
+	int_entries.push_back("search_type");
+	int_entries.push_back("max_data_size");
 
-	for (auto iterator = compulsoryEntries.begin(); iterator < compulsoryEntries.end(); ++iterator)
-		if (!json_config.HasMember((*iterator).c_str()))
+	/*
+	 * check entries' existence and type
+	 */
+	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
+		if (!json_config.HasMember(it->c_str())) {
+			cout << "Entry " << it->c_str() << " is missing" << endl;
 			return false;
+		}
+		if (!ValidateType(json_config, it->c_str(), String)) {
+			cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			return false;
+		}	
+	}
+	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
+		if (!json_config.HasMember(it->c_str())) {
+			cout << "Entry " << it->c_str() << " is missing" << endl;
+			return false;
+		}
+		if (!ValidateType(json_config, it->c_str(), Int)) {
+			cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			return false;
+		}	
+	}
 	return true;
 }
 
