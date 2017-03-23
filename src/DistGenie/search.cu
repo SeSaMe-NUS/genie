@@ -30,6 +30,7 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	 */
 	vector<int> result;
 	vector<int> result_count;
+	MPI_Barrier(MPI_COMM_WORLD);
 	knn_search_after_preprocess(config, table, result, result_count);
 
 	/*

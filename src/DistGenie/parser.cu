@@ -14,7 +14,9 @@ using namespace std;
 
 namespace DistGenie
 {
+
 bool ValidateConfiguration(const Document &);
+
 /*
  * Parse configuration file
  *

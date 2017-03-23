@@ -12,7 +12,7 @@
 #include "DistGenie.h"
 
 #define MPI_DEBUG ">>>MPI DEBUG<<< "
-#define BUFFER_SIZE 2 << 20
+#define BUFFER_SIZE (10 << 20) // 10 megabytes
 
 using namespace GPUGenie;
 using namespace DistGenie;
@@ -86,7 +86,6 @@ int main(int argc, char *argv[])
 	 * handle online queries
 	 */
 	int count;
-	char *queries_array = nullptr;
 
 	if (MPI_rank == 0) {
 		// socket
@@ -106,7 +105,7 @@ int main(int argc, char *argv[])
 		while (true) {
 			//receive queries from socket
 			int incoming = accept(sock, &client_address, &address_len);
-			memset(recv_buf, 0, BUFFER_SIZE);
+			memset(recv_buf, '\0', BUFFER_SIZE);
 			count = recv(incoming, recv_buf, BUFFER_SIZE, 0);
 			close(incoming);
 
@@ -131,16 +130,16 @@ int main(int argc, char *argv[])
 			}
 		}
 	} else {
+		char *queries_array = new char[BUFFER_SIZE];
 		while (true) {
 			// receive query from master
 			MPI_Bcast(&count, 1, MPI_INT, 0, MPI_COMM_WORLD);
-			queries_array = new char[count];
+			memset(queries_array, '\0', BUFFER_SIZE);
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			bool validated = ValidateAndParseQuery(config, queries, string(queries_array));
-			delete[] queries_array;
-			if (!validated)
+			cout << queries_array[count-1] << endl;
+			if(!ValidateAndParseQuery(config, queries, string(queries_array)))
 				continue;
 
 			// run the queries and write output to file
