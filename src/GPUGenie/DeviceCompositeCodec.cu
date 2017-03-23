@@ -2,6 +2,7 @@
 
 #include "DeviceCompositeCodec.h"
 #include "DeviceBitPackingCodec.h"
+#include "DeviceVarintCodec.h"
 
 using namespace GPUGenie;
 
@@ -18,6 +19,9 @@ GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t
 
 template void
 GPUGenie::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+
+template void
+GPUGenie::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 
 template <class CODEC> void

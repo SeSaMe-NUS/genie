@@ -14,6 +14,7 @@
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
+#include <GPUGenie/DeviceVarintCodec.h>
 #include <GPUGenie/scan.h> 
 
 using namespace GPUGenie;
@@ -225,12 +226,13 @@ int main(int argc, char **argv)
     ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
 
-    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
-    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
-    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
-    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
-    ok &= testCodec<DeviceBitPackingPrefixedCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
+
 
 
     printf("Shutting down...\n");

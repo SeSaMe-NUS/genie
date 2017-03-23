@@ -33,6 +33,8 @@ set(LIB_SRC_LIST
   GPUGenie/DeviceBitPackingCodec.cu
   GPUGenie/DeviceBitPackingHelpers.h
   GPUGenie/DeviceBitPackingHelpers.cu
+  GPUGenie/DeviceVarintCodec.h
+  GPUGenie/DeviceVarintCodec.cu
   GPUGenie/scan.h
   GPUGenie/scan.cu
 
