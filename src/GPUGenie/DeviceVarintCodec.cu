@@ -175,17 +175,18 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
         GPUGENIE_CODEC_VARINT_THREADBLOCK_SIZE; i++)
     {
         int idxUnpack = i * GPUGENIE_CODEC_VARINT_THREADBLOCK_SIZE + idx;
-        if (idxUnpack >= comprLength)
-            break;
-
-        s_numInts[idxUnpack] = numIntsStartingHere(d_in, idxUnpack);
+        
+        if (idxUnpack < comprLength)
+            s_numInts[idxUnpack] = numIntsStartingHere(d_in, idxUnpack, comprLength);
+        else
+            s_numInts[idxUnpack] = 0;
     }
 
     // do a scan of s_numInts to find d_out position for each thread
     uint comprLengthPow2 = GPUGenie::d_pow2ceil_32(comprLength);
     uint comprLength4 = (comprLength + 3) / 4;
     __syncthreads();
-    GPUGenie::d_scanExclusiveShared((uint4 *)s_numInts, (uint4 *)s_numIntsScanned, comprLength4, comprLengthPow2);
+    GPUGenie::d_scanExclusiveShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
     __syncthreads();
 
     // we need at most 4 loops of unpacking for the current setup, since we use exactly 256 threads,
@@ -231,13 +232,13 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
         }
     }
 
-    capacity = s_numIntsScanned[comprLength] + s_numInts[comprLength];
+    capacity = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
     return d_in + capacity;
 
 }
 
 __device__ int
-GPUGenie::DeviceVarintCodec::numIntsStartingHere(uint32_t *d_in, int idxUnpack)
+GPUGenie::DeviceVarintCodec::numIntsStartingHere(uint32_t *d_in, int idxUnpack, int comprLength)
 {
     // This function checks the last byte of the preceding uint32_t and the first 3 bytes of the current uint32_t, i.e.
     // d_in[idxUnpack]. If such byte value has 1 in the highest bit, then a new int must start in this uint32_t
@@ -253,5 +254,8 @@ GPUGenie::DeviceVarintCodec::numIntsStartingHere(uint32_t *d_in, int idxUnpack)
         prevByte = *nextBytePtr;
         nextBytePtr++;
     }
+    // the last compressed uint32_t may have leading bits of some bytes set to 0, even though no integer starts there
+    if (idxUnpack == comprLength - 1 && !(prevByte & 128))
+        numIntsStartingHere--;
     return numIntsStartingHere;
 }

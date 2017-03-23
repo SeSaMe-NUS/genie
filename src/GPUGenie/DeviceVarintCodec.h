@@ -75,7 +75,7 @@ private:
     }
 
     __device__ int
-    numIntsStartingHere(uint32_t *d_in, int idxUnpack);
+    numIntsStartingHere(uint32_t *d_in, int idxUnpack, int comprLength);
 
 };
 
