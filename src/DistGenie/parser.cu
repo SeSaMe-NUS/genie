@@ -49,7 +49,7 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	config.dim = json_config["dim"].GetInt();
 	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = 0;
-	config.use_device = LOCAL_RANK + 1; // TODO: change it back to LOCAL_RANK
+	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
 	
