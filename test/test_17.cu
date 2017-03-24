@@ -183,8 +183,29 @@ int main(int argc, char **argv)
     h_OutputGPU  = (uint *)malloc(N * sizeof(uint));
     srand(666);
 
+    assert(sizeof(long int) >= 8); // otherwise there may be an overflow in these generated numbers
     for (uint i = 0; i < N; i++)
-        h_Input[i] = rand() % 100;
+    {
+        switch (rand() % 5)
+        {
+            case 0: // generate 1-7 bit number
+                h_Input[i] = (long int)rand() % (1 << 7);
+                break;
+            case 1: // generate 8-14 bit number
+                h_Input[i] = ((long int)rand() + (1 << 7)) % (1 << 15);
+                break;
+            case 2: // generate 15-21 bit number
+                h_Input[i] = ((long int)rand() + (1 << 14)) % (1 << 22);
+                break;
+            case 3: // generate 22-28 bit number
+                h_Input[i] = ((long int)rand() + (1 << 21)) % (1 << 28);
+                break;
+            case 4: // generate 29-32 bit number
+                h_Input[i] = ((long int)rand() + (1 << 28));
+                break;
+        }
+        
+    }
 
     printf("Allocating and initializing CUDA arrays...\n");
     cudaCheckErrors(cudaMalloc((void **)&d_Input, N * sizeof(uint)));
@@ -232,6 +253,15 @@ int main(int argc, char **argv)
     ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
     ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
+
+
+
+
+
+
+
+
+
 
 
 

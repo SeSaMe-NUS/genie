@@ -204,30 +204,35 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
 
         // every 32 threads process one block
         int blockNum = idxUnpack / GPUGENIE_CODEC_BPP_BLOCK_LENGTH;
-        const uint32_t *d_myIn = d_in + s_bitOffsets[blockNum];
 
         // read the bit size to unpack
         int bitSize = s_bitSizes[blockNum];
 
         // determine the index of the first and last (exclusive) bit that belongs to the packed number
         int firstBit = bitSize * (idxUnpack % GPUGENIE_CODEC_BPP_BLOCK_LENGTH);
-        int lastBit = firstBit + bitSize;
-        assert(lastBit <= bitSize * GPUGENIE_CODEC_BPP_BLOCK_LENGTH); // cannot exceed bit packed size
+        int lastBit = firstBit + bitSize - 1;
+        assert(lastBit < bitSize * GPUGENIE_CODEC_BPP_BLOCK_LENGTH); // cannot exceed bit packed size
 
-        // 
-        uint32_t packed = d_myIn[firstBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH]; // choose a packed source
+        // choose a packed bit range(s)
+        uint32_t packed = d_in[s_bitOffsets[blockNum] + firstBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH]; 
         int firstBitInPacked = firstBit % 32;
-        uint32_t packedOverflow = d_myIn[lastBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH]; // choose a packed source
-        bool isOverflowing = lastBit % 32 <= firstBitInPacked;
-        int lastBitInPacked = isOverflowing ? 32 : lastBit % 32;
-        int lastBitInPackedOverflow = !isOverflowing ? 0 : lastBit % 32;
+        uint32_t packedOverflow = d_in[s_bitOffsets[blockNum] + lastBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
+        assert(lastBit % 32 != firstBitInPacked);
 
-        uint32_t out = ((packed >> firstBitInPacked) % (1U << bitSize - lastBitInPackedOverflow)) |
-                       (packedOverflow % (1U << lastBitInPackedOverflow)) << (bitSize - lastBitInPackedOverflow); 
+        bool isOverflowing = lastBit % 32 < firstBitInPacked;
+        int lastBitInPacked = isOverflowing ? 31 : lastBit % 32;
+        int lastBitInPackedOverflow = !isOverflowing ? -1 : lastBit % 32;
 
+        // compute decompressed value
+        uint32_t outFromPacked = 
+            ((packed >> firstBitInPacked) & (0xFFFFFFFF >> (32 - (bitSize - lastBitInPackedOverflow - 1))));
+        uint32_t outFromOverflow = 
+            (packedOverflow & (0xFFFFFFFF >> (32-lastBitInPackedOverflow-1))) << (bitSize-lastBitInPackedOverflow-1); 
+        uint32_t out = outFromPacked | outFromOverflow;
+                       
         d_out[idxUnpack] = out;
 
-        printf("Thread %d unpacked idx %d: bitSize: %d, firstBit: %d, lastBit: %d, firstBitInPacked: %d, lastBitInPacked: %d, lastBitInPackedOverflow: %d, bits in packed: %d, bits in overflow: %d, out: %u\n", idx, idxUnpack, bitSize, firstBit, lastBit, firstBitInPacked, lastBitInPacked, lastBitInPackedOverflow, bitSize - lastBitInPackedOverflow, lastBitInPackedOverflow, out);
+        printf("Thread %d unpacked idx %d: bitSize: %d, firstBit: %d, lastBit: %d, firstBitInPacked: %d, lastBitInPacked: %d, lastBitInPackedOverflow: %d, bits in packed: %d, bits in overflow: %d, out: %u\n", idx, idxUnpack, bitSize, firstBit, lastBit, firstBitInPacked, lastBitInPacked, lastBitInPackedOverflow, bitSize - lastBitInPackedOverflow - 1, lastBitInPackedOverflow, out);
     }
 
     capacity = length;
