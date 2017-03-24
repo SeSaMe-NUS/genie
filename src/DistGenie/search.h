@@ -1,5 +1,5 @@
-#ifndef DistGenie_search_h
-#define DistGenie_search_h
+#ifndef __DISTGENIE_SEARCH_H__
+#define __DISTGENIE_SEARCH_H__
 
 #include "GPUGenie.h"
 #include "config.h"

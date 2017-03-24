@@ -1,5 +1,5 @@
-#ifndef DistGenie_config_h
-#define DistGenie_config_h
+#ifndef __DISTGENIE_CONFIG_H__
+#define __DISTGENIE_CONFIG_H__
 
 namespace DistGenie
 {

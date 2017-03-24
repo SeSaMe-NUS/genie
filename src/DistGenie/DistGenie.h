@@ -1,5 +1,5 @@
-#ifndef DistGenie_DistGenie_h
-#define DistGenie_DistGenie_h
+#ifndef __DISTGENIE_DISTGENIE_H__
+#define __DISTGENIE_DISTGENIE_H__
 
 #include "parser.h"
 #include "search.h"

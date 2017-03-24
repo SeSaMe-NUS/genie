@@ -1,5 +1,5 @@
-#ifndef DistGenie_parser_h
-#define DistGenie_parser_h
+#ifndef __DISTGENIE_PARSER_H__
+#define __DISTGENIE_PARSER_H__
 
 #include <vector>
 
