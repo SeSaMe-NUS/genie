@@ -106,19 +106,21 @@ int main(int argc, char *argv[])
 			//receive queries from socket
 			int incoming = accept(sock, &client_address, &address_len);
 			memset(recv_buf, '\0', BUFFER_SIZE);
-			count = recv(incoming, recv_buf, BUFFER_SIZE, 0);
+			count = recv(incoming, recv_buf, BUFFER_SIZE, MSG_WAITALL);
 			close(incoming);
 
 			// broadcast query length and query content
-			MPI_Bcast(&count, 1, MPI_INT, 0 , MPI_COMM_WORLD);
+			MPI_Bcast(&count, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			MPI_Bcast(recv_buf, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
 			if (!ValidateAndParseQuery(config, queries, string(recv_buf)))
 				continue;
 
-			// set up config values
-			extra_config.output_file = "GENIEQUERY.csv"; // TODO: change filename according to current time?
+			// set up output file name
+			auto epoch_time = chrono::system_clock::now().time_since_epoch();
+			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
+			extra_config.output_file = to_string(output_filename) + ".csv";
 
 			// run the queries and write output to file
 			for (int i = 0; i < 10; ++i) {
@@ -138,7 +140,6 @@ int main(int argc, char *argv[])
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			cout << MPI_DEBUG << g_mpi_rank << " " << queries_array[count-1] << endl;
 			if(!ValidateAndParseQuery(config, queries, string(queries_array)))
 				continue;
 
