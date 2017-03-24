@@ -2,9 +2,10 @@
 #include <sstream>
 #include <vector>
 #include <mpi.h>
-
 #include "rapidjson/document.h"
+
 #include "parser.h"
+#include "global.h"
 
 #define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
 
@@ -41,7 +42,7 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	 */
 	if (!ValidateConfiguration(json_config))
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-	cout << "Configuration validated" << endl;
+	cout << MPI_DEBUG << g_mpi_rank << " configuration validated" << endl;
 
 	/*
 	 * set configuration structs accordingly

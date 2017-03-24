@@ -10,8 +10,9 @@
 
 #include "GPUGenie.h"
 #include "DistGenie.h"
+#define NO_EXTERN
+#include "global.h"
 
-#define MPI_DEBUG ">>>MPI DEBUG<<< "
 #define BUFFER_SIZE (10 << 20) // 10 megabytes
 
 using namespace GPUGenie;
@@ -43,15 +44,14 @@ int main(int argc, char *argv[])
 	/*
 	 * initialization
 	 */
-	int MPI_rank, MPI_size;
 	MPI_Init(&argc, &argv);
 	WaitForGDB();
 
-	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &g_mpi_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &g_mpi_size);
 	if (argc != 2)
 	{
-		if (MPI_rank == 0)
+		if (g_mpi_rank == 0)
 			cout << "Usage: mpirun -np <proc> --hostfile <hosts> ./dgenie config.file" << endl;
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 	}
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	/*
 	 * load data
 	 */
-	string data_file = extra_config.data_file + "_" + to_string(MPI_rank) + ".csv"; // each process load a different file
+	string data_file = extra_config.data_file + "_" + to_string(g_mpi_rank) + ".csv"; // each process load a different file
 	read_file(data, data_file.c_str(), -1);
 
 	/*
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	 */
 	int count;
 
-	if (MPI_rank == 0) {
+	if (g_mpi_rank == 0) {
 		// socket
 		// TODO: check socket success
 		int sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 				ExecuteQuery(config, extra_config, table);
 				auto stop = chrono::steady_clock::now();
 				auto diff = stop - start;
-				cout << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
+				cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 			}
 		}
 	} else {
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			cout << queries_array[count-1] << endl;
+			cout << MPI_DEBUG << g_mpi_rank << " " << queries_array[count-1] << endl;
 			if(!ValidateAndParseQuery(config, queries, string(queries_array)))
 				continue;
 

@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "search.h"
+#include "global.h"
 
 #define pii std::pair<int, int>
 
@@ -21,10 +22,6 @@ namespace DistGenie
  */
 void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table *table)
 {
-	int MPI_rank, MPI_size;
-	MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-
 	/*
 	 * Search step
 	 */
@@ -39,15 +36,15 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	int *final_result = nullptr;       // only for MPI
 	int *final_result_count = nullptr; // only for MPI
 	int single_rank_result_size = config.num_of_topk * config.num_of_queries;
-	if (MPI_rank == 0) {
-		int result_size = MPI_size * single_rank_result_size;
+	if (g_mpi_rank == 0) {
+		int result_size = g_mpi_size * single_rank_result_size;
 		final_result = new int[result_size];
 		final_result_count = new int[result_size];
 	}
 	MPI_Gather(&result[0], single_rank_result_size, MPI_INT, final_result, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Gather(&result_count[0], single_rank_result_size, MPI_INT, final_result_count, single_rank_result_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	if (MPI_rank == 0) {
+	if (g_mpi_rank == 0) {
 		vector<int> final_result_vec;
 		vector<int> final_result_count_vec;
 
@@ -55,7 +52,7 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 		for (int i = 0; i < config.num_of_queries; ++i) {
 			// count is first, id is second (sort by count)
 			priority_queue<pii, vector<pii>, std::less<pii> > single_query_priority_queue;
-			for (int j = 0; j < MPI_size; ++j) {
+			for (int j = 0; j < g_mpi_size; ++j) {
 				int offset = j * single_rank_result_size + i * config.num_of_topk;
 				for (int k = 0; k < config.num_of_topk; ++k) {
 					// k-th result on j-th rank for i-th query

@@ -1,1 +1,1 @@
-/* #undef USE_DYNAMIC */
+#define USE_DYNAMIC
