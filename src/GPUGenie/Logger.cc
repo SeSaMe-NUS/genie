@@ -73,14 +73,9 @@ void Logger::set_logfile_name(const char * name)
 {
 	if (strcmp(name, _logger()->logfile_name) != 0)
 	{
+		fclose(_logger()->logfile); // close previously opened logger file
 		strcpy(_logger()->logfile_name, name);
-		if (logger != NULL)
-		{
-			fclose(logger->logfile);
-			logger = NULL;
-			_logger();
-		}
-
+		fopen(_logger()->logfile_name, "a"); // open a new file for logging
 	}
 
 }
