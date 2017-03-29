@@ -130,7 +130,7 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
         if (h_OutputCPU[i] != h_OutputGPU[i] || h_OutputGPU[i] != h_Input[i])
         {
             ok = false;
-            printf ("mismatch: h_Input[%d]=%u, h_OutputCPU[%d]=%u, h_Input[%d]=%u\n", i, h_Input[i], i, h_OutputCPU[i], i, h_OutputGPU[i]);
+            printf ("mismatch: h_Input[%d]=%u, h_OutputCPU[%d]=%u, h_OutputGPU[%d]=%u\n", i, h_Input[i], i, h_OutputCPU[i], i, h_OutputGPU[i]);
             break;
         }
     }

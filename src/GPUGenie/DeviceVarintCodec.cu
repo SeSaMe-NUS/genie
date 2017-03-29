@@ -189,6 +189,8 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     GPUGenie::d_scanExclusiveShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
     __syncthreads();
 
+    int decomprLength = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
+
     // we need at most 4 loops of unpacking for the current setup, since we use exactly 256 threads,
     // but the maximal unpacked capacity is 1024
     for (int i = 0; i < (comprLength + GPUGENIE_CODEC_VARINT_THREADBLOCK_SIZE - 1) /
@@ -199,19 +201,22 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
         if (idxUnpack >= comprLength)
             break;
 
-        uint8_t* myByte = reinterpret_cast<uint8_t*>(d_in + idxUnpack);
-        uint8_t myCurrByte = *myByte;
+        uint8_t* nextByte = reinterpret_cast<uint8_t*>(d_in + idxUnpack);
+        uint8_t myCurrByte = *nextByte++;
         uint8_t myPrevByte = idxUnpack > 0 ? (d_in[idxUnpack-1] >> 24) : 0xFF;
 
         int myNumInts = (int)s_numInts[idxUnpack];
         int myOutIdx = (int)s_numIntsScanned[idxUnpack];
+
+        assert(myNumInts <= 4);
+        assert(myOutIdx < decomprLength || myNumInts == 0);
 
         // find first starting position position, such that previous byte has 1 on the highest position (last byte of
         // it's corresponding int)
         while (!(myPrevByte & 128))
         {
             myPrevByte = myCurrByte;
-            myCurrByte = *myByte++;
+            myCurrByte = *nextByte++;
         }
 
         for (int i = 0; i < myNumInts; i++)
@@ -224,16 +229,16 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
                 {
                     d_out[myOutIdx + i] = decoded;
                     printf("Thread: %d unpacked idx: %d int number %d out of numInts %d, value: %u, saved into d_out[%d]\n", idx, idxUnpack, i, myNumInts, decoded, myOutIdx + i);
-                    myCurrByte = *myByte++;
+                    myCurrByte = *nextByte++;
                     break;
                 }
-                myCurrByte = *myByte++;
+                myCurrByte = *nextByte++;
             }
         }
     }
 
-    capacity = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
-    return d_in + capacity;
+    capacity = decomprLength;
+    return d_in + decomprLength;
 
 }
 
