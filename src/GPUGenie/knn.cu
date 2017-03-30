@@ -3,7 +3,6 @@
  */
 #include <math.h>
 #include <assert.h>
-#include <thrust/copy.h>
 
 #include "inv_list.h"
 #include "match.h"
