@@ -45,7 +45,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
         size_t d_dims_size,
         int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
+        uint32_t *d_compr_inv, // in; compressed posting list on GPU
         int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
@@ -64,7 +64,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
         "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
         idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
 
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
 
@@ -103,7 +103,7 @@ void decompressPostingLists_listPerThread_DeviceDeltaCodec(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
         size_t d_dims_size,
         int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
+        uint32_t *d_compr_inv, // in; compressed posting list on GPU
         int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
@@ -123,7 +123,7 @@ void decompressPostingLists_listPerThread_DeviceDeltaCodec(
         idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
 
 
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // usedLength will be set to the actual uncompressed length
     DeviceDeltaCodec codec; 
@@ -160,7 +160,7 @@ void decompressPostingLists_listPerThread_DeviceBitPackingCodec(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
         size_t d_dims_size,
         int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
+        uint32_t *d_compr_inv, // in; compressed posting list on GPU
         int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
@@ -179,7 +179,7 @@ void decompressPostingLists_listPerThread_DeviceBitPackingCodec(
         "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
         idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
 
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // usedLength will be set to the actual uncompressed length
     DeviceBitPackingCodec codec; 
@@ -216,7 +216,7 @@ void decompressPostingLists_listPerThread_d1_bp32(
         query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
         size_t d_dims_size,
         int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
+        uint32_t *d_compr_inv, // in; compressed posting list on GPU
         int *d_uncompr_inv,
         size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
 {
@@ -235,7 +235,7 @@ void decompressPostingLists_listPerThread_d1_bp32(
         "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
         idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
 
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
+    uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // usedLength will be set to the actual uncompressed length
     DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec> codec; 

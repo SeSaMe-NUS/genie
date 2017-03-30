@@ -118,8 +118,8 @@ public:
         return in + length;
     }
 
-    __device__ const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    __device__ uint32_t*
+    decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
     {
         if (length > nvalue){
             // We do not have enough capacity in the decompressed array!
@@ -135,8 +135,8 @@ public:
     /**
         This function may access d_in[(length+3)/4] and d_out[(length+3)/4] due to scan4 optimization
      */
-    __device__ const uint32_t*
-    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue)
+    __device__ uint32_t*
+    decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
     {
         assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
         assert(length <= nvalue); // not enough capacity in the decompressed array!
@@ -157,6 +157,7 @@ public:
     name() const { return "DeviceJustCopyCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
+    __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
     __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 1024; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 1; }
@@ -189,6 +190,7 @@ public:
     name() const { return "DeviceDeltaCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
     __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
@@ -206,7 +208,10 @@ class DeviceCompositeCodec : public DeviceIntegerCODEC {
 public:
 
     __device__ __host__
-    DeviceCompositeCodec() : codec1(), codec2() {}
+    DeviceCompositeCodec() : codec1(), codec2() {
+        assert(codec1.decodeArrayParallel_minEffectiveLength() > 1);
+        assert(codec2.decodeArrayParallel_minEffectiveLength() == 1);
+    }
 
     Codec1 codec1;
     Codec2 codec2;
@@ -215,80 +220,32 @@ public:
     ~DeviceCompositeCodec() {}
 
     void
-    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
-        const size_t roundedlength = length / Codec1::BlockSize * Codec1::BlockSize;
-        size_t nvalue1 = nvalue;
-        codec1.encodeArray(in, roundedlength, out, nvalue1);
-
-        if (roundedlength < length) {
-            assert(nvalue >= nvalue1);
-            size_t nvalue2 = nvalue - nvalue1;
-            codec2.encodeArray(in + roundedlength, length - roundedlength, out + nvalue1, nvalue2);
-            nvalue = nvalue1 + nvalue2;
-        } else {
-            nvalue = nvalue1;
-        }
-    }
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue);
 
     const uint32_t*
-    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {
-        const uint32_t *const initin(in);
-        size_t mynvalue1 = nvalue;
-        const uint32_t *in2 = codec1.decodeArray(in, length, out, mynvalue1);
-        if (length + in > in2) {
-            assert(nvalue > mynvalue1);
-            size_t nvalue2 = nvalue - mynvalue1;
-            const uint32_t *in3 = codec2.decodeArray(in2, length - (in2 - in), out + mynvalue1, nvalue2);
-            nvalue = mynvalue1 + nvalue2;
-            assert(initin + length >= in3);
-            return in3;
-        }
-        nvalue = mynvalue1;
-        assert(initin + length >= in2);
-        return in2;
-    }
+    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue);
 
-    __device__ const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
-        const uint32_t *const initin(d_in);
-        size_t mynvalue1 = nvalue;
-        const uint32_t *d_in2 = codec1.decodeArraySequential(d_in, length, d_out, mynvalue1);
-        if (mynvalue1 > nvalue){ // Codec1 does not have enough capacity
-            nvalue = mynvalue1;
-            return d_in;
-        }
-        if (length + d_in > d_in2) {
-            assert(nvalue > mynvalue1);
-            size_t nvalue2 = nvalue - mynvalue1;
-            const uint32_t *in3 = codec2.decodeArraySequential(d_in2, length - (d_in2 - d_in), d_out + mynvalue1, nvalue2);
-            if (nvalue2 > nvalue - mynvalue1){ // Codec2 does not have enough capacity
-                nvalue = mynvalue1 + nvalue2;
-                return d_in;
-            }
-            nvalue = mynvalue1 + nvalue2;
-            assert(initin + length >= in3);
-            return in3;
-        }
-        nvalue = mynvalue1;
-        assert(initin + length >= d_in2);
-        return d_in2;
-    }
+    __device__ uint32_t*
+    decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
 
-    __device__ const uint32_t*
-    decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {
-        return NULL;
-    }
+    __device__ uint32_t*
+    decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
 
-    std::string name() const {
+    std::string
+    name() const {
         std::ostringstream convert;
         convert << "DeviceCompositeCodec_" << codec1.name() << "+" << codec2.name();
         return convert.str();
     }
 
     __device__ __host__ int
+    decodeArrayParallel_minEffectiveLength() { 
+        return codec2.decodeArrayParallel_minEffectiveLength();
+    }
+
+    __device__ __host__ int
     decodeArrayParallel_maxBlocks() { 
-        assert(codec1.decodeArrayParallel_maxBlocks() == codec2.decodeArrayParallel_maxBlocks());
-        return codec1.decodeArrayParallel_maxBlocks();
+        return min(codec1.decodeArrayParallel_maxBlocks(), codec2.decodeArrayParallel_maxBlocks());
     }
 
     __device__ __host__ int

@@ -41,7 +41,6 @@ public:
     static const uint32_t MiniBlockSize = 32;
     static const uint32_t HowManyMiniBlocks = 4;
     static const uint32_t BlockSize = MiniBlockSize; // HowManyMiniBlocks * MiniBlockSize;
-    static const uint32_t bits32 = 8;
 
     struct DeviceIntegratedBlockPacker {
 
@@ -106,8 +105,8 @@ public:
         return (a % x == 0);
     }
 
-    __device__ const uint32_t*
-    decodeArraySequential(const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue);
+    __device__ uint32_t*
+    decodeArraySequential(uint32_t *d_in, size_t /*length*/, uint32_t *d_out, size_t &nvalue);
 
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t /* comprLength */, uint32_t *d_out, size_t &capacity);
@@ -119,6 +118,7 @@ public:
     name() const { return "DeviceBitPackingCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 8; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
     __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
@@ -142,7 +142,6 @@ public:
     static const uint32_t MiniBlockSize = 32;
     static const uint32_t HowManyMiniBlocks = 4;
     static const uint32_t BlockSize = MiniBlockSize; // HowManyMiniBlocks * MiniBlockSize;
-    static const uint32_t bits32 = 8;
 
     static uint32_t
     maxbits(const uint32_t *in, uint32_t &) {

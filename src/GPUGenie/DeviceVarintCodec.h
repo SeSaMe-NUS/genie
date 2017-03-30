@@ -47,6 +47,7 @@ public:
     name() const { return "DeviceVarintCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
     __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return GPUGENIE_CODEC_VARINT_MAX_UNCOMPR_LENGTH; }
     __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return GPUGENIE_CODEC_VARINT_THREADBLOCK_SIZE; }
     __device__ __host__ int decodeArrayParallel_threadLoad() { return GPUGENIE_CODEC_VARINT_THREAD_LOAD; }

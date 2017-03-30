@@ -88,12 +88,12 @@ GPUGenie::DeviceBitPackingCodec::decodeArray(const uint32_t *in, const size_t /*
     return in;
 }
 
-__device__ const uint32_t*
+__device__ uint32_t*
 GPUGenie::DeviceBitPackingCodec::decodeArraySequential(
-        const uint32_t *d_in, const size_t /*length*/, uint32_t *d_out, size_t &nvalue)
+        uint32_t *d_in, size_t /*length*/, uint32_t *d_out, size_t &nvalue)
 {
-    const uint32_t actuallength = *d_in++;
-    const uint32_t *const initout(d_out);
+    uint32_t actuallength = *d_in++;
+    uint32_t *initout(d_out);
     uint32_t Bs[HowManyMiniBlocks];
     uint32_t init = 0;
     for (;d_out < initout + actuallength / (HowManyMiniBlocks * MiniBlockSize) * HowManyMiniBlocks * MiniBlockSize;
