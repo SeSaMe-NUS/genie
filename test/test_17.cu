@@ -254,15 +254,57 @@ int main(int argc, char **argv)
     ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
     assert(ok);
 
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 2, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 31, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 32, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 33, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 64, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 65, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 111, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    assert(ok);
 
-
-
-
-
-
-
-
-
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 2, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 8, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 31, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 32, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 33, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 64, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 65, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 111, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 256, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 332, d_decomprLength);
+    ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+            (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, 1024, d_decomprLength);
+    assert(ok);
 
 
     printf("Shutting down...\n");

@@ -32,6 +32,8 @@ GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>;
 template void
 GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
+template class
+GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>;
 
 template <class CODEC> void
 GPUGenie::decodeArrayParallel(
@@ -137,14 +139,20 @@ GPUGenie::DeviceDeltaCodec::decodeArrayParallel(uint32_t *d_in, size_t length, u
 template <class Codec1, class Codec2> void
 GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
-    const size_t roundedlength = length / Codec1::BlockSize * Codec1::BlockSize;
+    assert(length > 0);
+    assert(nvalue > 0);
+    int codec1minEffLength = codec1.decodeArrayParallel_minEffectiveLength();
+    const size_t codec1Length = length / codec1minEffLength * codec1minEffLength;
     size_t nvalue1 = nvalue;
-    codec1.encodeArray(in, roundedlength, out, nvalue1);
-
-    if (roundedlength < length) {
+    if (codec1Length){
+        codec1.encodeArray(in, codec1Length, out, nvalue1);
+    } else {
+        nvalue1 = 0;
+    }
+    if (codec1Length < length) {
         assert(nvalue >= nvalue1);
         size_t nvalue2 = nvalue - nvalue1;
-        codec2.encodeArray(in + roundedlength, length - roundedlength, out + nvalue1, nvalue2);
+        codec2.encodeArray(in + codec1Length, length - codec1Length, out + nvalue1, nvalue2);
         nvalue = nvalue1 + nvalue2;
     } else {
         nvalue = nvalue1;
@@ -173,12 +181,16 @@ GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, c
 template <class Codec1, class Codec2> __device__ uint32_t*
 GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
-    uint32_t *initin(d_in);
+    uint32_t *initin(d_in), *d_in2(d_in);
+    int codec1minEffLength = codec1.decodeArrayParallel_minEffectiveLength();
+    const size_t codec1Length = length / codec1minEffLength * codec1minEffLength;
     size_t mynvalue1 = nvalue;
-    uint32_t *d_in2 = codec1.decodeArraySequential(d_in, length, d_out, mynvalue1);
-    if (mynvalue1 > nvalue){ // Codec1 does not have enough capacity
-        nvalue = mynvalue1;
-        return d_in;
+    if (codec1Length){
+        d_in2 = codec1.decodeArraySequential(d_in, length, d_out, mynvalue1);
+        if (mynvalue1 > nvalue){ // Codec1 does not have enough capacity
+            nvalue = mynvalue1;
+            return d_in;
+        }
     }
     if (length + d_in > d_in2) {
         assert(nvalue > mynvalue1);
@@ -200,17 +212,22 @@ GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d
 template <class Codec1, class Codec2> __device__ uint32_t*
 GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
-    uint32_t *initin(d_in);
+    uint32_t *initin(d_in), *d_in2(d_in);
+    int codec1minEffLength = codec1.decodeArrayParallel_minEffectiveLength();
+    const size_t codec1Length = length / codec1minEffLength * codec1minEffLength;
     size_t nvalue1 = nvalue;
 
     // Codec1 decompressed as much as it can
-    uint32_t *d_in2 = codec1.decodeArrayParallel(d_in, length, d_out, nvalue1);
-    __syncthreads();
+    if (codec1Length){
+        d_in2 = codec1.decodeArrayParallel(d_in, length, d_out, nvalue1);
+        __syncthreads();
 
-    if (nvalue1 > nvalue){ // Codec1 does not have enough capacity
-        nvalue = nvalue1; // Set capacity to decompressed length
-        return d_in; // Return pointer to the deginning of the compressed array
+        if (nvalue1 > nvalue){ // Codec1 does not have enough capacity
+            nvalue = nvalue1; // Set capacity to decompressed length
+            return d_in; // Return pointer to the deginning of the compressed array
+        }
     }
+ 
     if (d_in + length == d_in2) { // Codec 1 did decompress everything
         nvalue = nvalue1; // Set capacity to decompressed length
         assert(initin + length >= d_in2);

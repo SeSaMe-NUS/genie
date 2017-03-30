@@ -256,14 +256,12 @@ public:
 
     __device__ __host__ int
     decodeArrayParallel_threadsPerBlock() {
-        assert(codec1.decodeArrayParallel_threadsPerBlock() == codec2.decodeArrayParallel_threadsPerBlock());
-        return codec1.decodeArrayParallel_threadsPerBlock();
+        return min(codec1.decodeArrayParallel_threadsPerBlock(),codec2.decodeArrayParallel_threadsPerBlock());
     }
 
     __device__ __host__ int
     decodeArrayParallel_threadLoad() {
-        assert(codec1.decodeArrayParallel_threadLoad() == codec2.decodeArrayParallel_threadLoad());
-        return codec1.decodeArrayParallel_threadLoad();
+        return max(codec1.decodeArrayParallel_threadLoad(),codec2.decodeArrayParallel_threadLoad());
     }
 };
 
