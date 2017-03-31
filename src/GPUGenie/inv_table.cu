@@ -20,7 +20,7 @@
 using namespace std;
 using namespace GPUGenie;
 
-int*  inv_table::d_inv_p = NULL;
+//int*  inv_table::d_inv_p = NULL;
 int inv_table::max_inv_size = 0;
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
@@ -73,13 +73,11 @@ void GPUGenie::inv_table::clear_gpu_mem()
 	if (d_inv_p == NULL)
 		return;
 
-
     cout << "cudaFreeTime: " ;
 	u64 t1 = getTime();
     cudaCheckErrors(cudaFree(d_inv_p));
     u64 t2 = getTime();
     cout << getInterval(t1, t2) << " ms."<< endl;
-
 }
 
 bool GPUGenie::inv_table::empty()

@@ -438,7 +438,7 @@ void GPUGenie::load_table(inv_table& table,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -486,7 +486,7 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -734,7 +734,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -765,7 +765,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -841,7 +841,7 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
 
     cout<<"Building table time = "<<getInterval(tt1, tt2)<<endl;
 
-    if(config.save_to_gpu && inv_table::d_inv_p == NULL)
+    if(config.save_to_gpu && table.d_inv_p == NULL)
         table.cpy_data_to_gpu();
     table.is_stored_in_gpu = config.save_to_gpu;
 

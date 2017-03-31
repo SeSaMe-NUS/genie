@@ -47,10 +47,10 @@ public:
 	{
 		not_builded, builded
 	};
-    /*! \var static int *d_inv_p
+    /*! \var int *d_inv_p
      *  \brief d_inv_p points to the start location for posting list array in GPU memory.
      */
-	static int *d_inv_p;
+	int *d_inv_p = NULL;
 
     /*! \var static int max_inv_Size
      *  \brief This variable is used in multi-load mode. Yhe device pointer is repeatedly used, thus it should be able to contain maximum
@@ -305,7 +305,7 @@ public:
     /*! \fn void clear_gpu_mem()
      *  \brief clear the corresponding gpu memory referenced by d_inv_p
      */
-	static void
+	void
 	clear_gpu_mem();
 
 	/*! \fn void clear()
