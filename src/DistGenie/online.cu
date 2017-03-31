@@ -123,13 +123,14 @@ int main(int argc, char *argv[])
 			extra_config.output_file = to_string(output_filename) + ".csv";
 
 			// run the queries and write output to file
-			for (int i = 0; i < 10; ++i) {
-				auto start = chrono::steady_clock::now();
+			//for (int i = 0; i < 10; ++i) {
+			//	auto start = chrono::steady_clock::now();
 				ExecuteQuery(config, extra_config, table);
-				auto stop = chrono::steady_clock::now();
-				auto diff = stop - start;
-				cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
-			}
+		//		auto stop = chrono::steady_clock::now();
+		//		auto diff = stop - start;
+		//		cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
+		//	}
+				break;
 		}
 	} else {
 		char *queries_array = new char[BUFFER_SIZE];
@@ -144,8 +145,9 @@ int main(int argc, char *argv[])
 				continue;
 
 			// run the queries and write output to file
-			for (int i = 0; i < 10; ++i)
+			//for (int i = 0; i < 10; ++i)
 				ExecuteQuery(config, extra_config, table);
+				break;
 		}
 	}
 }

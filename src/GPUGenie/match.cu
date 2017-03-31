@@ -534,11 +534,14 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 #endif
 	int query_index = q.query;
 	u32* my_noiih = &noiih[query_index];
-	u32* my_threshold = &d_threshold[query_index];
+	//u32* my_threshold = &d_threshold[query_index];
+	__shared__ u32 my_threshold;
+	my_threshold = d_threshold[query_index];
+	__syncthreads();
 #ifdef USE_DYNAMIC
 	// update main array from aux array
-	u32 *my_aux_threshold = &aux_threshold[query_index];
-	*my_threshold = *my_aux_threshold;
+	//u32 *my_aux_threshold = &aux_threshold[query_index];
+	//*my_threshold = *my_aux_threshold;
 #endif
 	u32* my_passCount = &d_passCount[query_index * num_of_max_count];         //
 	u32 my_topk = d_topks[query_index];                //for AT
@@ -579,7 +582,8 @@ void match_AT(int m_size, int i_size, int hash_table_size,
                     continue;
             }
 
-			u32 thread_threshold = *my_threshold;
+			//u32 thread_threshold = *my_threshold;
+			u32 thread_threshold = my_threshold;
 			if (bitmap_bits)
 			{
 
@@ -593,7 +597,8 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 			}
 
 			key_eligible = false;
-			if (count < *my_threshold)
+			//if (count < *my_threshold)
+			if (count < my_threshold)
 			{
 				continue;      //threshold has been increased, no need to insert
 			}
@@ -602,13 +607,15 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 			access_kernel_AT(
 					access_id,               
 					hash_table, hash_table_size, q, count, &key_eligible,
-					my_threshold, &pass_threshold);
+					//my_threshold, &pass_threshold);
+					&my_threshold, &pass_threshold);
 
 			if (key_eligible)
 			{
 				if (pass_threshold)
 				{
-					updateThreshold(my_passCount, my_threshold, my_topk, count);
+					//updateThreshold(my_passCount, my_threshold, my_topk, count);
+					updateThreshold(my_passCount, &my_threshold, my_topk, count);
 #ifdef USE_DYNAMIC
 					// also update aux array
 					//updateThreshold(my_passCount, my_aux_threshold, my_topk, count);
@@ -623,13 +630,15 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				//Insert the key into hash table
 				//access_id and its location are packed into a packed key
 
-				if (count < *my_threshold)
+				//if (count < *my_threshold)
+				if (count < my_threshold)
 				{
 					continue;//threshold has been increased, no need to insert
 				}
 
 				hash_kernel_AT(access_id, hash_table, hash_table_size, q, count,
-						my_threshold, my_noiih, overflow, &pass_threshold);
+						//my_threshold, my_noiih, overflow, &pass_threshold);
+						&my_threshold, my_noiih, overflow, &pass_threshold);
 				if (*overflow)
 				{
 
@@ -637,7 +646,8 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				}
 				if (pass_threshold)
 				{
-					updateThreshold(my_passCount, my_threshold, my_topk, count);
+					//updateThreshold(my_passCount, my_threshold, my_topk, count);
+					updateThreshold(my_passCount, &my_threshold, my_topk, count);
 #ifdef USE_DYNAMIC
 					// also update aux array
 					//updateThreshold(my_passCount, my_aux_threshold, my_topk, count);
@@ -649,7 +659,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 	}
 #ifdef USE_DYNAMIC	
 	// update main threshold to aux threshold after processing a query
-	*my_aux_threshold = *my_threshold;
+	//*my_aux_threshold = *my_threshold;
 #endif
 }
 //end for AT
