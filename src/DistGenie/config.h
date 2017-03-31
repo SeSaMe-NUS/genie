@@ -8,6 +8,7 @@ struct ExtraConfig {
 	string data_file;
 	string query_file;
 	string output_file;
+	int num_of_cluster;
 };
 
 }

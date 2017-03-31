@@ -48,6 +48,7 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	 * set configuration structs accordingly
 	 */
 	extra_config.data_file = json_config["data_file"].GetString();
+	extra_config.num_of_cluster = json_config["num_of_cluster"].GetInt();
 
 	config.dim = json_config["dim"].GetInt();
 	config.count_threshold = json_config["count_threshold"].GetInt();
@@ -84,6 +85,7 @@ bool ValidateConfiguration(const Document &json_config)
 	int_entries.push_back("data_type");
 	int_entries.push_back("search_type");
 	int_entries.push_back("max_data_size");
+	int_entries.push_back("num_of_cluster");
 
 	/*
 	 * check entries' existence and type

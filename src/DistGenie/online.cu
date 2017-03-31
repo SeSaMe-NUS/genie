@@ -68,19 +68,19 @@ int main(int argc, char *argv[])
 	config.query_points = &queries;
 	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
-
-	/*
-	 * load data
-	 */
-	string data_file = extra_config.data_file + "_" + to_string(g_mpi_rank) + ".csv"; // each process load a different file
-	read_file(data, data_file.c_str(), -1);
-
-	/*
-	 * prepare the inverted list
-	 */
-	inv_table *table = nullptr;
 	init_genie(config);
-	preprocess_for_knn_csv(config, table);
+
+	/*
+	 * load data and build inverted list
+	 */
+	inv_table **tables = new inv_table*[extra_config.num_of_cluster];
+	for (int i = 0; i < extra_config.num_of_cluster; ++i)
+	{
+		clog << "load file " << to_string(i) << endl;
+		string data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".csv";
+		read_file(data, data_file.c_str(), -1);
+		preprocess_for_knn_csv(config, tables[i]);
+	}
 
 	/*
 	 * handle online queries
@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
 	int count;
 
 	if (g_mpi_rank == 0) {
-		// socket
 		// TODO: check socket success
 		int sock = socket(PF_INET, SOCK_STREAM, 0);
 		sockaddr_in address;
@@ -125,12 +124,11 @@ int main(int argc, char *argv[])
 			// run the queries and write output to file
 			//for (int i = 0; i < 10; ++i) {
 			//	auto start = chrono::steady_clock::now();
-				ExecuteQuery(config, extra_config, table);
+				ExecuteQuery(config, extra_config, tables[0]);
 		//		auto stop = chrono::steady_clock::now();
 		//		auto diff = stop - start;
 		//		cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 		//	}
-				break;
 		}
 	} else {
 		char *queries_array = new char[BUFFER_SIZE];
@@ -146,8 +144,7 @@ int main(int argc, char *argv[])
 
 			// run the queries and write output to file
 			//for (int i = 0; i < 10; ++i)
-				ExecuteQuery(config, extra_config, table);
-				break;
+				ExecuteQuery(config, extra_config, tables[0]);
 		}
 	}
 }
