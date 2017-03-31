@@ -56,3 +56,5 @@ Doxyfile
 
 #vim swap files
 *.swp
+
+src/GPUGenie/configure.h
