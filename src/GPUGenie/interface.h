@@ -386,7 +386,7 @@ void reset_device();
  */
 void get_rowID_offset(vector<int> &result, vector<int> &resultID, vector<int> &resultOffset, unsigned int shift_bits);
 
-
+void init_genie(GPUGenie_Config &config);
 }
 
 #endif /* INTERFACE_H_ */

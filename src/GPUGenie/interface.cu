@@ -973,22 +973,8 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count,
 		GPUGenie_Config& config)
 {
-	int device_count, hashtable_size;
-	cudaCheckErrors(cudaGetDeviceCount(&device_count));
-	if (device_count == 0)
-	{
-		throw GPUGenie::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
-	}
-	else if (device_count <= config.use_device)
-	{
-		Logger::log(Logger::INFO,
-				"[Info] Device %d not found! Changing to %d...",
-				config.use_device, GPUGENIE_DEFAULT_DEVICE);
-		config.use_device = GPUGENIE_DEFAULT_DEVICE;
-	}
-	cudaCheckErrors(cudaSetDevice(config.use_device));
-
-	Logger::log(Logger::INFO, "Using device %d...", config.use_device);
+	int hashtable_size;
+	
 	Logger::log(Logger::DEBUG, "table.i_size():%d, config.hashtable_size:%f.",
 			table.i_size(), config.hashtable_size);
 
@@ -1100,3 +1086,25 @@ void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vec
     
     }
 }
+
+void GPUGenie::init_genie(GPUGenie_Config &config)
+{
+	int device_count;
+
+	cudaCheckErrors(cudaGetDeviceCount(&device_count));
+	if (device_count == 0)
+	{
+		throw GPUGenie::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
+	}
+	else if (device_count <= config.use_device)
+	{
+		Logger::log(Logger::INFO,
+				"[Info] Device %d not found! Changing to %d...",
+				config.use_device, GPUGENIE_DEFAULT_DEVICE);
+		config.use_device = GPUGENIE_DEFAULT_DEVICE;
+	}
+	cudaCheckErrors(cudaSetDevice(config.use_device));
+
+	Logger::log(Logger::INFO, "Using device %d...", config.use_device);
+}
+

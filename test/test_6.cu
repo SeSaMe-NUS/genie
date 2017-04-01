@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
     unsigned int table_num;
+	init_genie(config);
     preprocess_for_knn_csv(config, table);
 
     table_num = table[0].get_total_num_of_table();

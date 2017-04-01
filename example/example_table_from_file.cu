@@ -104,6 +104,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
     //example of writing and reading operations
     inv_table * __table = NULL;
+	init_genie(config);
     preprocess_for_knn_binary(config, __table);
 
     u64 s1 = getTime();
