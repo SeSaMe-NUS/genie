@@ -7,7 +7,7 @@
 #include "parser.h"
 #include "global.h"
 
-#define LOCAL_RANK atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"))
+static const int LOCAL_RANK = atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"));
 
 using namespace GPUGenie;
 using namespace rapidjson;
@@ -53,7 +53,7 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	config.dim = json_config["dim"].GetInt();
 	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = 0;
-	config.use_device = LOCAL_RANK;
+	config.use_device = LOCAL_RANK + 1;
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
 	
@@ -116,7 +116,7 @@ bool ValidateConfiguration(const Document &json_config)
 /*
  * Parse query into vector
  */
-bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int> > &queries, const string query)
+bool ValidateAndParseQuery(GPUGenie_Config &config, vector<Cluster> &clusters, const string query)
 {
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
@@ -141,26 +141,39 @@ bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &config, vector<vector<int>
 		cout << "Entry queries has wrong type" << endl;
 		return false;
 	}
-	for (auto &single_query : json_query["queries"].GetArray()) {
-		if (!single_query.IsArray()) {
-			cout << "Entry queries has wrong type" << endl;
-			return false;
-		}
-	}
+	// TODO: add new validation
+	//for (auto &single_query : json_query["queries"].GetArray()) {
+	//	if (!single_query.IsArray()) {
+	//		cout << "Entry queries has wrong type" << endl;
+	//		return false;
+	//	}
+	//}
 
-	int topk, num_of_queries;
+	int topk;
 	topk = json_query["topk"].GetInt();
-	num_of_queries = json_query["queries"].Size();
 
-	queries.clear();
-	for (auto &single_query : json_query["queries"].GetArray()) {
-		vector<int> single_query_vector;
-		for (auto &query_value : single_query.GetArray()) 
-			single_query_vector.push_back(query_value.GetInt());
-		queries.push_back(single_query_vector);
+	// clear the clusters
+	for (auto it = clusters.begin(); it != clusters.end(); ++it)
+	{
+		it->m_queries.clear();
+		it->m_queries_id.clear();
+	}
+	// push new data into clusters
+	int id = 0;
+	for (auto &single_query_json : json_query["queries"].GetArray()) {
+		vector<int> single_query_content;
+		int cluster_id;
+		for (auto &query_value : single_query_json["content"].GetArray()) 
+			single_query_content.push_back(query_value.GetInt());
+		for (auto &cluster : single_query_json["clusters"].GetArray()) 
+		{
+			cluster_id = cluster.GetInt();
+			clusters.at(cluster_id).m_queries.push_back(single_query_content);
+			clusters.at(cluster_id).m_queries_id.push_back(id);
+		}
+		++id;
 	}
 
-	config.num_of_queries = num_of_queries;
 	config.num_of_topk = topk;
 	config.hashtable_size = config.num_of_topk * 1.5 * config.count_threshold;
 

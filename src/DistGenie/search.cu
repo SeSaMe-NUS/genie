@@ -82,4 +82,16 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	}
 }
 
+/* For pre-clustering version */
+void ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config, GPUGenie::inv_table **tables, vector<Cluster> &clusters)
+{
+	for (size_t i = 0; i < clusters.size(); ++i)
+	{
+		clog << MPI_DEBUG << g_mpi_rank << " searching cluster " << i << endl;
+		config.num_of_queries = clusters.at(i).m_queries.size();
+		config.query_points = &clusters.at(i).m_queries;
+		ExecuteQuery(config, extra_config, tables[i]);
+	}
 }
+
+} // end of namespace DistGenie

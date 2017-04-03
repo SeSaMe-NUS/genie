@@ -4,5 +4,6 @@
 #include "parser.h"
 #include "search.h"
 #include "config.h"
+#include "container.h"
 
 #endif

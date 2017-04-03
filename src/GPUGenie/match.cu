@@ -934,17 +934,17 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 						shift_bits_subsequence,
 						aux_threshold_p,
 						offset * i);
-				//cudaCheckErrors(cudaDeviceSynchronize());
+				cudaCheckErrors(cudaDeviceSynchronize());
 				cout << "launched " << i << " kernels" << endl;
-				//MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+				MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
 
 				// check for kernel finish
-				cudaEventRecord(kernel_finish);
-				while (cudaEventQuery(kernel_finish) != cudaSuccess) {
-					usleep(1000);
-					// CUDA-aware MPI Allreduce operation on aux array
-					MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
-				}
+				//cudaEventRecord(kernel_finish);
+				//while (cudaEventQuery(kernel_finish) != cudaSuccess) {
+				//	usleep(1000);
+				//	// CUDA-aware MPI Allreduce operation on aux array
+				//	MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+				//}
 			}
 #else
             device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>

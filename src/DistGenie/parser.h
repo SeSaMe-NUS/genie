@@ -5,13 +5,12 @@
 
 #include "GPUGenie.h"
 #include "config.h"
+#include "container.h"
 
 namespace DistGenie
 {
-
-void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, ExtraConfig &, const string);
-bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, vector<vector<int> > &, const string);
-
+	void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, ExtraConfig &, const string);
+	bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, vector<Cluster> &, const string);
 }
 
 #endif

@@ -13,7 +13,7 @@
 #define NO_EXTERN
 #include "global.h"
 
-#define BUFFER_SIZE (10 << 20) // 10 megabytes
+static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
 
 using namespace GPUGenie;
 using namespace DistGenie;
@@ -21,10 +21,7 @@ using namespace std;
 
 static void WaitForGDB()
 {
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-	if(getenv("ENABLE_GDB") != NULL && rank == 0){
+	if(getenv("ENABLE_GDB") != NULL && g_mpi_rank == 0){
 		volatile int gdb_attached =0;
 		fprintf(stderr, "Process %ld waiting for GDB \n", (long)getpid());
 		fflush(stderr);
@@ -59,15 +56,14 @@ int main(int argc, char *argv[])
 	/*
 	 * read in the config
 	 */
-	vector< vector<int> > queries;
 	vector< vector<int> > data;
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
 
-	config.query_points = &queries;
 	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
+	vector<Cluster> clusters(extra_config.num_of_cluster);
 	init_genie(config);
 
 	/*
@@ -113,7 +109,7 @@ int main(int argc, char *argv[])
 			MPI_Bcast(recv_buf, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			if (!ValidateAndParseQuery(config, queries, string(recv_buf)))
+			if (!ValidateAndParseQuery(config, clusters, string(recv_buf)))
 				continue;
 
 			// set up output file name
@@ -124,7 +120,7 @@ int main(int argc, char *argv[])
 			// run the queries and write output to file
 			//for (int i = 0; i < 10; ++i) {
 			//	auto start = chrono::steady_clock::now();
-				ExecuteQuery(config, extra_config, tables[0]);
+				ExecuteMultitableQuery(config, extra_config, tables, clusters);
 		//		auto stop = chrono::steady_clock::now();
 		//		auto diff = stop - start;
 		//		cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
@@ -139,12 +135,12 @@ int main(int argc, char *argv[])
 			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 			// parse the query
-			if(!ValidateAndParseQuery(config, queries, string(queries_array)))
+			if(!ValidateAndParseQuery(config, clusters, string(queries_array)))
 				continue;
 
 			// run the queries and write output to file
 			//for (int i = 0; i < 10; ++i)
-				ExecuteQuery(config, extra_config, tables[0]);
+			ExecuteMultitableQuery(config, extra_config, tables, clusters);
 		}
 	}
 }
