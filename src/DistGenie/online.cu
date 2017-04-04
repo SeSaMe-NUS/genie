@@ -13,11 +13,14 @@
 #define NO_EXTERN
 #include "global.h"
 
-static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
-
 using namespace GPUGenie;
 using namespace DistGenie;
 using namespace std;
+
+static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
+
+static void ReadData(GPUGenie_Config &, ExtraConfig &, vector<vector<int> > &, inv_table **);
+static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, inv_table **, vector<Cluster> &);
 
 static void WaitForGDB()
 {
@@ -54,36 +57,31 @@ int main(int argc, char *argv[])
 	}
 
 	/*
-	 * read in the config
+	 * process configuration file
 	 */
-	vector< vector<int> > data;
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
-
-	config.data_points = &data;
 	ParseConfigurationFile(config, extra_config, config_filename);
-	vector<Cluster> clusters(extra_config.num_of_cluster);
-	init_genie(config);
 
 	/*
-	 * load data and build inverted list
+	 * initialize GENIE
 	 */
+	init_genie(config);
+	vector<vector<int> > data;
+	config.data_points = &data;
 	inv_table **tables = new inv_table*[extra_config.num_of_cluster];
-	for (int i = 0; i < extra_config.num_of_cluster; ++i)
-	{
-		clog << "load file " << to_string(i) << endl;
-		string data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".csv";
-		read_file(data, data_file.c_str(), -1);
-		preprocess_for_knn_csv(config, tables[i]);
-	}
+	ReadData(config, extra_config, data, tables);
 
 	/*
 	 * handle online queries
 	 */
 	int count;
+	char *recv_buf = new char[BUFFER_SIZE]{'\0'};
+	vector<Cluster> clusters(extra_config.num_of_cluster);
 
-	if (g_mpi_rank == 0) {
+	if (g_mpi_rank == 0)
+	{
 		// TODO: check socket success
 		int sock = socket(PF_INET, SOCK_STREAM, 0);
 		sockaddr_in address;
@@ -93,7 +91,6 @@ int main(int argc, char *argv[])
 		address.sin_family = AF_INET;
 		address.sin_port = htons(9090);
 		address.sin_addr.s_addr = INADDR_ANY;
-		char *recv_buf = new char[BUFFER_SIZE];
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
 
@@ -104,43 +101,40 @@ int main(int argc, char *argv[])
 			count = recv(incoming, recv_buf, BUFFER_SIZE, MSG_WAITALL);
 			close(incoming);
 
-			// broadcast query length and query content
-			MPI_Bcast(&count, 1, MPI_INT, 0, MPI_COMM_WORLD);
-			MPI_Bcast(recv_buf, count, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-			// parse the query
-			if (!ValidateAndParseQuery(config, clusters, string(recv_buf)))
-				continue;
-
 			// set up output file name
 			auto epoch_time = chrono::system_clock::now().time_since_epoch();
 			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
 			extra_config.output_file = to_string(output_filename) + ".csv";
 
-			// run the queries and write output to file
-			//for (int i = 0; i < 10; ++i) {
-			//	auto start = chrono::steady_clock::now();
-				ExecuteMultitableQuery(config, extra_config, tables, clusters);
-		//		auto stop = chrono::steady_clock::now();
-		//		auto diff = stop - start;
-		//		cout << MPI_DEBUG << "Elapsed time is " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
-		//	}
+			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters);
 		}
-	} else {
-		char *queries_array = new char[BUFFER_SIZE];
-		while (true) {
-			// receive query from master
-			MPI_Bcast(&count, 1, MPI_INT, 0, MPI_COMM_WORLD);
-			memset(queries_array, '\0', BUFFER_SIZE);
-			MPI_Bcast(queries_array, count, MPI_CHAR, 0, MPI_COMM_WORLD);
+	}
+	else
+		while (true)
+			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters);
+}
 
-			// parse the query
-			if(!ValidateAndParseQuery(config, clusters, string(queries_array)))
-				continue;
+static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config &config,
+		ExtraConfig &extra_config, inv_table **tables, vector<Cluster> &clusters)
+{
+	// broadcast query
+	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	memset(recv_buf, '\0', BUFFER_SIZE);
+	MPI_Bcast(recv_buf, *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-			// run the queries and write output to file
-			//for (int i = 0; i < 10; ++i)
-			ExecuteMultitableQuery(config, extra_config, tables, clusters);
-		}
+	if(!ValidateAndParseQuery(config, clusters, string(recv_buf)))
+		return;
+
+	ExecuteMultitableQuery(config, extra_config, tables, clusters);
+}
+
+static void ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, inv_table **tables)
+{
+	for (int i = 0; i < extra_config.num_of_cluster; ++i)
+	{
+		clog << "load file " << to_string(i) << endl;
+		string data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".csv";
+		read_file(data, data_file.c_str(), -1);
+		preprocess_for_knn_csv(config, tables[i]);
 	}
 }
