@@ -116,7 +116,7 @@ bool ValidateConfiguration(const Document &json_config)
 /*
  * Parse query into vector
  */
-bool ValidateAndParseQuery(GPUGenie_Config &config, vector<Cluster> &clusters, const string query)
+bool ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, vector<Cluster> &clusters, const string query)
 {
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
@@ -151,6 +151,7 @@ bool ValidateAndParseQuery(GPUGenie_Config &config, vector<Cluster> &clusters, c
 
 	int topk;
 	topk = json_query["topk"].GetInt();
+	extra_config.total_queries = json_query["queries"].Size();
 
 	// clear the clusters
 	for (auto it = clusters.begin(); it != clusters.end(); ++it)

@@ -1,6 +1,9 @@
 #ifndef __DISTGENIE_GLOBAL_H__
 #define __DISTGENIE_GLOBAL_H__
 
+#include <vector>
+#include <utility>
+
 #ifdef NO_EXTERN
 #define EXTERN
 #else

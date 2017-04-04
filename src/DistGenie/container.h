@@ -1,18 +1,16 @@
 #ifndef __DISTGENIE_CONTAINER_H__
 #define __DISTGENIE_CONTAINER_H__
 
-#include <utility>
+#include <vector>
 
 namespace DistGenie
 {
 	struct Cluster {
-		vector<int> m_queries_id{};
-		vector<vector<int> > m_queries{};
+		std::vector<int> m_queries_id{};
+		std::vector<std::vector<int> > m_queries{};
 	};
-	
-	struct Result {
-		vector<std::pair<int, int> > m_results{};
-	};
+
+	typedef std::vector<std::pair<int, int> > Result;
 }
 
 #endif

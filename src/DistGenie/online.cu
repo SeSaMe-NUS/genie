@@ -1,8 +1,11 @@
 #include <mpi.h>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <cstdio>
 #include <vector>
+#include <functional>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -21,6 +24,7 @@ static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
 
 static void ReadData(GPUGenie_Config &, ExtraConfig &, vector<vector<int> > &, inv_table **);
 static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, inv_table **, vector<Cluster> &);
+static void GenerateOutput(vector<Result> &, GPUGenie_Config &, ExtraConfig &);
 
 static void WaitForGDB()
 {
@@ -119,13 +123,17 @@ static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config 
 {
 	// broadcast query
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	memset(recv_buf, '\0', BUFFER_SIZE);
+	if (g_mpi_rank != 0)
+		memset(recv_buf, '\0', BUFFER_SIZE);
 	MPI_Bcast(recv_buf, *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-	if(!ValidateAndParseQuery(config, clusters, string(recv_buf)))
+	if(!ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf)))
 		return;
 
-	ExecuteMultitableQuery(config, extra_config, tables, clusters);
+	vector<Result> results(extra_config.total_queries);
+	ExecuteMultitableQuery(config, extra_config, tables, clusters, results);
+	if (g_mpi_rank == 0)
+		GenerateOutput(results, config, extra_config);
 }
 
 static void ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, inv_table **tables)
@@ -137,4 +145,17 @@ static void ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<
 		read_file(data, data_file.c_str(), -1);
 		preprocess_for_knn_csv(config, tables[i]);
 	}
+}
+
+static void GenerateOutput(vector<Result> &results, GPUGenie_Config &config, ExtraConfig &extra_config)
+{
+	int topk = config.num_of_topk;
+	ofstream output(extra_config.output_file);
+	for (auto it = results.begin(); it != results.end(); ++it)
+	{
+		sort(it->begin(), it->end(), std::greater<std::pair<int, int> >());
+		for (int i = 0; i < topk; ++i)
+			output << it->at(i).second << "," << it->at(i).first << endl;
+	}
+	output.close();
 }
