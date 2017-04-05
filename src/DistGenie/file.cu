@@ -27,6 +27,7 @@ namespace DistGenie
 				clog << "load binary file " << to_string(i) << endl;
 				data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".dat";
 				inv_table::read(data_file.c_str(), tables[i]);
+				tables[i]->cpy_data_to_gpu();
 			}
 		// TODO: handle unknown data format
 	}
