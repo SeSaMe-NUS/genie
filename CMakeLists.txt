@@ -15,6 +15,12 @@ include(CheckCXXCompilerFlag)
 ## DEPENDENCIES
 find_package(CUDA REQUIRED)
 find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
+if (USE_MPI)
+  find_package(MPI REQUIRED)
+  MESSAGE(STATUS "Building GENIE with MPI support")
+  option(USE_DYNAMIC "Dynamic update of threshold" OFF)
+  include_directories(${MPI_INCLUDE_PATH})
+endif()
 
 
 ## BUILD OPTIONS
@@ -41,13 +47,18 @@ option(USE_MPI "Build distributed GENIE" OFF)
 include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
 
+
 ## OUTPUT OPTIONS
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+
 ## CMAKE SUBDIRECTORIES
 add_subdirectory(src)
+if (USE_MPI)
+  add_subdirectory(src/DistGenie)
+endif()
+add_subdirectory(utility)
 add_subdirectory(test)
 add_subdirectory(static)
 add_subdirectory(doc)
-
