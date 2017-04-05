@@ -1,11 +1,7 @@
 #include <mpi.h>
-#include <algorithm>
 #include <iostream>
-#include <sstream>
-#include <fstream>
 #include <cstdio>
 #include <vector>
-#include <functional>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -22,18 +18,16 @@ using namespace std;
 
 static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
 
-static void ReadData(GPUGenie_Config &, ExtraConfig &, vector<vector<int> > &, inv_table **);
 static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, inv_table **, vector<Cluster> &);
-static void GenerateOutput(vector<Result> &, GPUGenie_Config &, ExtraConfig &);
 
 static void WaitForGDB()
 {
-	if(getenv("ENABLE_GDB") != NULL && g_mpi_rank == 0){
-		volatile int gdb_attached =0;
+	if(getenv("ENABLE_GDB") != NULL && 0 == g_mpi_rank){
+		volatile int gdb_attached = 0;
 		fprintf(stderr, "Process %ld waiting for GDB \n", (long)getpid());
 		fflush(stderr);
 		
-		while (gdb_attached==0)
+		while (0 == gdb_attached)
 			sleep(5);
 
 		fprintf(stderr, "Process %ld got GDB \n", (long)getpid());
@@ -55,7 +49,7 @@ int main(int argc, char *argv[])
 	MPI_Comm_size(MPI_COMM_WORLD, &g_mpi_size);
 	if (argc != 2)
 	{
-		if (g_mpi_rank == 0)
+		if (0 == g_mpi_rank)
 			cout << "Usage: mpirun -np <proc> --hostfile <hosts> ./dgenie config.file" << endl;
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 	}
@@ -84,7 +78,7 @@ int main(int argc, char *argv[])
 	char *recv_buf = new char[BUFFER_SIZE]{'\0'};
 	vector<Cluster> clusters(extra_config.num_of_cluster);
 
-	if (g_mpi_rank == 0)
+	if (0 == g_mpi_rank)
 	{
 		// TODO: check socket success
 		int sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -131,31 +125,11 @@ static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config 
 		return;
 
 	vector<Result> results(extra_config.total_queries);
+	auto t1 = chrono::steady_clock::now();
 	ExecuteMultitableQuery(config, extra_config, tables, clusters, results);
-	if (g_mpi_rank == 0)
+	auto t2 = chrono::steady_clock::now();
+	auto diff = t2 - t1;
+	clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
+	if (0 == g_mpi_rank)
 		GenerateOutput(results, config, extra_config);
-}
-
-static void ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, inv_table **tables)
-{
-	for (int i = 0; i < extra_config.num_of_cluster; ++i)
-	{
-		clog << "load file " << to_string(i) << endl;
-		string data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".csv";
-		read_file(data, data_file.c_str(), -1);
-		preprocess_for_knn_csv(config, tables[i]);
-	}
-}
-
-static void GenerateOutput(vector<Result> &results, GPUGenie_Config &config, ExtraConfig &extra_config)
-{
-	int topk = config.num_of_topk;
-	ofstream output(extra_config.output_file);
-	for (auto it = results.begin(); it != results.end(); ++it)
-	{
-		sort(it->begin(), it->end(), std::greater<std::pair<int, int> >());
-		for (int i = 0; i < topk; ++i)
-			output << it->at(i).second << "," << it->at(i).first << endl;
-	}
-	output.close();
 }

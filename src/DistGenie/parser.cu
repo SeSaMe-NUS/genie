@@ -49,11 +49,12 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	 */
 	extra_config.data_file = json_config["data_file"].GetString();
 	extra_config.num_of_cluster = json_config["num_of_cluster"].GetInt();
+	extra_config.data_format = json_config["data_format"].GetInt();
 
 	config.dim = json_config["dim"].GetInt();
 	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = 0;
-	config.use_device = LOCAL_RANK + 1;
+	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
 	
@@ -86,6 +87,7 @@ bool ValidateConfiguration(const Document &json_config)
 	int_entries.push_back("search_type");
 	int_entries.push_back("max_data_size");
 	int_entries.push_back("num_of_cluster");
+	int_entries.push_back("data_format");
 
 	/*
 	 * check entries' existence and type

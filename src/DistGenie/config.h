@@ -10,6 +10,7 @@ struct ExtraConfig {
 	string output_file;
 	int num_of_cluster;
 	int total_queries;
+	int data_format;
 };
 
 }

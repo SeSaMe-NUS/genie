@@ -5,5 +5,6 @@
 #include "search.h"
 #include "config.h"
 #include "container.h"
+#include "file.h"
 
 #endif
