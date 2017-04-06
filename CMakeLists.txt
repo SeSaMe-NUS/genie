@@ -17,6 +17,7 @@ find_package(CUDA REQUIRED)
 find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
 if (USE_MPI)
   find_package(MPI REQUIRED)
+  find_package(OpenMP REQUIRED)
   MESSAGE(STATUS "Building GENIE with MPI support")
   option(USE_DYNAMIC "Dynamic update of threshold" OFF)
   include_directories(${MPI_INCLUDE_PATH})
@@ -33,7 +34,7 @@ endif()
 if (NOT CONFIGURED_ONCE)
   set(CMAKE_C_FLAGS "${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
-  set(CMAKE_CXX_FLAGS "-std=c++11 ${warnings}"
+set(CMAKE_CXX_FLAGS "-std=c++11 ${warnings} ${OpenMP_CXX_FLAGS}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
