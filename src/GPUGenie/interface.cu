@@ -980,7 +980,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			h_topk_count.begin());
 }
 
-void GPUGenie::knn_search_MT(vector<inv_table>& tables, vector<vector<query> >& queries,
+void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
 {
 	/* hashtable size */
@@ -988,9 +988,9 @@ void GPUGenie::knn_search_MT(vector<inv_table>& tables, vector<vector<query> >& 
 	for (vector<GPUGenie_Config>::size_type i = 0; i < configs.size(); ++i)
 	{
 		Logger::log(Logger::DEBUG, "table.i_size():%d, config.hashtable_size:%f.",
-				tables.at(i).i_size(), configs.at(i).hashtable_size);
+				tables.at(i)->i_size(), configs.at(i).hashtable_size);
 		if (configs.at(i).hashtable_size <= 2)
-			hashtable_sizes.push_back(tables.at(i).i_size() * configs.at(i).hashtable_size + 1);
+			hashtable_sizes.push_back(tables.at(i)->i_size() * configs.at(i).hashtable_size + 1);
 		else
 			hashtable_sizes.push_back(configs.at(i).hashtable_size);
 	}

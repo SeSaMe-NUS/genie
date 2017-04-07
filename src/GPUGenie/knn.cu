@@ -69,7 +69,7 @@ void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 
 }
 
-void GPUGenie::knn_bijectMap_MT(vector<GPUGenie::inv_table>& table, vector<vector<GPUGenie::query> >& queries,
+void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
 {

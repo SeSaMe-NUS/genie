@@ -79,13 +79,13 @@ void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraC
 {
 	vector<vector<query> > queries(clusters.size());
 	LoadQueries(config, tables, clusters, queries);
-	vector<inv_table> table(clusters.size());
+	vector<inv_table*> table;
 	vector<vector<int> > h_topk(clusters.size());
 	vector<vector<int> > h_topk_count(clusters.size());
 	vector<GPUGenie_Config> configs;
 	for (size_t i = 0; i < clusters.size(); ++i)
 	{
-		//table.push_back(tables[i][0]);
+		table.push_back(tables[i]);
 		configs.push_back(config);
 	}
 	knn_search_MT(table, queries, h_topk, h_topk_count, configs);

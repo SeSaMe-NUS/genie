@@ -53,7 +53,7 @@ knn_bijectMap(inv_table& table, vector<query>& queries,
 		int hash_table_size, int max_load, int bitmap_bits);
 
 void
-knn_bijectMap_MT(vector<inv_table>& table, vector<vector<query> >& queries,
+knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits);
 }
