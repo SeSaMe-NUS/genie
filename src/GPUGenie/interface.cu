@@ -995,7 +995,7 @@ void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >&
 			hashtable_sizes.push_back(configs.at(i).hashtable_size);
 	}
 
-	vector<thrust::device_vector<int> > d_topk, d_topk_count;
+	vector<thrust::device_vector<int> > d_topk(configs.size()), d_topk_count(configs.size());
 
 	/* max load */
 	vector<int> max_loads;

@@ -33,6 +33,11 @@ knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
 		device_vector<int>& d_top_count, int hash_table_size, int max_load,
 		int bitmap_bits, int dim);
 
+void
+knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<int> >& d_top_indexes,
+		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
+		int bitmap_bits, vector<int>& dim);
+
 /*! \fn void knn_bijectMap(inv_table& table, vector<query>& queries,
  *  device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
  *  \brief Find the top k values in given inv_table.

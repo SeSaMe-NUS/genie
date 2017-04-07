@@ -88,7 +88,7 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 	}
 	
 	u64 start = getTime();
-	//knn(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
+	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
 	u64 end = getTime();
 
 	double elapsed = getInterval(start, end);
@@ -99,7 +99,6 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
 		int hash_table_size, int max_load, int bitmap_bits, int dim)
 {
-
 	Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size,
 			bitmap_bits, dim);
 	dim = 2;
@@ -157,4 +156,68 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::VERBOSE,
 			">>>>> extract index and copy selected topk results takes %fms <<<<<",
 			getInterval(start, end));
+}
+
+void
+GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<int> >& d_top_indexes,
+		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
+		int bitmap_bits, vector<int>& dim)
+{
+	for (size_t i = 0; i < table.size(); ++i)
+	{
+		Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size.at(i),
+				bitmap_bits, dim.at(i));
+		dim.at(i) = 2;
+
+		device_vector<data_t> d_data;
+		device_vector<u32> d_bitmap;
+
+		device_vector<u32> d_num_of_items_in_hashtable(queries.at(i).size());
+
+		device_vector<u32> d_threshold, d_passCount;
+
+		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
+
+		if (queries.at(i).empty())
+			throw GPUGenie::cpu_runtime_error("Queries not loaded!");
+
+		u64 startMatch = getTime();
+
+		match(table[i][0], queries.at(i), d_data, d_bitmap, hash_table_size.at(i), max_load.at(i),
+				bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+
+		u64 endMatch = getTime();
+		Logger::log(Logger::VERBOSE,
+				">>>>> match() takes %f ms <<<<<",
+				getInterval(startMatch, endMatch));
+
+		Logger::log(Logger::INFO, "Start topk....");
+		u64 start = getTime();
+
+		//topk(d_data, queries, d_top_indexes, float(dim));
+		thrust::device_vector<data_t> d_topk;
+		heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+				queries.at(i)[0].topk(), queries.at(i).size());
+
+		u64 end = getTime();
+		Logger::log(Logger::INFO, "Topk Finished!");
+		Logger::log(Logger::VERBOSE, ">>>>> main topk takes %fms <<<<<",
+				getInterval(start, end));
+		start = getTime();
+
+		d_top_count.at(i).resize(d_topk.size());
+		d_top_indexes.at(i).resize(d_topk.size());
+		extract_index_and_count<<<
+				d_top_indexes.at(i).size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
+				GPUGenie_knn_THREADS_PER_BLOCK>>>(
+				thrust::raw_pointer_cast(d_topk.data()),
+				thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
+				thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
+
+		end = getTime();
+		Logger::log(Logger::INFO, "Finish topk search!");
+		Logger::log(Logger::VERBOSE,
+				">>>>> extract index and copy selected topk results takes %fms <<<<<",
+				getInterval(start, end));
+	}
 }
