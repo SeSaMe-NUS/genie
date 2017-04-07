@@ -10,18 +10,17 @@
 
 #define pii std::pair<int, int>
 
+using namespace DistGenie;
 using namespace GPUGenie;
 using namespace std;
 
-namespace DistGenie
-{
 /*
  * Execute queries
  * param config Config struct for GPUGenie
  * param extra_config Extra config struct used by MPI program
  * param table The inverted list to search
  */
-void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table *table, vector<Result> &results, vector<int> &query_id)
+static void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table *table, vector<Result> &results, vector<int> &query_id)
 {
 	/*
 	 * Search step
@@ -60,21 +59,35 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 	}
 }
 
-/* For pre-clustering version */
-void ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
-		GPUGenie::inv_table **tables, vector<Cluster> &clusters, vector<Result> &results)
+/* load queries for different tables in parallel */
+static void LoadQueries(GPUGenie_Config &config, inv_table **tables, vector<Cluster> &clusters, vector<vector<query> > &queries)
 {
-	vector<vector<query> > queries(clusters.size());
 #pragma omp parallel for schedule(dynamic)
 	for (vector<Cluster>::size_type i = 0; i < clusters.size(); ++i)
 	{
-		clog << MPI_DEBUG << g_mpi_rank << " searching cluster " << i << endl;
 		config.num_of_queries = clusters.at(i).m_queries.size();
 		config.query_points = &clusters.at(i).m_queries;
-		//ExecuteQuery(config, extra_config, tables[i], results, clusters.at(i).m_queries_id);
 		queries.at(i).clear();
 		load_query(tables[i][0], queries.at(i), config);
 	}
+	clog << "Queries loaded" << endl;
 }
 
-} // end of namespace DistGenie
+/* For pre-clustering version */
+void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
+		GPUGenie::inv_table **tables, vector<Cluster> &clusters, vector<Result> &results)
+{
+	vector<vector<query> > queries(clusters.size());
+	LoadQueries(config, tables, clusters, queries);
+	vector<inv_table> table(clusters.size());
+	vector<vector<int> > h_topk(clusters.size());
+	vector<vector<int> > h_topk_count(clusters.size());
+	vector<GPUGenie_Config> configs;
+	for (size_t i = 0; i < clusters.size(); ++i)
+	{
+		//table.push_back(tables[i][0]);
+		configs.push_back(config);
+	}
+	knn_search_MT(table, queries, h_topk, h_topk_count, configs);
+	clog << "Search completed" << endl;
+}

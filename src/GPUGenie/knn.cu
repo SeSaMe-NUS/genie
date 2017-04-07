@@ -68,6 +68,33 @@ void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 	Logger::log(Logger::VERBOSE, ">>>>>>> knn takes %fms <<<<<<", elapsed);
 
 }
+
+void GPUGenie::knn_bijectMap_MT(vector<GPUGenie::inv_table>& table, vector<vector<GPUGenie::query> >& queries,
+		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
+{
+	vector<int> qmaxs(table.size(), 0);
+
+	auto it1 = qmaxs.begin();
+	auto it2 = queries.begin();
+	for (; it1 != qmaxs.end(); ++it1, ++it2)
+	{
+		for (auto it3 = it2->begin(); it3 != it2->end(); ++it3)
+		{
+			int count = it3->count_ranges();
+			if (count > *it1)
+				*it1 = count;
+		}
+	}
+	
+	u64 start = getTime();
+	//knn(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
+	u64 end = getTime();
+
+	double elapsed = getInterval(start, end);
+	Logger::log(Logger::VERBOSE, ">>>>>>> knn takes %fms <<<<<<", elapsed);
+}
+
 void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
 		int hash_table_size, int max_load, int bitmap_bits, int dim)
@@ -130,5 +157,4 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::VERBOSE,
 			">>>>> extract index and copy selected topk results takes %fms <<<<<",
 			getInterval(start, end));
-
 }

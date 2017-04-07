@@ -980,6 +980,58 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			h_topk_count.begin());
 }
 
+void GPUGenie::knn_search_MT(vector<inv_table>& tables, vector<vector<query> >& queries,
+		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
+{
+	/* hashtable size */
+	vector<int> hashtable_sizes;
+	for (vector<GPUGenie_Config>::size_type i = 0; i < configs.size(); ++i)
+	{
+		Logger::log(Logger::DEBUG, "table.i_size():%d, config.hashtable_size:%f.",
+				tables.at(i).i_size(), configs.at(i).hashtable_size);
+		if (configs.at(i).hashtable_size <= 2)
+			hashtable_sizes.push_back(tables.at(i).i_size() * configs.at(i).hashtable_size + 1);
+		else
+			hashtable_sizes.push_back(configs.at(i).hashtable_size);
+	}
+
+	vector<thrust::device_vector<int> > d_topk, d_topk_count;
+
+	/* max load */
+	vector<int> max_loads;
+	for (auto it = configs.begin(); it != configs.end(); ++it)
+	{
+		max_loads.push_back(it->multiplier * it->posting_list_max_length + 1);
+		//Logger::log(Logger::DEBUG, "max_load is %d", max_loads.);
+	}
+
+	GPUGenie::knn_bijectMap_MT(
+			tables, //basic API, since encode dimension and value is also finally transformed as a bijection map
+			queries, d_topk, d_topk_count, hashtable_sizes, max_loads,
+			configs.at(0).count_threshold);
+
+	Logger::log(Logger::INFO, "knn search is done!");
+	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
+
+	/* copy result */
+	h_topk.resize(d_topk.size());
+	h_topk_count.resize(d_topk_count.size());
+	auto it1 = d_topk.begin();
+	auto it2 = h_topk.begin();
+	for (; it1 != d_topk.end(); ++it1, ++it2)
+	{
+		it2->resize(it1->size());
+		thrust::copy(it1->begin(), it1->end(), it2->begin());
+	}
+	it1 = d_topk_count.begin();
+	it2 = h_topk_count.begin();
+	for (; it1 != d_topk_count.end(); ++it1, ++it2)
+	{
+		it2->resize(it1->size());
+		thrust::copy(it1->begin(), it1->end(), it2->begin());
+	}
+}
+
 
 void GPUGenie::reset_device()
 {

@@ -14,7 +14,7 @@ void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vec
 {
 	string data_file;
 	if (0 == extra_config.data_format) // csv
-#pragma omp parallel for schedule(dynamic)
+//#pragma omp parallel for schedule(dynamic)
 		for (int i = 0; i < extra_config.num_of_cluster; ++i)
 		{
 			clog << "load file " << to_string(i) << endl;
@@ -23,7 +23,7 @@ void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vec
 			preprocess_for_knn_csv(config, tables[i]);
 		}
 	else if (1 == extra_config.data_format) // binary
-#pragma omp parallel for schedule(dynamic)
+//#pragma omp parallel for schedule(dynamic)
 		for (int i = 0; i < extra_config.num_of_cluster; ++i)
 		{
 			clog << "load binary file " << to_string(i) << endl;

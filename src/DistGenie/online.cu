@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 		address.sin_addr.s_addr = INADDR_ANY;
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
+		clog << "Start listening for queries on localhost:9090" << endl;
 
 		while (true) {
 			//receive queries from socket
