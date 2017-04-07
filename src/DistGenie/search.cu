@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <omp.h>
 #include <queue>
 #include <vector>
 #include <fstream>
@@ -63,12 +64,16 @@ void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv_table 
 void ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
 		GPUGenie::inv_table **tables, vector<Cluster> &clusters, vector<Result> &results)
 {
+	vector<vector<query> > queries(clusters.size());
+#pragma omp parallel for schedule(dynamic)
 	for (vector<Cluster>::size_type i = 0; i < clusters.size(); ++i)
 	{
 		clog << MPI_DEBUG << g_mpi_rank << " searching cluster " << i << endl;
 		config.num_of_queries = clusters.at(i).m_queries.size();
 		config.query_points = &clusters.at(i).m_queries;
-		ExecuteQuery(config, extra_config, tables[i], results, clusters.at(i).m_queries_id);
+		//ExecuteQuery(config, extra_config, tables[i], results, clusters.at(i).m_queries_id);
+		queries.at(i).clear();
+		load_query(tables[i][0], queries.at(i), config);
 	}
 }
 

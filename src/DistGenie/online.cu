@@ -130,6 +130,6 @@ static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config 
 	auto t2 = chrono::steady_clock::now();
 	auto diff = t2 - t1;
 	clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
-	if (0 == g_mpi_rank)
-		GenerateOutput(results, config, extra_config);
+	//if (0 == g_mpi_rank)
+		//GenerateOutput(results, config, extra_config);
 }
