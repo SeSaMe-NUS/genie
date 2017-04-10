@@ -78,14 +78,12 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 	auto it1 = qmaxs.begin();
 	auto it2 = queries.begin();
 	for (; it1 != qmaxs.end(); ++it1, ++it2)
-	{
 		for (auto it3 = it2->begin(); it3 != it2->end(); ++it3)
 		{
 			int count = it3->count_ranges();
 			if (count > *it1)
 				*it1 = count;
 		}
-	}
 	
 	u64 start = getTime();
 	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
@@ -159,53 +157,46 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 }
 
 void
-GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<int> >& d_top_indexes,
-		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
-		int bitmap_bits, vector<int>& dim)
+GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits, vector<int>& dim)
 {
-	vector<device_vector<data_t> > d_data(table.size());
-	vector<device_vector<u32> > d_bitmap(table.size());
+	/* pre-process */
 	vector<device_vector<u32> > d_num_of_items_in_hashtable(table.size());
-	vector<device_vector<u32> > d_threshold(table.size()), d_passCount(table.size());
-
 	for (size_t i = 0; i < table.size(); ++i)
 	{
 		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
-		//Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size.at(i),
-		//		bitmap_bits, dim.at(i));
-		//dim.at(i) = 2;
-
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
-
 		if (queries.at(i).empty())
 			throw GPUGenie::cpu_runtime_error("Queries not loaded!");
 	}
 
+	/* run batched match kernels */
+	vector<device_vector<data_t> > d_data(table.size());
+	vector<device_vector<u32> > d_bitmap(table.size());
+	vector<device_vector<u32> > d_threshold(table.size()), d_passCount(table.size());
 	u64 startMatch = getTime();
-
 	match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
-
 	u64 endMatch = getTime();
 	Logger::log(Logger::VERBOSE,
 			">>>>> match() takes %f ms <<<<<",
 			getInterval(startMatch, endMatch));
 
+	/* obtain top k */
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();
-
-	//topk(d_data, queries, d_top_indexes, float(dim));
 	for (size_t i = 0; i < table.size(); ++i)
 	{
 		thrust::device_vector<data_t> d_topk;
 		heap_count_topk(d_data.at(i), d_topk, d_threshold.at(i), d_passCount.at(i),
-				queries.at(i)[0].topk(), queries.at(i).size());
+				queries.at(i).at(0).topk(), queries.at(i).size());
 
-		u64 end = getTime();
-		Logger::log(Logger::INFO, "Topk Finished!");
-		Logger::log(Logger::VERBOSE, ">>>>> main topk takes %fms <<<<<",
-				getInterval(start, end));
-		start = getTime();
+		//u64 end = getTime();
+		//Logger::log(Logger::INFO, "Topk Finished!");
+		//Logger::log(Logger::VERBOSE, ">>>>> main topk takes %fms <<<<<",
+		//		getInterval(start, end));
+		//start = getTime();
 
 		d_top_count.at(i).resize(d_topk.size());
 		d_top_indexes.at(i).resize(d_topk.size());
@@ -215,11 +206,10 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vec
 				thrust::raw_pointer_cast(d_topk.data()),
 				thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
 				thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
-
-		end = getTime();
-		Logger::log(Logger::INFO, "Finish topk search!");
-		Logger::log(Logger::VERBOSE,
-				">>>>> extract index and copy selected topk results takes %fms <<<<<",
-				getInterval(start, end));
 	}
+	u64 end = getTime();
+	Logger::log(Logger::INFO, "Finish topk search!");
+	Logger::log(Logger::VERBOSE,
+			">>>>> extract index and copy selected topk results takes %fms <<<<<",
+			getInterval(start, end));
 }

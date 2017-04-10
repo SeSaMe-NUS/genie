@@ -5,7 +5,8 @@
 
 namespace DistGenie
 {
-	struct Cluster {
+	struct Cluster
+	{
 		std::vector<int> m_queries_id{};
 		std::vector<std::vector<int> > m_queries{};
 	};

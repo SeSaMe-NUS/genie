@@ -232,6 +232,7 @@ void knn_search(vector<int>& result, GPUGenie_Config& config);
 void knn_search(inv_table& table, vector<query>& queries,
 		vector<int>& h_topk, vector<int>& h_topk_count, GPUGenie_Config& config);
 
+/* Multi table search */
 void knn_search_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& config);
 

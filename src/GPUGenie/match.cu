@@ -1027,14 +1027,15 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 }
 
 void
-GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<data_t> >& d_data,
-		vector<device_vector<u32> >& d_bitmap, vector<int>& hash_table_size, vector<int>& max_load,
-		int bitmap_bits, vector<device_vector<u32> >& d_noiih,
-		vector<device_vector<u32> >& d_threshold, vector<device_vector<u32> >& d_passCount)
+GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits,
+		vector<device_vector<u32> >& d_noiih, vector<device_vector<u32> >& d_threshold,
+		vector<device_vector<u32> >& d_passCount)
 {
 	try{
 		u64 match_stop, match_start;
-		u32 shift_bits_subsequence = table.at(0)[0]._shift_bits_subsequence();
+		u32 shift_bits_subsequence = table.at(0)->_shift_bits_subsequence();
 
 		cudaEvent_t kernel_start, kernel_stop;
 		float kernel_elapsed;
@@ -1075,23 +1076,21 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
+		/* pre-processing */
 		for (size_t i = 0; i < table.size(); ++i)
 		{
+			/* bitmap */
 			int bitmap_size = 0;
 			if (bitmap_bits > 1)
 			{
 				float logresult = std::log2((float) bitmap_bits);
 				bitmap_bits = (int) logresult;
 				if (logresult - bitmap_bits > 0)
-				{
 					bitmap_bits += 1;
-				}
 				logresult = std::log2((float) bitmap_bits);
 				bitmap_bits = (int) logresult;
 				if (logresult - bitmap_bits > 0)
-				{
 					bitmap_bits += 1;
-				}
 				bitmap_bits = pow(2, bitmap_bits);
 				bitmap_size = ((((unsigned int)1<<shift_bits_subsequence) * table.at(i)[0].i_size()) / (32 / bitmap_bits) + 1)
 						* queries.at(i).size();
@@ -1099,9 +1098,9 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 			else
 				bitmap_bits = threshold = 0;
 
-			if (table.at(i)[0].build_status() == inv_table::not_builded)
+			if (table.at(i)->build_status() == inv_table::not_builded)
 				throw GPUGenie::cpu_runtime_error("table not built!");
-			u32 loop_count = 1u;
+			//u32 loop_count = 1u;
 			d_noiih.at(i).resize(queries.at(i).size(), 0);
 			d_noiih_p[i] = thrust::raw_pointer_cast(d_noiih.at(i).data());
 			Logger::log(Logger::DEBUG, "hash table size: %d.", hash_table_size.at(i));
@@ -1123,15 +1122,14 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 			d_bitmap.at(i).resize(bitmap_size);
 
 			/* transfer query */
-			cout << "query_transfer time = " ; 
 			u64 query_start = getTime();
 			d_dims[i] = dims.at(i);
 			d_dims_p[i] = raw_pointer_cast(d_dims.at(i).data());
 			u64 query_end = getTime();
-			cout << getInterval(query_start, query_end) << "ms." << endl;
+			clog << "query_transfer time = " << getInterval(query_start, query_end) << "ms." << endl;
 
-			if (table.at(i)[0].get_total_num_of_table() > 1 || !table.at(i)[0].is_stored_in_gpu)
-				table.at(i)[0].cpy_data_to_gpu();
+			if (table.at(i)->get_total_num_of_table() > 1 || !table.at(i)->is_stored_in_gpu)
+				table.at(i)->cpy_data_to_gpu();
 			if (bitmap_size)
 				thrust::fill(d_bitmap.at(i).begin(), d_bitmap.at(i).end(), 0u);
 
@@ -1152,7 +1150,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 			bool f = false;
 			cudaCheckErrors(cudaMalloc((void**)&d_overflow[i], sizeof(bool)));
 			cudaCheckErrors(cudaMemcpy(d_overflow[i], &f, sizeof(bool), cudaMemcpyHostToDevice));
-			// start kernel
+
 			d_threshold.at(i).resize(queries.at(i).size());
 			thrust::fill(d_threshold.at(i).begin(), d_threshold.at(i).end(), 1);
 			d_threshold_p[i] = thrust::raw_pointer_cast(d_threshold.at(i).data());
@@ -1172,18 +1170,18 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 		for (size_t i = 0; i < table.size(); ++i)
 		{
             device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>
-            (table.at(i)[0].m_size(),
-                    table.at(i)[0].i_size() * ((unsigned int)1<<shift_bits_subsequence),
+            (table.at(i)->m_size(),
+                    table.at(i)->i_size() * ((unsigned int)1<<shift_bits_subsequence),
                     hash_table_size.at(i),
-                    table.at(i)[0].d_inv_p,
+                    table.at(i)->d_inv_p,
                     d_dims_p.at(i),
                     d_hash_table.at(i),
                     d_bitmap_p.at(i),
                     bitmap_bits,
                     d_topks_p.at(i),
-                    d_threshold_p.at(i),//initialized as 1, and increase gradually
-                    d_passCount_p.at(i),//initialized as 0, count the number of items passing one d_threshold
-                    num_of_max_count.at(i),//number of maximum count per query
+                    d_threshold_p.at(i), //initialized as 1, and increase gradually
+                    d_passCount_p.at(i), //initialized as 0, count the number of items passing one d_threshold
+                    num_of_max_count.at(i), //number of maximum count per query
                     d_noiih_p.at(i),
                     d_overflow.at(i),
                     shift_bits_subsequence);
@@ -1205,8 +1203,8 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 		Logger::log(Logger::INFO, "[100%] Matching is done!");
 
 		match_stop = getTime();
-
 		cudaEventSynchronize(kernel_stop);
+
 		kernel_elapsed = 0.0f;
 		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
 		Logger::log(Logger::INFO,
@@ -1216,7 +1214,6 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, v
 				">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)",
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		clog << "Using batched kernel" << endl;
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());
 	}

@@ -8,8 +8,6 @@
 #include "search.h"
 #include "global.h"
 
-#define pii std::pair<int, int>
-
 using namespace DistGenie;
 using namespace GPUGenie;
 using namespace std;
@@ -50,7 +48,7 @@ static void ExecuteQuery(GPUGenie_Config &config, ExtraConfig &extra_config, inv
 			for (int j = 0; j < g_mpi_size; ++j) {
 				int offset = j * single_rank_result_size + i * config.num_of_topk;
 				for (int k = 0; k < config.num_of_topk; ++k)
-					results.at(query_id.at(i)).push_back(pii(final_result_count[offset + k], final_result[offset + k]));
+					results.at(query_id.at(i)).push_back(std::pair<int, int>(final_result_count[offset + k], final_result[offset + k]));
 			}
 
 		// cleanup
