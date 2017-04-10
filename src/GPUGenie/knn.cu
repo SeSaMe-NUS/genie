@@ -163,40 +163,42 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vec
 		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
 		int bitmap_bits, vector<int>& dim)
 {
+	vector<device_vector<data_t> > d_data(table.size());
+	vector<device_vector<u32> > d_bitmap(table.size());
+	vector<device_vector<u32> > d_num_of_items_in_hashtable(table.size());
+	vector<device_vector<u32> > d_threshold(table.size()), d_passCount(table.size());
+
 	for (size_t i = 0; i < table.size(); ++i)
 	{
-		Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size.at(i),
-				bitmap_bits, dim.at(i));
-		dim.at(i) = 2;
-
-		device_vector<data_t> d_data;
-		device_vector<u32> d_bitmap;
-
-		device_vector<u32> d_num_of_items_in_hashtable(queries.at(i).size());
-
-		device_vector<u32> d_threshold, d_passCount;
+		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
+		//Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size.at(i),
+		//		bitmap_bits, dim.at(i));
+		//dim.at(i) = 2;
 
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
 
 		if (queries.at(i).empty())
 			throw GPUGenie::cpu_runtime_error("Queries not loaded!");
+	}
 
-		u64 startMatch = getTime();
+	u64 startMatch = getTime();
 
-		match(table[i][0], queries.at(i), d_data, d_bitmap, hash_table_size.at(i), max_load.at(i),
-				bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+	match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
+			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 
-		u64 endMatch = getTime();
-		Logger::log(Logger::VERBOSE,
-				">>>>> match() takes %f ms <<<<<",
-				getInterval(startMatch, endMatch));
+	u64 endMatch = getTime();
+	Logger::log(Logger::VERBOSE,
+			">>>>> match() takes %f ms <<<<<",
+			getInterval(startMatch, endMatch));
 
-		Logger::log(Logger::INFO, "Start topk....");
-		u64 start = getTime();
+	Logger::log(Logger::INFO, "Start topk....");
+	u64 start = getTime();
 
-		//topk(d_data, queries, d_top_indexes, float(dim));
+	//topk(d_data, queries, d_top_indexes, float(dim));
+	for (size_t i = 0; i < table.size(); ++i)
+	{
 		thrust::device_vector<data_t> d_topk;
-		heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+		heap_count_topk(d_data.at(i), d_topk, d_threshold.at(i), d_passCount.at(i),
 				queries.at(i)[0].topk(), queries.at(i).size());
 
 		u64 end = getTime();
