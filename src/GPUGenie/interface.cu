@@ -1013,12 +1013,9 @@ void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >&
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
 
 	/* copy result */
-	h_topk.resize(d_topk.size());
-	h_topk_count.resize(d_topk_count.size());
-
 	auto it1 = d_topk.begin();
 	auto it2 = h_topk.begin();
-#pragma omp parallel for private(it1, it2)
+//#pragma omp parallel for private(it1, it2)
 	for (; it1 != d_topk.end(); ++it1, ++it2)
 	{
 		it2->resize(it1->size());
@@ -1027,7 +1024,7 @@ void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >&
 	
 	it1 = d_topk_count.begin();
 	it2 = h_topk_count.begin();
-#pragma omp parallel for private(it1, it2)
+//#pragma omp parallel for private(it1, it2)
 	for (; it1 != d_topk_count.end(); ++it1, ++it2)
 	{
 		it2->resize(it1->size());
