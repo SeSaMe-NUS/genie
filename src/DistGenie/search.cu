@@ -7,7 +7,6 @@
 
 #include "search.h"
 #include "global.h"
-
 using namespace DistGenie;
 using namespace GPUGenie;
 using namespace std;
@@ -60,7 +59,7 @@ using namespace std;
 /* load queries for different tables in parallel */
 static void LoadQueries(GPUGenie_Config &config, inv_table **tables, vector<Cluster> &clusters, vector<vector<query> > &queries)
 {
-#pragma omp parallel for schedule(dynamic)
+//#pragma omp parallel for schedule(dynamic)
 	for (vector<Cluster>::size_type i = 0; i < clusters.size(); ++i)
 	{
 		config.num_of_queries = clusters.at(i).m_queries.size();
@@ -68,7 +67,6 @@ static void LoadQueries(GPUGenie_Config &config, inv_table **tables, vector<Clus
 		queries.at(i).clear();
 		load_query(tables[i][0], queries.at(i), config);
 	}
-	clog << "Queries loaded" << endl;
 }
 
 /* Merge result for multi-node & multi-cluster */
@@ -124,6 +122,7 @@ void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraC
 		configs.push_back(config);
 	}
 	knn_search_MT(table, queries, h_topk, h_topk_count, configs);
+
 	MergeResult(results, h_topk, h_topk_count, config.num_of_topk, clusters);
 	clog << "Search completed" << endl;
 }

@@ -178,6 +178,8 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 	/* run batched match kernels */
 	u64 startMatch = getTime();
+//	for (size_t i = 0; i < table.size(); ++i)
+//		match(table.at(i)[0], queries.at(i), d_data.at(i), d_bitmap.at(i), hash_table_size.at(i), max_load.at(i), bitmap_bits, d_num_of_items_in_hashtable.at(i), d_threshold.at(i), d_passCount.at(i));
 	match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 	u64 endMatch = getTime();
