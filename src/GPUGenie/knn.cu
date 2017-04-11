@@ -162,9 +162,14 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits, vector<int>& dim)
 {
 	/* pre-process */
-	vector<device_vector<u32> > d_num_of_items_in_hashtable(table.size());
+	vector<device_vector<data_t> > d_data(table.size());
+	vector<device_vector<u32> >    d_bitmap(table.size());
+	vector<device_vector<u32> >    d_num_of_items_in_hashtable(table.size());
+	vector<device_vector<u32> >    d_threshold(table.size());
+	vector<device_vector<u32> >    d_passCount(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
+		dim[i] = 2;
 		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
 		if (queries.at(i).empty())
@@ -172,9 +177,6 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	}
 
 	/* run batched match kernels */
-	vector<device_vector<data_t> > d_data(table.size());
-	vector<device_vector<u32> > d_bitmap(table.size());
-	vector<device_vector<u32> > d_threshold(table.size()), d_passCount(table.size());
 	u64 startMatch = getTime();
 	match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
@@ -186,24 +188,18 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	/* obtain top k */
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();
+	vector<device_vector<data_t> > d_topk(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
-		thrust::device_vector<data_t> d_topk;
-		heap_count_topk(d_data.at(i), d_topk, d_threshold.at(i), d_passCount.at(i),
+		heap_count_topk(d_data.at(i), d_topk.at(i), d_threshold.at(i), d_passCount.at(i),
 				queries.at(i).at(0).topk(), queries.at(i).size());
 
-		//u64 end = getTime();
-		//Logger::log(Logger::INFO, "Topk Finished!");
-		//Logger::log(Logger::VERBOSE, ">>>>> main topk takes %fms <<<<<",
-		//		getInterval(start, end));
-		//start = getTime();
-
-		d_top_count.at(i).resize(d_topk.size());
-		d_top_indexes.at(i).resize(d_topk.size());
+		d_top_count.at(i).resize(d_topk.at(i).size());
+		d_top_indexes.at(i).resize(d_topk.at(i).size());
 		extract_index_and_count<<<
 				d_top_indexes.at(i).size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
 				GPUGenie_knn_THREADS_PER_BLOCK>>>(
-				thrust::raw_pointer_cast(d_topk.data()),
+				thrust::raw_pointer_cast(d_topk.at(i).data()),
 				thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
 				thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
 	}

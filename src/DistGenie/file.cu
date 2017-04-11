@@ -29,7 +29,9 @@ void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vec
 			clog << "load binary file " << to_string(i) << endl;
 			data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".dat";
 			inv_table::read(data_file.c_str(), tables[i]);
-			tables[i]->cpy_data_to_gpu();
+			if (config.save_to_gpu && tables[i]->d_inv_p == NULL)
+				tables[i]->cpy_data_to_gpu();
+			tables[i]->is_stored_in_gpu = config.save_to_gpu;
 		}
 	// TODO: handle unknown data format
 }
