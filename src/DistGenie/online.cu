@@ -18,7 +18,7 @@ using namespace std;
 
 static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
 
-static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, inv_table **, vector<Cluster> &);
+static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &);
 
 static void WaitForGDB()
 {
@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
 	init_genie(config);
 	vector<vector<int> > data;
 	config.data_points = &data;
-	inv_table **tables = new inv_table*[extra_config.num_of_cluster];
+	//inv_table **tables = new inv_table*[extra_config.num_of_cluster];
+	vector<inv_table*> tables(extra_config.num_of_cluster);
 	ReadData(config, extra_config, data, tables);
 
 	/*
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
 }
 
 static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config &config,
-		ExtraConfig &extra_config, inv_table **tables, vector<Cluster> &clusters)
+		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters)
 {
 	// broadcast query
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);

@@ -8,7 +8,7 @@
 
 namespace DistGenie
 {
-	void ReadData(GPUGenie::GPUGenie_Config &, DistGenie::ExtraConfig &, std::vector<std::vector<int> > &, GPUGenie::inv_table **);
+	void ReadData(GPUGenie::GPUGenie_Config &, DistGenie::ExtraConfig &, std::vector<std::vector<int> > &, std::vector<GPUGenie::inv_table*> &);
 	void GenerateOutput(std::vector<DistGenie::Result> &, GPUGenie::GPUGenie_Config &, DistGenie::ExtraConfig &);
 }
 
