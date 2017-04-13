@@ -1160,29 +1160,9 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
 
-
+		/* match kernel */
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
-
-//for (size_t i = 0; i < table.size(); ++i)
-//{
-//	clog << "m_size: " << table.at(i)->m_size() << endl;
-//	clog << "i_size: " << table.at(i)->i_size() << endl;
-//	clog << "hash_table_size: " << hash_table_size.at(i) << endl;
-//	//for (size_t j = 0; j < d_dims.at(i).size(); ++j)
-//	//	clog << "d_dims[" << j << "]: " << d_dims.at(i)[j].query << endl;
-//	clog << "d_dims: " << d_dims.at(i).size() << endl;
-//	clog << "d_bitmap: " << d_bitmap.at(i).size() << endl;
-//	clog << "bitmap_bits: " << bitmap_bits << endl;
-//	clog << "d_topks: " << d_topks.at(i).size() << endl;
-//	clog << "d_threshold: " << d_threshold.at(i).size() << endl;
-//	clog << "d_passCount: " << d_passCount.at(i).size() << endl;
-//	clog << "num_of_max_count: " << num_of_max_count.at(i) << endl;
-//	clog << "d_noiih: " << d_noiih.at(i).size() << endl;
-//	clog << "shift_bits_subsequence: " << shift_bits_subsequence << endl;
-//}
-
-		/* match kernel */
 		for (size_t i = 0; i < table.size(); ++i)
 			device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>(
 				table.at(i)->m_size(),
