@@ -39,7 +39,7 @@ Examples (tests) are available in the `bin` folder of your build directory.
 
 ### Multi-node Multi-GPU example
 
-The current version support loading multiple tables (i.e. clusters) and
+The current version supports loading multiple tables (i.e. clusters) and
 executing queries on corresponding clusters.
 
 #### Preparing dataset and queries
@@ -48,7 +48,7 @@ executing queries on corresponding clusters.
 
 First, you need to cluster a single `.csv` file into multiple files with
 one cluster of data in each file. Make sure the files have a common prefix
-in their file names and that the file names ends with `_<cluster-id>`
+in their file names and that the file names end with `_<cluster-id>`
 (e.g. `sift_0.csv`, `sift_1.csv`).
 
 After the clustering, you need to further split each file into multiple
@@ -62,14 +62,11 @@ for faster loading (if you want to experiment a few times, this greatly
 speeds up the loading process for subsequent runs). The conversion could
 be done by the `csv2binary` program in `bin`. A helper script, `convert.sh`
 is also provided to convert multiple files at once. For example, given 20
-clusters and 2 GPUs, we can do
+clusters and 2 GPUs (with prefix `sift`), we can do
 
 ```bash
-$ bash convert.sh 20 2
+$ bash convert.sh 20 2 sift
 ```
-
-**If you converted files into binary format, set `data_format` to be 1 in the
-configuration file.**
 
 To make sure everything works, please place the above mentioned programs/scripts
 and your clustered `.csv` files into a single directory before processing the files.
@@ -106,8 +103,11 @@ To run MPIGenie, use
 $ mpirun -np <n> ./bin/odgenie static/online.config.json
 ```
 
-**Modify the configuration file accordingly.** The program will listen for question on port 9090.
-You can send queries to the program by executing
+**Modify the configuration file accordingly.** If you converted files into
+binary format, set `data_format` to be 1 in the configuration file.
+
+The program will listen for question on port 9090. You can send queries
+to the program by executing
 
 ```bash
 $ nc localhost 9090 < queries.json
