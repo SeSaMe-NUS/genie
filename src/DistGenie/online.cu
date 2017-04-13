@@ -18,7 +18,7 @@ using namespace std;
 
 static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
 
-static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &);
+static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &, vector<int> &);
 
 static void WaitForGDB()
 {
@@ -36,6 +36,26 @@ static void WaitForGDB()
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
+static void CalculateIdOffset(vector<int> &id_offset, vector<inv_table*> &tables)
+{
+	/* mpi operations */
+	int *local_tablesize = new int[tables.size()];
+	for (size_t i = 0; i < tables.size(); ++i)
+		local_tablesize[i] = tables.at(i)->i_size();
+	int *global_tablesize = new int[tables.size() * g_mpi_size];
+	MPI_Allgather(local_tablesize, tables.size(), MPI_INT, global_tablesize, tables.size(), MPI_INT, MPI_COMM_WORLD);
+
+	/* prefix sum */
+	int sum = 0;
+	for (size_t i = 0; i != tables.size() * g_mpi_size; ++i)
+	{
+		id_offset[i] = sum;
+		sum += global_tablesize[i];
+	}
+
+	delete[] local_tablesize;
+	delete[] global_tablesize;
+}
 
 int main(int argc, char *argv[])
 {
@@ -71,6 +91,8 @@ int main(int argc, char *argv[])
 	//inv_table **tables = new inv_table*[extra_config.num_of_cluster];
 	vector<inv_table*> tables(extra_config.num_of_cluster);
 	ReadData(config, extra_config, data, tables);
+	vector<int> id_offset(extra_config.num_of_cluster * g_mpi_size);
+	CalculateIdOffset(id_offset, tables);
 
 	/*
 	 * handle online queries
@@ -106,16 +128,16 @@ int main(int argc, char *argv[])
 			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
 			extra_config.output_file = to_string(output_filename) + ".csv";
 
-			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters);
+			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
 		}
 	}
 	else
 		while (true)
-			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters);
+			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
 }
 
 static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config &config,
-		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters)
+		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
 {
 	// broadcast query
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -128,7 +150,7 @@ static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config 
 
 	vector<Result> results(extra_config.total_queries);
 	auto t1 = chrono::steady_clock::now();
-	ExecuteMultitableQuery(config, extra_config, tables, clusters, results);
+	ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
 	auto t2 = chrono::steady_clock::now();
 	auto diff = t2 - t1;
 	clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;

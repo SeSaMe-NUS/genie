@@ -7,6 +7,7 @@
 
 #include "search.h"
 #include "global.h"
+
 using namespace DistGenie;
 using namespace GPUGenie;
 using namespace std;
@@ -70,7 +71,8 @@ static void LoadQueries(GPUGenie_Config &config, vector<inv_table*> &tables, vec
 }
 
 /* Merge result for multi-node & multi-cluster */
-void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count, int topk, vector<Cluster> &clusters)
+void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
+		int topk, vector<Cluster> &clusters, vector<int> &id_offset)
 {
 	int *final_result = nullptr;       // only for MPI
 	int *final_result_count = nullptr; // only for MPI
@@ -95,7 +97,9 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 					int offset = j * single_rank_result_size + i * topk;
 					for (int k = 0; k < topk; ++k)
 						results.at(clusters.at(c).m_queries_id.at(i)).push_back(
-							std::pair<int, int>(final_result_count[offset + k], final_result[offset + k])
+							std::pair<int, int>(final_result_count[offset + k],
+								id_offset.at(j * clusters.size() + c) + final_result[offset + k]
+							)
 						);
 				}
 
@@ -108,21 +112,17 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 
 /* For pre-clustering version */
 void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
-		vector<GPUGenie::inv_table*> &tables, vector<Cluster> &clusters, vector<Result> &results)
+		vector<GPUGenie::inv_table*> &tables, vector<Cluster> &clusters, vector<Result> &results, vector<int> &id_offset)
 {
 	vector<vector<query> > queries(clusters.size());
 	LoadQueries(config, tables, clusters, queries);
-	//vector<inv_table*> table;
+
 	vector<vector<int> > h_topk(clusters.size());
 	vector<vector<int> > h_topk_count(clusters.size());
 	vector<GPUGenie_Config> configs;
 	for (size_t i = 0; i < clusters.size(); ++i)
-	//{
-		//table.push_back(tables[i]);
 		configs.push_back(config);
-	//}
-	knn_search_MT(tables, queries, h_topk, h_topk_count, configs);
 
-	MergeResult(results, h_topk, h_topk_count, config.num_of_topk, clusters);
-	clog << "Search completed" << endl;
+	knn_search_MT(tables, queries, h_topk, h_topk_count, configs);
+	MergeResult(results, h_topk, h_topk_count, config.num_of_topk, clusters, id_offset);
 }
