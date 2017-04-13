@@ -33,41 +33,87 @@ To compile with MPI support (**currently only OpenMPI is supported**), use
 $ cmake -DUSE_MPI=on ..
 ```
 
-To enable dynamic threshold update (**needs CUDA-aware MPI**), use
-
-```bash
-$ cmake -DUSE_MPI=on -DUSE_DYNAMIC=on ..
-```
-
 ## Running example
 
-Examples (tests) are available in the `bin` folder of your build directory. To run MPI GENIE, use
+Examples (tests) are available in the `bin` folder of your build directory.
+
+### Multi-node Multi-GPU example
+
+The current version support loading multiple tables (i.e. clusters) and
+executing queries on corresponding clusters.
+
+#### Preparing dataset and queries
+
+##### Dataset
+
+First, you need to cluster a single `.csv` file into multiple files with
+one cluster of data in each file. Make sure the files have a common prefix
+in their file names and that the file names ends with `_<cluster-id>`
+(e.g. `sift_0.csv`, `sift_1.csv`).
+
+After the clustering, you need to further split each file into multiple
+files for loading onto multiple GPUs. This could be done with the `split.sh`
+script in the `utility` folder (**currently it splits into 2 files for 2 GPUs**).
+If a cluster is named `sift_0.csv`, this will split it into `sift_0_0.csv`
+and `sift_0_1.csv`.
+
+Once the files are ready, you may want to convert them into binary format
+for faster loading (if you want to experiment a few times, this greatly
+speeds up the loading process for subsequent runs). The conversion could
+be done by the `csv2binary` program in `bin`. A helper script, `convert.sh`
+is also provided to convert multiple files at once. For example, given 20
+clusters and 2 GPUs, we can do
 
 ```bash
-$ mpirun -np <n> ./bin/odgenie static/online.config.json
+$ bash convert.sh 20 2
 ```
 
-The program will listen for question on port 9090. You can send queries to the program by executing
+**If you converted files into binary format, set `data_format` to be 1 in the
+configuration file.**
 
-```bash
-$ nc localhost 9090
-```
+To make sure everything works, please place the above mentioned programs/scripts
+and your clustered `.csv` files into a single directory before processing the files.
 
-The query format is in JSON format, for 2 queries of dimension 5, you do
+##### Queries
+
+The query is in JSON format, for 2 queries of dimension 5, you do
 
 ```javascript
 {
   "topk": 10,
   "queries": [
-    [1, 2, 3, 4, 5],
-    [1, 3, 5, 7, 9]
+    {
+      "content": [1, 2, 3, 4, 5],
+      "clusters": [0, 9, 13]
+    },
+    {
+      "content": [90, 24, 33, 14, 5],
+      "clusters": [3, 7]
+    }
   ]
 }
 ```
 
-This sends query `1 2 3 4 5` and `1 3 5 7 9` with topk set to 10.
+This sends query `1 2 3 4 5` and `90 24 33 14 5` with topk set to 10.
+Currently the user needs to specify the clusters to search for a
+given query.
 
-## Attaching GDB to MPI
+#### Running MPIGenie
+
+To run MPIGenie, use
+
+```bash
+$ mpirun -np <n> ./bin/odgenie static/online.config.json
+```
+
+**Modify the configuration file accordingly.** The program will listen for question on port 9090.
+You can send queries to the program by executing
+
+```bash
+$ nc localhost 9090 < queries.json
+```
+
+## Debugging
 
 Run MPI with ENABLE_GDB=1 environment variable:
 

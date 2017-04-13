@@ -1,24 +1,23 @@
-#####################################
-#                                   #
-# Generating queries from CSV files #
-#                                   #
-#####################################
-
 import json
 
+def add_data(filename, queries, count, cluster):
+    with open(filename, "r") as data:
+        for line in data.readlines()[:count]:
+            numbers = line.rstrip("\n").split(",")
+            numbers = [int(x) for x in numbers]
+            single_query = dict()
+            single_query["content"] = numbers
+            single_query["clusters"] = [cluster]
+            queries["queries"].append(single_query)
+
 if __name__ == "__main__":
-    count = 500
+    cluster_count = 20
+    count = 25
     queries = dict()
-    queries["topk"] = 100
+    queries["topk"] = 1000
     queries["queries"] = list()
-    with open("sift_big_0.csv", "r") as data1:
-        for line in data1.readlines()[:count]:
-            numbers = line.rstrip("\n").split(",")[:-1]
-            numbers = [int(x) for x in numbers]
-            queries["queries"].append(numbers)
-    with open("sift_big_1.csv", "r") as data2:
-        for line in data2.readlines()[:count]:
-            numbers = line.rstrip("\n").split(",")[:-1]
-            numbers = [int(x) for x in numbers]
-            queries["queries"].append(numbers)
+
+    for i in range(cluster_count):
+        add_data("sift_big_" + str(i) + "_0.csv", queries, count, i)
+        add_data("sift_big_" + str(i) + "_1.csv", queries, count, i)
     print json.dumps(queries)
