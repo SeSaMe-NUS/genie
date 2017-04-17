@@ -167,6 +167,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	vector<device_vector<u32> >    d_num_of_items_in_hashtable(table.size());
 	vector<device_vector<u32> >    d_threshold(table.size());
 	vector<device_vector<u32> >    d_passCount(table.size());
+	vector<device_vector<data_t> > d_topk(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
 		dim[i] = 2;
@@ -183,32 +184,54 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
 	while (true)
 	{
-		/* calculate memory needed */
+		/* calculate memory need */
 		if (table.size() != finish)
 		{
 			//query_bytesize = queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t);
-			query_bytesize = 2000 * 1024 * 1024;
+			query_bytesize = 2000 * 1024 * 1024; // TODO: accurately calculate memory size
 		}
+		/* if GPU still have memory left and we haven't processed all tables */
 		if (gpu_free_mem > query_bytesize && table.size() != finish)
 		{
 			gpu_free_mem -= query_bytesize;
 			++finish;
 		}
+		/* if GPU doesn't have enough memory but it can fit at least one table */
 		else if (start != finish)
 		{
+			/* run match kernel on start -> finish */
 			match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 					bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount, start, finish);
-			clog << "FINISH IS: " << finish << endl;
+			/* count topk and extract it for start -> finish */
+			for (size_t i = start; i < finish; ++i)
+			{
+				if (queries.at(i).empty())
+					continue;
+				heap_count_topk(d_data.at(i), d_topk.at(i), d_threshold.at(i), d_passCount.at(i),
+						queries.at(i).at(0).topk(), queries.at(i).size());
+
+				d_top_count.at(i).resize(d_topk.at(i).size());
+				d_top_indexes.at(i).resize(d_topk.at(i).size());
+				extract_index_and_count<<<
+						d_top_indexes.at(i).size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
+						GPUGenie_knn_THREADS_PER_BLOCK>>>(
+						thrust::raw_pointer_cast(d_topk.at(i).data()),
+						thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
+						thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
+				d_data.at(i).clear();
+				d_data.at(i).shrink_to_fit();
+				d_bitmap.at(i).clear();
+				d_bitmap.at(i).shrink_to_fit();
+			}
+			/* update mem info after memory free and continue with next batch */
 			cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
 			start = finish;
 			if (table.size() == finish)
 				break;
 		}
+		/* if GPU doesn't have enough memory but it CANNOT fit a single table */
 		else
-		{
-			clog << "MEMORY NOT ENOUGH!!" << endl;
-			break;
-		}
+			throw GPUGenie::gpu_bad_alloc("MEMORY NOT ENOUGH");
 	}
 	//match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 	//		bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount, 0, table.size());
@@ -218,31 +241,30 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			getInterval(startMatch, endMatch));
 
 	/* obtain top k */
-	Logger::log(Logger::INFO, "Start topk....");
-	u64 topk_start = getTime();
-	vector<device_vector<data_t> > d_topk(table.size());
-	for (size_t i = 0; i < table.size(); ++i)
-	{
-		if (queries.at(i).empty())
-		{
-			clog << "Skipping table " << i << endl;
-			continue;
-		}
-		heap_count_topk(d_data.at(i), d_topk.at(i), d_threshold.at(i), d_passCount.at(i),
-				queries.at(i).at(0).topk(), queries.at(i).size());
+	//Logger::log(Logger::INFO, "Start topk....");
+	//u64 topk_start = getTime();
+	//for (size_t i = 0; i < table.size(); ++i)
+	//{
+	//	if (queries.at(i).empty())
+	//	{
+	//		clog << "Skipping table " << i << endl;
+	//		continue;
+	//	}
+	//	heap_count_topk(d_data.at(i), d_topk.at(i), d_threshold.at(i), d_passCount.at(i),
+	//			queries.at(i).at(0).topk(), queries.at(i).size());
 
-		d_top_count.at(i).resize(d_topk.at(i).size());
-		d_top_indexes.at(i).resize(d_topk.at(i).size());
-		extract_index_and_count<<<
-				d_top_indexes.at(i).size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
-				GPUGenie_knn_THREADS_PER_BLOCK>>>(
-				thrust::raw_pointer_cast(d_topk.at(i).data()),
-				thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
-				thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
-	}
-	u64 topk_end = getTime();
-	Logger::log(Logger::INFO, "Finish topk search!");
-	Logger::log(Logger::VERBOSE,
-			">>>>> extract index and copy selected topk results takes %fms <<<<<",
-			getInterval(topk_start, topk_end));
+	//	d_top_count.at(i).resize(d_topk.at(i).size());
+	//	d_top_indexes.at(i).resize(d_topk.at(i).size());
+	//	extract_index_and_count<<<
+	//			d_top_indexes.at(i).size() / GPUGenie_knn_THREADS_PER_BLOCK + 1,
+	//			GPUGenie_knn_THREADS_PER_BLOCK>>>(
+	//			thrust::raw_pointer_cast(d_topk.at(i).data()),
+	//			thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
+	//			thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
+	//}
+	//u64 topk_end = getTime();
+	//Logger::log(Logger::INFO, "Finish topk search!");
+	//Logger::log(Logger::VERBOSE,
+	//		">>>>> extract index and copy selected topk results takes %fms <<<<<",
+	//		getInterval(topk_start, topk_end));
 }
