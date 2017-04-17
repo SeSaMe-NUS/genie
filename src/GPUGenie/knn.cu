@@ -178,8 +178,40 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 	/* run batched match kernels */
 	u64 startMatch = getTime();
-	match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
-			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+	size_t query_bytesize, gpu_free_mem, gpu_total_mem;
+	size_t start = 0, finish = 0;
+	cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
+	while (true)
+	{
+		/* calculate memory needed */
+		if (table.size() != finish)
+		{
+			//query_bytesize = queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t);
+			query_bytesize = 2000 * 1024 * 1024;
+		}
+		if (gpu_free_mem > query_bytesize && table.size() != finish)
+		{
+			gpu_free_mem -= query_bytesize;
+			++finish;
+		}
+		else if (start != finish)
+		{
+			match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
+					bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount, start, finish);
+			clog << "FINISH IS: " << finish << endl;
+			cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
+			start = finish;
+			if (table.size() == finish)
+				break;
+		}
+		else
+		{
+			clog << "MEMORY NOT ENOUGH!!" << endl;
+			break;
+		}
+	}
+	//match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
+	//		bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount, 0, table.size());
 	u64 endMatch = getTime();
 	Logger::log(Logger::VERBOSE,
 			">>>>> match() takes %f ms <<<<<",
@@ -187,7 +219,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 	/* obtain top k */
 	Logger::log(Logger::INFO, "Start topk....");
-	u64 start = getTime();
+	u64 topk_start = getTime();
 	vector<device_vector<data_t> > d_topk(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
@@ -208,9 +240,9 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
 				thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
 	}
-	u64 end = getTime();
+	u64 topk_end = getTime();
 	Logger::log(Logger::INFO, "Finish topk search!");
 	Logger::log(Logger::VERBOSE,
 			">>>>> extract index and copy selected topk results takes %fms <<<<<",
-			getInterval(start, end));
+			getInterval(topk_start, topk_end));
 }

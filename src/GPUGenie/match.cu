@@ -1031,7 +1031,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits,
 		vector<device_vector<u32> >& d_noiih, vector<device_vector<u32> >& d_threshold,
-		vector<device_vector<u32> >& d_passCount)
+		vector<device_vector<u32> >& d_passCount, size_t start, size_t finish)
 {
 	try
 	{
@@ -1074,7 +1074,8 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		int bitmap_bits_copy = bitmap_bits;
 
 		/* table dependent variable pre-processing */
-		for (size_t i = 0; i < table.size(); ++i)
+		//for (size_t i = 0; i < table.size(); ++i)
+		for (size_t i = start; i < finish; ++i)
 		{
 			if (table.at(i)->build_status() == inv_table::not_builded)
 				throw GPUGenie::cpu_runtime_error("table not built!");
@@ -1162,8 +1163,70 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 		/* match kernel */
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
+		//size_t start = 0, finish = 0;
+		//size_t query_bytesize, gpu_free_mem, gpu_total_mem = 0;
 		cudaEventRecord(kernel_start);
-		for (size_t i = 0; i < table.size(); ++i)
+		//while (true)
+		//{
+		//	if (dims.size() != finish)
+		//	{
+		//		query_bytesize = dims.at(finish).size() * sizeof(query::dim) +
+		//			queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t);
+		//		cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
+		//		clog << "NEED " << query_bytesize / 1024 / 1024 << endl;
+		//	}
+		//	if (gpu_free_mem > query_bytesize && dims.size() != finish)
+		//	{
+		//		/* transfer query to GPU */
+		//		clog << "COPYING QUERY FOR TABLE " << finish << endl;
+		//		d_dims[finish] = dims.at(finish);
+		//		d_dims_p[finish] = raw_pointer_cast(d_dims.at(finish).data());
+		//		/* hashtable */
+		//		d_data.at(finish).clear();
+		//		d_data.at(finish).resize(queries.at(finish).size() * hash_table_size.at(finish), nulldata);
+		//		d_data_table = thrust::raw_pointer_cast(d_data.at(finish).data());
+		//		d_hash_table[finish] = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+		//		clog << "AFTER HASHTABLE" << endl;
+
+		//		++finish;
+		//	}
+		//	else
+		//	{
+		//		/* run kernels from index start to end */
+		//		clog << "MATCHING FOR TABLE " << start << " TO " << finish << endl;
+		//		for (size_t i = start; i < finish; ++i)
+		//			device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>(
+		//				table.at(i)->m_size(),
+		//				table.at(i)->i_size() * ((unsigned int)1<<shift_bits_subsequence),
+		//				hash_table_size.at(i),
+		//				table.at(i)->d_inv_p,
+		//				d_dims_p.at(i),
+		//				d_hash_table.at(i),
+		//				d_bitmap_p.at(i),
+		//				bitmap_bits,
+		//				d_topks_p.at(i),
+		//				d_threshold_p.at(i), //initialized as 1, and increase gradually
+		//				d_passCount_p.at(i), //initialized as 0, count the number of items passing one d_threshold
+		//				num_of_max_count.at(i), //number of maximum count per query
+		//				d_noiih_p.at(i),
+		//				d_overflow.at(i),
+		//				shift_bits_subsequence);
+		//		cudaCheckErrors(cudaDeviceSynchronize());
+		//		for (size_t i = start; i < finish; ++i)
+		//		{
+		//			d_dims.at(i).clear();
+		//			d_dims.at(i).shrink_to_fit();
+		//			d_data.at(i).clear();
+		//			d_data.at(i).shrink_to_fit();
+		//		}
+		//		if (dims.size() == finish)
+		//			break;
+		//		start = finish;
+		//	}
+		//}
+
+		//for (size_t i = 0; i < table.size(); ++i)
+		for (size_t i = start; i < finish; ++i)
 			device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>(
 				table.at(i)->m_size(),
 				table.at(i)->i_size() * ((unsigned int)1<<shift_bits_subsequence),
@@ -1180,16 +1243,18 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				d_noiih_p.at(i),
 				d_overflow.at(i),
 				shift_bits_subsequence);
-
 		cudaCheckErrors(cudaDeviceSynchronize());
 
-		for (size_t i = 0; i < table.size(); ++i)
+		/* clean up */
+		//for (size_t i = 0; i < table.size(); ++i)
+		for (size_t i = start; i < finish; ++i)
 			cudaCheckErrors(cudaFree(d_overflow.at(i)));
 
 		cudaEventRecord(kernel_stop);
 		Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
-		for (size_t i = 0; i < table.size(); ++i)
+		//for (size_t i = 0; i < table.size(); ++i)
+		for (size_t i = start; i < finish; ++i)
 			device::convert_to_data<<<hash_table_size.at(i) * queries.at(i).size() / 1024 + 1, 1024>>>(d_hash_table.at(i), (u32)hash_table_size.at(i)*queries.at(i).size());
 
 		Logger::log(Logger::INFO, "[100%] Matching is done!");
