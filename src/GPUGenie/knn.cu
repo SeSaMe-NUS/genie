@@ -187,8 +187,10 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		/* calculate memory need */
 		if (table.size() != finish)
 		{
-			//query_bytesize = queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t);
-			query_bytesize = 2000 * 1024 * 1024; // TODO: accurately calculate memory size
+			// TODO: accurately estimate GPU memory size
+			query_bytesize = queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t) + // d_data
+				queries.at(finish).size() * queries.at(finish).at(0).topk() * sizeof(data_t) + // d_topk
+				50 * 1024 * 1024; // extra 50 megabytes for other data
 		}
 		/* if GPU still have memory left and we haven't processed all tables */
 		if (gpu_free_mem > query_bytesize && table.size() != finish)
