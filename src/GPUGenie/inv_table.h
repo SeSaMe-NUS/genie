@@ -164,7 +164,9 @@ private:
      /*! \var vector<int> _inv_index
       *  \brief The first level index lists of posting lists vector
       */
-      vector<int> _inv_index;
+     vector<int> _inv_index;
+	unordered_map<size_t, int> _inv_index_map;
+	unordered_map<size_t, size_t> _inv_index_next;
 
      /*! \var vector<int> _inv_pos
       *  \brief The second level posting lists vector
@@ -418,6 +420,12 @@ public:
 	 */
 	vector<int>*
 	inv_index();
+
+	unordered_map<size_t, int>*
+	inv_index_map();
+
+	unordered_map<size_t, size_t>*
+	inv_index_next();
 
         /*! \fn vector<int>* inv_pos()
 	 *
