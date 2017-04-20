@@ -266,7 +266,8 @@ void GPUGenie::query::build()
 	int low, up;
 	float weight;
 	inv_table& table = *_ref_table;
-    vector<int>& inv_index = *table.inv_index();
+    //vector<int>& inv_index = *table.inv_index();
+	unordered_map<size_t, int>& inv_index_map = *table.inv_index_map();
     vector<int>& inv_pos = *table.inv_pos();
 
 	for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
@@ -315,8 +316,10 @@ void GPUGenie::query::build()
             _min = d + low - table.get_lowerbound_of_list(index);
             _max = d + up - table.get_lowerbound_of_list(index);
 
-            new_dim.start_pos = inv_pos[inv_index[_min]];
-            new_dim.end_pos = inv_pos[inv_index[_max+1]];
+            //new_dim.start_pos = inv_pos[inv_index[_min]];
+            //new_dim.end_pos = inv_pos[inv_index[_max+1]];
+            new_dim.start_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_min))->second];
+            new_dim.end_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_max+1))->second];
 
 			_dim_map[index]->push_back(new_dim);
 		}
