@@ -265,11 +265,11 @@ GPUGenie::inv_table::inv_index_map()
 	return &_inv_index_map;
 }
 
-unordered_map<size_t, size_t>*
-GPUGenie::inv_table::inv_index_next()
-{
-	return &_inv_index_next;
-}
+//unordered_map<size_t, size_t>*
+//GPUGenie::inv_table::inv_index_next()
+//{
+//	return &_inv_index_next;
+//}
 
 vector<int>*
 GPUGenie::inv_table::inv_pos()
@@ -338,18 +338,28 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 
 	/* unordered map impl of inv_index */
 	_inv_index_map.clear();
-	_inv_index_next.clear();
-	size_t last_inserted_key;
-	for (size_t i = 0; i < _inv_index.size() - 1; ++i) // last element is not a key
+	for (size_t i = 0; i < _inv_lists.size(); ++i)
 	{
-		if (_inv_index.at(i) != _inv_index.at(i + 1))
+		dim = i << _shifter;
+		for (int j = _inv_lists[i].min(); j < _inv_lists[i].max(); ++j)
 		{
-			if (false == _inv_index_map.empty())
-				_inv_index_next.insert(make_pair(last_inserted_key, i));
-			_inv_index_map.insert(make_pair(i, _inv_index.at(i)));
-			last_inserted_key = i;
+			key = dim + j - _inv_lists[i].min();
+			size_t unsigned_key = static_cast<size_t>(key);
+			_inv_index_map.insert(make_pair(unsigned_key, _inv_index.at(unsigned_key)));
 		}
 	}
+	//_inv_index_next.clear();
+	//size_t last_inserted_key;
+	//for (size_t i = 0; i < _inv_index.size() - 1; ++i) // last element is not a key
+	//{
+	//	if (_inv_index.at(i) != _inv_index.at(i + 1))
+	//	{
+	//		//if (false == _inv_index_map.empty())
+	//			//_inv_index_next.insert(make_pair(last_inserted_key, i));
+	//		_inv_index_map.insert(make_pair(i, _inv_index.at(i)));
+	//		//last_inserted_key = i;
+	//	}
+	//}
 
     max_inv_size = (int)_inv.size() > max_inv_size?(int)_inv.size():max_inv_size;
 
@@ -437,7 +447,7 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
 	{
 		/* save _inv_index_map & _inv_index_next for other searches */
 		boost::archive::binary_oarchive oa(ofs);
-		oa << _inv_index_map << _inv_index_next;
+		oa << _inv_index_map; // << _inv_index_next;
 	}
 
     if(table_index == total_num_of_table - 1)
@@ -525,7 +535,7 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
 	{
 		/* read in _inv_index_map & _inv_index_next for other search */
 		boost::archive::binary_iarchive ia(ifs);
-		ia >> _inv_index_map >> _inv_index_next;
+		ia >> _inv_index_map; //>> _inv_index_next;
 	}
 
 	if(table_index == total_num_of_table-1)

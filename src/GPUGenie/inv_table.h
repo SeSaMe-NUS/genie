@@ -166,7 +166,7 @@ private:
       */
      vector<int> _inv_index;
 	unordered_map<size_t, int> _inv_index_map;
-	unordered_map<size_t, size_t> _inv_index_next;
+	//unordered_map<size_t, size_t> _inv_index_next;
 
      /*! \var vector<int> _inv_pos
       *  \brief The second level posting lists vector
