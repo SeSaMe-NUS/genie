@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
 	init_genie(config);
 	vector<vector<int> > data;
 	config.data_points = &data;
-	//inv_table **tables = new inv_table*[extra_config.num_of_cluster];
 	vector<inv_table*> tables(extra_config.num_of_cluster);
 	ReadData(config, extra_config, data, tables);
 	vector<int> id_offset(extra_config.num_of_cluster * g_mpi_size);
@@ -114,6 +113,7 @@ int main(int argc, char *argv[])
 		address.sin_addr.s_addr = INADDR_ANY;
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
+		MPI_Barrier(MPI_COMM_WORLD);
 		clog << "Start listening for queries on localhost:9090" << endl;
 
 		while (true) {
@@ -132,8 +132,11 @@ int main(int argc, char *argv[])
 		}
 	}
 	else
+	{
+		MPI_Barrier(MPI_COMM_WORLD);
 		while (true)
 			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
+	}
 }
 
 static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config &config,
