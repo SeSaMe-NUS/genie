@@ -181,7 +181,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	u64 startMatch = getTime();
 	size_t query_bytesize, gpu_free_mem, gpu_total_mem;
 	size_t start = 0, finish = 0;
-	size_t tolerance = 20 * 1024 * 1024; // make sure GPU always has at least 20 MB left
+	size_t tolerance = 50 * 1024 * 1024; // make sure GPU always has at least 20 MB left
 	cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
 	while (true)
 	{
@@ -196,7 +196,10 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 					queries.at(finish).size() * queries.at(finish).at(0).topk() * sizeof(data_t) + // d_topk
 					queries.at(finish).size() * sizeof(u32) + // d_noiih
 					queries.at(finish).size() * sizeof(u32) + // d_threshold
-					50 * 1024 * 1024; // extra 1 megabyte for other data structures
+					queries.at(finish).size() * table.at(finish)->m_size() + // d_passCount
+					queries.at(finish).size() * sizeof(u32) + // d_topk in match_AT
+					queries.at(finish).size() * table.at(finish)->m_size() * sizeof(query::dim) + // d_dims
+					queries.at(finish).size() * table.at(finish)->i_size(); // d_bitmap
 				/* if mem has space */
 				if (gpu_free_mem > query_bytesize + tolerance)
 				{
@@ -208,6 +211,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				else if (start == finish)
 					throw GPUGenie::gpu_bad_alloc("MEMORY NOT ENOUGH");
 			}
+			/* match and extract top k for a batch */
 			match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,
 					bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount, start, finish);
 			for (size_t i = start; i < finish; ++i)
@@ -225,7 +229,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 						thrust::raw_pointer_cast(d_topk.at(i).data()),
 						thrust::raw_pointer_cast(d_top_indexes.at(i).data()),
 						thrust::raw_pointer_cast(d_top_count.at(i).data()), d_top_indexes.at(i).size());
-				/* free memory */
+
 				d_data.at(i).clear();
 				d_data.at(i).shrink_to_fit();
 				d_bitmap.at(i).clear();
