@@ -173,15 +173,15 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		dim[i] = 2;
 		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
-		if (queries.at(i).empty())
-			clog << "No query on table " << i << endl;
+		//if (queries.at(i).empty())
+		//	clog << "No query on table " << i << "/" << table.size() << endl;
 	}
 
 	/* run batched match kernels */
 	u64 startMatch = getTime();
 	size_t query_bytesize, gpu_free_mem, gpu_total_mem;
 	size_t start = 0, finish = 0;
-	size_t tolerance = 50 * 1024 * 1024; // make sure GPU always has at least 20 MB left
+	size_t tolerance = 50 * 1024 * 1024; // make sure GPU always has at least 50 MB left
 	cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));
 	while (true)
 	{
@@ -193,13 +193,14 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			{
 				// TODO: accurately estimate GPU memory size
 				query_bytesize = queries.at(finish).size() * hash_table_size.at(finish) * sizeof(data_t) + // d_data
-					queries.at(finish).size() * queries.at(finish).at(0).topk() * sizeof(data_t) + // d_topk
 					queries.at(finish).size() * sizeof(u32) + // d_noiih
 					queries.at(finish).size() * sizeof(u32) + // d_threshold
 					queries.at(finish).size() * table.at(finish)->m_size() + // d_passCount
-					queries.at(finish).size() * sizeof(u32) + // d_topk in match_AT
+					queries.at(finish).size() * sizeof(u32) + // d_topk in match
 					queries.at(finish).size() * table.at(finish)->m_size() * sizeof(query::dim) + // d_dims
 					queries.at(finish).size() * table.at(finish)->i_size(); // d_bitmap
+				if (!queries.at(finish).empty())
+					query_bytesize += queries.at(finish).size() * queries.at(finish).at(0).topk() * sizeof(data_t); // d_topk
 				/* if mem has space */
 				if (gpu_free_mem > query_bytesize + tolerance)
 				{
