@@ -613,7 +613,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 
 	u64 endtime = getTime();
 	double timeInterval = getInterval(starttime, endtime);
-	Logger::log(Logger::INFO, "%d queries are created!", queries.size());
+	Logger::log(Logger::DEBUG, "%d queries are created!", queries.size());
 	Logger::log(Logger::VERBOSE,
 			">>>>[time profiling]: loading query takes %f ms<<<<",
 			timeInterval);

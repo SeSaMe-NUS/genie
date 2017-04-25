@@ -39,7 +39,7 @@ bool GPUGenie::inv_table::cpy_data_to_gpu()
             free(temp_inv);
 
         	u64 tt=getTime();
-        	cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
+        	//cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
 	} catch(std::bad_alloc &e){
 		throw(GPUGenie::gpu_bad_alloc(e.what()));
 	}

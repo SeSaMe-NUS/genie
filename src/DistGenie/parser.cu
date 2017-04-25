@@ -41,8 +41,12 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 	 * validate the configuration
 	 */
 	if (!ValidateConfiguration(json_config))
+	{
+		if (0 == g_mpi_rank)
+			clog << "Configuration file validation failed" << endl;
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-	cout << MPI_DEBUG << g_mpi_rank << " configuration validated" << endl;
+	}
+	//cout << MPI_DEBUG << g_mpi_rank << " configuration validated" << endl;
 
 	/*
 	 * set configuration structs accordingly
@@ -94,21 +98,25 @@ bool ValidateConfiguration(const Document &json_config)
 	 */
 	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
 		if (!json_config.HasMember(it->c_str())) {
-			cout << "Entry " << it->c_str() << " is missing" << endl;
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " is missing" << endl;
 			return false;
 		}
 		if (!json_config[it->c_str()].IsString()) {
-			cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " has wrong type" << endl;
 			return false;
 		}	
 	}
 	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
 		if (!json_config.HasMember(it->c_str())) {
-			cout << "Entry " << it->c_str() << " is missing" << endl;
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " is missing" << endl;
 			return false;
 		}
 		if (!json_config[it->c_str()].IsInt()) {
-			cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " has wrong type" << endl;
 			return false;
 		}	
 	}
@@ -122,25 +130,30 @@ bool ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, v
 {
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
-		cout << "Invalid query format" << endl;
+		if (0 == g_mpi_rank)
+			cout << "Invalid query format" << endl;
 		return false;
 	}
 
 	// validation
 	if (!json_query.HasMember("topk")) {
-		cout << "Entry topk is missing" << endl;
+		if (0 == g_mpi_rank)
+			cout << "Entry topk is missing" << endl;
 		return false;
 	}
 	if (!json_query["topk"].IsInt()) {
-		cout << "Entry topk has wrong type" << endl;
+		if (0 == g_mpi_rank)
+			cout << "Entry topk has wrong type" << endl;
 		return false;
 	}
 	if (!json_query.HasMember("queries")) {
-		cout << "Entry query is missing" << endl;
+		if (0 == g_mpi_rank)
+			cout << "Entry query is missing" << endl;
 		return false;
 	}
 	if (!json_query["queries"].IsArray()) {
-		cout << "Entry queries has wrong type" << endl;
+		if (0 == g_mpi_rank)
+			cout << "Entry queries has wrong type" << endl;
 		return false;
 	}
 	// TODO: add new validation

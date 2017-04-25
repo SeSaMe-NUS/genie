@@ -1100,7 +1100,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			else
 				bitmap_bits = threshold[i] = 0;
 
-			Logger::log(Logger::INFO, "[ 20%] Declaring device memory...");
+			Logger::log(Logger::DEBUG, "[ 20%] Declaring device memory...");
 			d_bitmap.at(i).resize(bitmap_size.at(i));
 			d_bitmap_p[i] = thrust::raw_pointer_cast(d_bitmap.at(i).data());
 
@@ -1114,7 +1114,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			match_query_start = getTime();
 			num_of_max_count[i] = build_queries(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
 			match_query_end = getTime();
-			Logger::log(Logger::INFO,
+			Logger::log(Logger::DEBUG,
 					">>>>[time profiling]: match: build_queries function takes %f ms. ",
 					getInterval(match_query_start, match_query_end));
 			Logger::log(Logger::DEBUG, " dims size: %d.",
@@ -1125,9 +1125,9 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			d_dims[i] = dims.at(i);
 			d_dims_p[i] = raw_pointer_cast(d_dims.at(i).data());
 			u64 query_end = getTime();
-			clog << "query_transfer time = " << getInterval(query_start, query_end) << "ms." << endl;
+			//clog << "query_transfer time = " << getInterval(query_start, query_end) << "ms." << endl;
 
-			Logger::log(Logger::INFO, "[ 30%] Allocating device memory to tables...");
+			Logger::log(Logger::DEBUG, "[ 30%] Allocating device memory to tables...");
 
 			/* hashtable */
 			d_data.at(i).clear();

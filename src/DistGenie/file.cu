@@ -12,12 +12,14 @@ using namespace DistGenie;
 
 void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, vector<inv_table*> &tables)
 {
+	if (0 == g_mpi_rank)
+		clog << "Start loading tables" << endl;
 	string data_file;
 	if (0 == extra_config.data_format) // csv
 //#pragma omp parallel for schedule(dynamic)
 		for (int i = 0; i < extra_config.num_of_cluster; ++i)
 		{
-			clog << "load file " << to_string(i) << endl;
+			//clog << "load file " << to_string(i) << endl;
 			data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".csv";
 			read_file(data, data_file.c_str(), -1);
 			preprocess_for_knn_csv(config, tables.at(i));
@@ -26,7 +28,7 @@ void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vec
 //#pragma omp parallel for schedule(dynamic)
 		for (int i = 0; i < extra_config.num_of_cluster; ++i)
 		{
-			clog << "load binary file " << to_string(i) << endl;
+			//clog << "load binary file " << to_string(i) << endl;
 			data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".dat";
 			inv_table::read(data_file.c_str(), tables.at(i));
 			if (config.save_to_gpu && tables.at(i)->d_inv_p == NULL)

@@ -113,15 +113,16 @@ int main(int argc, char *argv[])
 		address.sin_addr.s_addr = INADDR_ANY;
 		bind(sock, (struct sockaddr *)&address, sizeof(address));
 		int status = listen(sock, 1);
-		MPI_Barrier(MPI_COMM_WORLD);
-		clog << "Start listening for queries on localhost:9090" << endl;
 
 		while (true) {
 			//receive queries from socket
+			MPI_Barrier(MPI_COMM_WORLD);
+			clog << "Accepting queries on localhost:9090" << endl;
 			int incoming = accept(sock, &client_address, &address_len);
 			memset(recv_buf, '\0', BUFFER_SIZE);
 			count = recv(incoming, recv_buf, BUFFER_SIZE, MSG_WAITALL);
 			close(incoming);
+			clog << "Received query, start processing" << endl;
 
 			// set up output file name
 			auto epoch_time = chrono::system_clock::now().time_since_epoch();
@@ -154,10 +155,12 @@ static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config 
 	vector<Result> results(extra_config.total_queries);
 	auto t1 = chrono::steady_clock::now();
 	ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
-	auto t2 = chrono::steady_clock::now();
-	auto diff = t2 - t1;
-	clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 	if (0 == g_mpi_rank)
+	{
+		auto t2 = chrono::steady_clock::now();
+		auto diff = t2 - t1;
+		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 		GenerateOutput(results, config, extra_config);
-	clog << "Output generated" << endl;
+		clog << "Output generated" << endl;
+	}
 }
