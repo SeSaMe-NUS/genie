@@ -134,9 +134,11 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		MPI_Barrier(MPI_COMM_WORLD);
 		while (true)
+		{
+			MPI_Barrier(MPI_COMM_WORLD);
 			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
+		}
 	}
 }
 
