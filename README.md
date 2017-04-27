@@ -97,10 +97,25 @@ given query.
 
 #### Running MPIGenie
 
-To run MPIGenie, use
+To run MPIGenie on a single node, use
 
 ```bash
 $ mpirun -np <n> ./bin/odgenie static/online.config.json
+```
+
+To run MPIGenie on multiple nodes, use
+
+```bash
+$ /path/to/mpirun -np <n> -hostfile hosts ./bin/odgenie static/online.config.json
+```
+
+An example `hosts` file looks like
+
+```
+slave1 slots=3
+slave2 slots=3
+slave3 slots=3
+slave4 slots=3
 ```
 
 **Modify the configuration file accordingly.** If you converted files into
@@ -110,7 +125,7 @@ The program will listen for question on port 9090. You can send queries
 to the program by executing
 
 ```bash
-$ nc localhost 9090 < queries.json
+$ nc <hostname> 9090 < queries.json
 ```
 
 ## Debugging
