@@ -37,11 +37,11 @@ public:
     __device__ __host__
     DeviceIntegerCODEC() {}
 
-    void
-    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {};
+    virtual void
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
 
-    const uint32_t*
-    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) {return NULL;};
+    virtual const uint32_t*
+    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue) = 0;
 
     /**
         The function must make sure not to write in d_out[nvalue] and beyond. If decompressed size is greater than
@@ -62,7 +62,7 @@ public:
     __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {return NULL;}
 
-    __device__ __host__
+    virtual __device__ __host__
     ~DeviceIntegerCODEC() {}
 
     /** Convenience function not supported */
@@ -77,7 +77,7 @@ public:
         throw std::logic_error("DeviceIntegerCODEC::uncompress not supported!");
     }
 
-    std::string
+    virtual std::string
     name() const {return std::string("DeviceIntegerCODEC");};
 
     /** The amount of CUDA blocks this codec is able to operate on at the same time **/
