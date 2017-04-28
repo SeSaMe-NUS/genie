@@ -172,6 +172,7 @@ int main(int argc, char* argv[])
 
     config.num_of_queries = numberOfQueries;
 
+    init_genie(config);
 
 
 

@@ -332,7 +332,8 @@ int main(int argc, char* argv[])
     std::cout << "Done reading data file!" << std::endl;  
 
 
-    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;  
+    std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
+    init_genie(config);
     preprocess_for_knn_binary(config, table);
     // check how many tables we have
     assert(table != NULL);
