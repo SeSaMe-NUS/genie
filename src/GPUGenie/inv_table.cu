@@ -485,12 +485,6 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
         }
     }
 
-
-    if(table_index == total_num_of_table-1)
-        ifs.close();
-    
-
-
     return true;
 }
 

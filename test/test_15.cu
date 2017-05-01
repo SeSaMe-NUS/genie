@@ -224,8 +224,11 @@ int main(int argc, char* argv[])
         // check the compression was actually used in the table
         assert(config.compression == comprTable->getCompression());
 
-        inv_table::write(binaryComprInvTableFile.c_str(), table);
-
+        if (!inv_table::write(binaryComprInvTableFile.c_str(), table)) {
+            Logger::log(Logger::ALERT, "Error writing inv_compr_table to binary file %s ...",
+                binaryInvTableFile.c_str());
+            return 4;
+        }
     }
 
     std::cout << "--------------------------------------------------------" << std::endl;
