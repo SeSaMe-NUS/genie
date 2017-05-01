@@ -8,6 +8,7 @@
 #include "Timing.h"
 #include "DeviceCompositeCodec.h"
 #include "DeviceBitPackingCodec.h"
+#include "DeviceVarintCodec.h"
 
 #include "inv_compr_table.h"
 
@@ -16,14 +17,18 @@ std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
 GPUGenie::inv_compr_table::initCodecs() {
   std::map<std::string, shared_ptr<DeviceIntegerCODEC>> codecs;
 
-  codecs["copy"] = std::shared_ptr<DeviceIntegerCODEC>(
+  codecs["copy"] = std::shared_ptr<DeviceJustCopyCodec>(
                         new DeviceJustCopyCodec());
-  codecs["d1"] = std::shared_ptr<DeviceIntegerCODEC>(
+  codecs["d1"] = std::shared_ptr<DeviceDeltaCodec>(
                         new DeviceDeltaCodec());
-  codecs["bp32"] = std::shared_ptr<DeviceIntegerCODEC>(
+  codecs["bp32"] = std::shared_ptr<DeviceBitPackingCodec>(
                         new DeviceBitPackingCodec());
-  codecs["d1-bp32"] = std::shared_ptr<DeviceIntegerCODEC>(
+  codecs["varint"] = std::shared_ptr<DeviceVarintCodec>(
+                        new DeviceVarintCodec());
+  codecs["bp32-copy"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(
                         new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>());
+  codecs["bp32-varint"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(
+                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>());
   return codecs;
 }
 
