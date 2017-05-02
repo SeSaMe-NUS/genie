@@ -6,7 +6,10 @@
 
 namespace distgenie
 {
-	void ListenForQueries(std::queue<std::string> &);
+	namespace scheduler
+	{
+		void ListenForQueries(std::queue<std::string> &);
+	}
 }
 
 #endif

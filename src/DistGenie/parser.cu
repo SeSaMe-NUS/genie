@@ -13,11 +13,58 @@ using namespace GPUGenie;
 using namespace rapidjson;
 using namespace std;
 
+/*
+ * Checks whether all compulsory entries are present
+ *
+ * param json_config (INPUT) JSON config document
+ */
+static bool ValidateConfiguration(const Document &json_config)
+{
+	/*
+	 * maintain entries of different type in different vectors
+	 */
+	vector<string> string_entries, int_entries;
+	string_entries.push_back("data_file");
+	int_entries.push_back("dim");
+	int_entries.push_back("count_threshold");
+	int_entries.push_back("data_type");
+	int_entries.push_back("search_type");
+	int_entries.push_back("max_data_size");
+	int_entries.push_back("num_of_cluster");
+	int_entries.push_back("data_format");
+
+	/*
+	 * check entries' existence and type
+	 */
+	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
+		if (!json_config.HasMember(it->c_str())) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " is missing" << endl;
+			return false;
+		}
+		if (!json_config[it->c_str()].IsString()) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			return false;
+		}	
+	}
+	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
+		if (!json_config.HasMember(it->c_str())) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " is missing" << endl;
+			return false;
+		}
+		if (!json_config[it->c_str()].IsInt()) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << it->c_str() << " has wrong type" << endl;
+			return false;
+		}	
+	}
+	return true;
+}
+
 namespace distgenie
 {
-
-bool ValidateConfiguration(const Document &);
-
 /*
  * Parse configuration file
  *
@@ -25,7 +72,7 @@ bool ValidateConfiguration(const Document &);
  * param extra_config (OUTPUT) Extra configuration for MPIGenie
  * param config_filename (INPUT) Configuration file name
  */
-void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, const string config_filename)
+void parser::ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, const string config_filename)
 {
 	/*
 	 * read json configuration from file and parse it
@@ -74,59 +121,9 @@ void ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, 
 }
 
 /*
- * Checks whether all compulsory entries are present
- *
- * param json_config (INPUT) JSON config document
- */
-bool ValidateConfiguration(const Document &json_config)
-{
-	/*
-	 * maintain entries of different type in different vectors
-	 */
-	vector<string> string_entries, int_entries;
-	string_entries.push_back("data_file");
-	int_entries.push_back("dim");
-	int_entries.push_back("count_threshold");
-	int_entries.push_back("data_type");
-	int_entries.push_back("search_type");
-	int_entries.push_back("max_data_size");
-	int_entries.push_back("num_of_cluster");
-	int_entries.push_back("data_format");
-
-	/*
-	 * check entries' existence and type
-	 */
-	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
-		if (!json_config.HasMember(it->c_str())) {
-			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " is missing" << endl;
-			return false;
-		}
-		if (!json_config[it->c_str()].IsString()) {
-			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " has wrong type" << endl;
-			return false;
-		}	
-	}
-	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
-		if (!json_config.HasMember(it->c_str())) {
-			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " is missing" << endl;
-			return false;
-		}
-		if (!json_config[it->c_str()].IsInt()) {
-			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " has wrong type" << endl;
-			return false;
-		}	
-	}
-	return true;
-}
-
-/*
  * Parse query into vector
  */
-bool ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, vector<Cluster> &clusters, const string query)
+bool parser::ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, vector<Cluster> &clusters, const string query)
 {
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {

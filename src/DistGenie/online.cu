@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	GPUGenie_Config config;
 	ExtraConfig extra_config;
 	string config_filename(argv[1]);
-	ParseConfigurationFile(config, extra_config, config_filename);
+	parser::ParseConfigurationFile(config, extra_config, config_filename);
 
 	/*
 	 * initialize GENIE
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	vector<vector<int> > data;
 	config.data_points = &data;
 	vector<inv_table*> tables(extra_config.num_of_cluster);
-	ReadData(config, extra_config, data, tables);
+	file::ReadData(config, extra_config, data, tables);
 	vector<int> id_offset(extra_config.num_of_cluster * g_mpi_size);
 	CalculateIdOffset(id_offset, tables);
 
@@ -108,26 +108,9 @@ int main(int argc, char *argv[])
 	if (0 == g_mpi_rank)
 	{
 		queue<string> query_queue;
-		thread scheduler(distgenie::ListenForQueries, ref(query_queue));
-		//// TODO: check socket success
-		//int sock = socket(PF_INET, SOCK_STREAM, 0);
-		//sockaddr_in address;
-		//sockaddr client_address;
-		//socklen_t address_len = sizeof(client_address);
-
-		//address.sin_family = AF_INET;
-		//address.sin_port = htons(9090);
-		//address.sin_addr.s_addr = INADDR_ANY;
-		//bind(sock, (struct sockaddr *)&address, sizeof(address));
-		//int status = listen(sock, 1);
+		thread scheduler(scheduler::ListenForQueries, ref(query_queue));
 
 		while (true) {
-			//receive queries from socket
-			//clog << "Accepting queries on localhost:9090" << endl;
-			//int incoming = accept(sock, &client_address, &address_len);
-			//memset(recv_buf.data(), '\0', BUFFER_SIZE);
-			//count = recv(incoming, recv_buf.data(), BUFFER_SIZE, MSG_WAITALL);
-			//close(incoming);
 			while (true) {
 				query_mutex.lock();
 				if (query_queue.empty())
@@ -174,18 +157,18 @@ static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_bu
 		memset(recv_buf.data(), '\0', BUFFER_SIZE);
 	MPI_Bcast(recv_buf.data(), *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-	if(!ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf.data())))
+	if(!parser::ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf.data())))
 		return;
 
 	vector<Result> results(extra_config.total_queries);
 	auto t1 = chrono::steady_clock::now();
-	ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
+	search::ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
 	if (0 == g_mpi_rank)
 	{
 		auto t2 = chrono::steady_clock::now();
 		auto diff = t2 - t1;
 		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
-		GenerateOutput(results, config, extra_config);
+		file::GenerateOutput(results, config, extra_config);
 		clog << "Output generated" << endl;
 	}
 }
