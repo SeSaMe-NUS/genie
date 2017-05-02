@@ -7,7 +7,7 @@
 #include "config.h"
 #include "container.h"
 
-namespace DistGenie
+namespace distgenie
 {
 	void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, ExtraConfig &, const string);
 	bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, ExtraConfig &, vector<Cluster> &, const string);

@@ -1,7 +1,7 @@
 #ifndef __DISTGENIE_CONFIG_H__
 #define __DISTGENIE_CONFIG_H__
 
-namespace DistGenie
+namespace distgenie
 {
 	struct ExtraConfig
 	{

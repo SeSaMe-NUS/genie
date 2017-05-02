@@ -17,7 +17,7 @@
 #include "global.h"
 
 using namespace GPUGenie;
-using namespace DistGenie;
+using namespace distgenie;
 using namespace std;
 
 static const size_t BUFFER_SIZE = 10u << 20;

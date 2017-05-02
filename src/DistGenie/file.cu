@@ -8,9 +8,9 @@
 
 using namespace GPUGenie;
 using namespace std;
-using namespace DistGenie;
+using namespace distgenie;
 
-void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, vector<inv_table*> &tables)
+void distgenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vector<vector<int> > &data, vector<inv_table*> &tables)
 {
 	if (0 == g_mpi_rank)
 		clog << "Start loading tables" << endl;
@@ -38,7 +38,7 @@ void DistGenie::ReadData(GPUGenie_Config &config, ExtraConfig &extra_config, vec
 	// TODO: handle unknown data format
 }
 
-void DistGenie::GenerateOutput(vector<Result> &results, GPUGenie_Config &config, ExtraConfig &extra_config)
+void distgenie::GenerateOutput(vector<Result> &results, GPUGenie_Config &config, ExtraConfig &extra_config)
 {
 	int topk = config.num_of_topk;
 	ofstream output(extra_config.output_file);

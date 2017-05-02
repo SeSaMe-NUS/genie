@@ -6,10 +6,10 @@
 #include "config.h"
 #include "container.h"
 
-namespace DistGenie
+namespace distgenie
 {
-	void ReadData(GPUGenie::GPUGenie_Config &, DistGenie::ExtraConfig &, std::vector<std::vector<int> > &, std::vector<GPUGenie::inv_table*> &);
-	void GenerateOutput(std::vector<DistGenie::Result> &, GPUGenie::GPUGenie_Config &, DistGenie::ExtraConfig &);
+	void ReadData(GPUGenie::GPUGenie_Config &, distgenie::ExtraConfig &, std::vector<std::vector<int> > &, std::vector<GPUGenie::inv_table*> &);
+	void GenerateOutput(std::vector<distgenie::Result> &, GPUGenie::GPUGenie_Config &, distgenie::ExtraConfig &);
 }
 
 #endif

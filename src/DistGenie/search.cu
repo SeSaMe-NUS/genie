@@ -8,7 +8,7 @@
 #include "search.h"
 #include "global.h"
 
-using namespace DistGenie;
+using namespace distgenie;
 using namespace GPUGenie;
 using namespace std;
 
@@ -111,7 +111,7 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 }
 
 /* For pre-clustering version */
-void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
+void distgenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraConfig &extra_config,
 		vector<GPUGenie::inv_table*> &tables, vector<Cluster> &clusters, vector<Result> &results, vector<int> &id_offset)
 {
 	vector<vector<query> > queries(clusters.size());

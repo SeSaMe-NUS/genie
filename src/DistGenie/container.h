@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace DistGenie
+namespace distgenie
 {
 	struct Cluster
 	{

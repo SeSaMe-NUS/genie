@@ -13,7 +13,7 @@ using namespace GPUGenie;
 using namespace rapidjson;
 using namespace std;
 
-namespace DistGenie
+namespace distgenie
 {
 
 bool ValidateConfiguration(const Document &);
