@@ -77,7 +77,7 @@ private:
 	 *  different ranges setting, the attribute saves the
 	 *  raw range settings.
 	 */
-	std::map<int, vector<range>*> _attr_map;
+	std::map<int, vector<range> > _attr_map;
 
 	/*! \var std::map<int, vector<dim>*> _dim_map
 	 *  \brief The queried ranges.
@@ -85,7 +85,7 @@ private:
      *   The queried ranges. In matching steps, this vector will
 	 *   be transferred to device.
 	 */
-	std::map<int, vector<dim>*> _dim_map;
+	std::map<int, vector<dim> > _dim_map;
 
 	/*! \var int _topk
 	 *  \brief The top k matches required.

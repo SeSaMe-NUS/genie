@@ -125,4 +125,9 @@ void DistGenie::ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &config, ExtraC
 
 	knn_search_MT(tables, queries, h_topk, h_topk_count, configs);
 	MergeResult(results, h_topk, h_topk_count, config.num_of_topk, clusters, id_offset);
+
+	//for (auto it1 = queries.begin(); it1 != queries.end(); ++it1)
+	//	for (auto it2 = it1->begin(); it2 != it1->end(); ++it2)
+	//		for (size_t i = 0; i < it2->count_ranges(); i++)
+	//			it2->clear_dim(i);
 }

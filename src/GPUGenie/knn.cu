@@ -235,6 +235,14 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				d_data.at(i).shrink_to_fit();
 				d_bitmap.at(i).clear();
 				d_bitmap.at(i).shrink_to_fit();
+				d_topk.at(i).clear();
+				d_topk.at(i).shrink_to_fit();
+				d_num_of_items_in_hashtable.at(i).clear();
+				d_num_of_items_in_hashtable.at(i).shrink_to_fit();
+				d_threshold.at(i).clear();
+				d_threshold.at(i).shrink_to_fit();
+				d_passCount.at(i).clear();
+				d_passCount.at(i).shrink_to_fit();
 			}
 			/* update mem info after memory free and continue with next batch */
 			cudaCheckErrors(cudaMemGetInfo(&gpu_free_mem, &gpu_total_mem));

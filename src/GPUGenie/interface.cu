@@ -586,9 +586,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 	{
 		query q(table, i);
 
-		for (j = 0;
-				j < query_points[i].size()
-						&& (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
+		for (j = 0; j < query_points[i].size() && (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
 			value = query_points[i][j];
 

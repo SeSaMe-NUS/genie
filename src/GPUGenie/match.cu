@@ -1203,6 +1203,12 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		match_stop = getTime();
 		cudaEventSynchronize(kernel_stop);
 
+		//for (auto it = dims.begin(); it != dims.end(); ++it)
+		//{
+		//	it->clear();
+		//	it->shrink_to_fit();
+		//}
+
 		kernel_elapsed = 0.0f;
 		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
 		Logger::log(Logger::INFO,
