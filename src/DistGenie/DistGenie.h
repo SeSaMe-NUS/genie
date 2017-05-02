@@ -6,5 +6,6 @@
 #include "config.h"
 #include "container.h"
 #include "file.h"
+#include "scheduler.h"
 
 #endif

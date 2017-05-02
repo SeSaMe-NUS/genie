@@ -5,6 +5,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <array>
+#include <thread>
+#include <queue>
+#include <mutex>
 #include <chrono> // benchmarking purpose
 
 #include "GPUGenie.h"
@@ -16,9 +20,9 @@ using namespace GPUGenie;
 using namespace DistGenie;
 using namespace std;
 
-static const size_t BUFFER_SIZE = 10u << 20; // 10 megabytes
+static const size_t BUFFER_SIZE = 10u << 20;
 
-static void ParseQueryAndSearch(int *, char *, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &, vector<int> &);
+static void ParseQueryAndSearch(int *, array<char,BUFFER_SIZE> &, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &, vector<int> &);
 
 static void WaitForGDB()
 {
@@ -97,34 +101,53 @@ int main(int argc, char *argv[])
 	 * handle online queries
 	 */
 	int count;
-	char *recv_buf = new char[BUFFER_SIZE]{'\0'};
+	auto *recv_buf_ptr = new array<char,BUFFER_SIZE>();
+	array<char,BUFFER_SIZE> &recv_buf = *recv_buf_ptr;
 	vector<Cluster> clusters(extra_config.num_of_cluster);
 
 	if (0 == g_mpi_rank)
 	{
-		// TODO: check socket success
-		int sock = socket(PF_INET, SOCK_STREAM, 0);
-		sockaddr_in address;
-		sockaddr client_address;
-		socklen_t address_len = sizeof(client_address);
+		queue<string> query_queue;
+		thread scheduler(distgenie::ListenForQueries, ref(query_queue));
+		//// TODO: check socket success
+		//int sock = socket(PF_INET, SOCK_STREAM, 0);
+		//sockaddr_in address;
+		//sockaddr client_address;
+		//socklen_t address_len = sizeof(client_address);
 
-		address.sin_family = AF_INET;
-		address.sin_port = htons(9090);
-		address.sin_addr.s_addr = INADDR_ANY;
-		bind(sock, (struct sockaddr *)&address, sizeof(address));
-		int status = listen(sock, 1);
+		//address.sin_family = AF_INET;
+		//address.sin_port = htons(9090);
+		//address.sin_addr.s_addr = INADDR_ANY;
+		//bind(sock, (struct sockaddr *)&address, sizeof(address));
+		//int status = listen(sock, 1);
 
 		while (true) {
 			//receive queries from socket
-			MPI_Barrier(MPI_COMM_WORLD);
-			clog << "Accepting queries on localhost:9090" << endl;
-			int incoming = accept(sock, &client_address, &address_len);
-			memset(recv_buf, '\0', BUFFER_SIZE);
-			count = recv(incoming, recv_buf, BUFFER_SIZE, MSG_WAITALL);
-			close(incoming);
-			clog << "Received query, start processing" << endl;
+			//clog << "Accepting queries on localhost:9090" << endl;
+			//int incoming = accept(sock, &client_address, &address_len);
+			//memset(recv_buf.data(), '\0', BUFFER_SIZE);
+			//count = recv(incoming, recv_buf.data(), BUFFER_SIZE, MSG_WAITALL);
+			//close(incoming);
+			while (true) {
+				query_mutex.lock();
+				if (query_queue.empty())
+				{
+					query_mutex.unlock();
+					this_thread::sleep_for(chrono::seconds(1));
+				}
+				else
+				{
+					string &query_str = query_queue.front();
+					count = query_str.length() + 1;
+					memcpy(recv_buf.data(), query_str.c_str(), count);
+					query_queue.pop();
+					query_mutex.unlock();
+					break;
+				}
+			}
 
 			// set up output file name
+			MPI_Barrier(MPI_COMM_WORLD);
 			auto epoch_time = chrono::system_clock::now().time_since_epoch();
 			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
 			extra_config.output_file = to_string(output_filename) + ".csv";
@@ -142,16 +165,16 @@ int main(int argc, char *argv[])
 	}
 }
 
-static void ParseQueryAndSearch(int *count_ptr, char *recv_buf, GPUGenie_Config &config,
+static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
 		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
 {
 	// broadcast query
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	if (g_mpi_rank != 0)
-		memset(recv_buf, '\0', BUFFER_SIZE);
-	MPI_Bcast(recv_buf, *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
+		memset(recv_buf.data(), '\0', BUFFER_SIZE);
+	MPI_Bcast(recv_buf.data(), *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-	if(!ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf)))
+	if(!ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf.data())))
 		return;
 
 	vector<Result> results(extra_config.total_queries);
