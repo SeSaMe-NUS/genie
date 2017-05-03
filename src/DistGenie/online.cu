@@ -12,7 +12,7 @@
 #include <chrono> // benchmarking purpose
 
 #include "GPUGenie.h"
-#include "DistGenie.h"
+#include "distgenie.h"
 #define NO_EXTERN
 #include "global.h"
 
