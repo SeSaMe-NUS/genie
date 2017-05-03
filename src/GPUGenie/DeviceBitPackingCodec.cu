@@ -236,5 +236,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
     }
 
     capacity = length;
-    return d_in + length;
+    int lastBlock = blocks - 1;
+    int offsetPastLastBlock = s_bitOffsets[lastBlock] + s_bitSizes[lastBlock];
+    return d_in + offsetPastLastBlock;
 }
