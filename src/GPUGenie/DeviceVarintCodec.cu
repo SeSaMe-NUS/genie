@@ -238,7 +238,7 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     }
 
     capacity = decomprLength;
-    return d_in + decomprLength;
+    return d_in + comprLength;
 
 }
 
