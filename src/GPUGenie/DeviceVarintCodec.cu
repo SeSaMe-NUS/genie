@@ -228,7 +228,7 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
                 if (myCurrByte & 128) // this was last byte
                 {
                     d_out[myOutIdx + i] = decoded;
-                    printf("Thread: %d unpacked idx: %d int number %d out of numInts %d, value: %u, saved into d_out[%d]\n", idx, idxUnpack, i, myNumInts, decoded, myOutIdx + i);
+                    // printf("Thread: %d unpacked idx: %d int number %d out of numInts %d, value: %u, saved into d_out[%d]\n", idx, idxUnpack, i, myNumInts, decoded, myOutIdx + i);
                     myCurrByte = *nextByte++;
                     break;
                 }

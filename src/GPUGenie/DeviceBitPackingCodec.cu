@@ -176,10 +176,10 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
             s_bitOffsets[b+3] = bitOffsetsAcc;
             bitOffsetsAcc += s_bitSizes[b+3];
 
-            printf("Block %d has bitSize %u and bitOffset %u \n", b, s_bitSizes[b], s_bitOffsets[b]);
-            printf("Block %d has bitSize %u and bitOffset %u \n", b+1, s_bitSizes[b+1], s_bitOffsets[b+1]);
-            printf("Block %d has bitSize %u and bitOffset %u \n", b+2, s_bitSizes[b+2], s_bitOffsets[b+2]);
-            printf("Block %d has bitSize %u and bitOffset %u \n", b+3, s_bitSizes[b+3], s_bitOffsets[b+3]);
+            // printf("Block %d has bitSize %u and bitOffset %u \n", b, s_bitSizes[b], s_bitOffsets[b]);
+            // printf("Block %d has bitSize %u and bitOffset %u \n", b+1, s_bitSizes[b+1], s_bitOffsets[b+1]);
+            // printf("Block %d has bitSize %u and bitOffset %u \n", b+2, s_bitSizes[b+2], s_bitOffsets[b+2]);
+            // printf("Block %d has bitSize %u and bitOffset %u \n", b+3, s_bitSizes[b+3], s_bitOffsets[b+3]);
 
             assert(s_bitSizes[b]   > 0 && s_bitSizes[b]   <= 32); // bit size has to be in [0,32] range
             assert(                       s_bitSizes[b+1] <= 32); // bit size has to be in [0,32] range
@@ -232,7 +232,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
                        
         d_out[idxUnpack] = out;
 
-        printf("Thread %d unpacked idx %d: bitSize: %d, firstBit: %d, lastBit: %d, firstBitInPacked: %d, lastBitInPacked: %d, lastBitInPackedOverflow: %d, bits in packed: %d, bits in overflow: %d, out: %u\n", idx, idxUnpack, bitSize, firstBit, lastBit, firstBitInPacked, lastBitInPacked, lastBitInPackedOverflow, bitSize - lastBitInPackedOverflow - 1, lastBitInPackedOverflow, out);
+        // printf("Thread %d unpacked idx %d: bitSize: %d, firstBit: %d, lastBit: %d, firstBitInPacked: %d, lastBitInPacked: %d, lastBitInPackedOverflow: %d, bits in packed: %d, bits in overflow: %d, out: %u\n", idx, idxUnpack, bitSize, firstBit, lastBit, firstBitInPacked, lastBitInPacked, lastBitInPackedOverflow, bitSize - lastBitInPackedOverflow - 1, lastBitInPackedOverflow, out);
     }
 
     capacity = length;
