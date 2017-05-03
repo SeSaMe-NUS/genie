@@ -25,7 +25,7 @@ static void LoadQueries(GPUGenie_Config &config, vector<inv_table*> &tables, vec
 }
 
 /* Merge result for multi-node & multi-cluster */
-void MergeResult(vector<distgenie::Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
+static void MergeResult(vector<distgenie::Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
 		int topk, vector<distgenie::Cluster> &clusters, vector<int> &id_offset)
 {
 	int *final_result = nullptr;       // only for MPI
@@ -52,7 +52,7 @@ void MergeResult(vector<distgenie::Result> &results, vector<vector<int> > &h_top
 					for (int k = 0; k < topk; ++k)
 						results.at(clusters.at(c).m_queries_id.at(i)).push_back(
 							std::pair<int, int>(final_result_count[offset + k],
-								id_offset.at(j * clusters.size() + c) + final_result[offset + k]
+								id_offset.at(c * g_mpi_size + j) + final_result[offset + k]
 							)
 						);
 				}

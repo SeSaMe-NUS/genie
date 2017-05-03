@@ -48,13 +48,17 @@ static void CalculateIdOffset(vector<int> &id_offset, vector<inv_table*> &tables
 		local_tablesize[i] = tables.at(i)->i_size();
 	int *global_tablesize = new int[tables.size() * g_mpi_size];
 	MPI_Allgather(local_tablesize, tables.size(), MPI_INT, global_tablesize, tables.size(), MPI_INT, MPI_COMM_WORLD);
+	for (size_t i = 0; i < tables.size(); ++i)
+		for (int j = 0; j < g_mpi_size; ++j)
+			id_offset[i * g_mpi_size + j] = global_tablesize[j * tables.size() + i];
 
 	/* prefix sum */
-	int sum = 0;
-	for (size_t i = 0; i != tables.size() * g_mpi_size; ++i)
+	int sum = 0, curr;
+	for (size_t i = 0; i < tables.size() * g_mpi_size; ++i)
 	{
+		curr = id_offset[i];
 		id_offset[i] = sum;
-		sum += global_tablesize[i];
+		sum += curr;
 	}
 
 	delete[] local_tablesize;
