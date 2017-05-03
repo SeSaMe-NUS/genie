@@ -276,14 +276,14 @@ size_t GPUGenie::scanExclusiveShort(
 
     //Check power-of-two factorization
     uint pow2arrayLength = h_pow2ceil_32(arrayLength);
-    printf("power of two size: %u\n", pow2arrayLength);
+    // printf("power of two size: %u\n", pow2arrayLength);
     assert(pow2arrayLength >= arrayLength);
 
     // Check supported size range
     assert((pow2arrayLength >= SCAN_MIN_SHORT_ARRAY_SIZE) && (pow2arrayLength <= SCAN_MAX_SHORT_ARRAY_SIZE));
 
-    printf("running scanExclusiveShort on %d blocks each of %d threads, total active threads: %d\n",
-        (pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE),THREADBLOCK_SIZE, arrayLength/4);
+    // printf("running scanExclusiveShort on %d blocks each of %d threads, total active threads: %d\n",
+    //     (pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE),THREADBLOCK_SIZE, arrayLength/4);
 
     g_scanExclusiveShared<<<(pow2arrayLength+(4*THREADBLOCK_SIZE)-1)/(4*THREADBLOCK_SIZE), THREADBLOCK_SIZE>>>(
         (uint4 *)d_Dst,
@@ -306,14 +306,14 @@ size_t GPUGenie::scanExclusiveLarge(
 
     //Check power-of-two factorization
     uint pow2arrayLength = h_pow2ceil_32(arrayLength);
-    printf("power of two size: %u\n", pow2arrayLength);
+    // printf("power of two size: %u\n", pow2arrayLength);
     assert(pow2arrayLength >= (arrayLength));
 
     //Check supported size range
     assert((pow2arrayLength >= SCAN_MIN_LARGE_ARRAY_SIZE) && (pow2arrayLength <= SCAN_MAX_LARGE_ARRAY_SIZE));
 
-    printf("running scanExclusiveLong on %d blocks each of %d threads\n",
-        (pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
+    // printf("running scanExclusiveLong on %d blocks each of %d threads\n",
+        // (pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE), THREADBLOCK_SIZE);
 
     g_scanExclusiveShared<<<(pow2arrayLength + (4 * THREADBLOCK_SIZE) - 1) / (4 * THREADBLOCK_SIZE),
                            THREADBLOCK_SIZE>>>(

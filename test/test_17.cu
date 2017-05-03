@@ -63,8 +63,8 @@ bool testScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input
     }
 
     double scanTime = getInterval(scanStart, scanEnd);
-    Logger::log(Logger::INFO, "Scan on array of size %d took %.4ff ms. Throughput: %.4f milions of elements per second"
-        , arrayLength, scanTime, 1.0e-6 * (double)arrayLength/scanTime);
+    Logger::log(Logger::INFO, "Scan, Array size: %d, Time: %.3f ms, Throughput: %.3f elements per millisecond"
+        , arrayLength, scanTime, (double)arrayLength/scanTime);
 
     return ok;
 }
@@ -153,42 +153,13 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     }
 
     double decomprTime = getInterval(decomprStart, decomprEnd);
-    Logger::log(Logger::INFO, "Done parallel GPU decompression");
-    Logger::log(Logger::INFO, "Codec: %s", codec.name().c_str());
-    Logger::log(Logger::INFO, "Array size: %d, Compressed size: %d, Ratio: %f bpi", arrayLength, comprLength,
-            32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
-    Logger::log(Logger::INFO, "Time (decompr): %.4f ms, Throughput: %.2f of elements per millisecond",
+    Logger::log(Logger::INFO, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Time (decompr): %.3f ms, Throughput: %.3f of elements per millisecond",
+            codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength),
             decomprTime, (double)arrayLength/decomprTime);
 
     return ok;
 }
 
-const int SCAN_LENGTHS[] =
-        {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80,
-        84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144,
-        148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208,
-        212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 252, 256, 512, 516, 768, 772,
-        1020, 1024, 1028, 1524, 2044, 2048};
-
-
-const int CODEC_LENGTHS[] =
-        {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-        33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-        49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
-        81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96,
-        97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 
-        113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 
-        129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 
-        145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 
-        161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 
-        177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 
-        193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 
-        209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 
-        225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 
-        241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256,
-        257, 511, 512, 513, 767, 768, 769, 1021, 1022, 1023, 1024};
 
 int main(int argc, char **argv)
 {    
@@ -241,37 +212,37 @@ int main(int argc, char **argv)
     printf("Testing scan...\n\n");
     initScan();
     bool ok = true;
-    for (auto it = std::begin(SCAN_LENGTHS); it != std::end(SCAN_LENGTHS); it++){
-        ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it);
+    for (int i = 4; i <= (int)SCAN_MAX_SHORT_ARRAY_SIZE; i += 4){
+        ok &= testScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i);
         assert(ok);
     }
     closeScan();
 
     printf("\n\nTesting codecs...\n\n");
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
-        ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
-        ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
-        ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
-        ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
+    for (int i = 1; i <= 1024; i++)
         ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
-    for (auto it = std::begin(CODEC_LENGTHS); it != std::end(CODEC_LENGTHS); it++)
+    for (int i = 1; i <= 1024; i++)
         ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, *it, d_decomprLength);
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
 
