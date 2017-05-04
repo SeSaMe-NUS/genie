@@ -42,10 +42,13 @@ namespace distgenie
 			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		}
 
+		char hostname[128];
+		gethostname(hostname, sizeof hostname);
+
 		while (true)
 		{
 			/* receive data */
-			clog << "Accepting queries on 0.0.0.0:9090" << endl;
+			clog << "Accepting queries on " << hostname << ":9090" << endl;
 			int incoming = accept(sock, &client_address, &address_len);
 			memset(socket_buf.data(), '\0', BUFFER_SIZE);
 			recv(incoming, socket_buf.data(), BUFFER_SIZE, MSG_WAITALL);
