@@ -256,6 +256,9 @@ public:
 	void
 	build();
 
+	void
+	build(vector<dim> &);
+
 
 	/*! \fn int dump(vector<dim>& vout)
 	 *  \brief Transfer the matching information(the queried ranges) to vector vout.

@@ -331,6 +331,52 @@ void GPUGenie::query::build()
 	}
 }
 
+void GPUGenie::query::build(vector<dim> &dims)
+{
+	int low, up;
+	float weight;
+	unordered_map<size_t, int> &inv_index_map = *_ref_table->inv_index_map();
+	vector<int> &inv_pos = *_ref_table->inv_pos();
+
+	for (auto di = _attr_map.begin(); di != _attr_map.end(); ++di)
+	{
+		int index = di->first;
+		vector<range> &ranges = di->second;
+		int d = index << _ref_table->shifter();
+
+		if (ranges.empty())
+			continue;
+
+		for (size_t i = 0; i < ranges.size(); ++i)
+		{
+			range &ran = ranges[i];
+			low = ran.low;
+			up = ran.up;
+			weight = ran.weight;
+
+			if (low > up || low > _ref_table->get_upperbound_of_list(index) || up < _ref_table->get_lowerbound_of_list(index))
+				continue;
+
+			dim new_dim;
+			new_dim.weight = weight;
+			new_dim.query = _index;
+			new_dim.order = ran.order;
+
+			low = low < _ref_table->get_lowerbound_of_list(index) ? _ref_table->get_lowerbound_of_list(index) : low;
+			up = up > _ref_table->get_upperbound_of_list(index) ? _ref_table->get_upperbound_of_list(index) : up;
+
+			int _min, _max;
+
+			_min = d + low - _ref_table->get_lowerbound_of_list(index);
+			_max = d + up - _ref_table->get_lowerbound_of_list(index);
+
+			new_dim.start_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_min))->second];
+			new_dim.end_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_max+1))->second];
+
+			dims.push_back(new_dim);
+		}
+	}
+}
 
 void GPUGenie::query::build_sequence()
 {

@@ -1026,6 +1026,40 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 	}
 }
 
+// debug use
+static int build_q(vector<GPUGenie::query> &queries, GPUGenie::inv_table &table, vector<GPUGenie::query::dim> &dims, int max_load)
+{
+	try
+	{
+		int max_count = -1;
+		for (size_t i = 0; i < queries.size(); ++i)
+		{
+			if (queries[i].ref_table() != &table)
+				throw GPUGenie::cpu_runtime_error("table not built");
+			int prev_size = dims.size();
+			if (table.build_status() == GPUGenie::inv_table::builded)
+				queries[i].build(dims); // overloaded
+			int count = dims.size() - prev_size;
+			if (count > max_count)
+				max_count = count;
+		}
+
+		return max_count;
+	}
+	catch (std::bad_alloc &e)
+	{
+		throw GPUGenie::cpu_bad_alloc(e.what());
+	}
+	catch (GPUGenie::cpu_runtime_error &e)
+	{
+		throw e;
+	}
+	catch (std::exception &e)
+	{
+		throw GPUGenie::cpu_runtime_error(e.what());
+	}
+}
+
 void
 GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
@@ -1112,7 +1146,8 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			/* build query */
 			u64 match_query_start, match_query_end;
 			match_query_start = getTime();
-			num_of_max_count[i] = build_queries(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
+			//num_of_max_count[i] = build_queries(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
+			num_of_max_count[i] = build_q(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
 			match_query_end = getTime();
 			Logger::log(Logger::DEBUG,
 					">>>>[time profiling]: match: build_queries function takes %f ms. ",
@@ -1123,6 +1158,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			/* transfer query */
 			u64 query_start = getTime();
 			d_dims[i] = dims.at(i);
+			//vector<query::dim>().swap(dims.at(i));
 			d_dims_p[i] = raw_pointer_cast(d_dims.at(i).data());
 			u64 query_end = getTime();
 			//clog << "query_transfer time = " << getInterval(query_start, query_end) << "ms." << endl;
@@ -1202,12 +1238,6 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 		match_stop = getTime();
 		cudaEventSynchronize(kernel_stop);
-
-		//for (auto it = dims.begin(); it != dims.end(); ++it)
-		//{
-		//	it->clear();
-		//	it->shrink_to_fit();
-		//}
 
 		kernel_elapsed = 0.0f;
 		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
