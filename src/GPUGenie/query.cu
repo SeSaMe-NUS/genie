@@ -58,14 +58,12 @@ GPUGenie::query::query(inv_table& ref, int index)
 	use_load_balance = false;
 }
 
-//GPUGenie::query::~query()
-//{
-//	for (auto it = _attr_map.begin(); it != _attr_map.end(); ++it)
-//		delete it->second;
-//
-//	for (auto it = _dim_map.begin(); it != _dim_map.end(); ++it)
-//		delete it->second;
-//}
+GPUGenie::query::dim::dim(int query, int order, int start_pos, int end_pos, float weight)
+	: query(query),
+	  order(order),
+	  start_pos(start_pos),
+	  end_pos(end_pos),
+	  weight(weight) {}
 
 GPUGenie::inv_table* GPUGenie::query::ref_table()
 {
@@ -123,7 +121,6 @@ void GPUGenie::query::clear_dim(int index)
 	//free(_attr_map[index]);
 	_count -= _attr_map[index].size();
 	_attr_map[index].clear();
-	_attr_map[index].resize(0);
 	_attr_map[index].shrink_to_fit();
 	_attr_map.erase(index);
 }
@@ -327,13 +324,12 @@ void GPUGenie::query::build()
 
 			_dim_map[index].push_back(new_dim);
 		}
-
 	}
 }
 
 void GPUGenie::query::build(vector<dim> &dims)
 {
-	int low, up;
+	int low, up, order, start_pos, end_pos;
 	float weight;
 	unordered_map<size_t, int> &inv_index_map = *_ref_table->inv_index_map();
 	vector<int> &inv_pos = *_ref_table->inv_pos();
@@ -353,14 +349,10 @@ void GPUGenie::query::build(vector<dim> &dims)
 			low = ran.low;
 			up = ran.up;
 			weight = ran.weight;
+			order = ran.order;
 
 			if (low > up || low > _ref_table->get_upperbound_of_list(index) || up < _ref_table->get_lowerbound_of_list(index))
 				continue;
-
-			dim new_dim;
-			new_dim.weight = weight;
-			new_dim.query = _index;
-			new_dim.order = ran.order;
 
 			low = low < _ref_table->get_lowerbound_of_list(index) ? _ref_table->get_lowerbound_of_list(index) : low;
 			up = up > _ref_table->get_upperbound_of_list(index) ? _ref_table->get_upperbound_of_list(index) : up;
@@ -370,10 +362,10 @@ void GPUGenie::query::build(vector<dim> &dims)
 			_min = d + low - _ref_table->get_lowerbound_of_list(index);
 			_max = d + up - _ref_table->get_lowerbound_of_list(index);
 
-			new_dim.start_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_min))->second];
-			new_dim.end_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_max+1))->second];
+			start_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_min))->second];
+			end_pos = inv_pos[inv_index_map.find(static_cast<size_t>(_max+1))->second];
 
-			dims.push_back(new_dim);
+			dims.emplace_back(_index, order, start_pos, end_pos, weight);
 		}
 	}
 }
