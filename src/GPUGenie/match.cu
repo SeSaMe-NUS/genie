@@ -1027,7 +1027,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 }
 
 // debug use
-static int build_q(vector<GPUGenie::query> &queries, GPUGenie::inv_table &table, vector<GPUGenie::query::dim> &dims, int max_load)
+static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_table &table, vector<GPUGenie::query::dim> &dims)
 {
 	try
 	{
@@ -1146,8 +1146,8 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			/* build query */
 			u64 match_query_start, match_query_end;
 			match_query_start = getTime();
-			//num_of_max_count[i] = build_queries(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
-			num_of_max_count[i] = build_q(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
+			num_of_max_count[i] = build_queries_direct(queries.at(i), table.at(i)[0], dims.at(i));
+			//num_of_max_count[i] = build_q(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
 			match_query_end = getTime();
 			Logger::log(Logger::DEBUG,
 					">>>>[time profiling]: match: build_queries function takes %f ms. ",
