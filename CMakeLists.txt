@@ -21,6 +21,7 @@ if (USE_MPI)
   MESSAGE(STATUS "Building GENIE with MPI support")
   option(USE_DYNAMIC "Dynamic update of threshold" OFF)
   include_directories(${MPI_INCLUDE_PATH})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 
@@ -32,9 +33,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /WX /EHsc")
 endif()
 if (NOT CONFIGURED_ONCE)
-  set(CMAKE_C_FLAGS "${warnings}"
+  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${warnings} ${OpenMP_CXX_FLAGS}"
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)

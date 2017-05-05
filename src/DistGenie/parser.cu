@@ -63,8 +63,6 @@ static bool ValidateConfiguration(const Document &json_config)
 	return true;
 }
 
-namespace distgenie
-{
 /*
  * Parse configuration file
  *
@@ -72,7 +70,7 @@ namespace distgenie
  * param extra_config (OUTPUT) Extra configuration for MPIGenie
  * param config_filename (INPUT) Configuration file name
  */
-void parser::ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, const string config_filename)
+void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_config, const string config_filename)
 {
 	/*
 	 * read json configuration from file and parse it
@@ -123,7 +121,7 @@ void parser::ParseConfigurationFile(GPUGenie_Config &config, ExtraConfig &extra_
 /*
  * Parse query into vector
  */
-bool parser::ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, vector<Cluster> &clusters, const string query)
+bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_config, vector<Cluster> &clusters, const string query)
 {
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
@@ -192,5 +190,3 @@ bool parser::ValidateAndParseQuery(GPUGenie_Config &config, ExtraConfig &extra_c
 
 	return true;
 }
-
-} // end of namespace DistGenie
