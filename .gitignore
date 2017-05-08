@@ -60,3 +60,7 @@ Doxyfile
 *.sublime-project
 *.sublime-workspace
 .settings
+
+# research dirs
+/experiments
+/results
