@@ -35,7 +35,7 @@ $ cmake -DUSE_MPI=on ..
 
 ## Running example
 
-Examples (tests) are available in the `bin` folder of your build directory.
+Examples (tests) are available in the `bin` folder of your build directory. If you would like to run them, make sure your `CMAKE_BUILD_TYPE` is `Debug`.
 
 ### Multi-node Multi-GPU example
 
