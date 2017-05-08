@@ -9,6 +9,7 @@
  */
 
 
+#undef DEBUG
 #include "GPUGenie.h"
 
 #include <assert.h>

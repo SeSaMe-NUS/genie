@@ -33,9 +33,15 @@ To compile with MPI support (**currently only OpenMPI is supported**), use
 $ cmake -DUSE_MPI=on ..
 ```
 
+To compile the release version, use
+
+```bash
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
 ## Running example
 
-Examples (tests) are available in the `bin` folder of your build directory. If you would like to run them, make sure your `CMAKE_BUILD_TYPE` is `Debug`.
+Examples (tests) are available in the `bin` folder of your build directory.
 
 ### Multi-node Multi-GPU example
 
