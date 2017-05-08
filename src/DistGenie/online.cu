@@ -169,10 +169,10 @@ static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_bu
 	search::ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
 	if (0 == g_mpi_rank)
 	{
+		file::GenerateOutput(results, config, extra_config);
 		auto t2 = chrono::steady_clock::now();
 		auto diff = t2 - t1;
-		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
-		file::GenerateOutput(results, config, extra_config);
 		clog << "Output generated" << endl;
+		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 	}
 }

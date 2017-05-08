@@ -5,6 +5,8 @@
 #include <fstream>
 #include <algorithm>
 #include <functional>
+#include <thrust/device_vector.h>
+#include <thrust/sort.h>
 
 #include "search.h"
 #include "global.h"
@@ -34,6 +36,7 @@ static void MergeResult(vector<distgenie::Result> &results, vector<vector<int> >
 	int *local_results_topk = new int[results.size() * topk];
 	int *local_results_topk_count = new int[results.size() * topk];
 	vector<distgenie::Result> local_results(results.size());
+	vector<thrust::device_vector<thrust::pair<int,int> > > local_results_d(results.size());
 
 	/* for each cluster */
 	for (size_t c = 0; c < clusters.size(); ++c)
@@ -49,8 +52,15 @@ static void MergeResult(vector<distgenie::Result> &results, vector<vector<int> >
 				);
 	}
 
+	//for (size_t i = 0; i < local_results.size(); ++i)
+	//{
+	//	local_results_d.at(i).resize(local_results.at(i).size());
+	//	thrust::copy(local_results.at(i).begin(), local_results.at(i).end(), local_results_d.at(i).begin());
+	//	thrust::sort(local_results_d.at(i).begin(), local_results_d.at(i).end(), thrust::greater<thrust::pair<int, int> >());
+	//	//thrust::copy(local_results_d.at(i).begin(), local_results_d.at(i).end(), local_results.at(i).begin());
+	//}
 	for (auto it = local_results.begin(); it != local_results.end(); ++it)
-		sort(it->begin(), it->end(), std::greater<std::pair<int, int> >());
+		std::sort(it->begin(), it->end(), std::greater<std::pair<int, int> >());
 
 	for (size_t i = 0; i < local_results.size(); ++i)
 		for (size_t j = 0; j < topk; ++j)
