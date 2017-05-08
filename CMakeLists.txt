@@ -34,7 +34,7 @@ endif()
 
 
 ## DEPENDENCIES
-find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization )
+find_package(Boost 1.63.0 REQUIRED COMPONENTS serialization program_options)
 include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 

@@ -4,7 +4,7 @@ function(add_test_case TARGET)
    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
    target_link_libraries(${TARGET}
                          -lpthread
-                         -lboost_serialization
+                         -L${BOOST_LIBRARY_DIR} -lboost_serialization
                          -l${PROJECT_NAME}
                          -lcudadevrt)
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
