@@ -1,5 +1,5 @@
 /**
- * Name: test_14.cu
+ * Name: test_15.cu
  * Description:
  *  Test counting of queries on CPU. Similar to CPU-Idx in GENIE paper.
  */

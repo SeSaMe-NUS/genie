@@ -110,7 +110,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f", m_compression.c_str(),
         codec->name().c_str(), compressionRatio);
 
-    if (compressionRatio > 1.0 || badCompressedLists)
+    if (compressionRatio > 16.0 || badCompressedLists)
         Logger::log(Logger::ALERT, "Bad compression! Bad compressed lists: %d / %d, compression ratio: %f",
             badCompressedLists, compressedInvPos.size()-1, compressionRatio);
 }

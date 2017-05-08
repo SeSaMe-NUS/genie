@@ -52,6 +52,7 @@ if (COMPR)
     add_test_case(test_14_compression_query test_14.cu)
     add_test_case(test_15_compression_naive test_15.cu)
     add_test_case(test_17_compression_codecs test_17.cu)
+    add_test_case(test_18_compression_kernels test_18.cu)
 
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS_BACKUP})
 
@@ -60,5 +61,7 @@ if (COMPR)
     target_link_libraries(test_14_compression_query
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
     target_link_libraries(test_15_compression_naive
+    target_link_libraries(test_18_compression_kernels
         ${SIMDCAI_INSTALL_DIR}/libSIMDCompressionAndIntersection.a)
+    
 endif()
