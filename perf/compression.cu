@@ -6,9 +6,11 @@
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <stdio.h>
 #include <string>
+#include <sys/stat.h>
 
 #include <boost/program_options.hpp>
 
@@ -23,6 +25,7 @@
 using namespace GPUGenie;
 namespace po = boost::program_options;
 
+ const int MAX_UNCOMPRESSED_LENGTH = 1024;
 
 std::shared_ptr<uint> generateRandomInput(size_t length, double geom_distr_coeff, int seed)
 {
@@ -59,7 +62,8 @@ std::shared_ptr<uint> generateRandomInput(size_t length, double geom_distr_coeff
 
 
 
-void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output, size_t arrayLength)
+void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output,
+    size_t arrayLength, std::ofstream &ofs)
 {
     cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
 
@@ -79,16 +83,19 @@ void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_
     scanExclusiveHost(h_OutputCPU, h_Input, arrayLength);
 
     double scanTime = getInterval(scanStart, scanEnd);
-    Logger::log(Logger::INFO, "Scan, Array size: %d, Time: %.3f ms, Throughput: %.3f elements per millisecond"
+    Logger::log(Logger::DEBUG, "Scan, Array size: %d, Time: %.3f ms, Throughput: %.3f elements per millisecond"
         , arrayLength, scanTime, (double)arrayLength/scanTime);
+    ofs << arrayLength << ","
+        << std::fixed << std::setprecision(3) << scanTime << ","
+        << std::fixed << std::setprecision(3) <<(double)arrayLength/scanTime << std::endl;
 }
 
-void measureScan(std::shared_ptr<uint> sp_h_Input)
+void measureScan(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
 {
     uint *d_Input, *d_Output;
     uint *h_Input = sp_h_Input.get(), *h_OutputCPU, *h_OutputGPU;
 
-    Logger::log(Logger::INFO,"Allocating and initializing CPU & CUDA arrays...\n");
+    Logger::log(Logger::DEBUG,"Allocating and initializing CPU & CUDA arrays...\n");
 
     h_OutputCPU  = (uint *)malloc(SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     h_OutputGPU  = (uint *)malloc(SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
@@ -98,11 +105,12 @@ void measureScan(std::shared_ptr<uint> sp_h_Input)
     // Copy input to GPU
     cudaCheckErrors(cudaMemcpy(d_Input, h_Input, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
 
-    Logger::log(Logger::INFO,"Measuring scan...\n\n");
+    Logger::log(Logger::DEBUG,"Measuring scan...\n\n");
 
+    ofs << "array_size,time,throughput" << std::endl;
     initScan();
     for (int length = 4; length <= (int)SCAN_MAX_SHORT_ARRAY_SIZE; length += 4){
-        runSingleScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, length);
+        runSingleScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, length, ofs);
     }
     closeScan();
 
@@ -116,21 +124,21 @@ void measureScan(std::shared_ptr<uint> sp_h_Input)
 
 template <class CODEC>
 void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_InputCompr,
-        uint *d_Output, size_t arrayLength, size_t *d_decomprLength)
+        uint *d_Output, size_t arrayLength, size_t *d_decomprLength, std::ostream &ofs)
 {
     CODEC codec;
-    Logger::log(Logger::INFO,"\n\nTesting codec...\n\n",codec.name().c_str());
+    Logger::log(Logger::DEBUG,"\n\nTesting codec...\n\n",codec.name().c_str());
 
-    size_t comprLength = SCAN_MAX_LARGE_ARRAY_SIZE;
-    memset(h_InputCompr, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
+    size_t comprLength = MAX_UNCOMPRESSED_LENGTH;
+    memset(h_InputCompr, 0, MAX_UNCOMPRESSED_LENGTH * sizeof(uint));
     codec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
 
     // Copy compressed array to GPU
-    cudaCheckErrors(cudaMemcpy(d_InputCompr, h_InputCompr, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
+    cudaCheckErrors(cudaMemcpy(d_InputCompr, h_InputCompr, MAX_UNCOMPRESSED_LENGTH * sizeof(uint), cudaMemcpyHostToDevice));
     // Clear working memory on both GPU and CPU
-    cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
+    cudaCheckErrors(cudaMemset(d_Output, 0, MAX_UNCOMPRESSED_LENGTH * sizeof(uint)));
     cudaCheckErrors(cudaMemset(d_decomprLength, 0, sizeof(size_t)));
-    memset(h_OutputCPU, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
+    memset(h_OutputCPU, 0, MAX_UNCOMPRESSED_LENGTH * sizeof(uint));
     
     int threadsPerBlock = (codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
     int blocks = (arrayLength + threadsPerBlock * codec.decodeArrayParallel_threadLoad() - 1) /
@@ -144,12 +152,12 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
     uint64_t decomprEnd = getTime();
 
     // copy decompression results from GPU
-    cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyDeviceToHost));
+    cudaCheckErrors(cudaMemcpy(h_OutputGPU, d_Output, MAX_UNCOMPRESSED_LENGTH * sizeof(uint), cudaMemcpyDeviceToHost));
     size_t decomprLengthGPU;
     cudaCheckErrors(cudaMemcpy(&decomprLengthGPU, d_decomprLength, sizeof(size_t), cudaMemcpyDeviceToHost));
 
     // run decompression on CPU
-    size_t decomprLengthCPU = SCAN_MAX_LARGE_ARRAY_SIZE;
+    size_t decomprLengthCPU = MAX_UNCOMPRESSED_LENGTH;
     codec.decodeArray(h_InputCompr, comprLength, h_OutputCPU, decomprLengthCPU);
 
     // Check if lenth from CPU and GPU decompression matches the original length
@@ -157,20 +165,25 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
     assert(decomprLengthGPU == arrayLength);
 
     double decomprTime = getInterval(decomprStart, decomprEnd);
-    Logger::log(Logger::INFO, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Time (decompr): %.3f ms, Throughput: %.3f of elements per millisecond",
+    Logger::log(Logger::DEBUG, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Time (decompr): %.3f ms, Throughput: %.3f of elements per millisecond",
             codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength),
             decomprTime, (double)arrayLength/decomprTime);
+    ofs << codec.name() << ","
+        << arrayLength << ","
+        << comprLength << ","
+        << std::fixed << std::setprecision(3) << 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength) << ","
+        << std::fixed << std::setprecision(3) << decomprTime << ","
+        << std::fixed << std::setprecision(3) << (double)arrayLength/decomprTime << std::endl;
 }
 
 
-void measureCodecs(std::shared_ptr<uint> sp_h_Input)
+void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
 {
     uint *d_Input, *d_Output;
     size_t *d_decomprLength;
     uint *h_Input = sp_h_Input.get(), *h_InputCompr, *h_OutputCPU, *h_OutputGPU;
-    const int MAX_UNCOMPRESSED_LENGTH = 1024;
 
-    Logger::log(Logger::INFO,"Allocating and initializing CPU & CUDA arrays...\n");
+    Logger::log(Logger::DEBUG,"Allocating and initializing CPU & CUDA arrays...\n");
     
     h_InputCompr = (uint *)malloc(MAX_UNCOMPRESSED_LENGTH * sizeof(uint));
     h_OutputCPU  = (uint *)malloc(MAX_UNCOMPRESSED_LENGTH * sizeof(uint));
@@ -180,27 +193,33 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input)
     cudaCheckErrors(cudaMalloc((void **)&d_decomprLength, sizeof(size_t)));
 
     // Copy input to GPU
-    cudaCheckErrors(cudaMemcpy(d_Input, h_Input, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
+    cudaCheckErrors(cudaMemcpy(d_Input, h_Input, MAX_UNCOMPRESSED_LENGTH * sizeof(uint), cudaMemcpyHostToDevice));
+
+    ofs << "codec,array_size,compr_size,ratio,time,throughput" << std::endl;
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceJustCopyCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+        runSingleCodec<DeviceJustCopyCodec>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+        runSingleCodec<DeviceDeltaCodec>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceBitPackingCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+        runSingleCodec<DeviceBitPackingCodec>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceVarintCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+        runSingleCodec<DeviceVarintCodec>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
         runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
         runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
 
     free(h_OutputCPU);
@@ -210,7 +229,22 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input)
     cudaCheckErrors(cudaFree(d_decomprLength));
 }
 
-std::ofstream openOutputFile();
+void openOutputFile(std::ofstream &ofs, const std::string &dest, const std::string &measurement,
+        int srand, double geom_distr_coeff)
+{
+    struct stat sb;
+    if (stat(dest.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
+    {
+        Logger::log(Logger::ALERT,"--dest=%s is not a directory!\n", dest.c_str());
+        exit(2);
+    }
+    std::string sep("_"), dirsep("/");
+    std::string fname(dest+dirsep+measurement+sep+std::to_string(srand)+sep+std::to_string(geom_distr_coeff)+".csv");
+    Logger::log(Logger::INFO,"Output file: %s \n\n", fname.c_str());
+
+    ofs.open(fname.c_str(), std::ios_base::out | std::ios_base::trunc);
+    assert(ofs.is_open());
+}
 
 int main(int argc, char **argv)
 {    
@@ -218,6 +252,7 @@ int main(int argc, char **argv)
 
     double geom_distr_coeff;
     int srand;
+    std::string dest;
     std::vector<std::string> measurements;
 
     po::options_description desc("Compression performance measurements");
@@ -229,7 +264,9 @@ int main(int argc, char **argv)
         ("geom_distr_coeff", po::value<double>(&geom_distr_coeff)->default_value(0.9),
             "coefficient for geometric distribution")
         ("measurements", po::value< std::vector<std::string>>(&measurements),
-            "space separated measurements from: scan, codecs, separate, integrated");
+            "space separated measurements from: scan, codecs, separate, integrated")
+        ("dest", po::value<std::string>(&dest)->default_value(std::string("../results")),
+            "destination directory");
 
     po::positional_options_description pdesc;
     pdesc.add("measurements", 1);
@@ -250,15 +287,37 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if (vm.count("srand"))
+    {
+        std::cerr << "srand not yet implemented" << std::endl;
+    }
 
+    if (vm.count("geom_distr_coeff"))
+    {
+        std::cerr << "geom_distr_coeff not yet implemented" << std::endl;
+    }
+
+    std::ofstream ofs;
     std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
     for (auto it = measurements.begin(); it != measurements.end(); it++)
     {
         if (*it == std::string("scan")){
-            measureScan(h_Input);
+            openOutputFile(ofs, dest, *it, srand, geom_distr_coeff);
+            measureScan(h_Input, ofs);
+            ofs.close();
         }
         else if (*it == std::string("codecs")){
-            measureCodecs(h_Input);
+            openOutputFile(ofs, dest, *it, srand, geom_distr_coeff);
+            measureCodecs(h_Input, ofs);
+            ofs.close();
+        }
+        else if (*it == std::string("separate")){
+            std::cerr << "separate kernel measurements not yet implemented" << std::endl;
+            return 1;
+        }
+        else if (*it == std::string("integrated")){
+            std::cerr << "integrated kernel measurements not yet implemented" << std::endl;
+            return 1;
         }
         else {
             std::cerr << "Unknown measurement: " << *it << std::endl;
