@@ -15,10 +15,9 @@
 #include "genie_errors.h"
 #include "DeviceCompositeCodec.h"
 #include "DeviceBitPackingCodec.h"
+#include "DeviceVarintCodec.h"
 
-#include "match_sepkernel.h"
-
-
+#include "match_integrated.h"
 
 const size_t MATCH_THREADS_PER_BLOCK = 256;
 
@@ -37,242 +36,33 @@ typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
 
+
 namespace GPUGenie
 {
 
-__global__
-void decompressPostingLists_listPerThread_JustCopyCodec(
-        query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
-        size_t d_dims_size,
-        int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv,
-        size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
+std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if((idx + dimsOffset) >= d_dims_size)
-        return;
-    assert(dimsOffset == 0 || dimsOffset > idx);
-    assert(sizeof(int) == sizeof(uint32_t));
 
-    int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
-    int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    int length = comprInvListEnd - comprInvListStart;
-    int uncomprInvListStart = idx * uncompressedPostingListMaxLength;
+    std::map<std::string, IntegratedKernelPtr> kernels;
 
-    printf("DECOMPR_KERNEL_COPY - STATUS: "
-        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
-        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
+    kernels["copy"] = match_integrated<DeviceJustCopyCodec>;
+    kernels["d1"] = match_integrated<DeviceDeltaCodec>;
+    kernels["bp32"] = match_integrated<DeviceBitPackingCodec>;
+    kernels["varint"] = match_integrated<DeviceVarintCodec>;
+    kernels["bp32-copy"] = match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>;
+    kernels["bp32-varint"] = match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
 
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
-    size_t usedLength = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-
-    DeviceJustCopyCodec codec; 
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, usedLength);
-
-    if (usedLength > uncompressedPostingListMaxLength)
-    {
-        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
-            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
-
-        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
-
-        return;
-    }
-
-    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
-
-    int uncomprInvListEnd = uncomprInvListStart + usedLength;
-
-    // Convert the uin32_t array from decompression into an int array for matching and counting
-    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
-    for (int i = 0; i < usedLength; i++)
-        d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
-
-    // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
-    // used by the matching kernel
-    d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-    d_dims[idx + dimsOffset].end_pos = uncomprInvListEnd;
+    return kernels;
 }
 
+std::map<std::string, IntegratedKernelPtr> integratedKernels = initIntegratedKernels();
 
-__global__
-void decompressPostingLists_listPerThread_DeviceDeltaCodec(
-        query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
-        size_t d_dims_size,
-        int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv,
-        size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if((idx + dimsOffset) >= d_dims_size)
-        return;
-    assert(dimsOffset == 0 || dimsOffset > idx);
-    assert(sizeof(int) == sizeof(uint32_t));
-
-    int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
-    int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    int length = comprInvListEnd - comprInvListStart;
-    int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
-
-    printf("DECOMPR_KERNEL_DELTA - STATUS: "
-        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
-        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
-
-
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
-    size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-    DeviceDeltaCodec codec; 
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
-
-    if (usedLength > uncompressedPostingListMaxLength)
-    {
-        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
-            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
-
-        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
-
-        return;
-    }
-
-    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
-
-    int uncomprInvListEnd = uncomprInvListStart + nvalue;
-
-    // Convert the uin32_t array from decompression into an int array for matching and counting
-    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
-    for (int i = 0; i < nvalue; i++)
-        d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
-
-    // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
-    // used by the matching kernel
-    d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-    d_dims[idx + dimsOffset].end_pos = uncomprInvListEnd;
-}
-
-__global__
-void decompressPostingLists_listPerThread_DeviceBitPackingCodec(
-        query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
-        size_t d_dims_size,
-        int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv,
-        size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if((idx + dimsOffset) >= d_dims_size)
-        return;
-    assert(dimsOffset == 0 || dimsOffset > idx);
-    assert(sizeof(int) == sizeof(uint32_t));
-
-    int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
-    int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    int length = comprInvListEnd - comprInvListStart;
-    int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
-
-    printf("DECOMPR_KERNEL_BP32 - STATUS: "
-        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
-        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
-
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
-    size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-    DeviceBitPackingCodec codec; 
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
-
-    if (usedLength > uncompressedPostingListMaxLength)
-    {
-        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
-            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
-
-        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
-
-        return;
-    }
-
-    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
-
-    int uncomprInvListEnd = uncomprInvListStart + nvalue;
-
-    // Convert the uin32_t array from decompression into an int array for matching and counting
-    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
-    for (int i = 0; i < nvalue; i++)
-        d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
-
-    // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
-    // used by the matching kernel
-    d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-    d_dims[idx + dimsOffset].end_pos = uncomprInvListEnd;
-}
-
-__global__
-void decompressPostingLists_listPerThread_d1_bp32(
-        query::dim* d_dims, // in + out; query::dim structure, positions changed during the exectuion of this kernel
-        size_t d_dims_size,
-        int dimsOffset,
-        const uint32_t *d_compr_inv, // in; compressed posting list on GPU
-        int *d_uncompr_inv,
-        size_t uncompressedPostingListMaxLength) // out: uncompressed posting list on GPU  
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if((idx + dimsOffset) >= d_dims_size)
-        return;
-    assert(dimsOffset == 0 || dimsOffset > idx);
-    assert(sizeof(int) == sizeof(uint32_t));
-
-    int comprInvListStart = d_dims[idx + dimsOffset].start_pos;
-    int comprInvListEnd = d_dims[idx + dimsOffset].end_pos;
-    int length = comprInvListEnd - comprInvListStart;
-    int uncomprInvListStart = (dimsOffset + idx) * uncompressedPostingListMaxLength;
-
-    printf("DECOMPR_KERNEL_D1-BP32 - STATUS: "
-        "idx %d, dimsOffset: %d, comprInvListStart: %d, comprInvListEnd: %d, length: %d, uncomprInvListStart: %d \n",
-        idx, dimsOffset, comprInvListStart, comprInvListEnd, length, uncomprInvListStart);
-
-    const uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
-    uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
-    size_t nvalue = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
-    DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec> codec; 
-    codec.decodeArrayOnGPU(d_compr_inv_start, length, d_uncompr_inv_uint, nvalue);
-
-    if (usedLength > uncompressedPostingListMaxLength)
-    {
-        printf("DECOMPR_KERNEL - ERROR: idx %d, usedLength: %d is greater than uncompressedPostingListMaxLength: %d \n"
-            ,idx, (int)usedLength, (int)uncompressedPostingListMaxLength);
-
-        d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-        d_dims[idx + dimsOffset].end_pos = uncomprInvListStart;
-
-        return;
-    }
-
-    printf("DECOMPR_KERNEL - SUCCESS: idx %d, usedLength: %d \n", idx, (int)usedLength);
-
-    int uncomprInvListEnd = uncomprInvListStart + nvalue;
-
-    // Convert the uin32_t array from decompression into an int array for matching and counting
-    int *d_uncompr_inv_int = reinterpret_cast<int*>(d_uncompr_inv_uint);
-    for (int i = 0; i < nvalue; i++)
-        d_uncompr_inv_int[i] = static_cast<int>(d_uncompr_inv_uint[i]);
-
-    // Change compiled dim start_pos and end_pos from the compressed values into uncompressed (sparse) values to be
-    // used by the matching kernel
-    d_dims[idx + dimsOffset].start_pos = uncomprInvListStart;
-    d_dims[idx + dimsOffset].end_pos = uncomprInvListEnd;
-}
-
-__global__
-void match_adaptiveThreshold_queryPerBlock_compressed(
+template <class Codec> __global__ void
+match_adaptiveThreshold_integrated(
         int m_size, // number of dimensions, i.e. inv_table::m_size()
         int i_size, // number of instances, i.e. inv_table::m_size() * (1u<<shift_bits_subsequence)
         int hash_table_size, // hash table size
-        int* d_uncompr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
+        int* d_compr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
         query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
         size_t decomprDimsOffset, // offset for d_dims to be used
         T_HASHTABLE* hash_table_list, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
@@ -395,98 +185,17 @@ void match_adaptiveThreshold_queryPerBlock_compressed(
     }
 }
 
-
-void debugCheck_decompressPostingLists_listPerThread(
-        GPUGenie::inv_compr_table &table,
-        thrust::device_vector<int> &d_uncompr_inv,
-        vector<GPUGenie::query::dim> &orig_dims,
-        thrust::device_vector<GPUGenie::query::dim> d_dims,
-        int dimsOffset)
-{  
-    #ifdef DEBUG_KERNELS
-    // This vector contains the uncompressed (sparse) vector from decompression kernel
-    thrust::host_vector<int> h_uncompr_inv = d_uncompr_inv;
-
-    // This vector contains the uncompressed inverted lists array (dense)
-    std::vector<int>* uncompr_inv = table.uncompressedInv();
-    int startPositionOfFirstDim = orig_dims[dimsOffset].start_pos;
-    int endPositionOfLastDim = orig_dims[std::min(dimsOffset+DECOMPR_BATCH-1,orig_dims.size()-1)].end_pos;
-    std::vector<int> orig_inv(uncompr_inv->begin() + startPositionOfFirstDim,
-                              uncompr_inv->begin() + endPositionOfLastDim);
-
-    // Copy device vector of sparse dims - positions into the inverted lists
-    thrust::host_vector<GPUGenie::query::dim> h_dims = d_dims;
-
-    Logger::log(Logger::DEBUG, "Decompression check in range [%d,%d)",
-            startPositionOfFirstDim, endPositionOfLastDim);
-
-    // Compare if the uncompressed lists are the same the original lists before compression
-    // Note that the uncompressed lists always start at intervals of
-    bool mismatch = false;
-    for (int i = dimsOffset; i < dimsOffset + (int)DECOMPR_BATCH && i < (int)orig_dims.size(); i++){
-        GPUGenie::query::dim d = orig_dims[i];
-        GPUGenie::query::dim ud = h_dims[i];
-        Logger::log(Logger::INFO, "dims[%d] compr, start_pos: %d, end_pos: %d", i, d.start_pos, d.end_pos);
-        Logger::log(Logger::INFO, "       decompr, start_pos: %d, end_pos: %d", ud.start_pos, ud.end_pos);
-        assert(d.end_pos > d.start_pos);
-        // assert(d.end_pos - d.start_pos == ud.end_pos - ud.start_pos); // only applies to copy & d1
-        if (!std::equal(uncompr_inv->begin()+d.start_pos, uncompr_inv->begin()+d.end_pos,
-                h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i))
-        {
-            mismatch = true;
-            Logger::log(Logger::ALERT,
-                    "ERROR: Decompressed list of query %d, start_pos %d, end_pos %d mismatch!",
-                    i, d.query, d.start_pos, d.end_pos);
-
-            auto uncompr_inv_begin = uncompr_inv->begin()+d.start_pos;
-            auto uncompr_inv_end = uncompr_inv->begin()+d.end_pos;
-            if (uncompr_inv_end - uncompr_inv_begin > 256)
-                uncompr_inv_end = uncompr_inv_begin + 256;
-
-            {
-                std::stringstream ss;
-                std::copy(uncompr_inv_begin, uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
-                Logger::log(Logger::ALERT, "Expected (original) list:\n %s", ss.str().c_str());
-                ss.str(std::string());
-                ss.clear();
-            }
-
-            auto h_uncompr_inv_begin = h_uncompr_inv.begin()+table.getUncompressedPostingListMaxLength()*i;
-            auto h_uncompr_inv_end = h_uncompr_inv_begin + (uncompr_inv_end - uncompr_inv_begin);
-            if (h_uncompr_inv_end - h_uncompr_inv_begin > 256)
-                h_uncompr_inv_end = h_uncompr_inv_begin + 256;
-            if ((h_uncompr_inv_end-h_uncompr_inv_begin) > (int)table.getUncompressedPostingListMaxLength())
-                h_uncompr_inv_end = h_uncompr_inv_begin + table.getUncompressedPostingListMaxLength();
-
-            {
-                std::stringstream ss;
-                std::copy(h_uncompr_inv_begin, h_uncompr_inv_end, std::ostream_iterator<int>(ss, " "));
-                Logger::log(Logger::ALERT, "Uncompressed list:\n %s", ss.str().c_str());
-                ss.str(std::string());
-                ss.clear();
-            }
-        }
-    }
-    if (mismatch) {
-        Logger::log(Logger::ALERT,"Failed decompression check!");
-        throw std::logic_error("Failed decompression check!");
-    }
-    else {
-        Logger::log(Logger::DEBUG,"Decompression check successfull!");
-    }
-    #endif
-}
-
-void match_integrated(
-                inv_compr_table& table,
-                vector<query>& queries,
-                device_vector<data_t>& d_data,
-                device_vector<u32>& d_bitmap,
-                int hash_table_size,
-                int bitmap_bits, //or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
-                device_vector<u32>& d_noiih,
-                device_vector<u32>& d_threshold,
-                device_vector<u32>& d_passCount)
+template <class Codec> void
+match_integrated(
+            inv_compr_table& table,
+            vector<query>& queries,
+            device_vector<data_t>& d_data,
+            device_vector<u32>& d_bitmap,
+            int hash_table_size,
+            int bitmap_bits, //or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
+            device_vector<u32>& d_noiih,
+            device_vector<u32>& d_threshold,
+            device_vector<u32>& d_passCount)
 {
     try{
         Logger::log(Logger::DEBUG, "Started match()");
@@ -499,9 +208,7 @@ void match_integrated(
         
         // Time measuring events
         cudaEvent_t kernel_start, kernel_stop;
-        cudaEvent_t startDecompr, stopDecompr, startMatching, stopMatching, startConvert, stopConvert;
-        cudaEventCreate(&startDecompr);
-        cudaEventCreate(&stopDecompr);
+        cudaEvent_t startMatching, stopMatching, startConvert, stopConvert;
         cudaEventCreate(&startMatching);
         cudaEventCreate(&stopMatching);
         cudaEventCreate(&startConvert);
@@ -644,47 +351,30 @@ void match_integrated(
             // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to
             // the number of decompressed invereted lists
             cudaEventRecord(startMatching);
-            
-            if (table.getCompression() == "copy"){
-                
-                decomprMatch_adaptiveThreshold_queryPerBlock
-                        <DeviceJustCopyCodec>
-                        <<<dims.size(),MATCH_THREADS_PER_BLOCK>>>
-                    (table.m_size(), table.i_size() * ((unsigned int)1<<shift_bits_subsequence), hash_table_size,
-                     d_uncompr_inv_p, d_dims_p, dimsOffset, d_hash_table, d_bitmap_p, bitmap_bits, d_topks_p,
-                     d_threshold_p, d_passCount_p, num_of_max_count, d_noiih_p, d_overflow, shift_bits_subsequence);
-                
-            } else if (table.getCompression() == "d1"){
-                decomprMatch_adaptiveThreshold_queryPerBlock
-                        <DeviceDeltaCodec>
-                        <<<dims.size(),MATCH_THREADS_PER_BLOCK>>>
-                    (table.m_size(), table.i_size() * ((unsigned int)1<<shift_bits_subsequence), hash_table_size,
-                     d_uncompr_inv_p, d_dims_p, dimsOffset, d_hash_table, d_bitmap_p, bitmap_bits, d_topks_p,
-                     d_threshold_p, d_passCount_p, num_of_max_count, d_noiih_p, d_overflow, shift_bits_subsequence);
-                
-            } else if (table.getCompression() == "bp32"){
-                
-                decomprMatch_adaptiveThreshold_queryPerBlock
-                        <DeviceBitPackingCodec>
-                        <<<dims.size(),MATCH_THREADS_PER_BLOCK>>>
-                    (table.m_size(), table.i_size() * ((unsigned int)1<<shift_bits_subsequence), hash_table_size,
-                     d_uncompr_inv_p, d_dims_p, dimsOffset, d_hash_table, d_bitmap_p, bitmap_bits, d_topks_p,
-                     d_threshold_p, d_passCount_p, num_of_max_count, d_noiih_p, d_overflow, shift_bits_subsequence);
 
-            } else if (table.getCompression() == "d1-bp32"){
-                
-                decomprMatch_adaptiveThreshold_queryPerBlock
-                        <DeviceJustCopyCodec>
-                        <<<dims.size(),MATCH_THREADS_PER_BLOCK>>>
-                    (table.m_size(), table.i_size() * ((unsigned int)1<<shift_bits_subsequence), hash_table_size,
-                     d_uncompr_inv_p, d_dims_p, dimsOffset, d_hash_table, d_bitmap_p, bitmap_bits, d_topks_p,
-                     d_threshold_p, d_passCount_p, num_of_max_count, d_noiih_p, d_overflow, shift_bits_subsequence);
+            throw std::logic_error("No integrated kernel available!");
 
-            }  
-            else {
-                throw std::logic_error("No decompression kernel available!");
-            }
-
+            cudaEventRecord(startMatching);
+            match_adaptiveThreshold_queryPerBlock_compressed<Codec><<<batch,MATCH_THREADS_PER_BLOCK>>>
+                   (table.m_size(),
+                    table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
+                    hash_table_size, // hash table size
+                    // d_compr_inv points to the start location of compressed posting list array in GPU mem
+                    d_compr_inv, 
+                    // compiled queries (dim structure)
+                    d_dims_p,
+                    // offset into compiled queries
+                    dimsOffset,
+                    d_hash_table, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
+                    d_bitmap_p, // of bitmap_size
+                    bitmap_bits,
+                    d_topks_p, // d_topks set to max_topk for all queries
+                    d_threshold_p,//initialized as 1, and increase gradually
+                    d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+                    num_of_max_count,//number of maximum count per query
+                    d_noiih_p, // number of integers in a hash table set to 0 for all queries
+                    d_overflow, // bool
+                    shift_bits_subsequence);
             cudaEventRecord(stopMatching);
             cudaEventSynchronize(stopMatching);
             cudaEventElapsedTime(&matchDecomprTime, startMatching, stopMatching);
