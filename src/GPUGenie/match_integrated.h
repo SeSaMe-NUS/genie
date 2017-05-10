@@ -10,11 +10,10 @@
 #include "inv_compr_table.h"
 #include "match.h"
 
+
+
 namespace GPUGenie
 {
-
-
-
 
 /*! \fn void match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data, device_vector<u32>& d_bitmap,int hash_table_size,
  *          int max_load, int bitmap_bits, device_vector<u32>& d_noiih, device_vector<u32> d_threshold, device_vector<u32>& d_passCount)
@@ -31,7 +30,6 @@ namespace GPUGenie
  *  \param d_threshold The container for heap-count thresholds of each query.
  *  \param d_passCount The container for heap-count counts in each buckets of each query.
  */
-
 template <class Codec> void
 match_integrated(
         inv_compr_table& table,
@@ -39,7 +37,6 @@ match_integrated(
         thrust::device_vector<data_t>& d_data,
         thrust::device_vector<u32>& d_bitmap,
         int hash_table_size,
-        int max_load,
         int bitmap_bits,
         thrust::device_vector<u32>& d_noiih,
         thrust::device_vector<u32>& d_threshold,
@@ -49,7 +46,7 @@ match_integrated(
  * Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated
  */
 typedef void (*IntegratedKernelPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
-        thrust::device_vector<u32>&, int, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
+        thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
         thrust::device_vector<u32>&);
 
 extern std::map<std::string, IntegratedKernelPtr> integratedKernels;

@@ -21,16 +21,18 @@
 
 const size_t MATCH_THREADS_PER_BLOCK = 256;
 
-const size_t DECOMPR_BLOCKS = 1;
-const size_t DECOMPR_THREADS_PER_BLOCK = 256;
-const size_t DECOMPR_BATCH = DECOMPR_BLOCKS * DECOMPR_THREADS_PER_BLOCK;
-
 #define OFFSETS_TABLE_16 {0u,       3949349u, 8984219u, 9805709u,\
                           7732727u, 1046459u, 9883879u, 4889399u,\
                           2914183u, 3503623u, 1734349u, 8860463u,\
                           1326319u, 1613597u, 8604269u, 9647369u}
 
-#define DEBUG_KERNELS
+/**
+ * Maximal length the codecs are able to decompress into.
+ *
+ * GENIE uses fixed 256 threads in its kernels. This implies that a Codec has to have a thread load at least 4 (one
+ * thread decompressed into 4 values), otherwise such codec will fail.
+ */
+#define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
@@ -39,6 +41,20 @@ typedef u32 T_AGE;
 
 namespace GPUGenie
 {
+
+template void
+match_integrated<DeviceJustCopyCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void
+match_integrated<DeviceDeltaCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void
+match_integrated<DeviceBitPackingCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void
+match_integrated<DeviceVarintCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void
+match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void
+match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+
 
 std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 {
@@ -57,14 +73,15 @@ std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 
 std::map<std::string, IntegratedKernelPtr> integratedKernels = initIntegratedKernels();
 
+
+
 template <class Codec> __global__ void
 match_adaptiveThreshold_integrated(
         int m_size, // number of dimensions, i.e. inv_table::m_size()
         int i_size, // number of instances, i.e. inv_table::m_size() * (1u<<shift_bits_subsequence)
         int hash_table_size, // hash table size
-        int* d_compr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
+        uint32_t* d_compr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
         query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
-        size_t decomprDimsOffset, // offset for d_dims to be used
         T_HASHTABLE* hash_table_list, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
         u32 * bitmap_list, // of bitmap_size
         int bitmap_bits,
@@ -76,9 +93,11 @@ match_adaptiveThreshold_integrated(
         bool * overflow,
         unsigned int shift_bits_subsequence)
 {
-    if (m_size == 0 || i_size == 0)
-        return;
-    query::dim& myb_query = d_dims[blockIdx.x + decomprDimsOffset];
+    assert(MATCH_THREADS_PER_BLOCK == blockDim.x);
+
+    assert(m_size != 0 && i_size != 0);
+
+    query::dim& myb_query = d_dims[blockIdx.x];
     int query_index = myb_query.query;
     u32* my_noiih = &noiih[query_index];
     u32* my_threshold = &d_threshold[query_index];
@@ -89,27 +108,48 @@ match_adaptiveThreshold_integrated(
     u32 * bitmap;
     if (bitmap_bits)
         bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
-    u32 access_id;
-    int min, max, order;
-    if(myb_query.start_pos >= myb_query.end_pos)
-        return;
 
-    min = myb_query.start_pos;
-    max = myb_query.end_pos;
-    order = myb_query.order;
-    bool key_eligible;                //
-    bool pass_threshold;    //to determine whether pass the check of my_theshold
+    assert(myb_query.start_pos < myb_query.end_pos);
 
-    // Iterate the posting lists array between q.start_pos and q.end_pos in blocks of MATCH_THREADS_PER_BLOCK
-    // docsIDs, where each thread reads one docID at a time
-    for (int i = 0; i < (max - min - 1) / MATCH_THREADS_PER_BLOCK + 1; ++i)
+    int min = myb_query.start_pos;
+    int max = myb_query.end_pos;
+    size_t comprLength = max - min;
+    int order = myb_query.order;
+
+    Codec codec;
+    // check if Codec is compatible with the current list
+    assert(max - min <= codec.decodeArrayParallel_maxBlocks() * codec.decodeArrayParallel_lengthPerBlock());
+    assert(max - min <= gridDim.x * blockDim.x * codec.decodeArrayParallel_threadLoad());
+    assert(blockDim.x == codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
+    assert(gridDim.x <= codec.decodeArrayParallel_maxBlocks());
+
+    __shared__ uint32_t s_comprInv[GPUGENIE_INTEGRATED_KERNEL_SM_SIZE];
+    __shared__ uint32_t s_decomprInv[GPUGENIE_INTEGRATED_KERNEL_SM_SIZE];
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    // Copy the compressed list from global memory into shared memory
+    // TODO change to more coalesced access (each thread accesses consecutive 128b value)
+    for (int i = 0; i < codec.decodeArrayParallel_lengthPerBlock(); i += codec.decodeArrayParallel_threadsPerBlock())
     {
-        // index to read from the posting posts array
-        int tmp_id = threadIdx.x + i * MATCH_THREADS_PER_BLOCK + min;
-        if (tmp_id < max)
+        s_comprInv[idx + i] = (idx + i < comprLength) ? d_compr_inv[idx + i + min] : 0;
+        s_decomprInv[idx + i] = 0;
+    }
+    // set uncompressed length to maximal length, decomprLength also acts as capacity for the codec
+    size_t decomprLength = GPUGENIE_INTEGRATED_KERNEL_SM_SIZE;
+    __syncthreads();
+    codec.decodeArrayParallel(s_comprInv, comprLength, s_decomprInv, decomprLength);
+    __syncthreads();
+
+    assert(decomprLength);
+
+    // Iterate the decompressed posting lists array s_decomprIOnv in blocks of MATCH_THREADS_PER_BLOCK
+    // docsIDs, where each thread processes one docID at a time
+    for (int i = 0; i < (decomprLength - 1) / MATCH_THREADS_PER_BLOCK + 1; ++i)
+    {
+        if (idx + i * MATCH_THREADS_PER_BLOCK < decomprLength)
         {
-            u32 count = 0;                //for AT
-            access_id = d_uncompr_inv[tmp_id]; // retrieved docID from posting lists array
+            u32 count = 0; //for AT
+            u32 access_id = s_decomprInv[idx + i * MATCH_THREADS_PER_BLOCK];// retrieved docID from posting lists array
 
             if(shift_bits_subsequence != 0)
             {
@@ -124,6 +164,7 @@ match_adaptiveThreshold_integrated(
             }
 
             u32 thread_threshold = *my_threshold;
+            bool key_eligible;                //
             if (bitmap_bits)
             {
 
@@ -143,6 +184,7 @@ match_adaptiveThreshold_integrated(
             }
 
             //Try to find the entry in hash tables
+            bool pass_threshold;    //to determine whether pass the check of my_theshold
             access_kernel_AT(
                     access_id,               
                     hash_table, hash_table_size, myb_query, count, &key_eligible,
@@ -215,7 +257,7 @@ match_integrated(
         cudaEventCreate(&stopConvert);
         cudaEventCreate(&kernel_start);
         cudaEventCreate(&kernel_stop);
-        float matchDecomprTime = 0.0, convertTime, kernelsTime = 0.0;
+        float matchDecomprTime, convertTime;
         u64 match_stop, match_start;
         match_start = getTime();
 
@@ -276,6 +318,8 @@ match_integrated(
         query_end  = getTime();
         Logger::log(Logger::DEBUG, "query_transfer time: %d",getInterval(query_start, query_end));
         
+        // Make sure if we decompress a single lists from the table, we can fit it into shared memory
+        assert(table.getUncompressedPostingListMaxLength() <= GPUGENIE_INTEGRATED_KERNEL_SM_SIZE);
         if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
             table.cpy_data_to_gpu();
 
@@ -301,17 +345,10 @@ match_integrated(
         d_hash_table = reinterpret_cast<T_HASHTABLE*>(d_data_table);
 
 
-        Logger::log(Logger::INFO, "[ 32%] Allocating device memory for uncompressed posting lists...");
-
-        size_t d_uncompr_inv_size = DECOMPR_BATCH * table.getUncompressedPostingListMaxLength();
-        thrust::device_vector<int> d_uncompr_inv(d_uncompr_inv_size);
-        int *d_uncompr_inv_p = thrust::raw_pointer_cast(d_uncompr_inv.data());
-
-
         Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 
         u32 h_offsets[16] = OFFSETS_TABLE_16;
-        cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+        cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
 
         Logger::log(Logger::INFO,"[ 40%] Starting decompression & match kernels...");
@@ -351,20 +388,14 @@ match_integrated(
             // next DECOMPR_BATCH compiled queries is done in one invocation of the kernel -- this corresponds to
             // the number of decompressed invereted lists
             cudaEventRecord(startMatching);
-
-            throw std::logic_error("No integrated kernel available!");
-
-            cudaEventRecord(startMatching);
-            match_adaptiveThreshold_queryPerBlock_compressed<Codec><<<batch,MATCH_THREADS_PER_BLOCK>>>
+            match_adaptiveThreshold_integrated<Codec><<<dims.size(),MATCH_THREADS_PER_BLOCK>>>
                    (table.m_size(),
-                    table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
+                    (table.i_size() * ((unsigned int)1<<shift_bits_subsequence)),
                     hash_table_size, // hash table size
                     // d_compr_inv points to the start location of compressed posting list array in GPU mem
-                    d_compr_inv, 
+                    table.deviceCompressedInv(),
                     // compiled queries (dim structure)
                     d_dims_p,
-                    // offset into compiled queries
-                    dimsOffset,
                     d_hash_table, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
                     d_bitmap_p, // of bitmap_size
                     bitmap_bits,
@@ -377,7 +408,6 @@ match_integrated(
                     shift_bits_subsequence);
             cudaEventRecord(stopMatching);
             cudaEventSynchronize(stopMatching);
-            cudaEventElapsedTime(&matchDecomprTime, startMatching, stopMatching);
 
             cudaCheckErrors(cudaDeviceSynchronize());
             
@@ -416,7 +446,7 @@ match_integrated(
         Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
         cudaEventRecord(startConvert);
-        device::convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(
+        convert_to_data<<<hash_table_size*queries.size() / 1024 + 1,1024>>>(
             d_hash_table,(u32)hash_table_size*queries.size());
         cudaEventRecord(stopConvert);
 
@@ -426,24 +456,18 @@ match_integrated(
 
         match_stop = getTime();
 
-        cudaEventElapsedTime(&kernelsTime, kernel_start, kernel_stop);
+
+        cudaEventElapsedTime(&matchDecomprTime, startMatching, stopMatching);
         cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
 
-
         Logger::log(Logger::INFO,
-                ">>>>[time profiling]: Decompresison kernels take %f ms. (GPU only) ",
-                decomprTime);
-        Logger::log(Logger::INFO,
-                ">>>>[time profiling]: Match kernels take %f ms. (GPU only) ",
-                matchTime);
-        Logger::log(Logger::INFO,
-                ">>>>[time profiling]: Decompression and match kernels take %f ms. (GPU only) ",
-                kernelsTime);
+                ">>>>[time profiling]: Match + decompression kernel takes %f ms. (GPU only) ",
+                matchDecomprTime);
         Logger::log(Logger::INFO,
                 ">>>>[time profiling]: Conversion kernel takes %f ms. (GPU only) ",
                 convertTime);
         Logger::log(Logger::INFO,
-                ">>>>[time profiling]: Match function takes %f ms. (GPU+CPU)",
+                ">>>>[time profiling]: Total CPU+GPU match function takes %f ms. (GPU+CPU)",
                 getInterval(match_start, match_stop));
         Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
