@@ -7,6 +7,7 @@
 #include "inv_list.h"
 #include "match.h"
 #include "match_sepkernel.h"
+#include "match_integrated.h"
 #include "heap_count.h"
 
 #include "Logger.h"
@@ -66,10 +67,21 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	u64 startMatch = getTime();
 
-	if (dynamic_cast<inv_compr_table*>(&table)){
-		match_sepkernel(
-			dynamic_cast<inv_compr_table&>(table), queries, d_data, d_bitmap,
-			hash_table_size, max_load, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+	GPUGenie::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
+	if (comprTable){
+		if (GPUGenie::integratedKernels.find(comprTable->getCompression().c_str())
+				== GPUGenie::integratedKernels.end())
+		{
+			Logger::log(Logger::ALERT, "No compression kernel avaiable for %s compression!",
+				comprTable->getCompression().c_str());
+			throw GPUGenie::cpu_runtime_error("No compression kernel avaiable for required compression!");
+		}
+
+		IntegratedKernelPtr matchFn = GPUGenie::integratedKernels[comprTable->getCompression().c_str()];
+		matchFn(
+			*comprTable, queries, d_data, d_bitmap,
+			hash_table_size, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+
 	} else {
 		match(table, queries, d_data, d_bitmap,
 			hash_table_size, max_load, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);

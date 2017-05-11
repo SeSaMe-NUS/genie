@@ -42,18 +42,29 @@ typedef u32 T_AGE;
 namespace GPUGenie
 {
 
-template void
-match_integrated<DeviceJustCopyCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-template void
-match_integrated<DeviceDeltaCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-template void
-match_integrated<DeviceBitPackingCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-template void
-match_integrated<DeviceVarintCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-template void
-match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-template void
-match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+template void match_integrated<DeviceJustCopyCodec>(inv_compr_table&, std::vector<query>&,
+thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+
+template void match_integrated<DeviceDeltaCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
+thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&);
+
+template void match_integrated<DeviceBitPackingCodec>(inv_compr_table&, std::vector<query>&,
+thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+
+template void match_integrated<DeviceVarintCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
+thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&);
+
+template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(inv_compr_table&,
+std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+
+template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(inv_compr_table&,
+std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 
 std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()

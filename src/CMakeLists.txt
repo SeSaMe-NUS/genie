@@ -18,6 +18,8 @@ set(LIB_SRC_LIST
   GPUGenie/match.cu
   GPUGenie/match_sepkernel.h
   GPUGenie/match_sepkernel.cu
+  GPUGenie/match_integrated.h
+  GPUGenie/match_integrated.cu
   GPUGenie/interface.h
   GPUGenie/interface.cu
   GPUGenie/knn.h
