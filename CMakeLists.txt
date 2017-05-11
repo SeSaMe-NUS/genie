@@ -33,14 +33,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /WX /EHsc")
 endif()
 if (NOT CONFIGURED_ONCE)
-  set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${warnings}"
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 #SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
 SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52")
-set(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
+SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
+SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 option(BUILD_SHARED_LIBS OFF)
