@@ -155,11 +155,11 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
     inv_table *table;
-    inv_compr_table *comprTable;
     if (config.compression.empty()){
         inv_table::read(binaryInvTableFile.c_str(), table);
     }
     else {
+        inv_compr_table *comprTable;
         inv_compr_table::read(binaryInvTableFile.c_str(), comprTable);
         table = comprTable;
     }
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
     config.data_points = NULL;
 
     config.use_load_balance = true;
-    config.posting_list_max_length = 6400;
+    config.posting_list_max_length = 1024;
     config.multiplier = 1.0f;
     config.use_multirange = false;
 
@@ -239,15 +239,15 @@ int main(int argc, char* argv[])
 
     init_genie(config);
 
-    Logger::log(Logger::INFO, "Establishing reference solution on uncompressed table...");
+    Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
     config.compression = std::string();    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
     runGENIE(binaryInvTableFile, queryFile, config, refResultIdxs, refResultCounts);
 
 
-    Logger::log(Logger::INFO, "Establishing reference solution on uncompressed table...");
-    config.compression = "copy";
+    Logger::log(Logger::INFO, "Running GENIE with compressed table...");
+    config.compression = "copy4";
     std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];
     std::vector<int> resultIdxs;
     std::vector<int> resultCounts;

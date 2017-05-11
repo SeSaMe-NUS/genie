@@ -137,17 +137,16 @@ match_adaptiveThreshold_integrated(
     assert(max - min <= codec.decodeArrayParallel_maxBlocks() * codec.decodeArrayParallel_lengthPerBlock());
     assert(max - min <= gridDim.x * blockDim.x * codec.decodeArrayParallel_threadLoad());
     assert(blockDim.x == codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
-    assert(gridDim.x <= codec.decodeArrayParallel_maxBlocks());
 
     __shared__ uint32_t s_comprInv[GPUGENIE_INTEGRATED_KERNEL_SM_SIZE];
     __shared__ uint32_t s_decomprInv[GPUGENIE_INTEGRATED_KERNEL_SM_SIZE];
 
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idx = threadIdx.x;
     // Copy the compressed list from global memory into shared memory
     // TODO change to more coalesced access (each thread accesses consecutive 128b value)
     for (int i = 0; i < codec.decodeArrayParallel_lengthPerBlock(); i += codec.decodeArrayParallel_threadsPerBlock())
     {
-        s_comprInv[idx + i] = (idx + i < comprLength) ? d_compr_inv[idx + i + min] : 0;
+        s_comprInv[idx + i] = (idx + i < (int)comprLength) ? d_compr_inv[idx + i + min] : 0;
         s_decomprInv[idx + i] = 0;
     }
     // set uncompressed length to maximal length, decomprLength also acts as capacity for the codec
@@ -156,13 +155,21 @@ match_adaptiveThreshold_integrated(
     codec.decodeArrayParallel(s_comprInv, comprLength, s_decomprInv, decomprLength);
     __syncthreads();
 
-    assert(decomprLength);
+    if (idx == 0)
+        printf("Block %d, query %d, start_pos %d, end_pos %d, comprLength %d, decomprLength %d, compr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d], decompr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n",
+            blockIdx.x, query_index, min, max, (int)comprLength, (int)decomprLength,
+            s_comprInv[0], s_comprInv[1], s_comprInv[2], s_comprInv[3], s_comprInv[4], 
+            s_comprInv[5], s_comprInv[6], s_comprInv[7], s_comprInv[8], s_comprInv[9],
+            s_decomprInv[0], s_decomprInv[1], s_decomprInv[2], s_decomprInv[3], s_decomprInv[4], 
+            s_decomprInv[5], s_decomprInv[6], s_decomprInv[7], s_decomprInv[8], s_decomprInv[9]);
+
+    assert(decomprLength != 0);
 
     // Iterate the decompressed posting lists array s_decomprIOnv in blocks of MATCH_THREADS_PER_BLOCK
     // docsIDs, where each thread processes one docID at a time
-    for (int i = 0; i < (decomprLength - 1) / MATCH_THREADS_PER_BLOCK + 1; ++i)
+    for (int i = 0; i < ((int)decomprLength - 1) / MATCH_THREADS_PER_BLOCK + 1; ++i)
     {
-        if (idx + i * MATCH_THREADS_PER_BLOCK < decomprLength)
+        if (idx + i * MATCH_THREADS_PER_BLOCK < (int)decomprLength)
         {
             u32 count = 0; //for AT
             u32 access_id = s_decomprInv[idx + i * MATCH_THREADS_PER_BLOCK];// retrieved docID from posting lists array
