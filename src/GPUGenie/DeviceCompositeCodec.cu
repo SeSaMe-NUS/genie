@@ -114,20 +114,17 @@ GPUGenie::DeviceDeltaCodec::decodeArraySequential(const uint32_t *d_in, const si
 __device__ uint32_t*
 GPUGenie::DeviceDeltaCodec::decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
-    assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
     assert(length <= nvalue); // not enough capacity in the decompressed array!
-    assert(blockIdx.x == 0); // currently only support single block
-
-    assert(length > 0 && length <= GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE);
+    assert(length > 0 && length <= decodeArrayParallel_lengthPerBlock());
     uint pow2arrayLength = GPUGenie::d_pow2ceil_32(length);
     uint arrayLength = (length + 3) / 4;
 
     // Check supported size range
     // Check parallel model compatibility
-    assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE && gridDim.x == 1);
+    assert(blockDim.x == GPUGENIE_SCAN_THREADBLOCK_SIZE);
 
     __syncthreads();
-    GPUGenie::d_scanInclusiveShared((uint4 *)d_out, (uint4 *)d_in, arrayLength, pow2arrayLength);
+    GPUGenie::d_scanInclusivePerBlockShared((uint4 *)d_out, (uint4 *)d_in, arrayLength, pow2arrayLength);
     __syncthreads();
     
     nvalue = length;

@@ -156,7 +156,7 @@ match_adaptiveThreshold_integrated(
     __syncthreads();
 
     if (idx == 0)
-        printf("Block %d, query %d, start_pos %d, end_pos %d, comprLength %d, decomprLength %d, compr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d], decompr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n",
+        printf("Block %d, query %d, start_pos %d, end_pos %d, comprLength %d, decomprLength %d,\n    compr values [0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x],\n    decompr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n",
             blockIdx.x, query_index, min, max, (int)comprLength, (int)decomprLength,
             s_comprInv[0], s_comprInv[1], s_comprInv[2], s_comprInv[3], s_comprInv[4], 
             s_comprInv[5], s_comprInv[6], s_comprInv[7], s_comprInv[8], s_comprInv[9],

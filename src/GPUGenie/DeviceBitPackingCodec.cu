@@ -134,13 +134,11 @@ __device__ uint32_t*
 GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
         uint32_t *d_in, size_t /* comprLength */, uint32_t *d_out, size_t &capacity)
 {
-    assert(gridDim.x == 1); // currently only support single block
-
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idx = threadIdx.x;
 
     uint32_t length = d_in[0]; // first uint32_t is an uncompressed length
     d_in++;
-    assert(length <= gridDim.x * blockDim.x * 4); // one thread can process 4 values
+    assert(length <= decodeArrayParallel_lengthPerBlock()); // one thread can process 4 values
     assert(length <= capacity); // not enough capacity in the decompressed array!
     assert(length > 0);
 
@@ -181,10 +179,10 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
             // printf("Block %d has bitSize %u and bitOffset %u \n", b+2, s_bitSizes[b+2], s_bitOffsets[b+2]);
             // printf("Block %d has bitSize %u and bitOffset %u \n", b+3, s_bitSizes[b+3], s_bitOffsets[b+3]);
 
-            assert(s_bitSizes[b]   > 0 && s_bitSizes[b]   <= 32); // bit size has to be in [0,32] range
-            assert(                       s_bitSizes[b+1] <= 32); // bit size has to be in [0,32] range
-            assert(                       s_bitSizes[b+2] <= 32); // bit size has to be in [0,32] range
-            assert(                       s_bitSizes[b+3] <= 32); // bit size has to be in [0,32] range
+            assert(s_bitSizes[b]   <= 32); // bit size has to be in [0,32] range
+            assert(s_bitSizes[b+1] <= 32); // bit size has to be in [0,32] range
+            assert(s_bitSizes[b+2] <= 32); // bit size has to be in [0,32] range
+            assert(s_bitSizes[b+3] <= 32); // bit size has to be in [0,32] range
 
             // advance the input iterator to another uint32_t with block sizes
             inIt += 1 + s_bitSizes[b] + s_bitSizes[b+1] + s_bitSizes[b+2] + s_bitSizes[b+3];
@@ -217,7 +215,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
         uint32_t packed = d_in[s_bitOffsets[blockNum] + firstBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH]; 
         int firstBitInPacked = firstBit % 32;
         uint32_t packedOverflow = d_in[s_bitOffsets[blockNum] + lastBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
-        assert(lastBit % 32 != firstBitInPacked);
+        // assert(lastBit % 32 != firstBitInPacked);
 
         bool isOverflowing = lastBit % 32 < firstBitInPacked;
         int lastBitInPacked = isOverflowing ? 31 : lastBit % 32;
