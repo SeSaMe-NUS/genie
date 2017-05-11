@@ -35,6 +35,7 @@ using namespace std;
 std::vector<std::string> GPUGenie_Config::COMPRESSION_NAMES = 
 {
     "copy",
+    "copy4",
     "d1",
     "bp32",
     "varint",

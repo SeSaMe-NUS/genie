@@ -224,6 +224,10 @@ int main(int argc, char **argv)
     assert(ok);
 
     for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceCopy4Codec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+
+    for (int i = 1; i <= 1024; i++)
         ok &= testCodec<DeviceDeltaCodec>(h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 

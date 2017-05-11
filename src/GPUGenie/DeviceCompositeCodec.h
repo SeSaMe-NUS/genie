@@ -164,6 +164,77 @@ public:
 
 };
 
+class DeviceCopy4Codec : public DeviceIntegerCODEC {
+public:
+
+    __device__ __host__
+    DeviceCopy4Codec() : DeviceIntegerCODEC() {}
+
+    void
+    encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+    {
+        std::memcpy(out, in, sizeof(uint32_t) * length);
+        nvalue = length;
+    }
+
+    const uint32_t*
+    decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+    {
+        std::memcpy(out, in, sizeof(uint32_t) * length);
+        nvalue = length;
+        return in + length;
+    }
+
+    __device__ uint32_t*
+    decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+    {
+        if (length > nvalue){
+            // We do not have enough capacity in the decompressed array!
+            nvalue = length;
+            return d_in;
+        }
+        for (int i = 0; i < length; i++)
+            d_out[i] = d_in[i];
+        nvalue = length;
+        return d_in + length;
+    }
+
+
+    __device__ uint32_t*
+    decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+    {
+        assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
+        assert(length <= nvalue); // not enough capacity in the decompressed array!
+
+        int idx = threadIdx.x;
+        int fullThreadBlockLimit = length - decodeArrayParallel_threadsPerBlock();
+        int i = 0;
+        for (; i <= fullThreadBlockLimit; i += decodeArrayParallel_threadsPerBlock())
+        {
+            d_out[idx + i] = d_in[idx + i];
+        }
+        if (idx + i < length)
+            d_out[idx + i] = d_in[idx + i];
+        __syncthreads();
+
+        nvalue = length;
+        return d_in + length;
+    }
+
+    __device__ __host__
+    ~DeviceCopy4Codec() {}
+
+    std::string
+    name() const { return "DeviceCopy4Codec"; }
+
+    __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
+    __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
+    __device__ __host__ int decodeArrayParallel_lengthPerBlock() { return 1024; }
+    __device__ __host__ int decodeArrayParallel_threadsPerBlock() { return 256; }
+    __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
+
+};
+
 
 class DeviceDeltaCodec : public DeviceIntegerCODEC {
 public:

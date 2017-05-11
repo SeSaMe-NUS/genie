@@ -8,32 +8,30 @@ using namespace GPUGenie;
 
 // Explicit template instances for working codecs
 
-template void
-GPUGenie::decodeArrayParallel<DeviceJustCopyCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
-template void
-GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
-template void
-GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
-template void
-GPUGenie::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
-template void
-GPUGenie::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
-template void
-GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
-
 template class
 GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>;
+template class
+GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>;
 
+// Explicit template instances for decoding wrapper function
+
+template void
+GPUGenie::decodeArrayParallel<DeviceJustCopyCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceCopy4Codec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
 GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
-template class
-GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>;
 
 template <class CODEC> void
 GPUGenie::decodeArrayParallel(

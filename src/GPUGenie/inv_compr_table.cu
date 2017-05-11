@@ -19,6 +19,8 @@ GPUGenie::inv_compr_table::initCodecs() {
 
   codecs["copy"] = std::shared_ptr<DeviceJustCopyCodec>(
                         new DeviceJustCopyCodec());
+  codecs["copy4"] = std::shared_ptr<DeviceCopy4Codec>(
+                        new DeviceCopy4Codec());
   codecs["d1"] = std::shared_ptr<DeviceDeltaCodec>(
                         new DeviceDeltaCodec());
   codecs["bp32"] = std::shared_ptr<DeviceBitPackingCodec>(

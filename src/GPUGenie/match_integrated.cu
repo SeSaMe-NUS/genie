@@ -46,6 +46,10 @@ template void match_integrated<DeviceJustCopyCodec>(inv_compr_table&, std::vecto
 thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
 thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
+template void match_integrated<DeviceCopy4Codec>(inv_compr_table&, std::vector<query>&,
+thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
+thrust::device_vector<u32>&, thrust::device_vector<u32>&);
+
 template void match_integrated<DeviceDeltaCodec>(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
 thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
 thrust::device_vector<u32>&);
@@ -73,6 +77,7 @@ std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
     std::map<std::string, IntegratedKernelPtr> kernels;
 
     kernels["copy"] = match_integrated<DeviceJustCopyCodec>;
+    kernels["copy4"] = match_integrated<DeviceCopy4Codec>;
     kernels["d1"] = match_integrated<DeviceDeltaCodec>;
     kernels["bp32"] = match_integrated<DeviceBitPackingCodec>;
     kernels["varint"] = match_integrated<DeviceVarintCodec>;
