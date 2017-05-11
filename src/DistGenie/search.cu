@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "search.h"
-#include "test.h"
+#include "sorting.h"
 #include "global.h"
 
 using namespace GPUGenie;
