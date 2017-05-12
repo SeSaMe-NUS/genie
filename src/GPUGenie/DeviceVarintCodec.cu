@@ -155,16 +155,10 @@ __device__ uint32_t*
 GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &capacity)
 {
-    assert(gridDim.x == 1); // currently only support single block
-
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idx = threadIdx.x;
 
     assert(comprLength > 0);
     assert(comprLength <=  GPUGENIE_CODEC_VARINT_MAX_UNCOMPR_LENGTH);
-    // one thread can process 4 values
-    assert(comprLength <= gridDim.x * blockDim.x * GPUGENIE_CODEC_VARINT_THREAD_LOAD);
-    // best case decompression is 4 values per uint32_t
-    assert(comprLength <= 4 * capacity);
 
     // each thread stores number of integers that are decoded from the uint32_t processed by the thread
     // the possible values in this array may be 1..4
@@ -190,6 +184,7 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     __syncthreads();
 
     int decomprLength = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
+    assert(decomprLength <= capacity);
 
     // we need at most 4 loops of unpacking for the current setup, since we use exactly 256 threads,
     // but the maximal unpacked capacity is 1024
