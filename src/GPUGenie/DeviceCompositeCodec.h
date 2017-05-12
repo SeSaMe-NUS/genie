@@ -97,11 +97,11 @@ public:
     decodeArrayParallel_threadLoad() {return -1;}
 };
 
-class DeviceJustCopyCodec : public DeviceIntegerCODEC {
+class DeviceCopyMultiblockCodec : public DeviceIntegerCODEC {
 public:
 
     __device__ __host__
-    DeviceJustCopyCodec() : DeviceIntegerCODEC() {}
+    DeviceCopyMultiblockCodec() : DeviceIntegerCODEC() {}
 
     void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
@@ -151,10 +151,10 @@ public:
     }
 
     __device__ __host__
-    ~DeviceJustCopyCodec() {}
+    ~DeviceCopyMultiblockCodec() {}
 
     std::string
-    name() const { return "DeviceJustCopyCodec"; }
+    name() const { return "DeviceCopyMultiblockCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
@@ -164,11 +164,11 @@ public:
 
 };
 
-class DeviceCopy4Codec : public DeviceIntegerCODEC {
+class DeviceCopyCodec : public DeviceIntegerCODEC {
 public:
 
     __device__ __host__
-    DeviceCopy4Codec() : DeviceIntegerCODEC() {}
+    DeviceCopyCodec() : DeviceIntegerCODEC() {}
 
     void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
@@ -203,7 +203,7 @@ public:
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
     {
-        assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
+        assert(length <= decodeArrayParallel_lengthPerBlock());
         assert(length <= nvalue); // not enough capacity in the decompressed array!
 
         int idx = threadIdx.x;
@@ -222,7 +222,7 @@ public:
     }
 
     __device__ __host__
-    ~DeviceCopy4Codec() {}
+    ~DeviceCopyCodec() {}
 
     std::string
     name() const { return "DeviceCopy4Codec"; }

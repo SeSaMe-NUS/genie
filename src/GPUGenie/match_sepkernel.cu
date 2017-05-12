@@ -68,7 +68,7 @@ void decompressPostingLists_listPerThread_JustCopyCodec(
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // nvalue will be set to the actual uncompressed length
 
-    DeviceJustCopyCodec codec; 
+    DeviceCopyCodec codec; 
     codec.decodeArraySequential(d_compr_inv_start, length, d_uncompr_inv_uint, usedLength);
 
     if (usedLength > uncompressedPostingListMaxLength)
@@ -238,7 +238,7 @@ void decompressPostingLists_listPerThread_d1_bp32(
     uint32_t *d_compr_inv_start = d_compr_inv + comprInvListStart;
     uint32_t *d_uncompr_inv_uint = reinterpret_cast<uint32_t*>(d_uncompr_inv) + uncomprInvListStart;
     size_t usedLength = uncompressedPostingListMaxLength; // usedLength will be set to the actual uncompressed length
-    DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec> codec; 
+    DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec> codec; 
     codec.decodeArraySequential(d_compr_inv_start, length, d_uncompr_inv_uint, usedLength);
 
     if (usedLength > uncompressedPostingListMaxLength)

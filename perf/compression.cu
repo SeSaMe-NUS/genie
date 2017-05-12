@@ -198,7 +198,7 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
     ofs << "codec,array_size,compr_size,ratio,time,throughput" << std::endl;
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceJustCopyCodec>
+        runSingleCodec<DeviceCopyCodec>
                 (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
@@ -214,7 +214,7 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
                 (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>
+        runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>
                 (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)

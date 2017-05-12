@@ -42,11 +42,7 @@ typedef u32 T_AGE;
 namespace GPUGenie
 {
 
-template void match_integrated<DeviceJustCopyCodec>(inv_compr_table&, std::vector<query>&,
-thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
-thrust::device_vector<u32>&, thrust::device_vector<u32>&);
-
-template void match_integrated<DeviceCopy4Codec>(inv_compr_table&, std::vector<query>&,
+template void match_integrated<DeviceCopyCodec>(inv_compr_table&, std::vector<query>&,
 thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
 thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
@@ -62,7 +58,7 @@ template void match_integrated<DeviceVarintCodec>(inv_compr_table&, std::vector<
 thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
 thrust::device_vector<u32>&);
 
-template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(inv_compr_table&,
+template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(inv_compr_table&,
 std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&,
 thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
@@ -76,12 +72,11 @@ std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 
     std::map<std::string, IntegratedKernelPtr> kernels;
 
-    kernels["copy"] = match_integrated<DeviceJustCopyCodec>;
-    kernels["copy4"] = match_integrated<DeviceCopy4Codec>;
+    kernels["copy"] = match_integrated<DeviceCopyCodec>;
     kernels["d1"] = match_integrated<DeviceDeltaCodec>;
     kernels["bp32"] = match_integrated<DeviceBitPackingCodec>;
     kernels["varint"] = match_integrated<DeviceVarintCodec>;
-    kernels["bp32-copy"] = match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>;
+    kernels["bp32-copy"] = match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>;
     kernels["bp32-varint"] = match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
 
     return kernels;
@@ -155,13 +150,13 @@ match_adaptiveThreshold_integrated(
     codec.decodeArrayParallel(s_comprInv, comprLength, s_decomprInv, decomprLength);
     __syncthreads();
 
-    if (idx == 0)
-        printf("Block %d, query %d, start_pos %d, end_pos %d, comprLength %d, decomprLength %d,\n    compr values [0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x],\n    decompr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n",
-            blockIdx.x, query_index, min, max, (int)comprLength, (int)decomprLength,
-            s_comprInv[0], s_comprInv[1], s_comprInv[2], s_comprInv[3], s_comprInv[4], 
-            s_comprInv[5], s_comprInv[6], s_comprInv[7], s_comprInv[8], s_comprInv[9],
-            s_decomprInv[0], s_decomprInv[1], s_decomprInv[2], s_decomprInv[3], s_decomprInv[4], 
-            s_decomprInv[5], s_decomprInv[6], s_decomprInv[7], s_decomprInv[8], s_decomprInv[9]);
+    // if (idx == 0)
+    //     printf("Block %d, query %d, start_pos %d, end_pos %d, comprLength %d, decomprLength %d,\n    compr values [0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x],\n    decompr values [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d] \n",
+    //         blockIdx.x, query_index, min, max, (int)comprLength, (int)decomprLength,
+    //         s_comprInv[0], s_comprInv[1], s_comprInv[2], s_comprInv[3], s_comprInv[4], 
+    //         s_comprInv[5], s_comprInv[6], s_comprInv[7], s_comprInv[8], s_comprInv[9],
+    //         s_decomprInv[0], s_decomprInv[1], s_decomprInv[2], s_decomprInv[3], s_decomprInv[4], 
+    //         s_decomprInv[5], s_decomprInv[6], s_decomprInv[7], s_decomprInv[8], s_decomprInv[9]);
 
     assert(decomprLength != 0);
 
