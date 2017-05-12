@@ -80,20 +80,24 @@ public:
     virtual std::string
     name() const {return std::string("DeviceIntegerCODEC");};
 
+    /** Minimal effective lenth of the compression **/
+    virtual __device__ __host__ int
+    decodeArrayParallel_minEffectiveLength() { return -1;}
+
     /** The amount of CUDA blocks this codec is able to operate on at the same time **/
-    __device__ __host__
-    int decodeArrayParallel_maxBlocks() {return -1;}
+    virtual __device__ __host__ int
+    decodeArrayParallel_maxBlocks() {return -1;}
 
     /** Maximal uncompressed (or compressed) size of the array the codec is able to process **/
-    __device__ __host__ int
+    virtual __device__ __host__ int
     decodeArrayParallel_lengthPerBlock() {return -1;}
 
     /** Maximal number of threads per single block **/
-    __device__ __host__ int
+    virtual __device__ __host__ int
     decodeArrayParallel_threadsPerBlock() { return -1; }
 
     /** Number of decompressed values extracted by a single thread **/
-    __device__ __host__ int
+    virtual __device__ __host__ int
     decodeArrayParallel_threadLoad() {return -1;}
 };
 
@@ -225,7 +229,7 @@ public:
     ~DeviceCopyCodec() {}
 
     std::string
-    name() const { return "DeviceCopy4Codec"; }
+    name() const { return "DeviceCopyCodec"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }

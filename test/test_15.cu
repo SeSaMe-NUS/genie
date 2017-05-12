@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
     config.data_points = NULL;
 
     config.use_load_balance = true;
-    config.posting_list_max_length = 6400;
+    config.posting_list_max_length = 1024;
     config.multiplier = 1.0f;
     config.use_multirange = false;
 

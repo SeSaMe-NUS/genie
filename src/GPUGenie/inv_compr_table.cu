@@ -50,20 +50,21 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     std::vector<uint32_t> &compressedInv = m_comprInv;
     std::vector<int> &compressedInvPos = m_comprInvPos;
 
+    // make uint32_t copy of uncompressed inv array
+    // codecs are expecting unsigned integer arrays, but inv_table uses int by default
+    std::vector<uint32_t> inv_u32(inv.begin(), inv.end());
+
     uint64_t compressionStartTime = getTime();
 
     shared_ptr<DeviceIntegerCODEC> codec;
-
     // Retrieve coded based on compression string 
     if(m_codecs.find(this->m_compression) == m_codecs.end()) {
-        Logger::log(Logger::ALERT, "Unsupported inverted table compression %s. Fallback to copy codec.",
-                this->m_compression.c_str());
+        Logger::log(Logger::ALERT, "Unsupported inverted table compression %s.", this->m_compression.c_str());
         throw std::logic_error("No compression codec available!");
     }
     codec = m_codecs[this->m_compression];
-
-    // make uint32_t copy of uncompressed inv array
-    std::vector<uint32_t> inv32(inv.begin(), inv.end());
+    // Check if codec will be able to decompress an inverted list of any length
+    assert(codec->decodeArrayParallel_lengthPerBlock() >= (int)max_length);
 
     compressedInv.resize(inv.size()*8);
     compressedInvPos.clear();
@@ -79,13 +80,12 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     {
         int invStart = invPos[pos];
         int invEnd = invPos[pos+1];
-        size_t invLength = invEnd - invStart;
         assert(invEnd > invStart);
 
-        uint32_t *in = inv32.data() + invStart; // compression input
         size_t nvalue = compressedInvCapacity; // nvalue is the compressed size
 
-        codec->encodeArray(in, invLength, out, nvalue);
+        codec->encodeArray(inv_u32.data() + invStart, invEnd - invStart, out, nvalue);
+        assert(nvalue <= max_length); // compressed lists must comply with config.posting_list_max_length as well
 
         out += nvalue; // shift compression output pointer
         compressedInvCapacity -= nvalue;
@@ -94,11 +94,12 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
 
         compressedInvPos.push_back(compressedInvSize);
 
-        if (nvalue > invLength)
+        if ((int)nvalue > invEnd - invStart)
             badCompressedLists++;
     }
 
     compressedInv.resize(compressedInvSize); // shrink to used space only
+    compressedInv.shrink_to_fit();
     assert(compressedInvSize == compressedInvPos.back());
 
     uint64_t compressionEndTime = getTime();
