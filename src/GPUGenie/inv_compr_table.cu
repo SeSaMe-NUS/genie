@@ -17,18 +17,16 @@ std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
 GPUGenie::inv_compr_table::initCodecs() {
   std::map<std::string, shared_ptr<DeviceIntegerCODEC>> codecs;
 
-  codecs["copy"] = std::shared_ptr<DeviceJustCopyCodec>(
-                        new DeviceJustCopyCodec());
-  codecs["copy4"] = std::shared_ptr<DeviceCopy4Codec>(
-                        new DeviceCopy4Codec());
+  codecs["copy"] = std::shared_ptr<DeviceCopyCodec>(
+                        new DeviceCopyCodec());
   codecs["d1"] = std::shared_ptr<DeviceDeltaCodec>(
                         new DeviceDeltaCodec());
   codecs["bp32"] = std::shared_ptr<DeviceBitPackingCodec>(
                         new DeviceBitPackingCodec());
   codecs["varint"] = std::shared_ptr<DeviceVarintCodec>(
                         new DeviceVarintCodec());
-  codecs["bp32-copy"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>>(
-                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceJustCopyCodec>());
+  codecs["bp32-copy"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(
+                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>());
   codecs["bp32-varint"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(
                         new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>());
   return codecs;
