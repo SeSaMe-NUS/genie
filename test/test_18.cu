@@ -1,7 +1,7 @@
 /**
  * Name: test_18.cu
  * Description:
- *  Test counting of queries on CPU. Similar to CPU-Idx in GENIE paper.
+ *      Tests matching kernels with enabled compression.
  */
 
 #include <GPUGenie.h>
@@ -246,26 +246,28 @@ int main(int argc, char* argv[])
     runGENIE(binaryInvTableFile, queryFile, config, refResultIdxs, refResultCounts);
 
 
-    Logger::log(Logger::INFO, "Running GENIE with compressed table...");
-    config.compression = "copy4";
-    std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];
-    std::vector<int> resultIdxs;
-    std::vector<int> resultCounts;
-    runGENIE(binaryInvComprTableFile, queryFile, config, resultIdxs, resultCounts);
+    for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES){
+        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
 
+        config.compression = compr;
+        std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];
+        std::vector<int> resultIdxs;
+        std::vector<int> resultCounts;
+        runGENIE(binaryInvComprTableFile, queryFile, config, resultIdxs, resultCounts);
 
-    Logger::log(Logger::INFO, "Comparing reference and compressed results...");
-    // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
-    // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
-    // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
-    // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
-    // thereby this test may fail for large datasets.
-    assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
-        && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
-    assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
-        && refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
-    assert(refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
-        && refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+        Logger::log(Logger::INFO, "Comparing reference and compressed results...");
+        // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
+        // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
+        // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
+        // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
+        // thereby this test may fail for large datasets.
+        assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+            && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+        assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+            && refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+        assert(refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+            && refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+    }
 
     return 0;
 }
