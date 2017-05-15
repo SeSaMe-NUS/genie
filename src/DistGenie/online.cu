@@ -18,7 +18,12 @@
 #include <chrono>
 
 #include "GPUGenie.h"
-#include "distgenie.h"
+#include "config.h"
+#include "parser.h"
+#include "container.h"
+#include "file.h"
+#include "search.h"
+#include "scheduler.h"
 #define NO_EXTERN
 #include "global.h"
 
@@ -27,9 +32,9 @@ using namespace distgenie;
 using namespace std;
 
 static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
-		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
+		DistGenieConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
 {
-	// broadcast query
+	/* broadcast query */
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	if (g_mpi_rank != 0)
 		memset(recv_buf.data(), '\0', BUFFER_SIZE);
@@ -113,7 +118,7 @@ int main(int argc, char *argv[])
 	 * process configuration file
 	 */
 	GPUGenie_Config config;
-	ExtraConfig extra_config;
+	DistGenieConfig extra_config;
 	string config_filename(argv[1]);
 	parser::ParseConfigurationFile(config, extra_config, config_filename);
 
@@ -142,30 +147,27 @@ int main(int argc, char *argv[])
 		thread scheduler(scheduler::ListenForQueries, ref(query_queue));
 
 		while (true) {
+			/* wait for queries */
 			while (true) {
-				query_mutex.lock();
+				this_thread::sleep_for(chrono::seconds(1));
+				lock_guard<mutex> lock(query_mutex);
 				if (query_queue.empty())
-				{
-					query_mutex.unlock();
-					this_thread::sleep_for(chrono::seconds(1));
-				}
+					continue;
 				else
 				{
 					string &query_str = query_queue.front();
 					count = query_str.length() + 1;
 					memcpy(recv_buf.data(), query_str.c_str(), count);
 					query_queue.pop();
-					query_mutex.unlock();
 					break;
 				}
 			}
 
-			// set up output file name
+			/* start search */
 			MPI_Barrier(MPI_COMM_WORLD);
 			auto epoch_time = chrono::system_clock::now().time_since_epoch();
 			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
 			extra_config.output_file = to_string(output_filename) + ".csv";
-
 			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
 		}
 	}

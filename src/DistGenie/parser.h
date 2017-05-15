@@ -11,8 +11,8 @@ namespace distgenie
 {
 	namespace parser
 	{
-		void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, ExtraConfig &, const string);
-		bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, ExtraConfig &, vector<Cluster> &, const string);
+		void ParseConfigurationFile(GPUGenie::GPUGenie_Config &, DistGenieConfig &, const string);
+		bool ValidateAndParseQuery(GPUGenie::GPUGenie_Config &, DistGenieConfig &, vector<Cluster> &, const string);
 	}
 }
 

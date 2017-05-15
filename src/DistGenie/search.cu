@@ -1,8 +1,5 @@
 #include <mpi.h>
 #include <vector>
-#include <algorithm>
-//#include <parallel/algorithm>
-#include <functional>
 
 #include "search.h"
 #include "sorting.h"
@@ -26,7 +23,7 @@ static void LoadQueries(GPUGenie_Config &config, vector<inv_table*> &tables, vec
 
 
 /* For pre-clustering version */
-void distgenie::search::ExecuteMultitableQuery(GPUGenie_Config &config, ExtraConfig &extra_config,
+void distgenie::search::ExecuteMultitableQuery(GPUGenie_Config &config, DistGenieConfig &extra_config,
 		vector<GPUGenie::inv_table*> &tables, vector<Cluster> &clusters, vector<Result> &results, vector<int> &id_offset)
 {
 	vector<vector<query> > queries(clusters.size());

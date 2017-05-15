@@ -5,7 +5,7 @@
 
 namespace distgenie
 {
-	struct ExtraConfig
+	struct DistGenieConfig
 	{
 		std::string data_file;
 		std::string query_file;

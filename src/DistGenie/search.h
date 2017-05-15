@@ -9,7 +9,7 @@ namespace distgenie
 {
 	namespace search
 	{
-		void ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &, ExtraConfig &, std::vector<GPUGenie::inv_table*> &,
+		void ExecuteMultitableQuery(GPUGenie::GPUGenie_Config &, DistGenieConfig &, std::vector<GPUGenie::inv_table*> &,
 				vector<Cluster> &, vector<Result> &, vector<int> &);
 	}
 }
