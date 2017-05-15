@@ -14,6 +14,7 @@
 #include <thrust/device_vector.h>
 
 #include "Logger.h"
+#include "PerfLogger.hpp"
 #include "Timing.h"
 #include "genie_errors.h"
 #include "DeviceCompositeCodec.h"
@@ -910,6 +911,13 @@ void match(inv_table& table, vector<query>& queries,
 				">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)",
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+        PerfLogger::get().ofs()
+            << "no" << ","
+            << std::fixed << std::setprecision(3) << kernel_elapsed << ","
+            << std::fixed << std::setprecision(3) << "N/A" << ","
+            << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << std::endl;
+
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());
 	}

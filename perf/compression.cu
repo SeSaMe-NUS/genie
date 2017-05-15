@@ -305,9 +305,19 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
         const std::string &dataset)
 {
     std::string sep("_"), dirsep("/"), datasetFilename = dataset;
+
+    // Get base filename
     size_t lastDirSep = dataset.find_last_of(dirsep);
     if (lastDirSep != std::string::npos)
-        datasetFilename = dataset.substr(lastDirSep);
+        datasetFilename = dataset.substr(lastDirSep+1);
+
+    // Remove file extension if dataset includes that
+    size_t lastDot = datasetFilename.find_last_of(".");
+    if (lastDot != std::string::npos)
+        datasetFilename = datasetFilename.substr(0, lastDot);
+
+    if (datasetFilename.find_last_of(".") != std::string::npos) // Still contains a '.'
+        Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n", destDir.c_str());
 
     std::string fname(measurement+sep+datasetFilename+".csv");
     openResultsFile(ofs, destDir, fname);
@@ -330,26 +340,21 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
 
     std::ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
+    invBinFileStream.close();
 
     if (invBinFileExists)
         Logger::log(Logger::INFO, "File %s already exists. Will ve overwritten!");
-    invBinFileStream.close();
-
 
     Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
-        
-    GPUGenie::read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    assert(config.item_num > 0);
-    assert(config.row_num > 0);
-    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
-    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
-
+    std::vector<std::vector<int>> data;
+    config.data_points = &data;
+    GPUGenie::read_file(data, dataFile.c_str(), -1);
 
     Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
-    GPUGenie::inv_table * table = NULL;
-    GPUGenie::inv_compr_table * comprTable = NULL;
-    GPUGenie::preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
-    assert(table != NULL);
+    GPUGenie::inv_table * table = nullptr;
+    GPUGenie::inv_compr_table * comprTable = nullptr;
+    GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
+    assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
 
@@ -428,36 +433,57 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
     size_t lastDirSep = dataFile.find_last_of('/');
     std::string dataFileName = dataFile;
     if (lastDirSep != std::string::npos)
-        dataFileName = dataFile.substr(lastDirSep);
+        dataFileName = dataFile.substr(lastDirSep+1);
 
-    if (dataFileName == std::string("sift.csv")){
-        Logger::log(Logger::INFO, "Generating GENIE configuration for %s", dataFileName.c_str());
-        config.dim = 3;
-        config.count_threshold = 14;
+    Logger::log(Logger::INFO, "Generating GENIE configuration for %s", dataFileName.c_str());
 
+    if (dataFileName == std::string("sift_20.csv")){
+        config.dim = 5;
         config.hashtable_size = 100*config.num_of_topk*1.5;
-        config.query_radius = 0;
-        config.use_device = 2;
-        config.use_adaptive_range = false;
-        config.selectivity = 0.0f;
-        config.query_points = nullptr;
-
-        config.data_points = nullptr;
-
-        config.use_load_balance = true;
-        config.posting_list_max_length = 1024;
-        config.multiplier = 1.0f;
-        config.use_multirange = false;
-
-        config.data_type = 1;
         config.search_type = 0;
-        config.max_data_size = 0;
+
+    } else if (dataFileName == std::string("sift_4.5m.csv")){
+        config.dim = 128;
+        config.hashtable_size = 200*config.num_of_topk*1.5;
+        config.search_type = 0;
+
+    } else if (dataFileName == std::string("tweets_20.csv")){
+        config.dim = 14;
+        config.hashtable_size = 100*config.num_of_topk*1.5;
+        config.search_type = 1;
+
+    } else if (dataFileName == std::string("tweets.csv")){
+        config.dim = 128;
+        config.hashtable_size = 200*config.num_of_topk*1.5;
+        config.search_type = 1;
+
+    } else if (dataFileName == std::string("ocr.csv")){
+        config.dim = 237;
+        config.hashtable_size = 237*config.num_of_topk*1.5;
+        config.search_type = 0;
+
+    } else if (dataFileName == std::string("adult.csv")){
+        config.dim = 14;
+        config.hashtable_size = 14*config.num_of_topk*1.5;
+        config.search_type = 0;
 
     } else {
         Logger::log(Logger::ALERT,"Unknown data file %s, cannot automatically generate GENIE configuration!\n",
-            dataFile.c_str());
+            dataFileName.c_str());
         exit(3);
     }
+    config.count_threshold = config.dim;
+    config.query_radius = 0;
+    config.use_adaptive_range = false;
+    config.selectivity = 0.0f;
+    config.use_load_balance = true;
+    config.posting_list_max_length = 1024;
+    config.use_multirange = false;
+    config.data_type = 0;
+    config.multiplier = 1.0f;
+    config.use_device = 2;
+    config.query_points = nullptr;
+    config.data_points = nullptr;
 }
 
 
@@ -467,11 +493,10 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
     vector<vector<int>> queryPoints;
 
     GPUGenie::GPUGenie_Config config;
-    config.query_points = &queryPoints;
     config.num_of_queries = 5;
-    config.num_of_topk = 10;
+    config.num_of_topk = 5;
     fillConfig(dataFile, config);
-
+    config.query_points = &queryPoints;
 
 
     std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
@@ -536,7 +561,7 @@ int main(int argc, char **argv)
         ("measurements", po::value< std::vector<std::string>>(&measurements),
             "space separated measurements from: {scan, codecs, separate, integrated}")
         ("datafile", po::value<std::string>(&datafile),
-            "path to datafile file, currently supported filenames: {*adult.csv, *ocr.csv, *sift.csv, *sift_4.5m.csv, *tweets.csv}")
+            "path to datafile file, currently supported filenames: {*adult.csv, *ocr.csv, *sift_20.csv, *sift_4.5m.csv, *tweets_20.csv, *tweets.csv}")
         ("dest", po::value<std::string>(&dest)->default_value(std::string("../results")),
             "destination directory");
 
@@ -571,15 +596,16 @@ int main(int argc, char **argv)
     }
 
     std::ofstream ofs;
-    std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
     for (auto it = measurements.begin(); it != measurements.end(); it++)
     {
         if (*it == std::string("scan")){
+            std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
             openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureScan(h_Input, ofs);
             ofs.close();
         }
         else if (*it == std::string("codecs")){
+            std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
             openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureCodecs(h_Input, ofs);
             ofs.close();

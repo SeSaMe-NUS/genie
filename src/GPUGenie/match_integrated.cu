@@ -11,6 +11,7 @@
 
 #include "match.h"
 #include "Logger.h"
+#include "PerfLogger.hpp"
 #include "Timing.h"
 #include "genie_errors.h"
 #include "DeviceCompositeCodec.h"
@@ -488,6 +489,13 @@ match_integrated(
                 ">>>>[time profiling]: Total CPU+GPU match function takes %f ms. (GPU+CPU)",
                 getInterval(match_start, match_stop));
         Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+        Codec c;
+        PerfLogger::get().ofs()
+            << c.name() << ","
+            << std::fixed << std::setprecision(3) << matchDecomprTime << ","
+            << std::fixed << std::setprecision(3) << convertTime << ","
+            << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << std::endl;
 
     } catch(std::bad_alloc &e){
         throw GPUGenie::gpu_bad_alloc(e.what());
