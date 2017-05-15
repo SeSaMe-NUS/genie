@@ -15,6 +15,7 @@
 #include <boost/program_options.hpp>
 
 #include <GPUGenie/genie_errors.h>
+#include <GPUGenie/interface.h>
 #include <GPUGenie/Timing.h>
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
@@ -60,7 +61,52 @@ std::shared_ptr<uint> generateRandomInput(size_t length, double geom_distr_coeff
     return sp_h_Input;
 }
 
+/**
+ *  Sorts GENIE top-k results for each query independently. The top-k results returned from GENIE are in random order,
+ *  and if (top-k > number of resutls with match count greater than 0), then remaining docIds in the result vector are
+ *  set to 0, thus the result and count vectors cannot be sorted conventionally. 
+ */
+void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
+                            std::vector<int> &gpuResultCounts)
+{
+    std::vector<int> gpuResultHelper(config.num_of_topk),
+                     gpuResultHelperTmp(config.num_of_topk);
+    for (int queryIndex = 0; queryIndex < config.num_of_queries; queryIndex++)
+    {
+        int offsetBegin = queryIndex*config.num_of_topk;
+        int offsetEnd = (queryIndex+1)*config.num_of_topk;
+        // Fint first zero element
+        auto firstZeroIt = std::find(gpuResultCounts.begin()+offsetBegin, gpuResultCounts.begin()+offsetEnd, 0);
+        // Only sort elements that have non-zero count. This is because GENIE does not return indexed of elements with
+        // zero count
+        offsetEnd = std::min(offsetEnd,static_cast<int>(
+                                    std::distance(gpuResultCounts.begin(),firstZeroIt)));
+        
+        // Create helper index from 0 to offsetEnd-offsetBegin
+        gpuResultHelper.resize(offsetEnd-offsetBegin);
+        gpuResultHelperTmp.resize(offsetEnd-offsetBegin);
+        std::iota(gpuResultHelper.begin(), gpuResultHelper.end(),0);
 
+        // Sort the helper index according to gpuResultCounts[...+offsetBegin]
+        std::sort(gpuResultHelper.begin(),
+                  gpuResultHelper.end(),
+                  [&gpuResultCounts,offsetBegin](int lhs, int rhs){
+                        return (gpuResultCounts[lhs+offsetBegin] > gpuResultCounts[rhs+offsetBegin]);
+                    });
+
+        // Shuffle the gpuResultIdxs according to gpuResultHelper
+        for (size_t i = 0; i < gpuResultHelper.size(); i++)
+            gpuResultHelperTmp[i] = gpuResultIdxs[gpuResultHelper[i]+offsetBegin];
+        // Copy back into gpuResultIndex
+        std::copy(gpuResultHelperTmp.begin(), gpuResultHelperTmp.end(), gpuResultIdxs.begin()+offsetBegin);
+
+        // Shuffle the gpuResultCounts according to gpuResultHelper
+        for (size_t i = 0; i < gpuResultHelper.size(); i++)
+            gpuResultHelperTmp[i] = gpuResultCounts[gpuResultHelper[i]+offsetBegin];
+        // Copy back into gpuResultIndex
+        std::copy(gpuResultHelperTmp.begin(), gpuResultHelperTmp.end(), gpuResultCounts.begin()+offsetBegin); 
+    }
+}
 
 void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output,
     size_t arrayLength, std::ofstream &ofs)
@@ -229,21 +275,242 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
     cudaCheckErrors(cudaFree(d_decomprLength));
 }
 
-void openOutputFile(std::ofstream &ofs, const std::string &dest, const std::string &measurement,
-        int srand, double geom_distr_coeff)
+void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &fileName)
 {
     struct stat sb;
-    if (stat(dest.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
+    if (stat(destDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
     {
-        Logger::log(Logger::ALERT,"--dest=%s is not a directory!\n", dest.c_str());
+        Logger::log(Logger::ALERT,"Destination directory %s is not a directory!\n", destDir.c_str());
         exit(2);
     }
-    std::string sep("_"), dirsep("/");
-    std::string fname(dest+dirsep+measurement+sep+std::to_string(srand)+sep+std::to_string(geom_distr_coeff)+".csv");
-    Logger::log(Logger::INFO,"Output file: %s \n\n", fname.c_str());
+    std::string dirsep("/");
+    std::string fullPath(destDir+dirsep+fileName);
+    Logger::log(Logger::INFO,"Output file: %s \n\n", fileName.c_str());
 
-    ofs.open(fname.c_str(), std::ios_base::out | std::ios_base::trunc);
+    ofs.open(fullPath.c_str(), std::ios_base::out | std::ios_base::trunc);
     assert(ofs.is_open());
+}
+
+void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement,
+        int srand, double geom_distr_coeff)
+{
+    std::string sep("_");
+    std::string fname(measurement+sep+std::to_string(srand)+sep+std::to_string(geom_distr_coeff)+".csv");
+    openResultsFile(ofs, destDir, fname);
+}
+
+void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement,
+        const std::string &dataset)
+{
+    std::string sep("_"), dirsep("/"), datasetFilename = dataset;
+    size_t lastDirSep = dataset.find_last_of(dirsep);
+    if (lastDirSep != std::string::npos)
+        datasetFilename = dataset.substr(lastDirSep);
+
+    std::string fname(measurement+sep+datasetFilename+".csv");
+    openResultsFile(ofs, destDir, fname);
+}
+
+std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+{
+    std::string invSuffix(".inv");
+    std::string cinvSuffix(".cinv");
+
+    std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
+    std::string binaryInvTableFile;
+    if (config.compression.empty())
+        binaryInvTableFile = invTableFileBase + invSuffix;
+    else
+        binaryInvTableFile = invTableFileBase + std::string(".") + config.compression + cinvSuffix;
+
+    Logger::log(Logger::INFO, "Converting table %s to %s (%s compression)...",
+        dataFile.c_str(), binaryInvTableFile.c_str(), config.compression.empty() ? "no" : config.compression.c_str());
+
+    std::ifstream invBinFileStream(binaryInvTableFile.c_str());
+    bool invBinFileExists = invBinFileStream.good();
+
+    if (invBinFileExists)
+        Logger::log(Logger::INFO, "File %s already exists. Will ve overwritten!");
+    invBinFileStream.close();
+
+
+    Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
+        
+    GPUGenie::read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
+    assert(config.item_num > 0);
+    assert(config.row_num > 0);
+    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
+    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
+
+
+    Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
+    GPUGenie::inv_table * table = NULL;
+    GPUGenie::inv_compr_table * comprTable = NULL;
+    GPUGenie::preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
+    assert(table != NULL);
+    assert(table->build_status() == inv_table::builded);
+    assert(table->get_total_num_of_table() == 1); // check how many tables we have
+
+    if (!config.compression.empty()){
+        comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
+        // check the compression was actually used in the table
+        assert(config.compression == comprTable->getCompression());
+    }
+
+    if (!inv_table::write(binaryInvTableFile.c_str(), table)) {
+        Logger::log(Logger::ALERT, "Error writing inverted table to binary file %s!", binaryInvTableFile.c_str());
+        return std::string();
+    }
+
+    Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
+    return binaryInvTableFile;
+}
+
+void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &queryFile, GPUGenie::GPUGenie_Config &config,
+        std::vector<int> &refResultIdxs, std::vector<int> &refResultCounts)
+{
+    Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
+
+    GPUGenie::inv_table *table;
+    if (config.compression.empty()){
+        GPUGenie::inv_table::read(binaryInvTableFile.c_str(), table);
+    }
+    else {
+        GPUGenie::inv_compr_table *comprTable;
+        GPUGenie::inv_compr_table::read(binaryInvTableFile.c_str(), comprTable);
+        table = comprTable;
+    }
+
+    Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
+    GPUGenie::read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
+
+    Logger::log(Logger::INFO, "Loading queries into table...");
+    std::vector<query> refQueries;
+    GPUGenie::load_query(*table, refQueries, config);
+
+    Logger::log(Logger::INFO, "Running KNN on GPU...");
+    std::cout << "KNN_SEARCH_CPU"
+              << ", file: " << binaryInvTableFile << " (" << config.row_num << " rows)" 
+              << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
+              << ", topk: " << config.num_of_topk
+              << ", compression: " << config.compression
+              << ", ";
+
+    GPUGenie::knn_search(*table, refQueries, refResultIdxs, refResultCounts, config);
+    // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
+    // sort the results manually from individual queries => sort subsequence relevant to each query independently
+    sortGenieResults(config, refResultIdxs, refResultCounts);
+
+    Logger::log(Logger::DEBUG, "Results from GENIE:");
+    Logger::logResults(Logger::DEBUG, refQueries, refResultIdxs, refResultCounts);
+}
+
+
+void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+{
+
+    std::string invSuffix(".inv");
+    std::string cinvSuffix(".cinv");
+    if (dataFile.size() >= invSuffix.size() + 1
+            && std::equal(invSuffix.rbegin(), invSuffix.rend(), dataFile.rbegin())){
+        Logger::log(Logger::ALERT, "dataFile %s is an inv_table binary file", dataFile.c_str());
+        exit(1);
+    }
+    if (dataFile.size() >= invSuffix.size() + 1
+            && std::equal(cinvSuffix.rbegin(), cinvSuffix.rend(), dataFile.rbegin())){
+        Logger::log(Logger::ALERT, "dataFile %s is an compr_inv_table binary file", dataFile.c_str());
+        exit(1);
+    }
+
+    size_t lastDirSep = dataFile.find_last_of('/');
+    std::string dataFileName = dataFile;
+    if (lastDirSep != std::string::npos)
+        dataFileName = dataFile.substr(lastDirSep);
+
+    if (dataFileName == std::string("sift.csv")){
+        Logger::log(Logger::INFO, "Generating GENIE configuration for %s", dataFileName.c_str());
+        config.dim = 3;
+        config.count_threshold = 14;
+
+        config.hashtable_size = 100*config.num_of_topk*1.5;
+        config.query_radius = 0;
+        config.use_device = 2;
+        config.use_adaptive_range = false;
+        config.selectivity = 0.0f;
+        config.query_points = nullptr;
+
+        config.data_points = nullptr;
+
+        config.use_load_balance = true;
+        config.posting_list_max_length = 1024;
+        config.multiplier = 1.0f;
+        config.use_multirange = false;
+
+        config.data_type = 1;
+        config.search_type = 0;
+        config.max_data_size = 0;
+
+    } else {
+        Logger::log(Logger::ALERT,"Unknown data file %s, cannot automatically generate GENIE configuration!\n",
+            dataFile.c_str());
+        exit(3);
+    }
+}
+
+
+void runGENIE(const std::string &dataFile, std::ostream &ofs)
+{
+    std::string queryFile = dataFile;
+    vector<vector<int>> queryPoints;
+
+    GPUGenie::GPUGenie_Config config;
+    config.query_points = &queryPoints;
+    config.num_of_queries = 5;
+    config.num_of_topk = 10;
+    fillConfig(dataFile, config);
+
+
+
+    std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
+    std::map<std::string, std::string> binaryComprInvTableFilesMap;
+    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
+        config.compression = compr;
+        binaryComprInvTableFilesMap[config.compression] = convertTableToBinary(dataFile, config);
+    }
+
+    GPUGenie::init_genie(config);
+
+    Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
+    config.compression = std::string();    
+    std::vector<int> refResultIdxs;
+    std::vector<int> refResultCounts;
+    runSingleGENIE(binaryInvTableFile, queryFile, config, refResultIdxs, refResultCounts);
+
+
+    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
+        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
+
+        config.compression = compr;
+        std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];
+        std::vector<int> resultIdxs;
+        std::vector<int> resultCounts;
+        runSingleGENIE(binaryInvComprTableFile, queryFile, config, resultIdxs, resultCounts);
+
+        Logger::log(Logger::INFO, "Comparing reference and compressed results...");
+        // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
+        // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
+        // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
+        // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
+        // thereby this test may fail for large datasets.
+        assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
+            && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+        assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
+            && refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+        assert(refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
+            && refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+    }
+
 }
 
 int main(int argc, char **argv)
@@ -252,7 +519,7 @@ int main(int argc, char **argv)
 
     double geom_distr_coeff;
     int srand;
-    std::string dest;
+    std::string dest, datafile;
     std::vector<std::string> measurements;
 
     po::options_description desc("Compression performance measurements");
@@ -264,12 +531,15 @@ int main(int argc, char **argv)
         ("geom_distr_coeff", po::value<double>(&geom_distr_coeff)->default_value(0.9),
             "coefficient for geometric distribution")
         ("measurements", po::value< std::vector<std::string>>(&measurements),
-            "space separated measurements from: scan, codecs, separate, integrated")
+            "space separated measurements from: {scan, codecs, separate, integrated}")
+        ("datafile", po::value<std::string>(&datafile),
+            "path to datafile file, currently supported filenames: {*adult.csv, *ocr.csv, *sift.csv, *sift_4.5m.csv, *tweets.csv}")
         ("dest", po::value<std::string>(&dest)->default_value(std::string("../results")),
             "destination directory");
 
     po::positional_options_description pdesc;
     pdesc.add("measurements", 1);
+    pdesc.add("datafile", 1);
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv). options(desc).positional(pdesc).run(), vm);
@@ -302,12 +572,12 @@ int main(int argc, char **argv)
     for (auto it = measurements.begin(); it != measurements.end(); it++)
     {
         if (*it == std::string("scan")){
-            openOutputFile(ofs, dest, *it, srand, geom_distr_coeff);
+            openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureScan(h_Input, ofs);
             ofs.close();
         }
         else if (*it == std::string("codecs")){
-            openOutputFile(ofs, dest, *it, srand, geom_distr_coeff);
+            openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureCodecs(h_Input, ofs);
             ofs.close();
         }
@@ -316,12 +586,19 @@ int main(int argc, char **argv)
             return 1;
         }
         else if (*it == std::string("integrated")){
-            std::cerr << "integrated kernel measurements not yet implemented" << std::endl;
-            return 1;
+            if (!vm.count("datafile"))
+            {
+                std::cerr << "Measurement \"intergrated\" requires a datafile argument!" << std::endl;
+                return 1;
+            }
+            openResultsFile(ofs, dest, *it, datafile);
+            runGENIE(datafile, ofs);
+            ofs.close();
         }
         else {
             std::cerr << "Unknown measurement: " << *it << std::endl;
             return 1;
         }
     }
+    return 0;
 }
