@@ -323,17 +323,24 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
     openResultsFile(ofs, destDir, fname);
 }
 
-std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+std::string getBinaryFileName(const std::string &dataFile, const std::string &compression)
 {
     std::string invSuffix(".inv");
     std::string cinvSuffix(".cinv");
 
     std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
     std::string binaryInvTableFile;
-    if (config.compression.empty())
+    if (compression.empty())
         binaryInvTableFile = invTableFileBase + invSuffix;
     else
-        binaryInvTableFile = invTableFileBase + std::string(".") + config.compression + cinvSuffix;
+        binaryInvTableFile = invTableFileBase + std::string(".") + compression + cinvSuffix;
+    return binaryInvTableFile;
+}
+
+
+std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+{
+    std::string binaryInvTableFile = getBinaryFileName(dataFile, config.compression);
 
     Logger::log(Logger::INFO, "Converting table %s to %s (%s compression)...",
         dataFile.c_str(), binaryInvTableFile.c_str(), config.compression.empty() ? "no" : config.compression.c_str());
@@ -487,6 +494,18 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
 }
 
 
+void convertTableToAllBinaryFormats(const std::string &dataFile)
+{
+    GPUGenie::GPUGenie_Config config;
+    fillConfig(dataFile, config);
+
+    std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
+    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
+        config.compression = compr;
+        convertTableToBinary(dataFile, config);
+    }
+}
+
 void runGENIE(const std::string &dataFile, std::ostream &ofs)
 {
     std::string queryFile = dataFile;
@@ -498,14 +517,6 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
     fillConfig(dataFile, config);
     config.query_points = &queryPoints;
 
-
-    std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
-    std::map<std::string, std::string> binaryComprInvTableFilesMap;
-    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
-        config.compression = compr;
-        binaryComprInvTableFilesMap[config.compression] = convertTableToBinary(dataFile, config);
-    }
-
     GPUGenie::PerfLogger::get().ofs() << "codec,matchDecompr,conversion,totalMatchFun" << std::endl;
     GPUGenie::init_genie(config);
 
@@ -513,17 +524,16 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
     config.compression = std::string();    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
-    runSingleGENIE(binaryInvTableFile, queryFile, config, refResultIdxs, refResultCounts);
+    runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
 
 
     for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
         Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
 
         config.compression = compr;
-        std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];
         std::vector<int> resultIdxs;
         std::vector<int> resultCounts;
-        runSingleGENIE(binaryInvComprTableFile, queryFile, config, resultIdxs, resultCounts);
+        runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, resultIdxs, resultCounts);
 
         Logger::log(Logger::INFO, "Comparing reference and compressed results...");
         // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
@@ -623,6 +633,14 @@ int main(int argc, char **argv)
             openResultsFile(ofs, dest, *it, datafile);
             runGENIE(datafile, ofs);
             ofs.close();
+        }
+        else if (*it == std::string("compress")){
+            if (!vm.count("datafile"))
+            {
+                std::cerr << "Operation \"compress\" requires a datafile argument!" << std::endl;
+                return 1;
+            }
+            convertTableToAllBinaryFormats(datafile);
         }
         else {
             std::cerr << "Unknown measurement: " << *it << std::endl;
