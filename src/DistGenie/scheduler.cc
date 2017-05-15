@@ -15,7 +15,6 @@ using namespace std;
 void distgenie::scheduler::ListenForQueries(queue<string> &query_queue)
 {
 	/* initialize socket */
-	const size_t BUFFER_SIZE = 10u << 20;
 	auto *socket_buf_ptr = new array<char,BUFFER_SIZE>();
 	auto &socket_buf = *socket_buf_ptr;
 	int sock = socket(PF_INET, SOCK_STREAM, 0);

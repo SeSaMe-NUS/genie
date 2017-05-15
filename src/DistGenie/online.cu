@@ -1,3 +1,9 @@
+/*
+ * Main driver routine for the program, starts query scheduler
+ * and performs search.
+ *
+ * @author: Siyuan Liu
+ */
 #include <mpi.h>
 #include <iostream>
 #include <cstdio>
@@ -9,7 +15,7 @@
 #include <thread>
 #include <queue>
 #include <mutex>
-#include <chrono> // benchmarking purpose
+#include <chrono>
 
 #include "GPUGenie.h"
 #include "distgenie.h"
@@ -20,9 +26,30 @@ using namespace GPUGenie;
 using namespace distgenie;
 using namespace std;
 
-static const size_t BUFFER_SIZE = 10u << 20;
+static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
+		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
+{
+	// broadcast query
+	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	if (g_mpi_rank != 0)
+		memset(recv_buf.data(), '\0', BUFFER_SIZE);
+	MPI_Bcast(recv_buf.data(), *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-static void ParseQueryAndSearch(int *, array<char,BUFFER_SIZE> &, GPUGenie_Config &, ExtraConfig &, vector<inv_table*> &, vector<Cluster> &, vector<int> &);
+	if(!parser::ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf.data())))
+		return;
+
+	vector<Result> results(extra_config.total_queries);
+	auto t1 = chrono::steady_clock::now();
+	search::ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
+	if (0 == g_mpi_rank)
+	{
+		file::GenerateOutput(results, config, extra_config);
+		auto t2 = chrono::steady_clock::now();
+		auto diff = t2 - t1;
+		clog << "Output generated" << endl;
+		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
+	}
+}
 
 static void WaitForGDB()
 {
@@ -149,30 +176,5 @@ int main(int argc, char *argv[])
 			MPI_Barrier(MPI_COMM_WORLD);
 			ParseQueryAndSearch(&count, recv_buf, config, extra_config, tables, clusters, id_offset);
 		}
-	}
-}
-
-static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
-		ExtraConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
-{
-	// broadcast query
-	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	if (g_mpi_rank != 0)
-		memset(recv_buf.data(), '\0', BUFFER_SIZE);
-	MPI_Bcast(recv_buf.data(), *count_ptr, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-	if(!parser::ValidateAndParseQuery(config, extra_config, clusters, string(recv_buf.data())))
-		return;
-
-	vector<Result> results(extra_config.total_queries);
-	auto t1 = chrono::steady_clock::now();
-	search::ExecuteMultitableQuery(config, extra_config, tables, clusters, results, id_offset);
-	if (0 == g_mpi_rank)
-	{
-		file::GenerateOutput(results, config, extra_config);
-		auto t2 = chrono::steady_clock::now();
-		auto diff = t2 - t1;
-		clog << "Output generated" << endl;
-		clog << "Elapsed time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "ms" << endl;
 	}
 }
