@@ -1,6 +1,5 @@
 /*
- * Main driver routine for the program, starts query scheduler
- * and performs search.
+ * Entry of the program, starts query scheduler and performs search.
  *
  * @author: Siyuan Liu
  */
@@ -8,8 +7,6 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <array>
 #include <thread>
@@ -72,36 +69,37 @@ static void WaitForGDB()
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
+/*
+ * Calculates the global id offset for each table.
+ * Offset will be used for generating outputs.
+ */
 static void CalculateIdOffset(vector<int> &id_offset, vector<inv_table*> &tables)
 {
-	/* mpi operations */
-	int *local_tablesize = new int[tables.size()];
+	/* gather length of all tables */
+	vector<int> local_tablesize;
+	local_tablesize.reserve(tables.size());
 	for (size_t i = 0; i < tables.size(); ++i)
-		local_tablesize[i] = tables.at(i)->i_size();
-	int *global_tablesize = new int[tables.size() * g_mpi_size];
-	MPI_Allgather(local_tablesize, tables.size(), MPI_INT, global_tablesize, tables.size(), MPI_INT, MPI_COMM_WORLD);
+		local_tablesize.push_back(tables.at(i)->i_size());
+
+	vector<int> global_tablesize(tables.size() * g_mpi_size);
+	MPI_Allgather(local_tablesize.data(), tables.size(), MPI_INT, global_tablesize.data(), tables.size(), MPI_INT, MPI_COMM_WORLD);
 	for (size_t i = 0; i < tables.size(); ++i)
 		for (int j = 0; j < g_mpi_size; ++j)
-			id_offset[i * g_mpi_size + j] = global_tablesize[j * tables.size() + i];
+			id_offset.at(i * g_mpi_size + j) = global_tablesize.at(j * tables.size() + i);
 
-	/* prefix sum */
+	/* compute global offset with prefix sum */
 	int sum = 0, curr;
 	for (size_t i = 0; i < tables.size() * g_mpi_size; ++i)
 	{
-		curr = id_offset[i];
-		id_offset[i] = sum;
+		curr = id_offset.at(i);
+		id_offset.at(i) = sum;
 		sum += curr;
 	}
-
-	delete[] local_tablesize;
-	delete[] global_tablesize;
 }
 
 int main(int argc, char *argv[])
 {
-	/*
-	 * initialization
-	 */
+	/* initialization */
 	MPI_Init(&argc, &argv);
 	WaitForGDB();
 
@@ -114,17 +112,13 @@ int main(int argc, char *argv[])
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 	}
 
-	/*
-	 * process configuration file
-	 */
+	/* process configuration file */
 	GPUGenie_Config config;
 	DistGenieConfig extra_config;
 	string config_filename(argv[1]);
 	parser::ParseConfigurationFile(config, extra_config, config_filename);
 
-	/*
-	 * initialize GENIE
-	 */
+	/* initialize GENIE */
 	init_genie(config);
 	vector<vector<int> > data;
 	config.data_points = &data;
@@ -133,9 +127,7 @@ int main(int argc, char *argv[])
 	vector<int> id_offset(extra_config.num_of_cluster * g_mpi_size);
 	CalculateIdOffset(id_offset, tables);
 
-	/*
-	 * handle online queries
-	 */
+	/* handle online queries */
 	int count;
 	auto *recv_buf_ptr = new array<char,BUFFER_SIZE>();
 	array<char,BUFFER_SIZE> &recv_buf = *recv_buf_ptr;
@@ -163,7 +155,6 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			/* start search */
 			MPI_Barrier(MPI_COMM_WORLD);
 			auto epoch_time = chrono::system_clock::now().time_since_epoch();
 			auto output_filename = chrono::duration_cast<chrono::seconds>(epoch_time).count();
