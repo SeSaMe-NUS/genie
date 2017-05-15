@@ -39,7 +39,7 @@ set(LIB_SRC_LIST
   GPUGenie/DeviceVarintCodec.cu
   GPUGenie/scan.h
   GPUGenie/scan.cu
-
+  GPUGenie/PerfLogger.hpp
   GPUGenie/Logger.h
   GPUGenie/Logger.cpp
   GPUGenie/Timing.h

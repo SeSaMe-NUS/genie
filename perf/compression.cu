@@ -17,6 +17,7 @@
 #include <GPUGenie/genie_errors.h>
 #include <GPUGenie/interface.h>
 #include <GPUGenie/Timing.h>
+#include <GPUGenie/PerfLogger.hpp>
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
@@ -285,9 +286,10 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
     }
     std::string dirsep("/");
     std::string fullPath(destDir+dirsep+fileName);
-    Logger::log(Logger::INFO,"Output file: %s \n\n", fileName.c_str());
+    Logger::log(Logger::INFO,"Output file: %s", fileName.c_str());
 
     ofs.open(fullPath.c_str(), std::ios_base::out | std::ios_base::trunc);
+    GPUGenie::PerfLogger::get().setOutputFileStream(ofs);
     assert(ofs.is_open());
 }
 
@@ -479,6 +481,7 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
         binaryComprInvTableFilesMap[config.compression] = convertTableToBinary(dataFile, config);
     }
 
+    GPUGenie::PerfLogger::get().ofs() << "codec,matchDecompr,conversion,totalMatchFun" << std::endl;
     GPUGenie::init_genie(config);
 
     Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
