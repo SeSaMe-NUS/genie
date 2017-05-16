@@ -7,8 +7,8 @@ namespace distgenie
 {
 	struct Cluster
 	{
-		std::vector<int> m_queries_id{};
-		std::vector<std::vector<int> > m_queries{};
+		std::vector<int> m_queries_id;
+		std::vector<std::vector<int> > m_queries;
 	};
 
 	typedef std::vector<std::pair<int, int> > Result;

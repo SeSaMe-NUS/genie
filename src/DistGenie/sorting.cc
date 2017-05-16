@@ -11,14 +11,13 @@ using namespace std;
 using namespace distgenie;
 
 /* Merge result for multi-node & multi-cluster */
-void MergeResult(vector<distgenie::Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
-		int topk, vector<distgenie::Cluster> &clusters, vector<int> &id_offset)
+void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
+		int topk, vector<Cluster> &clusters, vector<int> &id_offset)
 {
-	vector<int> final_result, final_result_count;
 	vector<int> local_results_topk, local_results_topk_count;
 	local_results_topk.reserve(results.size() * topk);
 	local_results_topk_count.reserve(results.size() * topk);
-	vector<distgenie::Result> local_results(results.size());
+	vector<Result> local_results(results.size());
 
 	/* for each cluster */
 	for (size_t c = 0; c < clusters.size(); ++c)
@@ -34,17 +33,18 @@ void MergeResult(vector<distgenie::Result> &results, vector<vector<int> > &h_top
 				);
 	}
 
-	for (auto it = local_results.begin(); it != local_results.end(); ++it)
-		__gnu_parallel::sort(it->begin(), it->end(), std::greater<std::pair<int, int> >());
+	for (auto &&single_result : local_results)
+		__gnu_parallel::sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
 
-	for (size_t i = 0; i < local_results.size(); ++i)
+	for (auto &&single_result : local_results)
 		for (int j = 0; j < topk; ++j)
 		{
-			local_results_topk.push_back(local_results.at(i).at(j).second);
-			local_results_topk_count.push_back(local_results.at(i).at(j).first);
+			local_results_topk.push_back(single_result.at(j).second);
+			local_results_topk_count.push_back(single_result.at(j).first);
 		}
 
 	/* gather local results */
+	vector<int> final_result, final_result_count;
 	if (0 == g_mpi_rank)
 	{
 		final_result.resize(results.size() * topk * g_mpi_size);

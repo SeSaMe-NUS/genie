@@ -40,7 +40,7 @@ void distgenie::scheduler::ListenForQueries(queue<string> &query_queue)
 	}
 
 	char hostname[128];
-	gethostname(hostname, sizeof hostname);
+	gethostname(hostname, sizeof(hostname));
 
 	while (true)
 	{
