@@ -37,7 +37,7 @@ GPUGenie::inv_compr_table::m_codecs = GPUGenie::inv_compr_table::initCodecs();
 
 
 void
-GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
+GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
 {
     Logger::log(Logger::DEBUG, "Bulding uncompressed inv_table...");
     inv_table::build(max_length, use_load_balance);
@@ -72,7 +72,7 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     compressedInvPos.push_back(0);
 
     int compressedInvSize = 0;
-    int compressedInvCapacity = compressedInv.size();
+    int64_t compressedInvCapacity = compressedInv.size();
     int badCompressedLists = 0;
 
     uint32_t *out = compressedInv.data();
@@ -80,22 +80,33 @@ GPUGenie::inv_compr_table::build(u64 max_length, bool use_load_balance)
     {
         int invStart = invPos[pos];
         int invEnd = invPos[pos+1];
-        assert(invEnd > invStart);
+        assert(invEnd - invStart > 0 && invEnd - invStart <= (int)max_length);
 
-        size_t nvalue = compressedInvCapacity; // nvalue is the compressed size
+        // Check if we run out of capacity 
+        assert(compressedInvCapacity > 0);
+        // We cannot have more capacity then there is free space in the output vector compressedInv, plus at the same
+        // time we cannot have negative compression overflow our max_length constraint on inverted list 
+        size_t nvalue = std::min((size_t)compressedInvCapacity, max_length);
 
-        codec->encodeArray(inv_u32.data() + invStart, invEnd - invStart, out, nvalue);
-        assert(nvalue <= max_length); // compressed lists must comply with config.posting_list_max_length as well
+        uint32_t * data = inv_u32.data() + invStart;
+        codec->encodeArray(data, invEnd - invStart, out, nvalue);
+
+        // Check if the compressed length (nvalue) from encodeArray(...) does not exceed the max_length constraint
+        // of the compressed list
+        assert(nvalue > 0 && nvalue <= max_length);
 
         out += nvalue; // shift compression output pointer
         compressedInvCapacity -= nvalue;
-        assert(nvalue > 0);
         compressedInvSize += nvalue;
 
         compressedInvPos.push_back(compressedInvSize);
 
-        if ((int)nvalue > invEnd - invStart)
+        if ((int)nvalue >= invEnd - invStart)
             badCompressedLists++;
+    }
+
+    for (size_t i = 1; i < compressedInvPos.size(); i++){
+        assert(compressedInvPos[i] > compressedInvPos[i-1]); // Check if there was no int overflow in compressedInvPos
     }
 
     compressedInv.resize(compressedInvSize); // shrink to used space only

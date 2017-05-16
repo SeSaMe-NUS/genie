@@ -44,6 +44,7 @@ GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, 
                 out += Bs[i];
             }
         }
+        assert(out - initout <= (int)nvalue);
         nvalue = out - initout;
     }
 

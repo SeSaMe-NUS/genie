@@ -268,7 +268,7 @@ GPUGenie::inv_table::inv_pos()
 
 
 void
-GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
+GPUGenie::inv_table::build(size_t max_length, bool use_load_balance)
 {
     u64 table_start = getTime();
 	_ck.clear();
@@ -277,7 +277,7 @@ GPUGenie::inv_table::build(u64 max_length, bool use_load_balance)
 	_inv_pos.clear();
     if(!use_load_balance)
     {
-        max_length = (u64)0 - (u64)1;
+        max_length = (size_t)0 - (size_t)1;
     }
     unsigned int last;
 	int key, dim, value;

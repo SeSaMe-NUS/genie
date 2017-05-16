@@ -132,7 +132,7 @@ public:
          *  to positive infinity before it is used
          *
          */
-    virtual void build(u64 max_length, bool use_load_balance);
+    virtual void build(size_t max_length, bool use_load_balance);
 
 
 
