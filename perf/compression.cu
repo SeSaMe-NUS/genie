@@ -352,11 +352,6 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
     if (invBinFileExists)
         Logger::log(Logger::INFO, "File %s already exists. Will ve overwritten!");
 
-    Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
-    std::vector<std::vector<int>> data;
-    config.data_points = &data;
-    GPUGenie::read_file(data, dataFile.c_str(), -1);
-
     Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
     GPUGenie::inv_table * table = nullptr;
     GPUGenie::inv_compr_table * comprTable = nullptr;
@@ -494,19 +489,30 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
 }
 
 
-void convertTableToAllBinaryFormats(const std::string &dataFile)
+void convertTableToBinaryFormats(const std::string &dataFile, const std::string &codec)
 {
     GPUGenie::GPUGenie_Config config;
     fillConfig(dataFile, config);
 
-    std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
-    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
+    Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
+    std::vector<std::vector<int>> data;
+    config.data_points = &data;
+    GPUGenie::read_file(data, dataFile.c_str(), -1);
+
+    if (codec == "all" || codec == "no")
+        std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
+
+
+    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES)
+    {
+        if (codec != "all" && codec != compr)
+            continue; // Skip this codec
         config.compression = compr;
         convertTableToBinary(dataFile, config);
     }
 }
 
-void runGENIE(const std::string &dataFile, std::ostream &ofs)
+void runGENIE(const std::string &dataFile, const std::string &codec, std::ostream &ofs)
 {
     std::string queryFile = dataFile;
     vector<vector<int>> queryPoints;
@@ -520,14 +526,21 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
     GPUGenie::PerfLogger::get().ofs() << "codec,matchDecompr,conversion,totalMatchFun" << std::endl;
     GPUGenie::init_genie(config);
 
-    Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
+    if (codec == "all" || codec == "no")
+        Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
+    else
+        Logger::log(Logger::INFO,
+            "Running GENIE with uncompressed table (to establish reference solution for codec %s", codec.c_str());
     config.compression = std::string();    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
     runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
 
+    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES)
+    {
+        if (codec != "all" && codec != compr)
+            continue; // Skip this codec
 
-    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES){
         Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
 
         config.compression = compr;
@@ -553,12 +566,12 @@ void runGENIE(const std::string &dataFile, std::ostream &ofs)
 
 int main(int argc, char **argv)
 {    
-    Logger::log(Logger::INFO,"Running %s \n\n", argv[0]);
+    Logger::log(Logger::INFO,"Running %s", argv[0]);
 
     double geom_distr_coeff;
     int srand;
-    std::string dest, datafile;
-    std::vector<std::string> measurements;
+    std::string dest, datafile, codec;
+    std::vector<std::string> operations;
 
     po::options_description desc("Compression performance measurements");
     desc.add_options()
@@ -568,16 +581,19 @@ int main(int argc, char **argv)
             "seed for input data generator")
         ("geom_distr_coeff", po::value<double>(&geom_distr_coeff)->default_value(0.9),
             "coefficient for geometric distribution")
-        ("measurements", po::value< std::vector<std::string>>(&measurements),
-            "space separated measurements from: {scan, codecs, separate, integrated}")
+        ("operation", po::value< std::vector<std::string>>(&operations),
+            "operation to run, one from: {scan, codecs, separate, integrated, convert}")
         ("datafile", po::value<std::string>(&datafile),
             "path to datafile file, currently supported filenames: {*adult.csv, *ocr.csv, *sift_20.csv, *sift_4.5m.csv, *tweets_20.csv, *tweets.csv}")
+        ("codec", po::value<std::string>(&codec)->default_value(std::string("all")),
+            "codec to use (works with \"integrated\" and \"convert\" operations), one from: {all, no, copy, d1, bp32, varint, bp32-copy, bp32-varint}")
         ("dest", po::value<std::string>(&dest)->default_value(std::string("../results")),
             "destination directory");
 
     po::positional_options_description pdesc;
-    pdesc.add("measurements", 1);
+    pdesc.add("operation", 1);
     pdesc.add("datafile", 1);
+    pdesc.add("codec", 1);
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv). options(desc).positional(pdesc).run(), vm);
@@ -589,9 +605,9 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!vm.count("measurements"))
+    if (!vm.count("operation"))
     {
-        std::cerr << "No measurements to run" << std::endl;
+        std::cerr << "No operation to run" << std::endl;
         return 1;
     }
 
@@ -606,7 +622,7 @@ int main(int argc, char **argv)
     }
 
     std::ofstream ofs;
-    for (auto it = measurements.begin(); it != measurements.end(); it++)
+    for (auto it = operations.begin(); it != operations.end(); it++)
     {
         if (*it == std::string("scan")){
             std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
@@ -621,7 +637,7 @@ int main(int argc, char **argv)
             ofs.close();
         }
         else if (*it == std::string("separate")){
-            std::cerr << "separate kernel measurements not yet implemented" << std::endl;
+            std::cerr << "separate kernel operation not yet implemented" << std::endl;
             return 1;
         }
         else if (*it == std::string("integrated")){
@@ -631,19 +647,19 @@ int main(int argc, char **argv)
                 return 1;
             }
             openResultsFile(ofs, dest, *it, datafile);
-            runGENIE(datafile, ofs);
+            runGENIE(datafile, codec, ofs);
             ofs.close();
         }
-        else if (*it == std::string("compress")){
+        else if (*it == std::string("convert")){
             if (!vm.count("datafile"))
             {
-                std::cerr << "Operation \"compress\" requires a datafile argument!" << std::endl;
+                std::cerr << "Operation \"convert\" requires a datafile argument!" << std::endl;
                 return 1;
             }
-            convertTableToAllBinaryFormats(datafile);
+            convertTableToBinaryFormats(datafile, codec);
         }
         else {
-            std::cerr << "Unknown measurement: " << *it << std::endl;
+            std::cerr << "Unknown operation: " << *it << std::endl;
             return 1;
         }
     }
