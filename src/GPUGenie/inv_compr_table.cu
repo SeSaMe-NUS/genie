@@ -35,6 +35,16 @@ GPUGenie::inv_compr_table::initCodecs() {
 std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
 GPUGenie::inv_compr_table::m_codecs = GPUGenie::inv_compr_table::initCodecs();
 
+std::shared_ptr<GPUGenie::DeviceIntegerCODEC> GPUGenie::inv_compr_table::getCodec(const std::string &codecId)
+{
+    if(m_codecs.find(codecId) == m_codecs.end()) {
+        Logger::log(Logger::ALERT, "Unknown codec %s.", codecId.c_str());
+        return std::shared_ptr<GPUGenie::DeviceIntegerCODEC>(nullptr);
+    }
+    return m_codecs[codecId];
+}
+
+
 
 void
 GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)

@@ -43,8 +43,9 @@ protected:
 
     static std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>> m_codecs;
 
-
 public:
+
+    static std::shared_ptr<GPUGenie::DeviceIntegerCODEC> getCodec(const std::string &codecId);
 
     /*! \fn inv_compr_table()
      *  \brief Default constructor of the inv_compr_table.

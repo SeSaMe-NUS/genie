@@ -44,7 +44,6 @@ GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, 
                 out += Bs[i];
             }
         }
-        assert(out - initout <= (int)nvalue);
         nvalue = out - initout;
     }
 
@@ -216,7 +215,6 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
         uint32_t packed = d_in[s_bitOffsets[blockNum] + firstBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH]; 
         int firstBitInPacked = firstBit % 32;
         uint32_t packedOverflow = d_in[s_bitOffsets[blockNum] + lastBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
-        // assert(lastBit % 32 != firstBitInPacked);
 
         bool isOverflowing = lastBit % 32 < firstBitInPacked;
         int lastBitInPacked = isOverflowing ? 31 : lastBit % 32;

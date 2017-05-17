@@ -337,6 +337,46 @@ std::string getBinaryFileName(const std::string &dataFile, const std::string &co
     return binaryInvTableFile;
 }
 
+void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
+{
+    std::vector<int> &inv = *(comprTable->uncompressedInv());
+    std::vector<int> &invPos = *(comprTable->uncompressedInvPos());
+    std::vector<uint32_t> &compressedInv = *(comprTable->compressedInv());
+    std::vector<int> &compressedInvPos = *(comprTable->compressedInvPos());
+    size_t maxUncomprLength = comprTable->getUncompressedPostingListMaxLength();
+
+
+    std::shared_ptr<GPUGenie::DeviceIntegerCODEC> codec = GPUGenie::inv_compr_table::getCodec(comprTable->getCompression());
+
+    // A vector for decompressing inv lists
+    std::vector<uint32_t> uncompressedInv(maxUncomprLength,0);
+    uint32_t *out = uncompressedInv.data();
+    for (int pos = 0; pos < (int)compressedInvPos.size()-1; pos++)
+    {
+        int comprInvStart = compressedInvPos[pos];
+        int comprInvEnd = compressedInvPos[pos+1];
+        assert(comprInvEnd - comprInvStart > 0 && comprInvEnd - comprInvStart <= (int)maxUncomprLength);
+
+        uint32_t * in = compressedInv.data() + comprInvStart;
+        size_t uncomprLength = maxUncomprLength;
+        codec->decodeArray(in, comprInvEnd - comprInvStart, out, uncomprLength);
+
+        // Check if the compressed length (uncomprLength) from encodeArray(...) does not exceed the max_length constraint
+        // of the compressed list
+        assert(uncomprLength > 0 && uncomprLength <= maxUncomprLength);
+
+        int uncomprInvStart = invPos[pos];
+        int uncomprInvEnd = invPos[pos+1];
+        int expectedUncomrLength = uncomprInvEnd - uncomprInvStart;
+        assert(expectedUncomrLength == (int)uncomprLength);
+
+        for (int i = 0; i < uncomprLength; i++){
+            assert((int)uncompressedInv[i] == inv[uncomprInvStart+i]);
+        }
+
+    }
+}
+
 
 std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
 {
@@ -365,6 +405,9 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
         // check the compression was actually used in the table
         assert(config.compression == comprTable->getCompression());
+        // Check decompression on CPU
+        Logger::log(Logger::INFO, "Verifying compression on CPU...", dataFile.c_str());
+        verifyTableCompression(comprTable);
     }
 
     if (!inv_table::write(binaryInvTableFile.c_str(), table)) {
@@ -403,8 +446,7 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
               << ", file: " << binaryInvTableFile << " (" << config.row_num << " rows)" 
               << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
               << ", topk: " << config.num_of_topk
-              << ", compression: " << config.compression
-              << ", ";
+              << ", compression: " << (config.compression.empty() ? "no" : config.compression.c_str()) << std::endl;
 
     GPUGenie::knn_search(*table, refQueries, refResultIdxs, refResultCounts, config);
     // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
