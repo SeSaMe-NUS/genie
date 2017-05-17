@@ -13,6 +13,7 @@
 using namespace std;
 
 #include "query.h"
+#include "inv_compr_table.h"
 
 #include "Logger.h"
 
@@ -411,6 +412,56 @@ void GPUGenie::query::build_sequence()
 
 
 
+void GPUGenie::query::build_compressed(int max_load)
+{
+    inv_compr_table& table = *dynamic_cast<inv_compr_table*>(_ref_table);
+    vector<int>& inv_index = *table.inv_index();
+    vector<int>& inv_pos = *table.inv_pos();
+
+    for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
+            di != _attr_map.end(); ++di)
+    {
+        int index = di->first;
+        std::vector<range>& ranges = *(di->second);
+        int d = index << _ref_table->shifter();
+
+        if (ranges.empty())
+            continue;
+
+        if (_dim_map.find(index) == _dim_map.end())
+            _dim_map[index] = new std::vector<dim>;
+
+        for (unsigned int i = 0; i < ranges.size(); ++i)
+        {
+
+            range& ran = ranges[i];
+            int low = ran.low;
+            int up = ran.up;
+
+            if(low > up || low > table.get_upperbound_of_list(index) || up < table.get_lowerbound_of_list(index))
+                continue;
+
+            low = std::max(low, table.get_lowerbound_of_list(index));
+            up = std::min(up, table.get_upperbound_of_list(index));
+
+            int _min, _max;
+            _min = d + low - table.get_lowerbound_of_list(index);
+            _max = d + up - table.get_lowerbound_of_list(index);
+
+            dim new_dim;
+            new_dim.weight = ran.weight;
+            new_dim.query = _index;
+            new_dim.order = ran.order;
+            new_dim.start_pos = inv_pos[inv_index[_min]];
+            new_dim.end_pos = inv_pos[inv_index[_max+1]];
+
+            assert(new_dim.end_pos - new_dim.start_pos < max_load);
+
+            _dim_map[index]->push_back(new_dim);
+        }
+
+    }
+}
 
 
 int GPUGenie::query::dump(vector<dim>& vout)

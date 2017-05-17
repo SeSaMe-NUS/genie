@@ -231,8 +231,11 @@ public:
      *  sublists. This function is to re-locate query range on the inverted list, based on the sublists locations.
      *
      */
-	void
-	build_and_apply_load_balance(int max_load);
+    void
+    build_and_apply_load_balance(int max_load);
+
+    void
+	build_compressed(int max_load);
 
 	/*! \fn void topk(int k)
 	 *  \brief Set top k matches.

@@ -86,6 +86,40 @@ std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 std::map<std::string, IntegratedKernelPtr> integratedKernels = initIntegratedKernels();
 
 
+int build_queries(vector<query>& queries, inv_table *table, vector<query::dim>& dims, int max_load)
+{
+    inv_compr_table* ctable = dynamic_cast<inv_compr_table*>(table);
+    assert(table->build_status() == inv_table::builded);
+    assert(ctable);
+    assert(ctable->shift_bits_sequence == 0);
+
+    u64 query_build_start, query_build_stop;
+    query_build_start = getTime();
+        
+    int max_count = -1;
+    for (unsigned int i = 0; i < queries.size(); ++i)
+    {
+        assert (queries[i].ref_table() == table);
+        queries[i].build_compressed(max_load);
+    
+        int prev_size = dims.size();
+        queries[i].dump(dims);
+
+        int count = dims.size() - prev_size;
+
+        if(count > max_count)
+            max_count = count;
+    }
+
+    query_build_stop = getTime();
+    Logger::log(Logger::INFO, ">>>>[time profiling]: match: build_queries function takes %f ms. ",
+            getInterval(query_build_start, query_build_stop));
+
+    Logger::log(Logger::DEBUG, " dims size: %d.", dims.size());
+
+    return max_count;
+
+}
 
 template <class Codec> __global__ void
 match_adaptiveThreshold_integrated(
