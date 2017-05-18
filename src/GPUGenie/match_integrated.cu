@@ -86,11 +86,9 @@ std::map<std::string, IntegratedKernelPtr> initIntegratedKernels()
 std::map<std::string, IntegratedKernelPtr> integratedKernels = initIntegratedKernels();
 
 
-int build_queries(vector<query>& queries, inv_table *table, vector<query::dim>& dims, int max_load)
+int build_compressed_queries(vector<query>& queries, inv_compr_table *ctable, vector<query::dim>& dims, int max_load)
 {
-    inv_compr_table* ctable = dynamic_cast<inv_compr_table*>(table);
-    assert(table->build_status() == inv_table::builded);
-    assert(ctable);
+    assert(ctable->build_status() == inv_table::builded);
     assert(ctable->shift_bits_sequence == 0);
 
     u64 query_build_start, query_build_stop;
@@ -99,7 +97,7 @@ int build_queries(vector<query>& queries, inv_table *table, vector<query::dim>& 
     int max_count = -1;
     for (unsigned int i = 0; i < queries.size(); ++i)
     {
-        assert (queries[i].ref_table() == table);
+        assert (queries[i].ref_table() == ctable);
         queries[i].build_compressed(max_load);
     
         int prev_size = dims.size();
@@ -321,7 +319,7 @@ match_integrated(
 
         vector<query::dim> dims;        
         //number of maximum count per query
-        u32 num_of_max_count = build_queries(queries, table, dims, table.getUncompressedPostingListMaxLength());
+        u32 num_of_max_count = build_compressed_queries(queries, &table, dims, table.getUncompressedPostingListMaxLength());
 
         Logger::log(Logger::DEBUG, "num_of_max_count: %d", num_of_max_count);
         

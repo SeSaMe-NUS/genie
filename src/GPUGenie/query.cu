@@ -448,16 +448,33 @@ void GPUGenie::query::build_compressed(int max_load)
             _min = d + low - table.get_lowerbound_of_list(index);
             _max = d + up - table.get_lowerbound_of_list(index);
 
-            dim new_dim;
-            new_dim.weight = ran.weight;
-            new_dim.query = _index;
-            new_dim.order = ran.order;
-            new_dim.start_pos = inv_pos[inv_index[_min]];
-            new_dim.end_pos = inv_pos[inv_index[_max+1]];
+            int beginInvListIndex = inv_index[_min]; // Index to inv_pos array of the first valid inverted list
+            int endInvListIndex = inv_index[_max+1]; // Index to inv_pos array after the last valid inverted list
+            assert (endInvListIndex > beginInvListIndex);
 
-            assert(new_dim.end_pos - new_dim.start_pos < max_load);
+            if (max_load <= 0){
+                // Check that we are definitely not using multirange, i.e. check there is only one inv list in the
+                // compiled query
+                assert(inv_index[_min] + 1 == inv_index[_max+1]);
+            } else {
+                // Check that all the inverted lists in the compiled query will be smaller than max load
+                for (int ipos = beginInvListIndex; ipos < endInvListIndex; ipos++){
+                    assert(inv_pos[ipos+1] - inv_pos[ipos+1] <= max_load);
+                }
+            }
 
-            _dim_map[index]->push_back(new_dim);
+            // Generate compiled queries
+            std::vector<dim> *compiledQueriesVec = _dim_map[index];
+            for (int ipos = beginInvListIndex; ipos < endInvListIndex; ipos++){
+                dim new_dim;
+                new_dim.weight = ran.weight;
+                new_dim.query = _index;
+                new_dim.order = ran.order;
+                new_dim.start_pos = inv_pos[ipos];
+                new_dim.end_pos = inv_pos[ipos+1];
+
+                compiledQueriesVec->push_back(new_dim);
+            }
         }
 
     }
