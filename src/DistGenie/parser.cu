@@ -110,7 +110,7 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
 		if (0 == g_mpi_rank)
-			cout << "Invalid query format" << endl;
+			cout << "Query is not a valid JSON document" << endl;
 		return false;
 	}
 
@@ -122,7 +122,7 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 	}
 	if (!json_query["topk"].IsInt()) {
 		if (0 == g_mpi_rank)
-			cout << "Entry topk has wrong type" << endl;
+			cout << "Entry topk should be an interger" << endl;
 		return false;
 	}
 	if (!json_query.HasMember("queries")) {
@@ -132,31 +132,60 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 	}
 	if (!json_query["queries"].IsArray()) {
 		if (0 == g_mpi_rank)
-			cout << "Entry queries has wrong type" << endl;
+			cout << "Entry queries should be an array" << endl;
 		return false;
 	}
-	// TODO: add new validation for checking clusters
+	else
+	{
+		for (auto &&single_query_json : json_query["queries"].GetArray())
+		{
+			if (!single_query_json.HasMember("content"))
+			{
+				if (0 == g_mpi_rank)
+					cout << "Some query misses the content section" << endl;
+				return false;
+			}
+			if (!single_query_json["content"].IsArray())
+			{
+				if (0 == g_mpi_rank)
+					cout << "Query's content section should be an array" << endl;
+				return false;
+			}
+			if (!single_query_json.HasMember("clusters"))
+			{
+				if (0 == g_mpi_rank)
+					cout << "Some query misses the clusters section" << endl;
+				return false;
+			}
+			if (!single_query_json["clusters"].IsArray())
+			{
+				if (0 == g_mpi_rank)
+					cout << "Query's clusters section should be an array" << endl;
+				return false;
+			}
+		}
+	}
 
 	int topk;
 	topk = json_query["topk"].GetInt();
 	extra_config.total_queries = json_query["queries"].Size();
 
-	for (auto it = clusters.begin(); it != clusters.end(); ++it)
+	for (auto &&cluster : clusters)
 	{
-		it->m_queries.clear();
-		it->m_queries_id.clear();
+		cluster.m_queries.clear();
+		cluster.m_queries_id.clear();
 	}
 	int id = 0;
-	for (auto &single_query_json : json_query["queries"].GetArray()) {
+	for (auto &&single_query_json : json_query["queries"].GetArray()) {
 		vector<int> single_query_content;
 		int cluster_id;
-		for (auto &query_value : single_query_json["content"].GetArray()) 
-			single_query_content.push_back(query_value.GetInt());
-		for (auto &cluster : single_query_json["clusters"].GetArray()) 
+		for (auto &&query_value : single_query_json["content"].GetArray()) 
+			single_query_content.emplace_back(query_value.GetInt());
+		for (auto &&cluster : single_query_json["clusters"].GetArray()) 
 		{
 			cluster_id = cluster.GetInt();
-			clusters.at(cluster_id).m_queries.push_back(single_query_content);
-			clusters.at(cluster_id).m_queries_id.push_back(id);
+			clusters.at(cluster_id).m_queries.emplace_back(single_query_content);
+			clusters.at(cluster_id).m_queries_id.emplace_back(id);
 		}
 		++id;
 	}
