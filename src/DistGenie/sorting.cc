@@ -1,6 +1,6 @@
 #include <mpi.h>
 #include <vector>
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__NVCC__)
 #include <parallel/algorithm>
 #else
 #include <algorithm>
@@ -40,7 +40,7 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 	}
 
 	for (auto &&single_result : local_results)
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__NVCC__)
 		__gnu_parallel::sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
 #else
 		sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
