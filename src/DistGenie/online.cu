@@ -28,6 +28,11 @@ using namespace GPUGenie;
 using namespace distgenie;
 using namespace std;
 
+/*
+ * Broadcast the query to all MPI ranks and execute
+ * search on all ranks. Then writes the output to file
+ * by MPI rank 0.
+ */
 static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
 		DistGenieConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
 {
@@ -71,7 +76,7 @@ static void WaitForGDB()
 
 /*
  * Calculates the global id offset for each table.
- * Offset will be used for generating outputs.
+ * Offset will be used for generating global output id.
  */
 static void CalculateIdOffset(vector<int> &id_offset, vector<inv_table*> &tables)
 {

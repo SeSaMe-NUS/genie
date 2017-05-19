@@ -7,22 +7,18 @@
 #include "parser.h"
 #include "global.h"
 
-static const int LOCAL_RANK = atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"));
+const int LOCAL_RANK = atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"));
 
 using namespace GPUGenie;
 using namespace rapidjson;
 using namespace std;
 
 /*
- * Checks whether all compulsory entries are present
- *
- * param json_config (INPUT) JSON config document
+ * Checks whether all compulsory entries
+ * are present in configuration file
  */
 static bool ValidateConfiguration(const Document &json_config)
 {
-	/*
-	 * maintain entries of different type in different vectors
-	 */
 	vector<string> string_entries, int_entries;
 	string_entries.push_back("data_file");
 	int_entries.push_back("dim");
@@ -33,9 +29,6 @@ static bool ValidateConfiguration(const Document &json_config)
 	int_entries.push_back("num_of_cluster");
 	int_entries.push_back("data_format");
 
-	/*
-	 * check entries' existence and type
-	 */
 	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
 		if (!json_config.HasMember(it->c_str())) {
 			if (0 == g_mpi_rank)
@@ -48,6 +41,7 @@ static bool ValidateConfiguration(const Document &json_config)
 			return false;
 		}	
 	}
+
 	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
 		if (!json_config.HasMember(it->c_str())) {
 			if (0 == g_mpi_rank)
@@ -60,21 +54,16 @@ static bool ValidateConfiguration(const Document &json_config)
 			return false;
 		}	
 	}
+
 	return true;
 }
 
 /*
  * Parse configuration file
- *
- * param config (OUTPUT) Config struct of GPUGenie
- * param extra_config (OUTPUT) Extra configuration for MPIGenie
- * param config_filename (INPUT) Configuration file name
  */
 void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, DistGenieConfig &extra_config, const string config_filename)
 {
-	/*
-	 * read json configuration from file and parse it
-	 */
+	/* read json configuration from file and parse it */
 	ifstream config_file(config_filename);
 	string config_file_content((istreambuf_iterator<char>(config_file)), istreambuf_iterator<char>());
 	config_file.close();
@@ -82,20 +71,15 @@ void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, DistGeni
 	if (json_config.Parse(config_file_content.c_str()).HasParseError())
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 
-	/*
-	 * validate the configuration
-	 */
+	/* validate the configuration */
 	if (!ValidateConfiguration(json_config))
 	{
 		if (0 == g_mpi_rank)
 			clog << "Configuration file validation failed" << endl;
 		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 	}
-	//cout << MPI_DEBUG << g_mpi_rank << " configuration validated" << endl;
 
-	/*
-	 * set configuration structs accordingly
-	 */
+	/* set configuration structs accordingly */
 	extra_config.data_file = json_config["data_file"].GetString();
 	extra_config.num_of_cluster = json_config["num_of_cluster"].GetInt();
 	extra_config.data_format = json_config["data_format"].GetInt();
@@ -130,7 +114,7 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 		return false;
 	}
 
-	// validation
+	/* validation */
 	if (!json_query.HasMember("topk")) {
 		if (0 == g_mpi_rank)
 			cout << "Entry topk is missing" << endl;
@@ -151,25 +135,17 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 			cout << "Entry queries has wrong type" << endl;
 		return false;
 	}
-	// TODO: add new validation
-	//for (auto &single_query : json_query["queries"].GetArray()) {
-	//	if (!single_query.IsArray()) {
-	//		cout << "Entry queries has wrong type" << endl;
-	//		return false;
-	//	}
-	//}
+	// TODO: add new validation for checking clusters
 
 	int topk;
 	topk = json_query["topk"].GetInt();
 	extra_config.total_queries = json_query["queries"].Size();
 
-	// clear the clusters
 	for (auto it = clusters.begin(); it != clusters.end(); ++it)
 	{
 		it->m_queries.clear();
 		it->m_queries_id.clear();
 	}
-	// push new data into clusters
 	int id = 0;
 	for (auto &single_query_json : json_query["queries"].GetArray()) {
 		vector<int> single_query_content;

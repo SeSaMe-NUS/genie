@@ -12,6 +12,11 @@
 
 using namespace std;
 
+/*
+ * Listen for query on 0.0.0.0:9090 and
+ * saves all queries in a queue for processing.
+ * The queue is shared between threads.
+ */
 void distgenie::scheduler::ListenForQueries(queue<string> &query_queue)
 {
 	/* initialize socket */

@@ -8,10 +8,11 @@
 using namespace GPUGenie;
 using namespace std;
 
-/* load queries for different tables in parallel */
+/*
+ * Load queries for different tables.
+ */
 static void LoadQueries(GPUGenie_Config &config, vector<inv_table*> &tables, vector<distgenie::Cluster> &clusters, vector<vector<query> > &queries)
 {
-//#pragma omp parallel for schedule(dynamic)
 	for (vector<distgenie::Cluster>::size_type i = 0; i < clusters.size(); ++i)
 	{
 		config.num_of_queries = clusters.at(i).m_queries.size();
@@ -22,7 +23,10 @@ static void LoadQueries(GPUGenie_Config &config, vector<inv_table*> &tables, vec
 }
 
 
-/* For pre-clustering version */
+/*
+ * Execute the query search on multiple tables. It
+ * builds the queries and calls GENIE to search them.
+ */
 void distgenie::search::ExecuteMultitableQuery(GPUGenie_Config &config, DistGenieConfig &extra_config,
 		vector<GPUGenie::inv_table*> &tables, vector<Cluster> &clusters, vector<Result> &results, vector<int> &id_offset)
 {

@@ -1,6 +1,10 @@
 #include <mpi.h>
 #include <vector>
+#ifdef __GNUC__
 #include <parallel/algorithm>
+#else
+#include <algorithm>
+#endif
 #include <functional>
 
 #include "sorting.h"
@@ -10,7 +14,9 @@
 using namespace std;
 using namespace distgenie;
 
-/* Merge result for multi-node & multi-cluster */
+/*
+ * Merge result from multiple nodes and tables
+ */
 void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
 		int topk, vector<Cluster> &clusters, vector<int> &id_offset)
 {
@@ -34,7 +40,11 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 	}
 
 	for (auto &&single_result : local_results)
+#ifdef __GNUC__
 		__gnu_parallel::sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
+#else
+		sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
+#endif
 
 	for (auto &&single_result : local_results)
 		for (int j = 0; j < topk; ++j)
