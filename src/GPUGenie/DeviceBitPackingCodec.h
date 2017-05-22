@@ -115,7 +115,7 @@ public:
     ~DeviceBitPackingCodec() {}
 
     std::string
-    name() const { return "DeviceBitPackingCodec"; }
+    name() const { return "BitPacking32"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 8; }
@@ -263,7 +263,7 @@ public:
     ~DeviceBitPackingPrefixedCodec() {}
 
     std::string
-    name() const { return "DeviceBitPackingPrefixedCodec"; }
+    name() const { return "BitPacking32Prefixed"; }
 
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }

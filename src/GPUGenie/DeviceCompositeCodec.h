@@ -13,23 +13,24 @@
 
 namespace GPUGenie {
 
+template <class CODEC> __global__ void
+g_decodeArrayParallel(
+    uint32_t *d_Input,
+    size_t arrayLength,
+    uint32_t *d_Output,
+    size_t capacity,
+    size_t *d_decomprLength);
+
+
 template <class CODEC> void
 decodeArrayParallel(
         int blocks,
-        int threads, 
+        int threads,
         uint32_t *d_Input,
         size_t arrayLength,
         uint32_t *d_Output,
         size_t capacity,
-        size_t *decomprLength = NULL);
-
-template <class CODEC> __global__ void
-g_decodeArrayParallel(
-        uint32_t *d_Input,
-        size_t arrayLength,
-        uint32_t *d_Output,
-        size_t capacity,
-        size_t *decomprLength = NULL);
+        size_t *d_decomprLength);
 
 
 class DeviceIntegerCODEC {
@@ -158,7 +159,7 @@ public:
     ~DeviceCopyMultiblockCodec() {}
 
     std::string
-    name() const { return "DeviceCopyMultiblockCodec"; }
+    name() const { return "CopyMB"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 65535; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
@@ -229,7 +230,7 @@ public:
     ~DeviceCopyCodec() {}
 
     std::string
-    name() const { return "DeviceCopyCodec"; }
+    name() const { return "Copy"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
@@ -262,7 +263,7 @@ public:
     ~DeviceDeltaCodec() {}
 
     std::string
-    name() const { return "DeviceDeltaCodec"; }
+    name() const { return "Delta"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
@@ -309,7 +310,7 @@ public:
     std::string
     name() const {
         std::ostringstream convert;
-        convert << "DeviceCompositeCodec_" << codec1.name() << "+" << codec2.name();
+        convert << "Composite<" << codec1.name() << "," << codec2.name() << ">";
         return convert.str();
     }
 

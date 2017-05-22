@@ -44,7 +44,7 @@ public:
     ~DeviceVarintCodec() {}
 
     std::string
-    name() const { return "DeviceVarintCodec"; }
+    name() const { return "Varint"; }
 
     __device__ __host__ int decodeArrayParallel_maxBlocks() { return 1; }
     __device__ __host__ int decodeArrayParallel_minEffectiveLength() { return 1; }
