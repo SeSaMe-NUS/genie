@@ -217,7 +217,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
         uint32_t packedOverflow = d_in[s_bitOffsets[blockNum] + lastBit / GPUGENIE_CODEC_BPP_BLOCK_LENGTH];
 
         bool isOverflowing = lastBit % 32 < firstBitInPacked;
-        int lastBitInPacked = isOverflowing ? 31 : lastBit % 32;
+        // int lastBitInPacked = isOverflowing ? 31 : lastBit % 32;
         int lastBitInPackedOverflow = !isOverflowing ? -1 : lastBit % 32;
 
         // compute decompressed value

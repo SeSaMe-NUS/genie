@@ -370,7 +370,7 @@ void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
         int expectedUncomrLength = uncomprInvEnd - uncomprInvStart;
         assert(expectedUncomrLength == (int)uncomprLength);
 
-        for (int i = 0; i < uncomprLength; i++){
+        for (int i = 0; i < (int)uncomprLength; i++){
             assert((int)uncompressedInv[i] == inv[uncomprInvStart+i]);
         }
 
