@@ -180,7 +180,7 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     uint comprLengthPow2 = GPUGenie::d_pow2ceil_32(comprLength);
     uint comprLength4 = (comprLength + 3) / 4;
     __syncthreads();
-    GPUGenie::d_scanExclusiveShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
+    GPUGenie::d_scanExclusivePerBlockShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
     __syncthreads();
 
     int decomprLength = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
