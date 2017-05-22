@@ -110,29 +110,29 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 	Document json_query;
 	if (json_query.Parse(query.c_str()).HasParseError()) {
 		if (0 == g_mpi_rank)
-			cout << "Query is not a valid JSON document" << endl;
+			cout << "Received query is not a valid JSON document" << endl;
 		return false;
 	}
 
 	/* validation */
 	if (!json_query.HasMember("topk")) {
 		if (0 == g_mpi_rank)
-			cout << "Entry topk is missing" << endl;
+			cout << "Entry 'topk' is missing" << endl;
 		return false;
 	}
 	if (!json_query["topk"].IsInt()) {
 		if (0 == g_mpi_rank)
-			cout << "Entry topk should be an interger" << endl;
+			cout << "Entry 'topk' should be an interger" << endl;
 		return false;
 	}
 	if (!json_query.HasMember("queries")) {
 		if (0 == g_mpi_rank)
-			cout << "Entry query is missing" << endl;
+			cout << "Entry 'queries' is missing" << endl;
 		return false;
 	}
 	if (!json_query["queries"].IsArray()) {
 		if (0 == g_mpi_rank)
-			cout << "Entry queries should be an array" << endl;
+			cout << "Entry 'queries' should be an array" << endl;
 		return false;
 	}
 	else
@@ -142,25 +142,25 @@ bool distgenie::parser::ValidateAndParseQuery(GPUGenie_Config &config, DistGenie
 			if (!single_query_json.HasMember("content"))
 			{
 				if (0 == g_mpi_rank)
-					cout << "Some query misses the content section" << endl;
+					cout << "Some query misses the 'content' section" << endl;
 				return false;
 			}
 			if (!single_query_json["content"].IsArray())
 			{
 				if (0 == g_mpi_rank)
-					cout << "Query's content section should be an array" << endl;
+					cout << "Query's 'content' section should be an array" << endl;
 				return false;
 			}
 			if (!single_query_json.HasMember("clusters"))
 			{
 				if (0 == g_mpi_rank)
-					cout << "Some query misses the clusters section" << endl;
+					cout << "Some query misses the 'clusters' section" << endl;
 				return false;
 			}
 			if (!single_query_json["clusters"].IsArray())
 			{
 				if (0 == g_mpi_rank)
-					cout << "Query's clusters section should be an array" << endl;
+					cout << "Query's 'clusters' section should be an array" << endl;
 				return false;
 			}
 		}

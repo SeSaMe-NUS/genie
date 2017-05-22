@@ -20,9 +20,17 @@ using namespace distgenie;
 void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<vector<int> > &h_topk_count,
 		int topk, vector<Cluster> &clusters, vector<int> &id_offset)
 {
-	vector<int> local_results_topk, local_results_topk_count;
-	local_results_topk.reserve(results.size() * topk);
-	local_results_topk_count.reserve(results.size() * topk);
+	/* build custom MPI datatype for std::pair<int, int> */
+	MPI_Datatype pair_type;
+	MPI_Datatype array_of_types[2] = {MPI_INT, MPI_INT};
+	int array_of_blocklengths[2] = {1, 1};
+	MPI_Aint array_of_displacements[2] = {0, sizeof(int)};
+	MPI_Type_create_struct(2, array_of_blocklengths, array_of_displacements, array_of_types, &pair_type);
+	MPI_Type_commit(&pair_type);
+
+	//vector<int> local_results_topk, local_results_topk_count;
+	//local_results_topk.reserve(results.size() * topk);
+	//local_results_topk_count.reserve(results.size() * topk);
 	vector<Result> local_results(results.size());
 
 	/* for each cluster */
@@ -46,35 +54,43 @@ void MergeResult(vector<Result> &results, vector<vector<int> > &h_topk, vector<v
 		sort(single_result.begin(), single_result.end(), std::greater<std::pair<int, int> >());
 #endif
 
-	for (auto &&single_result : local_results)
-		for (int j = 0; j < topk; ++j)
-		{
-			local_results_topk.push_back(single_result.at(j).second);
-			local_results_topk_count.push_back(single_result.at(j).first);
-		}
+	//for (auto &&single_result : local_results)
+	//	for (int j = 0; j < topk; ++j)
+	//	{
+	//		local_results_topk.push_back(single_result.at(j).second);
+	//		local_results_topk_count.push_back(single_result.at(j).first);
+	//	}
 
-	/* gather local results */
-	vector<int> final_result, final_result_count;
-	if (0 == g_mpi_rank)
+	///* gather local results */
+	//vector<int> final_result, final_result_count;
+	//if (0 == g_mpi_rank)
+	//{
+	//	final_result.resize(results.size() * topk * g_mpi_size);
+	//	final_result_count.resize(results.size() * topk * g_mpi_size);
+	//}
+	//MPI_Gather(local_results_topk.data(), results.size() * topk, MPI_INT, final_result.data(), results.size() * topk, MPI_INT, 0, MPI_COMM_WORLD);
+	//MPI_Gather(local_results_topk_count.data(), results.size() * topk, MPI_INT, final_result_count.data(), results.size() * topk, MPI_INT, 0, MPI_COMM_WORLD);
+	size_t i = 0;
+	for (auto &&single_result : local_results)
 	{
-		final_result.resize(results.size() * topk * g_mpi_size);
-		final_result_count.resize(results.size() * topk * g_mpi_size);
+		if (0 == g_mpi_rank)
+			results.at(i).resize(topk * g_mpi_size);
+		MPI_Gather(single_result.data(), topk, pair_type, results.at(i).data(), topk, pair_type, 0, MPI_COMM_WORLD);
+		++i;
 	}
-	MPI_Gather(local_results_topk.data(), results.size() * topk, MPI_INT, final_result.data(), results.size() * topk, MPI_INT, 0, MPI_COMM_WORLD);
-	MPI_Gather(local_results_topk_count.data(), results.size() * topk, MPI_INT, final_result_count.data(), results.size() * topk, MPI_INT, 0, MPI_COMM_WORLD);
 
 	/* put in the global result vector */
-	if (0 == g_mpi_rank)
-	{
-		for (size_t i = 0; i < results.size(); ++i)
-		{
-			results.at(i).reserve(topk * g_mpi_size);
-			for (int j = 0; j < g_mpi_size; ++j)
-				for (int k = 0; k < topk; ++k)
-					results.at(i).push_back(std::make_pair(
-								final_result_count.at(results.size() * topk * j + topk * i + k),
-								final_result.at(results.size() * topk * j + topk * i + k)
-					));
-		}
-	}
+	//if (0 == g_mpi_rank)
+	//{
+	//	for (size_t i = 0; i < results.size(); ++i)
+	//	{
+	//		results.at(i).reserve(topk * g_mpi_size);
+	//		for (int j = 0; j < g_mpi_size; ++j)
+	//			for (int k = 0; k < topk; ++k)
+	//				results.at(i).push_back(std::make_pair(
+	//							final_result_count.at(results.size() * topk * j + topk * i + k),
+	//							final_result.at(results.size() * topk * j + topk * i + k)
+	//				));
+	//	}
+	//}
 }
