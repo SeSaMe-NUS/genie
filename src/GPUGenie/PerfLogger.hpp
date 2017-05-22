@@ -19,24 +19,23 @@ public:
 
     bool setOutputFileStream(std::ofstream &ofs)
     {
-        assert(!m_ofs);
-        m_ofs = &ofs;
+        m_OFS = &ofs;
         return ofs.good();
     }
 
     std::ofstream& ofs(){
-        assert(m_ofs);
-        return *m_ofs;
+        return *m_OFS;
     }
 
     ~PerfLogger(){};
 
 private:
-    PerfLogger(){};
+    PerfLogger() : m_OFS(&m_nullOFS) {};
     PerfLogger(PerfLogger const&);
     PerfLogger& operator=(PerfLogger const&);
 
-    std::ofstream *m_ofs;
+    std::ofstream m_nullOFS;
+    std::ofstream *m_OFS;
 };
 
 }
