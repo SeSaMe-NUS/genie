@@ -124,6 +124,12 @@ slave3 slots=3
 slave4 slots=3
 ```
 
+Sometimes, you may need to specify which network interface to use
+
+```bash
+$ /path/to/mpi -np <n> -hostfile hosts --mca btl_tcp_if_include <interface> ./bin/odgenie static/online.config.json
+```
+
 **Modify the configuration file accordingly.** If you converted files into
 binary format, set `data_format` to be 1 in the configuration file.
 
