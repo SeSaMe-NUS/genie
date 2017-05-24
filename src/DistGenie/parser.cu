@@ -19,15 +19,16 @@ using namespace std;
  */
 static bool ValidateConfiguration(const Document &json_config)
 {
-	vector<string> string_entries, int_entries;
-	string_entries.push_back("data_file");
-	int_entries.push_back("dim");
-	int_entries.push_back("count_threshold");
-	int_entries.push_back("data_type");
-	int_entries.push_back("search_type");
-	int_entries.push_back("max_data_size");
-	int_entries.push_back("num_of_cluster");
-	int_entries.push_back("data_format");
+	vector<string> string_entries = {"data_file"};
+	vector<string> int_entries = {
+		"dim",
+		"count_threshold",
+		"data_type",
+		"search_type",
+		"max_data_size",
+		"num_of_cluster",
+		"data_format"
+	};
 
 	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
 		if (!json_config.HasMember(it->c_str())) {
