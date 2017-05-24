@@ -568,7 +568,7 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
     fillConfig(dataFile, config);
     config.query_points = &queryPoints;
 
-    GPUGenie::PerfLogger::get().ofs() << "codec,matchDecompr,conversion,totalMatchFun" << std::endl;
+    GPUGenie::PerfLogger::get().ofs() << "codec,queryCompilation,queryTransfer,dataTransfer,matchDecompr,conversion,totalMatchFun" << std::endl;
     GPUGenie::init_genie(config);
 
     if (codec == "all" || codec == "no")

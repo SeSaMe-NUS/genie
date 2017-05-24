@@ -786,15 +786,20 @@ void match(inv_table& table, vector<query>& queries,
         u64 query_end = getTime();
         cout << getInterval(query_start, query_end) << "ms." << endl;
 
-		if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
-		{
-			table.cpy_data_to_gpu();
-		}
-		if (bitmap_size)
-		{
-			thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
-		}
-		u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
+        u64 dataTransferStart, dataTransferEnd;
+        dataTransferStart = getTime();
+        if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
+        {
+            table.cpy_data_to_gpu();
+        }
+        dataTransferEnd  = getTime();
+        
+        if (bitmap_size)
+        {
+            thrust::fill(d_bitmap.begin(), d_bitmap.end(), 0u);
+        }
+        u32 * d_bitmap_p = raw_pointer_cast(d_bitmap.data());
+
 
 		Logger::log(Logger::INFO, "[ 30%] Allocating device memory to tables...");
 
@@ -913,9 +918,12 @@ void match(inv_table& table, vector<query>& queries,
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
         PerfLogger::get().ofs()
-            << "no" << ","
+            << "Vanilla" << ","
+            << std::fixed << std::setprecision(3) << getInterval(match_query_start, match_query_end) << ","
+            << std::fixed << std::setprecision(3) << getInterval(query_start, query_end) << ","
+            << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << ","
             << std::fixed << std::setprecision(3) << kernel_elapsed << ","
-            << std::fixed << std::setprecision(3) << "N/A" << ","
+            << std::fixed << std::setprecision(3) << 0.0 << ","
             << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << std::endl;
 
 	} catch(std::bad_alloc &e){

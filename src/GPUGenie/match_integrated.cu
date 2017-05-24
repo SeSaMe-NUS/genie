@@ -319,7 +319,13 @@ match_integrated(
 
         vector<query::dim> dims;        
         //number of maximum count per query
-        u32 num_of_max_count = build_compressed_queries(queries, &table, dims, table.getUncompressedPostingListMaxLength());
+        u64 queryCompilationStart, queryCompilationEnd;
+        queryCompilationStart = getTime();
+        u32 num_of_max_count = build_compressed_queries(
+            queries, &table, dims, table.getUncompressedPostingListMaxLength());
+        queryCompilationEnd = getTime();
+        Logger::log(Logger::DEBUG, "Query compilation time: %d",
+            getInterval(queryCompilationStart, queryCompilationEnd));
 
         Logger::log(Logger::DEBUG, "num_of_max_count: %d", num_of_max_count);
         
@@ -362,17 +368,22 @@ match_integrated(
         Logger::log(Logger::INFO, "[ 20%] Declaring device memory...");
 
 
-        u64 query_start, query_end;
-        query_start = getTime();
+        u64 queryTransferStart, queryTransferEnd;
+        queryTransferStart = getTime();
         thrust::device_vector<query::dim> d_dims(dims);
         query::dim* d_dims_p = thrust::raw_pointer_cast(d_dims.data());
-        query_end  = getTime();
-        Logger::log(Logger::DEBUG, "query_transfer time: %d",getInterval(query_start, query_end));
+        queryTransferEnd  = getTime();
+        Logger::log(Logger::DEBUG, "Query transfer time: %d",getInterval(queryTransferStart, queryTransferEnd));
+        
         
         // Make sure if we decompress a single lists from the table, we can fit it into shared memory
         assert(table.getUncompressedPostingListMaxLength() <= GPUGENIE_INTEGRATED_KERNEL_SM_SIZE);
+        u64 dataTransferStart, dataTransferEnd;
+        dataTransferStart = getTime();
         if (table.get_total_num_of_table() > 1 || !table.is_stored_in_gpu)
             table.cpy_data_to_gpu();
+        dataTransferEnd  = getTime();
+        Logger::log(Logger::DEBUG, "Data transfer time: %d",getInterval(dataTransferStart, dataTransferEnd));
 
         d_bitmap.resize(bitmap_size);
         if (bitmap_size)
@@ -525,6 +536,9 @@ match_integrated(
         Codec c;
         PerfLogger::get().ofs()
             << c.name() << ","
+            << std::fixed << std::setprecision(3) << getInterval(queryCompilationStart, queryCompilationEnd) << ","
+            << std::fixed << std::setprecision(3) << getInterval(queryTransferStart, queryTransferEnd) << ","
+            << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << ","
             << std::fixed << std::setprecision(3) << matchDecomprTime << ","
             << std::fixed << std::setprecision(3) << convertTime << ","
             << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << std::endl;
