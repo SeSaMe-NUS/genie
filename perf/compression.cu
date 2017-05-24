@@ -455,6 +455,9 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
 
     Logger::log(Logger::DEBUG, "Results from GENIE:");
     Logger::logResults(Logger::DEBUG, refQueries, refResultIdxs, refResultCounts);
+
+    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
+    delete[] table;
 }
 
 
