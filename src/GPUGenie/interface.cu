@@ -1112,7 +1112,10 @@ void GPUGenie::init_genie(GPUGenie_Config &config)
 		config.use_device = GPUGENIE_DEFAULT_DEVICE;
 	}
 	cudaCheckErrors(cudaSetDevice(config.use_device));
+    Logger::log(Logger::INFO, "Using device %d", config.use_device);
 
-	Logger::log(Logger::INFO, "Using device %d...", config.use_device);
+    
+    cudaCheckErrors(cudaFree(0));
+	Logger::log(Logger::INFO, "Initialized CUDA context.");
 }
 
