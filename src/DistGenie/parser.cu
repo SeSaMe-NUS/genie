@@ -27,7 +27,8 @@ static bool ValidateConfiguration(const Document &json_config)
 		"search_type",
 		"max_data_size",
 		"num_of_cluster",
-		"data_format"
+		"data_format",
+		"radius"
 	};
 
 	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
@@ -87,7 +88,7 @@ void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, DistGeni
 
 	config.dim = json_config["dim"].GetInt();
 	config.count_threshold = json_config["count_threshold"].GetInt();
-	config.query_radius = 0;
+	config.query_radius = json_config["radius"].GetInt();
 	config.use_device = LOCAL_RANK;
 	config.use_adaptive_range = false;
 	config.selectivity = 0.0f;
