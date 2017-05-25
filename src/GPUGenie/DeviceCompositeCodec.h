@@ -310,7 +310,7 @@ public:
     std::string
     name() const {
         std::ostringstream convert;
-        convert << "Composite<" << codec1.name() << "," << codec2.name() << ">";
+        convert << "Composite<" << codec1.name() << "+" << codec2.name() << ">";
         return convert.str();
     }
 

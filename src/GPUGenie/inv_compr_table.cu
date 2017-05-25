@@ -219,12 +219,8 @@ bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
     try{
         if(m_d_compr_inv_p == NULL)
             cudaCheckErrors(cudaMalloc(&m_d_compr_inv_p, sizeof(uint32_t) * m_comprInv.size()));
-        u64 t = getTime();
         cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(uint32_t) * m_comprInv.size(),
                 cudaMemcpyHostToDevice));
-        u64 tt = getTime();
-        std::cout<<"The compressed inverted list(all data) transfer time = " << getInterval(t,tt) << "ms" <<std::endl;
-
     } catch(std::bad_alloc &e){
         throw(GPUGenie::gpu_bad_alloc(e.what()));
     }
