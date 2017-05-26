@@ -69,23 +69,23 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, cons
 
     uint32_t mid[nvalue];
 
-    size_t nvalue1 = nvalue;
-    codec1.decodeArray(in, comprLength, mid, nvalue1);
+    size_t nvalue2 = nvalue;
+    codec2.decodeArray(in, comprLength, mid, nvalue2);
+    assert(nvalue2 <= nvalue); // Error - compression overflow
+    // if (nvalue2 > nvalue){ // Error - Codec2 does not have enough capacity
+    //     nvalue = nvalue2; // Set nvalue to required capacity of codec1
+    //     return in; // Return pointer to the deginning of the compressed array
+    // }
+    
+    size_t nvalue1 = nvalue; 
+    codec1.decodeArray(mid, nvalue2, out, nvalue1);
     assert(nvalue1 <= nvalue); // Error - compression overflow
     // if (nvalue1 > nvalue){ // Error - Codec1 does not have enough capacity
     //     nvalue = nvalue1; // Set nvalue to required capacity of codec1
     //     return in; // Return pointer to the deginning of the compressed array
     // }
-    
-    size_t nvalue2 = nvalue; 
-    codec2.decodeArray(mid, nvalue1, out, nvalue2);
-    assert(nvalue2 <= nvalue); // Error - compression overflow
-    // if (nvalue2 > nvalue){ // Error - Codec2 does not have enough capacity
-    //     nvalue = nvalue2; // Set nvalue to required capacity of codec2
-    //     return in; // Return pointer to the deginning of the compressed array
-    // }
 
-    nvalue = nvalue2;
+    nvalue = nvalue1;
     return out + nvalue2;
 }
 
@@ -111,36 +111,36 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArrayParallel(
 {
     __shared__ uint32_t s_Mid[GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH];
 
-    // Codec1 decompresses as much as it can
-    size_t nvalue1 = nvalue; // set capacity for codec1 to overall capacity
-    uint32_t *d_inAfterCodec1 = codec1.decodeArrayParallel(d_in, comprLength, s_Mid, nvalue1);
+    // Codec2 decompresses as much as it can
+    size_t nvalue2 = nvalue; // set capacity for codec2 to overall capacity
+    uint32_t *d_inAfterCodec2 = codec2.decodeArrayParallel(d_in, comprLength, s_Mid, nvalue2);
     __syncthreads();
     // Hard capacity verification
-    assert(nvalue1 <= nvalue); // Error - compression overflow
-    assert(d_inAfterCodec1 == d_in + comprLength);
+    assert(nvalue2 <= nvalue); // Error - compression overflow
+    assert(d_inAfterCodec2 == d_in + comprLength);
 
-    // // Soft capacit verification
-    // if (nvalue1 > nvalue){ // Error - Codec1 does not have enough capacity
-    //     nvalue = nvalue1; // Set nvalue to required capacity of codec1
-    //     return d_in; // Return pointer to the deginning of the compressed array
-    // }
-
-    // Codec2 decompresses the leftover
-    size_t nvalue2 = nvalue; // remaining capacity
-    uint32_t *s_MidAfterCodec2 = codec2.decodeArrayParallel(s_Mid, nvalue1, d_out, nvalue2);
-    __syncthreads();
-    // Hard capacity verification
-    assert(nvalue1 <= nvalue); // Error - compression overflow
-    assert(s_MidAfterCodec2 == s_Mid + nvalue1);
-
-    // // Soft capacit verification
+    // // Soft capacity verification
     // if (nvalue2 > nvalue){ // Error - Codec2 does not have enough capacity
-    //     nvalue = nvalue2; // Set nvalue to required capacity of codec1 + codec2
-    //     return d_in; // Return pointer to the deginning of the compressed array
+    //     nvalue = nvalue2; // Set nvalue to required capacity of codec2
+    //     return d_in; // Return pointer to the beginning of the compressed array
     // }
 
-    nvalue = nvalue2; // set nvalue to final uncompressed length
-    return d_inAfterCodec1;
+    // Codec1 decompresses the leftover
+    size_t nvalue1 = nvalue; // remaining capacity
+    uint32_t *s_MidAfterCodec1 = codec1.decodeArrayParallel(s_Mid, nvalue2, d_out, nvalue1);
+    __syncthreads();
+    // Hard capacity verification
+    assert(nvalue1 <= nvalue); // Error - compression overflow
+    assert(s_MidAfterCodec1 == s_Mid + nvalue2);
+
+    // // Soft capacity verification
+    // if (nvalue1 > nvalue){ // Error - Codec1 does not have enough capacity
+    //     nvalue = nvalue1; // Set nvalue to required capacity of codec2 + codec1
+    //     return d_in; // Return pointer to the beginning of the compressed array
+    // }
+
+    nvalue = nvalue1; // set nvalue to final uncompressed length
+    return d_inAfterCodec2;
 }
 
 
