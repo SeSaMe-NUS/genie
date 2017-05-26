@@ -3,6 +3,7 @@
  *
  */
 
+#include <algorithm>
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <fstream>
@@ -20,6 +21,7 @@
 #include <GPUGenie/PerfLogger.hpp>
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
+#include <GPUGenie/DeviceSerialCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
 #include <GPUGenie/DeviceVarintCodec.h>
 #include <GPUGenie/scan.h> 
@@ -29,37 +31,65 @@ namespace po = boost::program_options;
 
  const int MAX_UNCOMPRESSED_LENGTH = 1024;
 
-std::shared_ptr<uint> generateRandomInput(size_t length, double geom_distr_coeff, int seed)
+
+/**
+ *  Generate data, where each number follows a geometrical distribution. Note that the array is not sorted and is
+ *  likely to have many repeated values.
+ *
+ *  \param geom_distr_coeff coefficient of the geometrical distribution (e.g. 0.5)
+ *  \param geom_distr_multiplier multiplicative base for numbers generated from the geometrical distribution
+ *
+ *  \return shared_ptr to the generated array
+ */
+std::shared_ptr<uint> generateRandomInput(size_t length, double geom_distr_coeff, double geom_distr_multiplier, int seed)
 {
     std::shared_ptr<uint> sp_h_Input(new uint[length], std::default_delete<uint[]>());
-    uint *h_Input = sp_h_Input.get();
 
-    srand(seed);
+    std::default_random_engine gen(seed);
+    std::geometric_distribution<int> gdist(geom_distr_coeff);
 
-    assert(sizeof(long int) >= 8); // otherwise there may be an overflow in these generated numbers
-    for (uint i = 0; i < length; i++)
+    for (int i = 0; i < (int)length; ++i)
+        sp_h_Input.get()[i] = gdist(gen) * geom_distr_multiplier;
+
+    return sp_h_Input;
+}
+
+/**
+ *  Generate data, where the (positive) difference between two subsequent numbers follows a geometrical distribution.
+ *  The distribution is already sorted.
+ *
+ *  \param geom_distr_coeff coefficient of the geometrical distribution (e.g. 0.5)
+ *  \param geom_distr_multiplier multiplicative base for the deltas generated from the geometrical distribution
+ *
+ *  \return shared_ptr to the generated array
+ */
+std::shared_ptr<uint> generateRandomDeltaInput(size_t length, double geom_distr_coeff, double geom_distr_multiplier, int seed)
+{
+    std::shared_ptr<uint> sp_h_Input(new uint[length], std::default_delete<uint[]>());
+
+    std::default_random_engine gen(seed);
+    std::geometric_distribution<int> gdist(geom_distr_coeff);
+
+    int number = 0, delta;
+    for (int i = 0; i < (int)length; ++i)
     {
-        switch (rand() % 5)
+        delta = (gdist(gen) * (geom_distr_multiplier)) + 1;
+        if (number + delta < number)
         {
-            case 0: // generate 1-7 bit number
-                h_Input[i] = (long int)rand() % (1 << 7);
-                break;
-            case 1: // generate 8-14 bit number
-                h_Input[i] = ((long int)rand() + (1 << 7)) % (1 << 15);
-                break;
-            case 2: // generate 15-21 bit number
-                h_Input[i] = ((long int)rand() + (1 << 14)) % (1 << 22);
-                break;
-            case 3: // generate 22-28 bit number
-                h_Input[i] = ((long int)rand() + (1 << 21)) % (1 << 28);
-                break;
-            case 4: // generate 29-32 bit number
-                h_Input[i] = ((long int)rand() + (1 << 28));
-                break;
+            Logger::log(Logger::ALERT,"Int overflow during generateRandomDeltaInput!");
+            exit(4);
         }
-        
+        number += delta;
+        sp_h_Input.get()[i] = number;
     }
     return sp_h_Input;
+}
+
+
+void printData(std::shared_ptr<uint> sp_h_Input, size_t length)
+{
+    std::copy(sp_h_Input.get(), sp_h_Input.get()+length, std::ostream_iterator<int>(std::cout,", "));
+    std::cout << std::endl;
 }
 
 /**
@@ -180,6 +210,20 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
     memset(h_InputCompr, 0, MAX_UNCOMPRESSED_LENGTH * sizeof(uint));
     codec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
 
+    if (comprLength > GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH) {
+        // Codecs cannot decompress across mutliple blocks, where each block can only decompress lists of length at most
+        // GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH
+        Logger::log(Logger::DEBUG, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Compressed list too long",
+            codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
+        ofs << codec.name() << ","
+            << arrayLength << ","
+            << comprLength << ","
+            << std::fixed << std::setprecision(3) << 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength) << ","
+            << std::fixed << std::setprecision(3) << 0 << ","
+            << std::fixed << std::setprecision(3) << 0 << std::endl;
+        return;
+    }
+
     // Copy compressed array to GPU
     cudaCheckErrors(cudaMemcpy(d_InputCompr, h_InputCompr, MAX_UNCOMPRESSED_LENGTH * sizeof(uint), cudaMemcpyHostToDevice));
     // Clear working memory on both GPU and CPU
@@ -268,6 +312,33 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
         runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
                 (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+
+    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
     free(h_OutputCPU);
     free(h_OutputGPU);
@@ -528,7 +599,7 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
     config.use_multirange = false;
     config.data_type = 0;
     config.multiplier = 1.0f;
-    config.use_device = 2;
+    config.use_device = 1;
     config.query_points = nullptr;
     config.data_points = nullptr;
 }
@@ -624,7 +695,7 @@ int main(int argc, char **argv)
 {    
     Logger::log(Logger::INFO,"Running %s", argv[0]);
 
-    double geom_distr_coeff;
+    double geom_distr_coeff, geom_distr_multiplier;
     int srand;
     std::string dest, datafile, codec;
     std::vector<std::string> operations;
@@ -635,8 +706,10 @@ int main(int argc, char **argv)
             "produce help message")
         ("srand", po::value<int>(&srand)->default_value(666),
             "seed for input data generator")
-        ("geom_distr_coeff", po::value<double>(&geom_distr_coeff)->default_value(0.9),
-            "coefficient for geometric distribution")
+        ("geom_distr_coeff,gdc", po::value<double>(&geom_distr_coeff)->default_value(0.005),
+            "coefficient for geometric distribution (known as 'p')")
+        ("geom_distr_multiplier,gdm", po::value<double>(&geom_distr_multiplier)->default_value(1.0),
+            "multiplicative coefficient for numbers generated from the geometric_distribution")
         ("operation", po::value< std::vector<std::string>>(&operations),
             "operation to run, one from: {scan, codecs, separate, integrated, convert}")
         ("datafile", po::value<std::string>(&datafile),
@@ -667,36 +740,34 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (vm.count("srand"))
-    {
-        std::cerr << "srand not yet implemented" << std::endl;
-    }
-
-    if (vm.count("geom_distr_coeff"))
-    {
-        std::cerr << "geom_distr_coeff not yet implemented" << std::endl;
-    }
-
     std::ofstream ofs;
     for (auto it = operations.begin(); it != operations.end(); it++)
     {
-        if (*it == std::string("scan")){
-            std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
+        if (*it == std::string("scan"))
+        {
+            std::shared_ptr<uint> h_Input =
+                    generateRandomDeltaInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, geom_distr_multiplier, srand);
+            // printData(h_Input, 2048);
             openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureScan(h_Input, ofs);
             ofs.close();
         }
-        else if (*it == std::string("codecs")){
-            std::shared_ptr<uint> h_Input = generateRandomInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, srand);
+        else if (*it == std::string("codecs"))
+        {
+            std::shared_ptr<uint> h_Input =
+                    generateRandomDeltaInput(MAX_UNCOMPRESSED_LENGTH, geom_distr_coeff, geom_distr_multiplier, srand);
+            // printData(h_Input, MAX_UNCOMPRESSED_LENGTH);
             openResultsFile(ofs, dest, *it, srand, geom_distr_coeff);
             measureCodecs(h_Input, ofs);
             ofs.close();
         }
-        else if (*it == std::string("separate")){
+        else if (*it == std::string("separate"))
+        {
             std::cerr << "separate kernel operation not yet implemented" << std::endl;
             return 1;
         }
-        else if (*it == std::string("integrated")){
+        else if (*it == std::string("integrated"))
+        {
             if (!vm.count("datafile"))
             {
                 std::cerr << "Measurement \"intergrated\" requires a datafile argument!" << std::endl;
@@ -706,7 +777,8 @@ int main(int argc, char **argv)
             runGENIE(datafile, codec, ofs);
             ofs.close();
         }
-        else if (*it == std::string("convert")){
+        else if (*it == std::string("convert"))
+        {
             if (!vm.count("datafile"))
             {
                 std::cerr << "Operation \"convert\" requires a datafile argument!" << std::endl;
@@ -714,7 +786,8 @@ int main(int argc, char **argv)
             }
             convertTableToBinaryFormats(datafile, codec);
         }
-        else {
+        else
+        {
             std::cerr << "Unknown operation: " << *it << std::endl;
             return 1;
         }
