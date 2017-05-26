@@ -28,34 +28,48 @@ static bool ValidateConfiguration(const Document &json_config)
 		"max_data_size",
 		"num_of_cluster",
 		"data_format",
-		"radius"
+		"radius",
 	};
+	//vector<string> float_entries = {"selectivity"};
 
-	for (auto it = string_entries.begin(); it != string_entries.end(); ++it) {
-		if (!json_config.HasMember(it->c_str())) {
+	for (auto &&entry : string_entries) {
+		if (!json_config.HasMember(entry.c_str())) {
 			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " is missing" << endl;
+				cout << "Entry " << entry.c_str() << " is missing" << endl;
 			return false;
 		}
-		if (!json_config[it->c_str()].IsString()) {
+		if (!json_config[entry.c_str()].IsString()) {
 			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " has wrong type" << endl;
+				cout << "Entry " << entry.c_str() << " has wrong type" << endl;
 			return false;
 		}	
 	}
 
-	for (auto it = int_entries.begin(); it != int_entries.end(); ++it) {
-		if (!json_config.HasMember(it->c_str())) {
+	for (auto &&entry : int_entries) {
+		if (!json_config.HasMember(entry.c_str())) {
 			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " is missing" << endl;
+				cout << "Entry " << entry.c_str() << " is missing" << endl;
 			return false;
 		}
-		if (!json_config[it->c_str()].IsInt()) {
+		if (!json_config[entry.c_str()].IsInt()) {
 			if (0 == g_mpi_rank)
-				cout << "Entry " << it->c_str() << " has wrong type" << endl;
+				cout << "Entry " << entry.c_str() << " has wrong type" << endl;
 			return false;
 		}	
 	}
+
+	//for (auto &&entry : float_entries) {
+	//	if (!json_config.HasMember(entry.c_str())) {
+	//		if (0 == g_mpi_rank)
+	//			cout << "Entry " << entry.c_str() << " is missing" << endl;
+	//		return false;
+	//	}
+	//	if (!json_config[entry.c_str()].IsFloat()) {
+	//		if (0 == g_mpi_rank)
+	//			cout << "Entry " << entry.c_str() << " has wrong type" << endl;
+	//		return false;
+	//	}	
+	//}
 
 	return true;
 }
@@ -90,8 +104,12 @@ void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, DistGeni
 	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = json_config["radius"].GetInt();
 	config.use_device = LOCAL_RANK;
-	config.use_adaptive_range = false;
+	//config.selectivity = json_config["selectivity"].GetFloat();
 	config.selectivity = 0.0f;
+	//if (config.selectivity > 0.0f)
+	//	config.use_adaptive_range = true;
+	//else
+		config.use_adaptive_range = false;
 	
 	config.use_load_balance = false;
 	config.posting_list_max_length = 6400;
