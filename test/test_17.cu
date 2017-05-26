@@ -13,6 +13,7 @@
 #include <GPUGenie/Timing.h>
 #include <GPUGenie/Logger.h>
 #include <GPUGenie/DeviceCompositeCodec.h>
+#include <GPUGenie/DeviceSerialCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
 #include <GPUGenie/DeviceVarintCodec.h>
 #include <GPUGenie/scan.h> 
@@ -78,21 +79,14 @@ bool testCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_Out
     size_t comprLength = SCAN_MAX_LARGE_ARRAY_SIZE;
     memset(h_InputCompr, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint));
     codec.encodeArray(h_Input, arrayLength, h_InputCompr, comprLength);
-    // assert(comprLength <= arrayLength);
 
-    // printf("codec.name(): %s\n", codec.name().c_str());
-    // printf("arrayLength: %lu\n", arrayLength);
-    // printf("comprLength: %lu\n", comprLength);
-
-    // printf("h_Input: ");
-    // for (uint i = 0; i < std::min((uint) arrayLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-    //     printf("%d ", h_Input[i]);
-    // printf("\n");
-
-    // printf("h_InputCompr: ");
-    // for (uint i = 0; i < std::min((uint) comprLength + 10, SCAN_MAX_LARGE_ARRAY_SIZE); i++)
-    //     printf("0x%08X ", h_InputCompr[i]);
-    // printf("\n");
+    if (comprLength > GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH) {
+        // Codecs cannot decompress across mutliple blocks, where each block can only decompress lists of length at most
+        // GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH
+        Logger::log(Logger::INFO, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Compressed list too long",
+            codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
+        return true;
+    }
 
     cudaCheckErrors(cudaMemcpy(d_InputCompr, h_InputCompr, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint), cudaMemcpyHostToDevice));
     cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
@@ -246,6 +240,41 @@ int main(int argc, char **argv)
 
     for (int i = 1; i <= 1024; i++)
         ok &= testCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+    
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+    
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+    
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+    
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+    
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
+                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
+    assert(ok);
+
+    for (int i = 1; i <= 1024; i++)
+        ok &= testCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
                 (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     assert(ok);
 
