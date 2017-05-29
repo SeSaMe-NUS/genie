@@ -5,7 +5,7 @@
 #include <SIMDCAI/include/util.h>
 #include <SIMDCAI/include/codecs.h>
 
-#include "DeviceCompositeCodec.h"
+#include "DeviceCodecs.h"
 #include "DeviceBitPackingHelpers.h"
 
 #include "scan.h"

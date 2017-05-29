@@ -26,7 +26,8 @@ template class
 GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
 
 // Explicit template instances for decoding wrapper function for Serial Codecs
-
+// NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
+// compilation units, as opposed to defining all these templates in one place
 template void
 GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
@@ -90,14 +91,6 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, cons
 }
 
 
-template <class Codec1, class Codec2> const uint32_t*
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArrayWithHint(
-            const uint32_t *in, const size_t comprLength, uint32_t *out, size_t &nvalue, size_t uncomprLength)
-{
-    return nullptr;
-}
-
-
 template <class Codec1, class Codec2> __device__ uint32_t*
 GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
@@ -141,13 +134,5 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArrayParallel(
 
     nvalue = nvalue1; // set nvalue to final uncompressed length
     return d_inAfterCodec2;
-}
-
-
-template <class Codec1, class Codec2> __device__ uint32_t*
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArrayParallelWithHint(
-            uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &nvalue, size_t uncomprLength)
-{
-    return nullptr;
 }
 

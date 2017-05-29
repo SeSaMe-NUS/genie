@@ -1,6 +1,16 @@
 #include "DeviceBitPackingCodec.h"
 
+#include "DeviceCodecTemplatesImpl.hpp"
+
 using namespace GPUGenie;
+
+// Explicit template instances for CPU decoding wrapper function of simple codecs
+// NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
+// compilation units, as opposed to defining all these templates in one place.
+template void
+GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+template void
+GPUGenie::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 void
 GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)

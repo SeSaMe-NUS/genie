@@ -28,6 +28,8 @@ set(LIB_SRC_LIST
   GPUGenie/heap_count.cu  
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cu
+  GPUGenie/DeviceCodecs.h
+  GPUGenie/DeviceCodecs.cu
   GPUGenie/DeviceCompositeCodec.h
   GPUGenie/DeviceCompositeCodec.cu
   GPUGenie/DeviceSerialCodec.h
