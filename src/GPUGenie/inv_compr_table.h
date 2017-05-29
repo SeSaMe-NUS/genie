@@ -27,7 +27,7 @@ class inv_compr_table : public inv_table
 {
 protected:
 
-    bool m_isCompressed;
+    bool m_isCompressed; // TODO unused -> remove (Caution: need to generate all the binary inverted tables again!)
 
     std::vector<uint32_t> m_comprInv;
 
@@ -114,6 +114,11 @@ public:
 
 
     uint32_t* deviceCompressedInv() const;
+
+    /**
+     *  Returns the compression ratio in bits per integer
+     */
+    double getCompressionRatio();
 
 
 

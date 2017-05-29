@@ -150,6 +150,19 @@ GPUGenie::inv_compr_table::getCompression() const
     return m_compression;
 }
 
+double
+GPUGenie::inv_compr_table::getCompressionRatio()
+{
+    if (this->build_status() != builded)
+    {
+        Logger::log(Logger::ALERT, "Unknown compression ratio: table is not built!");
+        return -1;
+    }
+    assert(m_comprInv.size());
+    assert(uncompressedInv()->size());
+    return 32.0 * static_cast<double>(m_comprInv.size()) / static_cast<double>(uncompressedInv()->size());
+}
+
 void
 GPUGenie::inv_compr_table::setCompression(const std::string &compression)
 {

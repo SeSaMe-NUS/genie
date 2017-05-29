@@ -919,12 +919,16 @@ void match(inv_table& table, vector<query>& queries,
 
         PerfLogger::get().ofs()
             << "Vanilla" << ","
-            << std::fixed << std::setprecision(3) << getInterval(match_query_start, match_query_end) << ","
-            << std::fixed << std::setprecision(3) << getInterval(query_start, query_end) << ","
-            << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << ","
-            << std::fixed << std::setprecision(3) << kernel_elapsed << ","
-            << std::fixed << std::setprecision(3) << 0.0 << ","
-            << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << std::endl;
+            << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << "," // "overallTime"
+            << std::fixed << std::setprecision(3) << getInterval(match_query_start, match_query_end) << "," // "queryCompilationTime"
+            << std::fixed << std::setprecision(3) << 0.0 << "," // "preprocessingTime"
+            << std::fixed << std::setprecision(3) << getInterval(query_start, query_end) << "," // "queryTransferTime"
+            << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << "," // "dataTransferTime"
+            << std::fixed << std::setprecision(3) << 0.0 << "," // "constantTransferTime"
+            << std::fixed << std::setprecision(3) << 0.0 << "," // "allocationTime"
+            << std::fixed << std::setprecision(3) << 0.0 << "," // "fillingTime"
+            << std::fixed << std::setprecision(3) << kernel_elapsed << "," // "matchingTime"
+            << std::fixed << std::setprecision(3) << 0.0 << ","; // "convertTime"
 
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());

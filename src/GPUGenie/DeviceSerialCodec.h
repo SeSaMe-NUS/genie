@@ -55,7 +55,7 @@ public:
     std::string
     name() const {
         std::ostringstream convert;
-        convert << "Serial<" << codec1.name() << "," << codec2.name() << ">";
+        convert << "Serial<" << codec1.name() << "+" << codec2.name() << ">";
         return convert.str();
     }
 

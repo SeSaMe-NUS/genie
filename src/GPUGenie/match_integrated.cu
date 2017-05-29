@@ -523,17 +523,16 @@ match_integrated(
     Codec c;
     PerfLogger::get().ofs()
         << c.name() << ","
-        << std::fixed << std::setprecision(3) << getInterval(overallStart, overallEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(queryCompilationStart, queryCompilationEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(preprocessingStart, preprocessingEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(queryTransferStart, queryTransferEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(constantTransferStart, constantTransferEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(allocationStart, allocationEnd) << ","
-        << std::fixed << std::setprecision(3) << getInterval(fillingStart, fillingEnd) << ","
-        << std::fixed << std::setprecision(3) << matchingTime << ","
-        << std::fixed << std::setprecision(3) << convertTime << std::endl;
-
+        << std::fixed << std::setprecision(3) << getInterval(overallStart, overallEnd) << "," // "overallTime"
+        << std::fixed << std::setprecision(3) << getInterval(queryCompilationStart, queryCompilationEnd) << "," // "queryCompilationTime"
+        << std::fixed << std::setprecision(3) << getInterval(preprocessingStart, preprocessingEnd) << "," // "preprocessingTime"
+        << std::fixed << std::setprecision(3) << getInterval(queryTransferStart, queryTransferEnd) << "," // "queryTransferTime"
+        << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << "," // "dataTransferTime"
+        << std::fixed << std::setprecision(3) << getInterval(constantTransferStart, constantTransferEnd) << "," // "constantTransferTime"
+        << std::fixed << std::setprecision(3) << getInterval(allocationStart, allocationEnd) << "," // "allocationTime"
+        << std::fixed << std::setprecision(3) << getInterval(fillingStart, fillingEnd) << "," // "fillingTime"
+        << std::fixed << std::setprecision(3) << matchingTime << "," // "matchingTime"
+        << std::fixed << std::setprecision(3) << convertTime << ","; // "convertTime"
 }
 
 }

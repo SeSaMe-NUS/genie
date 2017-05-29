@@ -578,8 +578,14 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
     // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, refResultIdxs, refResultCounts);
 
-    Logger::log(Logger::DEBUG, "Results from GENIE:");
-    Logger::logResults(Logger::DEBUG, refQueries, refResultIdxs, refResultCounts);
+    if (config.compression.empty()){
+        GPUGenie::PerfLogger::get().ofs() << std::fixed << std::setprecision(3) << 0.0 << std::endl; // "comprRatio"
+    }
+    else {
+        GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        GPUGenie::PerfLogger::get().ofs() << std::fixed << std::setprecision(3)
+                << comprTable->getCompressionRatio() << std::endl; // "comprRatio"
+    }
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
     delete[] table;
@@ -694,6 +700,7 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
     config.query_points = &queryPoints;
 
     GPUGenie::PerfLogger::get().ofs()
+        << "codec" << ","
         << "overallTime" << ","
         << "queryCompilationTime" << ","
         << "preprocessingTime" << ","
@@ -703,7 +710,8 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
         << "allocationTime" << ","
         << "fillingTime" << ","
         << "matchingTime" << ","
-        << "convertTime" << std::endl;
+        << "convertTime" << ","
+        << "comprRatio" << std::endl;
 
     GPUGenie::init_genie(config);
 
