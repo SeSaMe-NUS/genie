@@ -243,8 +243,10 @@ void GPUGenie::query::apply_adaptive_query_range()
 					count += table.get_posting_list_size(index, d.low);
 				}
 				if(!table.list_contain(index, d.up+1))
+				{
 					if (d.low == 0)
 						break;
+				}
 				else
 				{
 					d.up++;

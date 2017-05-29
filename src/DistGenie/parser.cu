@@ -30,7 +30,7 @@ static bool ValidateConfiguration(const Document &json_config)
 		"data_format",
 		"radius",
 	};
-	//vector<string> float_entries = {"selectivity"};
+	vector<string> float_entries = {"selectivity"};
 
 	for (auto &&entry : string_entries) {
 		if (!json_config.HasMember(entry.c_str())) {
@@ -58,18 +58,18 @@ static bool ValidateConfiguration(const Document &json_config)
 		}	
 	}
 
-	//for (auto &&entry : float_entries) {
-	//	if (!json_config.HasMember(entry.c_str())) {
-	//		if (0 == g_mpi_rank)
-	//			cout << "Entry " << entry.c_str() << " is missing" << endl;
-	//		return false;
-	//	}
-	//	if (!json_config[entry.c_str()].IsFloat()) {
-	//		if (0 == g_mpi_rank)
-	//			cout << "Entry " << entry.c_str() << " has wrong type" << endl;
-	//		return false;
-	//	}	
-	//}
+	for (auto &&entry : float_entries) {
+		if (!json_config.HasMember(entry.c_str())) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << entry.c_str() << " is missing" << endl;
+			return false;
+		}
+		if (!json_config[entry.c_str()].IsFloat()) {
+			if (0 == g_mpi_rank)
+				cout << "Entry " << entry.c_str() << " has wrong type" << endl;
+			return false;
+		}	
+	}
 
 	return true;
 }
@@ -104,11 +104,11 @@ void distgenie::parser::ParseConfigurationFile(GPUGenie_Config &config, DistGeni
 	config.count_threshold = json_config["count_threshold"].GetInt();
 	config.query_radius = json_config["radius"].GetInt();
 	config.use_device = LOCAL_RANK;
-	//config.selectivity = json_config["selectivity"].GetFloat();
-	config.selectivity = 0.0f;
-	//if (config.selectivity > 0.0f)
-	//	config.use_adaptive_range = true;
-	//else
+	config.selectivity = json_config["selectivity"].GetFloat();
+	//config.selectivity = 0.0f;
+	if (config.selectivity > 0.0f)
+		config.use_adaptive_range = true;
+	else
 		config.use_adaptive_range = false;
 	
 	config.use_load_balance = false;
