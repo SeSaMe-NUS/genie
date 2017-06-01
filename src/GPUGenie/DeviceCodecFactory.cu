@@ -36,6 +36,8 @@ std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> initCodecInstancesMap
     return map;
 }
 
+const std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> DeviceCodecFactory::codecInstancesMap = initCodecInstancesMap();
+
 // NOTE: Template instantiation of match_integrated is in match_integrated.cu
 //
 // TODO: Figure out a way how to separate match_integrated instances into multiple files, similar to how Codecs
@@ -63,6 +65,8 @@ std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> initIntegratedKernelsMap()
     return map;
 }
 
+const std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> DeviceCodecFactory::integratedKernelsMap = initIntegratedKernelsMap();
+
 std::map<COMPRESSION_TYPE, std::string> initCompressionNamesMap()
 {
     std::map<COMPRESSION_TYPE, std::string> map;    
@@ -70,6 +74,8 @@ std::map<COMPRESSION_TYPE, std::string> initCompressionNamesMap()
         map[it->first] = it->second->name();
     return map;
 }
+
+const std::map<COMPRESSION_TYPE, std::string> DeviceCodecFactory::compressionNamesMap = initCompressionNamesMap();
 
 std::map<std::string, COMPRESSION_TYPE> initCompressionTypesMap()
 {
@@ -79,14 +85,7 @@ std::map<std::string, COMPRESSION_TYPE> initCompressionTypesMap()
     return map;
 }
 
-const std::map<COMPRESSION_TYPE, std::string> DeviceCodecFactory::compressionNamesMap = initCompressionNamesMap();
-
 const std::map<std::string, COMPRESSION_TYPE> DeviceCodecFactory::compressionTypesMap = initCompressionTypesMap();
-
-const std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> DeviceCodecFactory::codecInstancesMap = initCodecInstancesMap();
-
-const std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> DeviceCodecFactory::integratedKernelsMap = initIntegratedKernelsMap();
-
 
 std::vector<std::string> initAllCompressionNames()
 {
@@ -97,7 +96,6 @@ std::vector<std::string> initAllCompressionNames()
 }
 
 const std::vector<std::string> DeviceCodecFactory::allCompressionNames = initAllCompressionNames();
-
 
 std::vector<COMPRESSION_TYPE> initAllCompressionTypes()
 {
