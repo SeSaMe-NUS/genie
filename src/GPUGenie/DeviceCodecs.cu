@@ -21,6 +21,71 @@ template void
 GPUGenie::decodeArrayParallel<DeviceDeltaCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 
+__device__ uint32_t*
+GPUGenie::DeviceCopyMultiblockCodec::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+{
+    if (length > nvalue){
+        // We do not have enough capacity in the decompressed array!
+        nvalue = length;
+        return d_in;
+    }
+    for (int i = 0; i < (int)length; i++)
+        d_out[i] = d_in[i];
+    nvalue = length;
+    return d_in + length;
+}
+
+__device__ uint32_t*
+GPUGenie::DeviceCopyMultiblockCodec::decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+{
+    assert(length <= gridDim.x * blockDim.x); // 1 thread copies one value
+    assert(length <= nvalue); // not enough capacity in the decompressed array!
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < length)
+        d_out[idx] = d_in[idx];
+    __syncthreads();
+
+    nvalue = length;
+    return d_in + length;
+}
+
+__device__ uint32_t*
+GPUGenie::DeviceCopyCodec::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+{
+    if (length > nvalue){
+        // We do not have enough capacity in the decompressed array!
+        nvalue = length;
+        return d_in;
+    }
+    for (int i = 0; i < length; i++)
+        d_out[i] = d_in[i];
+    nvalue = length;
+    return d_in + length;
+}
+
+
+__device__ uint32_t*
+GPUGenie::DeviceCopyCodec::decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+{
+    assert(length <= decodeArrayParallel_lengthPerBlock());
+    assert(length <= nvalue); // not enough capacity in the decompressed array!
+
+    int idx = threadIdx.x;
+    int fullThreadBlockLimit = length - decodeArrayParallel_threadsPerBlock();
+    int i = 0;
+    for (; i <= fullThreadBlockLimit; i += decodeArrayParallel_threadsPerBlock())
+    {
+        d_out[idx + i] = d_in[idx + i];
+    }
+    if (idx + i < length)
+        d_out[idx + i] = d_in[idx + i];
+    __syncthreads();
+
+    nvalue = length;
+    return d_in + length;
+}
+
 void
 GPUGenie::DeviceDeltaCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {

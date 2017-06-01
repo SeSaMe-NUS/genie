@@ -448,17 +448,18 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
     openResultsFile(ofs, destDir, fname);
 }
 
-std::string getBinaryFileName(const std::string &dataFile, const std::string &compression)
+std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE compression)
 {
     std::string invSuffix(".inv");
     std::string cinvSuffix(".cinv");
 
     std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
     std::string binaryInvTableFile;
-    if (compression.empty())
+    if (!compression)
         binaryInvTableFile = invTableFileBase + invSuffix;
     else
-        binaryInvTableFile = invTableFileBase + std::string(".") + compression + cinvSuffix;
+        binaryInvTableFile = invTableFileBase + std::string(".") +
+                DeviceCodecFactory::getCompressionName(compression) + cinvSuffix;
     return binaryInvTableFile;
 }
 
@@ -471,7 +472,7 @@ void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
     size_t maxUncomprLength = comprTable->getUncompressedPostingListMaxLength();
 
 
-    std::shared_ptr<GPUGenie::DeviceIntegerCODEC> codec = GPUGenie::inv_compr_table::getCodec(comprTable->getCompression());
+    std::shared_ptr<GPUGenie::DeviceIntegerCODEC> codec = DeviceCodecFactory::getCodec(comprTable->getCompression());
 
     // A vector for decompressing inv lists
     std::vector<uint32_t> uncompressedInv(maxUncomprLength,0);
@@ -508,7 +509,8 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
     std::string binaryInvTableFile = getBinaryFileName(dataFile, config.compression);
 
     Logger::log(Logger::INFO, "Converting table %s to %s (%s compression)...",
-        dataFile.c_str(), binaryInvTableFile.c_str(), config.compression.empty() ? "no" : config.compression.c_str());
+        dataFile.c_str(), binaryInvTableFile.c_str(),
+        !config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str());
 
     std::ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
@@ -525,7 +527,7 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
 
-    if (!config.compression.empty()){
+    if (config.compression){
         comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
         assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
         // check the compression was actually used in the table
@@ -550,7 +552,7 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
     GPUGenie::inv_table *table;
-    if (config.compression.empty()){
+    if (!config.compression){
         GPUGenie::inv_table::read(binaryInvTableFile.c_str(), table);
     }
     else {
@@ -571,14 +573,15 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
               << ", file: " << binaryInvTableFile << " (" << config.row_num << " rows)" 
               << ", queryFile: " << queryFile << " (" << config.num_of_queries << " queries)"
               << ", topk: " << config.num_of_topk
-              << ", compression: " << (config.compression.empty() ? "no" : config.compression.c_str()) << std::endl;
+              << ", compression: " << (!config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str())
+              << std::endl;
 
     GPUGenie::knn_search(*table, refQueries, refResultIdxs, refResultCounts, config);
     // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
     // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, refResultIdxs, refResultCounts);
 
-    if (config.compression.empty()){
+    if (!config.compression){
         GPUGenie::PerfLogger::get().ofs() << std::fixed << std::setprecision(3) << 0.0 << std::endl; // "comprRatio"
     }
     else {
@@ -679,9 +682,9 @@ void convertTableToBinaryFormats(const std::string &dataFile, const std::string 
         std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
 
 
-    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES)
+    for (COMPRESSION_TYPE compr : DeviceCodecFactory::allCompressionTypes)
     {
-        if (codec != "all" && codec != compr)
+        if (codec != "all" && codec != DeviceCodecFactory::getCompressionName(compr))
             continue; // Skip this codec
         config.compression = compr;
         convertTableToBinary(dataFile, config);
@@ -720,17 +723,18 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
     else
         Logger::log(Logger::INFO,
             "Running GENIE with uncompressed table (to establish reference solution for codec %s", codec.c_str());
-    config.compression = std::string();    
+    config.compression = NO_COMPRESSION;    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
     runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
 
-    for (std::string &compr : GPUGenie::GPUGenie_Config::COMPRESSION_NAMES)
+    for (COMPRESSION_TYPE compr : DeviceCodecFactory::allCompressionTypes)
     {
-        if (codec != "all" && codec != compr)
+        if (codec != "all" && codec != DeviceCodecFactory::getCompressionName(compr))
             continue; // Skip this codec
 
-        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
+        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",
+                DeviceCodecFactory::getCompressionName(compr).c_str());
 
         config.compression = compr;
         std::vector<int> resultIdxs;

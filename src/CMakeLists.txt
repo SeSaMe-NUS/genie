@@ -16,8 +16,8 @@ set(LIB_SRC_LIST
   GPUGenie/query.cu
   GPUGenie/match.h
   GPUGenie/match.cu
-  GPUGenie/match_sepkernel.h
-  GPUGenie/match_sepkernel.cu
+  # GPUGenie/match_sepkernel.h
+  # GPUGenie/match_sepkernel.cu
   GPUGenie/match_integrated.h
   GPUGenie/match_integrated.cu
   GPUGenie/interface.h
@@ -30,6 +30,8 @@ set(LIB_SRC_LIST
   GPUGenie/FileReader.cu
   GPUGenie/DeviceCodecs.h
   GPUGenie/DeviceCodecs.cu
+  GPUGenie/DeviceCodecFactory.h
+  GPUGenie/DeviceCodecFactory.cu
   GPUGenie/DeviceCompositeCodec.h
   GPUGenie/DeviceCompositeCodec.cu
   GPUGenie/DeviceSerialCodec.h

@@ -69,15 +69,14 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	GPUGenie::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
 	if (comprTable){
-		if (GPUGenie::integratedKernels.find(comprTable->getCompression().c_str())
-				== GPUGenie::integratedKernels.end())
+		MatchIntegratedFunPtr matchFn = GPUGenie::DeviceCodecFactory::getMatchingFunPtr(comprTable->getCompression());
+		if (!matchFn)
 		{
-			Logger::log(Logger::ALERT, "No compression kernel avaiable for %s compression!",
-				comprTable->getCompression().c_str());
-			throw GPUGenie::cpu_runtime_error("No compression kernel avaiable for required compression!");
+			Logger::log(Logger::ALERT, "No matching function for %s compression!",
+				GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
+			throw GPUGenie::cpu_runtime_error("No compression matching function avaiable for required compression!");
 		}
 
-		IntegratedKernelPtr matchFn = GPUGenie::integratedKernels[comprTable->getCompression().c_str()];
 		matchFn(
 			*comprTable, queries, d_data, d_bitmap,
 			hash_table_size, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);

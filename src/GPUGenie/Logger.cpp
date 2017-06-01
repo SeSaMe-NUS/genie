@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#include "DeviceCodecFactory.h"
 #include "Timing.h"
 #include "query.h"
 #include "inv_table.h"
@@ -173,7 +174,8 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
     }
     GPUGenie::inv_compr_table* comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
     if (comprTable)
-    	Logger::log(level,"Compressed table: %s", comprTable->getCompression().c_str());
+    	Logger::log(level,"Compressed table: %s",
+            GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
     else
     	Logger::log(level,"Plain table: ");
 

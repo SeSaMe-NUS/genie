@@ -6,45 +6,12 @@
 #include "Logger.h"
 #include "genie_errors.h"
 #include "Timing.h"
+#include "DeviceCodecFactory.h"
 #include "DeviceCompositeCodec.h"
 #include "DeviceBitPackingCodec.h"
 #include "DeviceVarintCodec.h"
 
 #include "inv_compr_table.h"
-
-
-std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
-GPUGenie::inv_compr_table::initCodecs() {
-  std::map<std::string, shared_ptr<DeviceIntegerCODEC>> codecs;
-
-  codecs["copy"] = std::shared_ptr<DeviceCopyCodec>(
-                        new DeviceCopyCodec());
-  codecs["d1"] = std::shared_ptr<DeviceDeltaCodec>(
-                        new DeviceDeltaCodec());
-  codecs["bp32"] = std::shared_ptr<DeviceBitPackingCodec>(
-                        new DeviceBitPackingCodec());
-  codecs["varint"] = std::shared_ptr<DeviceVarintCodec>(
-                        new DeviceVarintCodec());
-  codecs["bp32-copy"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(
-                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>());
-  codecs["bp32-varint"] = std::shared_ptr<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(
-                        new DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>());
-  return codecs;
-}
-
-std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>>
-GPUGenie::inv_compr_table::m_codecs = GPUGenie::inv_compr_table::initCodecs();
-
-std::shared_ptr<GPUGenie::DeviceIntegerCODEC> GPUGenie::inv_compr_table::getCodec(const std::string &codecId)
-{
-    if(m_codecs.find(codecId) == m_codecs.end()) {
-        Logger::log(Logger::ALERT, "Unknown codec %s.", codecId.c_str());
-        return std::shared_ptr<GPUGenie::DeviceIntegerCODEC>(nullptr);
-    }
-    return m_codecs[codecId];
-}
-
-
 
 void
 GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
@@ -66,13 +33,13 @@ GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
 
     uint64_t compressionStartTime = getTime();
 
-    shared_ptr<DeviceIntegerCODEC> codec;
-    // Retrieve coded based on compression string 
-    if(m_codecs.find(this->m_compression) == m_codecs.end()) {
-        Logger::log(Logger::ALERT, "Unsupported inverted table compression %s.", this->m_compression.c_str());
+    // Retrieve coded instance
+    shared_ptr<DeviceIntegerCODEC> codec = DeviceCodecFactory::getCodec(m_compression);
+    if(!codec.get()) {
+        Logger::log(Logger::ALERT, "No matching function for %s compression!",
+                DeviceCodecFactory::getCompressionName(m_compression).c_str());
         throw std::logic_error("No compression codec available!");
     }
-    codec = m_codecs[this->m_compression];
     // Check if codec will be able to decompress an inverted list of any length
     assert(codec->decodeArrayParallel_lengthPerBlock() >= (int)max_length);
 
@@ -129,8 +96,8 @@ GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
     Logger::log(Logger::DEBUG, "Done bulding compressed inv_compr_table in time %f",
         getInterval(compressionStartTime, compressionEndTime));
 
-    Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f", m_compression.c_str(),
-        codec->name().c_str(), compressionRatio);
+    Logger::log(Logger::INFO, "Compression %s, codec: %s, compression ratio: %f",
+        DeviceCodecFactory::getCompressionName(m_compression).c_str(), codec->name().c_str(), compressionRatio);
 
     if (compressionRatio > 16.0 || badCompressedLists)
         Logger::log(Logger::ALERT, "Bad compression! Bad compressed lists: %d / %d, compression ratio: %f",
@@ -144,7 +111,7 @@ GPUGenie::inv_compr_table::~inv_compr_table()
 }
 
 
-const std::string&
+GPUGenie::COMPRESSION_TYPE
 GPUGenie::inv_compr_table::getCompression() const
 {
     return m_compression;
@@ -164,7 +131,7 @@ GPUGenie::inv_compr_table::getCompressionRatio()
 }
 
 void
-GPUGenie::inv_compr_table::setCompression(const std::string &compression)
+GPUGenie::inv_compr_table::setCompression(COMPRESSION_TYPE compression)
 {
     if (this->build_status() == builded)
     {
@@ -270,7 +237,7 @@ GPUGenie::inv_compr_table::write_to_file(ofstream& ofs)
     inv_table::write_to_file(ofs);
 
     ofs.write((char*)&m_isCompressed, sizeof(bool));
-    ofs.write((char*)m_compression.c_str(), sizeof(char)*m_compression.size()+1);
+    ofs.write((char*)&m_compression, sizeof(COMPRESSION_TYPE));
     ofs.write((char*)&m_uncompressedInvListsMaxLength, sizeof(size_t));
 
     size_t comprInvSize = m_comprInv.size();
@@ -290,7 +257,7 @@ GPUGenie::inv_compr_table::read_from_file(ifstream& ifs)
     inv_table::read_from_file(ifs);
 
     ifs.read((char*)&m_isCompressed, sizeof(bool));
-    std::getline(ifs, m_compression, '\0');
+    ifs.read((char*)&m_compression, sizeof(COMPRESSION_TYPE));
     ifs.read((char*)&m_uncompressedInvListsMaxLength, sizeof(size_t));
 
     size_t comprInvSize;

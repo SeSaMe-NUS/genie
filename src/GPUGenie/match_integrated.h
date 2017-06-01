@@ -42,15 +42,6 @@ match_integrated(
         thrust::device_vector<u32>& d_threshold,
         thrust::device_vector<u32>& d_passCount);
 
-/**
- * Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated
- */
-typedef void (*IntegratedKernelPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
-        thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
-        thrust::device_vector<u32>&);
-
-extern std::map<std::string, IntegratedKernelPtr> integratedKernels;
-
 }
 
 #endif

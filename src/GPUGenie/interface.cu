@@ -32,16 +32,6 @@
 using namespace GPUGenie;
 using namespace std;
 
-std::vector<std::string> GPUGenie_Config::COMPRESSION_NAMES = 
-{
-    "copy",
-    "d1",
-    "bp32",
-    "varint",
-    "bp32-copy",
-    "bp32-varint"
-};
-
 
 void swap(int * position, int offset1, int offset2)
 {
@@ -153,7 +143,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            if (config.compression.empty())
+            if (config.compression == NO_COMPRESSION)
                 _table = new inv_table[1];
             else
             {
@@ -201,7 +191,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-        if (config.compression.empty())
+        if (config.compression == NO_COMPRESSION)
             _table = new inv_table[table_num];
         else
             throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
@@ -280,7 +270,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            if (config.compression.empty())
+            if (config.compression == NO_COMPRESSION)
                 _table = new inv_table[1];
             else
             {
@@ -328,7 +318,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-        if (config.compression.empty())
+        if (config.compression == NO_COMPRESSION)
             _table = new inv_table[table_num];
         else
             throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");

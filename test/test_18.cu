@@ -100,13 +100,15 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
 
     std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
     std::string binaryInvTableFile;
-    if (config.compression.empty())
+    if (!config.compression)
         binaryInvTableFile = invTableFileBase + invSuffix;
     else
-        binaryInvTableFile = invTableFileBase + std::string(".") + config.compression + cinvSuffix;
+        binaryInvTableFile = invTableFileBase + std::string(".") +
+                DeviceCodecFactory::getCompressionName(config.compression) + cinvSuffix;
 
     Logger::log(Logger::INFO, "Converting table %s to %s (%s compression)...",
-        dataFile.c_str(), binaryInvTableFile.c_str(), config.compression.empty() ? "no" : config.compression.c_str());
+        dataFile.c_str(), binaryInvTableFile.c_str(),
+        !config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str());
 
     ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
@@ -133,7 +135,7 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
 
-    if (!config.compression.empty()){
+    if (config.compression){
         comprTable = dynamic_cast<inv_compr_table*>(table);
         assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
         // check the compression was actually used in the table
@@ -155,7 +157,7 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
     inv_table *table;
-    if (config.compression.empty()){
+    if (!config.compression){
         inv_table::read(binaryInvTableFile.c_str(), table);
     }
     else {
@@ -190,10 +192,6 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 
 int main(int argc, char* argv[])
 {
-    Logger::log(Logger::INFO, "Available compressions in GENIE (GPUGenie_Config::COMPRESSION_NAMES):");
-    for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES)
-        Logger::log(Logger::INFO, "  %s", compr.c_str());
-
     string dataFile = DEFAULT_TEST_DATASET;
     string queryFile = DEFAULT_QUERY_DATASET;
     
@@ -230,8 +228,8 @@ int main(int argc, char* argv[])
     config.num_of_queries = numberOfQueries;
 
     std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
-    std::map<std::string, std::string> binaryComprInvTableFilesMap;
-    for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES){
+    std::map<COMPRESSION_TYPE, std::string> binaryComprInvTableFilesMap;
+    for (COMPRESSION_TYPE compr : DeviceCodecFactory::allCompressionTypes){
         config.compression = compr;
         binaryComprInvTableFilesMap[config.compression] = convertTableToBinary(dataFile, config);
     }
@@ -240,14 +238,15 @@ int main(int argc, char* argv[])
     init_genie(config);
 
     Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
-    config.compression = std::string();    
+    config.compression = NO_COMPRESSION;    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
     runGENIE(binaryInvTableFile, queryFile, config, refResultIdxs, refResultCounts);
 
 
-    for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES){
-        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",compr.c_str());
+    for (COMPRESSION_TYPE compr : DeviceCodecFactory::allCompressionTypes){
+        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",
+            DeviceCodecFactory::getCompressionName(compr).c_str());
 
         config.compression = compr;
         std::string binaryInvComprTableFile = binaryComprInvTableFilesMap[config.compression];

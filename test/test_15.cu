@@ -1,10 +1,11 @@
 /**
  * Name: test_15.cu
  * Description:
- *  Test counting of queries on CPU. Similar to CPU-Idx in GENIE paper.
+ *  Simple test for inverted compressed table interface and compression capabilities
  */
 
 #include <GPUGenie.h>
+#include <GPUGenie/DeviceCodecFactory.h>
 
 #include <algorithm>
 #include <assert.h>
@@ -20,11 +21,11 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
-const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
-const int         DEFAULT_DIMENSIONS = 5;
-const int         DEFAULT_NUM_QUERIES = 3;
-const std::string DEFAULT_COMPRESSION = "copy";
+const std::string      DEFAULT_TEST_DATASET = "../static/sift_20.dat";
+const std::string      DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
+const int              DEFAULT_DIMENSIONS = 5;
+const int              DEFAULT_NUM_QUERIES = 3;
+const COMPRESSION_TYPE DEFAULT_COMPRESSION = COPY;
 
 
 /**
@@ -76,12 +77,8 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
 
 int main(int argc, char* argv[])
 {
-    Logger::log(Logger::INFO, "Available compressions in GENIE (GPUGenie_Config::COMPRESSION_NAMES):");
-    for (std::string &compr : GPUGenie_Config::COMPRESSION_NAMES)
-        Logger::log(Logger::INFO, "  %s", compr.c_str());
-
     string dataFile = DEFAULT_TEST_DATASET;
-    string compression = DEFAULT_COMPRESSION;
+    COMPRESSION_TYPE compression = DEFAULT_COMPRESSION;
     string queryFile = DEFAULT_QUERY_DATASET;
     std::string binaryInvTableFile;
     std::string binaryComprInvTableFile;
@@ -98,7 +95,14 @@ int main(int argc, char* argv[])
     if (argc >= 5)
         numberOfQueries = std::atoi(argv[4]);
     if (argc >= 6)
-        compression = std::string(argv[5]);
+    {
+        compression = DeviceCodecFactory::getCompressionType(std::string(argv[5]));
+        if (compression == NO_COMPRESSION)
+        {
+            Logger::log(Logger::ALERT, "Unknown compression argument %s", argv[5]);
+            return 5;
+        }
+    }
 
     Logger::log(Logger::INFO, "Checking test arguments...", dataFile.c_str());
 

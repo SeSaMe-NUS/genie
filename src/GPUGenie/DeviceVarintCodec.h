@@ -1,8 +1,7 @@
 #ifndef DEVICE_VARINT_CODEC_H_
 #define DEVICE_VARINT_CODEC_H_
 
-
-#include "DeviceCompositeCodec.h"
+#include "DeviceCodecs.h"
 
 namespace GPUGenie {
 

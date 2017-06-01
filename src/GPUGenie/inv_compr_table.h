@@ -13,6 +13,8 @@
 #include <memory>
 #include <string>
 
+#include "DeviceCodecFactory.h"
+
 #include "inv_table.h"
 
 /*! \namespace GPUGenie
@@ -33,30 +35,24 @@ protected:
 
     std::vector<int> m_comprInvPos;
 
-    std::string m_compression;
+    COMPRESSION_TYPE m_compression;
 
     uint32_t *m_d_compr_inv_p;
 
     size_t m_uncompressedInvListsMaxLength;
 
-    static std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>> initCodecs();
-
-    static std::map<std::string, std::shared_ptr<GPUGenie::DeviceIntegerCODEC>> m_codecs;
-
 public:
-
-    static std::shared_ptr<GPUGenie::DeviceIntegerCODEC> getCodec(const std::string &codecId);
 
     /*! \fn inv_compr_table()
      *  \brief Default constructor of the inv_compr_table.
      */
     inv_compr_table(): inv_table(),
             m_isCompressed(false),
-            m_d_compr_inv_p(NULL),
+            m_compression(DEFAULT_COMPRESSION_TYPE),
+            m_d_compr_inv_p(nullptr),
             m_uncompressedInvListsMaxLength(0)
     {
         assert(sizeof(int) == sizeof(uint32_t)); // this is to make sure that virtual function inv() is correct
-        // TODO: make runtime check and possible copy of m_compressedInv, if sizeof(int) == 8 bytes
     }
 
     /*! \fn ~inv_table()
@@ -65,9 +61,9 @@ public:
     virtual ~inv_compr_table();
 
 
-    const std::string& getCompression() const;
+    GPUGenie::COMPRESSION_TYPE getCompression() const;
 
-    void setCompression(const std::string &compression);
+    void setCompression(GPUGenie::COMPRESSION_TYPE compression);
 
 
     /*
