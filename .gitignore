@@ -53,3 +53,8 @@ Makefile
 #Doxygen files
 doc/html
 Doxyfile
+
+#vim swap files
+*.swp
+
+src/GPUGenie/configure.h

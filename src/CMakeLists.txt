@@ -1,8 +1,10 @@
-cuda_include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+configure_file(
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
+)
 
 set(LIB_SRC_LIST
   GPUGenie.h
-  
 
   GPUGenie/genie_errors.h
   GPUGenie/genie_errors.cu
@@ -33,7 +35,6 @@ set(LIB_SRC_LIST
 
 cuda_add_library(
   ${PROJECT_NAME}
-  STATIC
   ${LIB_SRC_LIST})
 
 

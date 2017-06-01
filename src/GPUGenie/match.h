@@ -93,6 +93,13 @@ match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data,
 		int bitmap_bits, device_vector<u32>& d_noiih,
 		device_vector<u32>& d_threshold, device_vector<u32>& d_passCount);
 
+void
+match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<data_t> >& d_data,
+		vector<device_vector<u32> >& d_bitmap, vector<int>& hash_table_size, vector<int>& max_load,
+		int bitmap_bits, vector<device_vector<u32> >& d_noiih,
+		vector<device_vector<u32> >& d_threshold, vector<device_vector<u32> >& d_passCount, size_t start,
+		size_t finish);
+
 
 /*! \fn int build_queries(vector<query>& queries, inv_table& table, vector<query::dim>& dims, int max_load)
  *  \brief Collect all the dims in all queries.

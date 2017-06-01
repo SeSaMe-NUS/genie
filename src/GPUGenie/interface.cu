@@ -438,7 +438,7 @@ void GPUGenie::load_table(inv_table& table,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -486,7 +486,7 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -586,9 +586,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 	{
 		query q(table, i);
 
-		for (j = 0;
-				j < query_points[i].size()
-						&& (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
+		for (j = 0; j < query_points[i].size() && (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
 			value = query_points[i][j];
 
@@ -613,7 +611,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 
 	u64 endtime = getTime();
 	double timeInterval = getInterval(starttime, endtime);
-	Logger::log(Logger::INFO, "%d queries are created!", queries.size());
+	Logger::log(Logger::DEBUG, "%d queries are created!", queries.size());
 	Logger::log(Logger::VERBOSE,
 			">>>>[time profiling]: loading query takes %f ms<<<<",
 			timeInterval);
@@ -734,7 +732,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -765,7 +763,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 	table.append(list);
 	table.build(config.posting_list_max_length, config.use_load_balance);
 
-	if (config.save_to_gpu && inv_table::d_inv_p == NULL)
+	if (config.save_to_gpu && table.d_inv_p == NULL)
 		table.cpy_data_to_gpu();
 	table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -841,7 +839,7 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
 
     cout<<"Building table time = "<<getInterval(tt1, tt2)<<endl;
 
-    if(config.save_to_gpu && inv_table::d_inv_p == NULL)
+    if(config.save_to_gpu && table.d_inv_p == NULL)
         table.cpy_data_to_gpu();
     table.is_stored_in_gpu = config.save_to_gpu;
 
@@ -978,6 +976,58 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 	thrust::copy(d_topk.begin(), d_topk.end(), h_topk.begin());
 	thrust::copy(d_topk_count.begin(), d_topk_count.end(),
 			h_topk_count.begin());
+}
+
+void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& queries,
+		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
+{
+	/* hashtable size */
+	vector<int> hashtable_sizes;
+	for (size_t i = 0; i < tables.size(); ++i)
+	{
+		Logger::log(Logger::DEBUG, "table.i_size():%d, config.hashtable_size:%f.",
+				tables.at(i)->i_size(), configs.at(i).hashtable_size);
+		if (configs.at(i).hashtable_size <= 2)
+			hashtable_sizes.push_back(tables.at(i)->i_size() * configs.at(i).hashtable_size + 1);
+		else
+			hashtable_sizes.push_back(configs.at(i).hashtable_size);
+	}
+
+	/* max load */
+	vector<int> max_loads;
+	for (auto it = configs.begin(); it != configs.end(); ++it)
+	{
+		max_loads.push_back(it->multiplier * it->posting_list_max_length + 1);
+		//Logger::log(Logger::DEBUG, "max_load is %d", max_loads);
+	}
+
+	vector<thrust::device_vector<int> > d_topk(configs.size()), d_topk_count(configs.size());
+	GPUGenie::knn_bijectMap_MT(
+			tables, //basic API, since encode dimension and value is also finally transformed as a bijection map
+			queries, d_topk, d_topk_count, hashtable_sizes, max_loads,
+			configs.at(0).count_threshold); // threshold is the same
+
+	Logger::log(Logger::INFO, "knn search is done!");
+	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
+
+	/* copy result */
+	auto it1 = d_topk.begin();
+	auto it2 = h_topk.begin();
+//#pragma omp parallel for private(it1, it2)
+	for (; it1 != d_topk.end(); ++it1, ++it2)
+	{
+		it2->resize(it1->size());
+		thrust::copy(it1->begin(), it1->end(), it2->begin());
+	}
+	
+	it1 = d_topk_count.begin();
+	it2 = h_topk_count.begin();
+//#pragma omp parallel for private(it1, it2)
+	for (; it1 != d_topk_count.end(); ++it1, ++it2)
+	{
+		it2->resize(it1->size());
+		thrust::copy(it1->begin(), it1->end(), it2->begin());
+	}
 }
 
 

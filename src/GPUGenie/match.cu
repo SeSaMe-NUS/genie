@@ -17,6 +17,9 @@
 
 #include "match.h"
 
+// added for dynamic threshold update
+#include "configure.h"
+
 
 
 #ifndef GPUGenie_device_THREADS_PER_BLOCK
@@ -521,13 +524,13 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 	if (bitmap_bits)
 		bitmap = &bitmap_list[query_index * (i_size / (32 / bitmap_bits) + 1)];
 	u32 access_id;
-    int min, max, order;
-    if(q.start_pos >= q.end_pos)
-        return;
+	int min, max, order;
+	if(q.start_pos >= q.end_pos)
+		return;
 
-    min = q.start_pos;
-    max = q.end_pos;
-    order = q.order;
+	min = q.start_pos;
+	max = q.end_pos;
+	order = q.order;
 	bool key_eligible;                //
 	bool pass_threshold;    //to determine whether pass the check of my_theshold
 
@@ -553,6 +556,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
             }
 
 			u32 thread_threshold = *my_threshold;
+			//u32 thread_threshold = my_threshold;
 			if (bitmap_bits)
 			{
 
@@ -567,6 +571,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 
 			key_eligible = false;
 			if (count < *my_threshold)
+			//if (count < my_threshold)
 			{
 				continue;      //threshold has been increased, no need to insert
 			}
@@ -576,12 +581,14 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 					access_id,               
 					hash_table, hash_table_size, q, count, &key_eligible,
 					my_threshold, &pass_threshold);
+					//&my_threshold, &pass_threshold);
 
 			if (key_eligible)
 			{
 				if (pass_threshold)
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
+					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
 				}
 
 				continue;
@@ -593,12 +600,14 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				//access_id and its location are packed into a packed key
 
 				if (count < *my_threshold)
+				//if (count < my_threshold)
 				{
 					continue;//threshold has been increased, no need to insert
 				}
 
 				hash_kernel_AT(access_id, hash_table, hash_table_size, q, count,
 						my_threshold, my_noiih, overflow, &pass_threshold);
+						//&my_threshold, my_noiih, overflow, &pass_threshold);
 				if (*overflow)
 				{
 
@@ -607,6 +616,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				if (pass_threshold)
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
+					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
 				}
 			}
 
@@ -661,6 +671,15 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 
 			if(count > max_count) max_count = count;
 		}
+			
+//#ifdef USE_DYNAMIC
+//		// EXPERIMENT
+//		int MPI_rank, MPI_size;
+//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+//		int offset = dims.size() / MPI_size;
+//		rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
+//#endif
 
 		return max_count;
 	} catch(std::bad_alloc &e){
@@ -809,6 +828,19 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
+//#ifdef USE_DYNAMIC
+//		// this event is used to record whether the "match_AT" kernel is finished
+//		cudaEvent_t kernel_finish;
+//		cudaEventCreate(&kernel_finish);
+//		// declare aux array on GPU (values set to 1 later)
+//		thrust::device_vector<u32> aux_threshold(queries.size());
+//		// calculate offset
+//		int MPI_rank, MPI_size;
+//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+//		int offset = queries.size() / MPI_size;
+//#endif
+
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
 
@@ -824,6 +856,10 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
             d_threshold.resize(queries.size());
             thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
             u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
+//#ifdef USE_DYNAMIC
+//			thrust::fill(aux_threshold.begin(), aux_threshold.end(), 1);
+//			u32 *aux_threshold_p = thrust::raw_pointer_cast(aux_threshold.data());
+//#endif
 
             //which num_of_max_count should be used?
 
@@ -839,6 +875,39 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
             u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
+//#ifdef USE_DYNAMIC
+//			for (int i = 0; i < MPI_size; ++i) {
+//				device::match_AT<<<dims.size() / MPI_size, GPUGenie_device_THREADS_PER_BLOCK>>>(
+//						table.m_size(),
+//						table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
+//						hash_table_size,
+//						table.d_inv_p,
+//						d_dims_p,
+//						d_hash_table,
+//						d_bitmap_p,
+//						bitmap_bits,
+//						d_topks_p,
+//						d_threshold_p,//initialized as 1, and increase gradually
+//						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+//						num_of_max_count,//number of maximum count per query
+//						d_noiih_p,
+//						d_overflow,
+//						shift_bits_subsequence,
+//						aux_threshold_p,
+//						offset * i);
+//				//cudaCheckErrors(cudaDeviceSynchronize());
+//				cout << "launched " << i << " kernels" << endl;
+//				//MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+//
+//				// check for kernel finish
+//				cudaEventRecord(kernel_finish);
+//				while (cudaEventQuery(kernel_finish) != cudaSuccess) {
+//					usleep(1000);
+//					// CUDA-aware MPI Allreduce operation on aux array
+//					MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+//				}
+//			}
+//#else
             device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
             (table.m_size(),
                     table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
@@ -855,6 +924,8 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                     d_noiih_p,
                     d_overflow,
                     shift_bits_subsequence);
+            cudaCheckErrors(cudaDeviceSynchronize());
+//#endif
 
 /*
             if(!table.is_stored_in_gpu)
@@ -862,7 +933,6 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                 table.clear_gpu_mem();
             }
 */
-            cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
 			if(h_overflow[0])
@@ -889,7 +959,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 			}
 			loop_count ++;
 
-		}while(h_overflow[0]);
+		} while (h_overflow[0]);
 
         cudaCheckErrors(cudaFree(d_overflow));
 
@@ -903,6 +973,233 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		match_stop = getTime();
 
 		cudaEventSynchronize(kernel_stop);
+		kernel_elapsed = 0.0f;
+		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
+		Logger::log(Logger::INFO,
+				">>>>[time profiling]: Match kernel takes %f ms. (GPU running) ",
+				kernel_elapsed);
+		Logger::log(Logger::INFO,
+				">>>>[time profiling]: Match function takes %f ms.  (including Match kernel, GPU+CPU part)",
+				getInterval(match_start, match_stop));
+		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+	} catch(std::bad_alloc &e){
+		throw GPUGenie::gpu_bad_alloc(e.what());
+	}
+}
+
+// debug use
+static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_table &table, vector<GPUGenie::query::dim> &dims)
+{
+	try
+	{
+		int max_count = -1;
+		for (size_t i = 0; i < queries.size(); ++i)
+		{
+			if (queries[i].ref_table() != &table)
+				throw GPUGenie::cpu_runtime_error("table not built");
+			int prev_size = dims.size();
+			if (table.build_status() == GPUGenie::inv_table::builded)
+				queries[i].build(dims); // overloaded
+			int count = dims.size() - prev_size;
+			if (count > max_count)
+				max_count = count;
+		}
+
+		return max_count;
+	}
+	catch (std::bad_alloc &e)
+	{
+		throw GPUGenie::cpu_bad_alloc(e.what());
+	}
+	catch (GPUGenie::cpu_runtime_error &e)
+	{
+		throw e;
+	}
+	catch (std::exception &e)
+	{
+		throw GPUGenie::cpu_runtime_error(e.what());
+	}
+}
+
+void
+GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits,
+		vector<device_vector<u32> >& d_noiih, vector<device_vector<u32> >& d_threshold,
+		vector<device_vector<u32> >& d_passCount, size_t start, size_t finish)
+{
+	try
+	{
+		/* timing */
+		u64 match_stop, match_start;
+		cudaEvent_t kernel_start, kernel_stop;
+		float kernel_elapsed;
+		cudaEventCreate(&kernel_start);
+		cudaEventCreate(&kernel_stop);
+		match_start = getTime();
+		Logger::log(Logger::INFO, "[  0%] Starting matching...");
+
+		/* variable declaration */
+		u32 shift_bits_subsequence = table.at(0)->_shift_bits_subsequence();
+		vector<vector<query::dim> > dims(table.size()); /* query::dim on CPU */
+		vector<device_vector<query::dim> > d_dims(table.size()); /* query::dim on GPU */
+		vector<query::dim*> d_dims_p(table.size()); /* query::dim pointers */
+		vector<u32*> d_noiih_p(table.size());
+		vector<u32> num_of_max_count(table.size(), 0);
+		vector<u32> max_topk(table.size(), 0);
+		vector<u32*> d_bitmap_p(table.size());
+		vector<bool*> d_overflow(table.size());
+		vector<T_HASHTABLE*> d_hash_table(table.size());
+		vector<u32*> d_threshold_p(table.size());
+		vector<u32*> d_passCount_p(table.size());
+		vector<device_vector<u32> > d_topks(table.size());
+		vector<u32*> d_topks_p(table.size());
+		vector<int> threshold(table.size(), bitmap_bits - 1);
+		vector<int> bitmap_size(table.size(), 0);
+		data_t nulldata = {0u, 0.0f};
+		data_t* d_data_table;
+
+		/* adaptive threshold */
+		if (bitmap_bits < 0)
+			//for hash_table_size, still let it determine by users currently
+			bitmap_bits = -bitmap_bits;
+		Logger::log(Logger::DEBUG,
+				"[info] bitmap_bits:%d.",
+				bitmap_bits);
+		int bitmap_bits_copy = bitmap_bits;
+
+		/* table dependent variable pre-processing */
+		for (size_t i = start; i < finish; ++i)
+		{
+			if (queries.at(i).empty())
+				continue;
+			if (table.at(i)->build_status() == inv_table::not_builded)
+				throw GPUGenie::cpu_runtime_error("table not built!");
+
+			/* bitmap */
+			bitmap_bits = bitmap_bits_copy;
+			if (bitmap_bits > 1)
+			{
+				float logresult = std::log2((float) bitmap_bits);
+				bitmap_bits = (int) logresult;
+				if (logresult - bitmap_bits > 0)
+					bitmap_bits += 1;
+				logresult = std::log2((float) bitmap_bits);
+				bitmap_bits = (int) logresult;
+				if (logresult - bitmap_bits > 0)
+					bitmap_bits += 1;
+				bitmap_bits = pow(2, bitmap_bits);
+				bitmap_size[i] = ((((unsigned int)1<<shift_bits_subsequence) * table.at(i)->i_size()) / (32 / bitmap_bits) + 1)
+						* queries.at(i).size();
+			}
+			else
+				bitmap_bits = threshold[i] = 0;
+
+			Logger::log(Logger::DEBUG, "[ 20%] Declaring device memory...");
+			d_bitmap.at(i).resize(bitmap_size.at(i));
+			d_bitmap_p[i] = thrust::raw_pointer_cast(d_bitmap.at(i).data());
+
+			/* number of items in hashtable */
+			d_noiih.at(i).resize(queries.at(i).size(), 0u);
+			d_noiih_p[i] = thrust::raw_pointer_cast(d_noiih.at(i).data());
+			Logger::log(Logger::DEBUG, "hash table size: %d.", hash_table_size.at(i));
+
+			/* build query */
+			u64 match_query_start, match_query_end;
+			match_query_start = getTime();
+			num_of_max_count[i] = build_queries_direct(queries.at(i), table.at(i)[0], dims.at(i));
+			//num_of_max_count[i] = build_q(queries.at(i), table.at(i)[0], dims.at(i), max_load.at(i));
+			match_query_end = getTime();
+			Logger::log(Logger::DEBUG,
+					">>>>[time profiling]: match: build_queries function takes %f ms. ",
+					getInterval(match_query_start, match_query_end));
+			Logger::log(Logger::DEBUG, " dims size: %d.",
+					dims.at(i).size());
+
+			/* transfer query */
+			u64 query_start = getTime();
+			d_dims[i] = dims.at(i);
+			//vector<query::dim>().swap(dims.at(i));
+			d_dims_p[i] = raw_pointer_cast(d_dims.at(i).data());
+			u64 query_end = getTime();
+			//clog << "query_transfer time = " << getInterval(query_start, query_end) << "ms." << endl;
+
+			Logger::log(Logger::DEBUG, "[ 30%] Allocating device memory to tables...");
+
+			/* hashtable */
+			d_data.at(i).clear();
+			d_data.at(i).resize(queries.at(i).size() * hash_table_size.at(i), nulldata);
+			d_data_table = thrust::raw_pointer_cast(d_data.at(i).data());
+			d_hash_table[i] = reinterpret_cast<T_HASHTABLE*>(d_data_table);
+
+			/* overflow */
+			bool f = false;
+			cudaCheckErrors(cudaMalloc((void**)&d_overflow[i], sizeof(bool)));
+			cudaCheckErrors(cudaMemcpy(d_overflow[i], &f, sizeof(bool), cudaMemcpyHostToDevice));
+
+			/* threshold */
+			d_threshold.at(i).resize(queries.at(i).size());
+			thrust::fill(d_threshold.at(i).begin(), d_threshold.at(i).end(), 1);
+			d_threshold_p[i] = thrust::raw_pointer_cast(d_threshold.at(i).data());
+
+			/* zipper array */
+			d_passCount.at(i).resize(queries.at(i).size() * num_of_max_count.at(i));
+			thrust::fill(d_passCount.at(i).begin(), d_passCount.at(i).end(), 0u);
+			d_passCount_p[i] = thrust::raw_pointer_cast(d_passCount.at(i).data());
+
+			/* topk */
+			max_topk[i] = cal_max_topk(queries.at(i));
+			d_topks.at(i).resize(queries.at(i).size());
+			thrust::fill(d_topks.at(i).begin(), d_topks.at(i).end(), max_topk[i]);
+			d_topks_p[i] = thrust::raw_pointer_cast(d_topks.at(i).data());
+		}
+
+		/* offset */
+		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
+		u32 h_offsets[16] = OFFSETS_TABLE_16;
+		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
+
+		/* match kernel */
+		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
+		cudaEventRecord(kernel_start);
+		for (size_t i = start; i < finish; ++i)
+		{
+			if (queries.at(i).empty())
+				continue;
+			device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>(
+				table.at(i)->m_size(),
+				table.at(i)->i_size() * ((unsigned int)1<<shift_bits_subsequence),
+				hash_table_size.at(i),
+				table.at(i)->d_inv_p,
+				d_dims_p.at(i),
+				d_hash_table.at(i),
+				d_bitmap_p.at(i),
+				bitmap_bits,
+				d_topks_p.at(i),
+				d_threshold_p.at(i), //initialized as 1, and increase gradually
+				d_passCount_p.at(i), //initialized as 0, count the number of items passing one d_threshold
+				num_of_max_count.at(i), //number of maximum count per query
+				d_noiih_p.at(i),
+				d_overflow.at(i),
+				shift_bits_subsequence);
+		}
+		cudaCheckErrors(cudaDeviceSynchronize());
+
+		/* clean up */
+		for (size_t i = start; i < finish; ++i)
+			cudaCheckErrors(cudaFree(d_overflow.at(i)));
+
+		cudaEventRecord(kernel_stop);
+		Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
+
+		for (size_t i = start; i < finish; ++i)
+			device::convert_to_data<<<hash_table_size.at(i) * queries.at(i).size() / 1024 + 1, 1024>>>(d_hash_table.at(i), (u32)hash_table_size.at(i)*queries.at(i).size());
+
+		Logger::log(Logger::INFO, "[100%] Matching is done!");
+
+		match_stop = getTime();
+		cudaEventSynchronize(kernel_stop);
+
 		kernel_elapsed = 0.0f;
 		cudaEventElapsedTime(&kernel_elapsed, kernel_start, kernel_stop);
 		Logger::log(Logger::INFO,

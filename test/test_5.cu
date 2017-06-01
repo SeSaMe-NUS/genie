@@ -9,6 +9,7 @@
  */
 
 
+#undef NDEBUG
 #include "GPUGenie.h"
 
 #include <assert.h>
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
 
     int i_size = inv.size();
     int* _inv = (int*)malloc(sizeof(int)*i_size);
-    cudaCheckErrors(cudaMemcpy(_inv, inv_table::d_inv_p, sizeof(int)*i_size, cudaMemcpyDeviceToHost));
+    cudaCheckErrors(cudaMemcpy(_inv, table->d_inv_p, sizeof(int)*i_size, cudaMemcpyDeviceToHost));
 
     assert(_inv[0] == 8);
     assert(_inv[1] == 9);
