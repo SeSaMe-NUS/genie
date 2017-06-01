@@ -206,8 +206,9 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
         if (idxUnpack >= comprLength)
             break;
 
-        uint8_t* nextByte = reinterpret_cast<uint8_t*>(d_in + idxUnpack);
-        uint8_t myCurrByte = *nextByte++;
+        uint8_t* myBytes = reinterpret_cast<uint8_t*>(d_in);
+        int myBytesIdx = idxUnpack * 4;
+        uint8_t myCurrByte = myBytes[myBytesIdx++];
         uint8_t myPrevByte = idxUnpack > 0 ? (d_in[idxUnpack-1] >> 24) : 0xFF;
 
         int myNumInts = (int)s_numInts[idxUnpack];
@@ -218,26 +219,35 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
 
         // find first starting position position, such that previous byte has 1 on the highest position (last byte of
         // it's corresponding int)
-        while (!(myPrevByte & 128))
+        while (myNumInts && !(myPrevByte & 128))
         {
             myPrevByte = myCurrByte;
-            myCurrByte = *nextByte++;
+            assert(myBytesIdx < comprLength * 4);
+            myCurrByte = myBytes[myBytesIdx++];
         }
 
-        for (int i = 0; i < myNumInts; i++)
+        for (int j = 0; j < myNumInts; j++)
         {
             uint32_t decoded = 0;
             for (unsigned int shift = 0; ; shift += 7)
             {
                 decoded += (myCurrByte & 127) << shift;
-                if (myCurrByte & 128) // this was last byte
+                if (myBytesIdx == comprLength * 4) // pointer past the compressed input, must be last int available
                 {
-                    d_out[myOutIdx + i] = decoded;
-                    // printf("Thread: %d unpacked idx: %d int number %d out of numInts %d, value: %u, saved into d_out[%d]\n", idx, idxUnpack, i, myNumInts, decoded, myOutIdx + i);
-                    myCurrByte = *nextByte++;
+                    d_out[myOutIdx + j] = decoded;
+                    assert(j == myNumInts - 1);
                     break;
                 }
-                myCurrByte = *nextByte++;
+                else if (myCurrByte & 128) // this was last byte of the currently decompressed int
+                {
+                    d_out[myOutIdx + j] = decoded;
+                    // printf("Thread: %d unpacked idx: %d int number %d out of numInts %d, value: %u, saved into d_out[%d]\n", idx, idxUnpack, j, myNumInts, decoded, myOutIdx + j);
+                    assert(myBytesIdx < comprLength * 4);
+                    myCurrByte = myBytes[myBytesIdx++];
+                    break;
+                }
+                assert(myBytesIdx < comprLength * 4);
+                myCurrByte = myBytes[myBytesIdx++];
             }
         }
     }
