@@ -19,10 +19,6 @@
 
 // added for dynamic threshold update
 #include "configure.h"
-#ifdef USE_DYNAMIC
-#include <mpi.h>
-#include <unistd.h>
-#endif
 
 
 
@@ -507,42 +503,19 @@ __device__ inline void updateThreshold(u32* my_passCount, u32* my_threshold,
 }
 //for AT: for adaptiveThreshold match function for adaptiveThreshold
 __global__
-#ifdef USE_DYNAMIC
-void match_AT(int m_size, int i_size, int hash_table_size,
-		int* d_inv, query::dim* d_dims,
-		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
-		u32* d_topks, u32* d_threshold, //initialized as 1, and increase gradually
-		u32* d_passCount, //initialized as 0, count the number of items passing one d_threshold
-		u32 num_of_max_count, u32 * noiih, bool * overflow, unsigned int shift_bits_subsequence,
-		u32 *aux_threshold, // NEW INTRODUCED VAR
-		int dim_offset) // NEW INTRODUCED VAR
-#else
 void match_AT(int m_size, int i_size, int hash_table_size,
 		int* d_inv, query::dim* d_dims,
 		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
 		u32* d_topks, u32* d_threshold, //initialized as 1, and increase gradually
 		u32* d_passCount, //initialized as 0, count the number of items passing one d_threshold
 		u32 num_of_max_count, u32 * noiih, bool * overflow, unsigned int shift_bits_subsequence)
-#endif
 {
 	if (m_size == 0 || i_size == 0)
 		return;
-#ifdef USE_DYNAMIC
-	query::dim& q = d_dims[blockIdx.x + dim_offset];
-#else
 	query::dim& q = d_dims[blockIdx.x];
-#endif
 	int query_index = q.query;
 	u32* my_noiih = &noiih[query_index];
 	u32* my_threshold = &d_threshold[query_index];
-	//__shared__ u32 my_threshold;
-	//my_threshold = d_threshold[query_index];
-	//__syncthreads();
-#ifdef USE_DYNAMIC
-	// update main array from aux array
-	u32 *my_aux_threshold = &aux_threshold[query_index];
-	*my_threshold = *my_aux_threshold;
-#endif
 	u32* my_passCount = &d_passCount[query_index * num_of_max_count];         //
 	u32 my_topk = d_topks[query_index];                //for AT
 
@@ -616,10 +589,6 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
 					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
-#ifdef USE_DYNAMIC
-					// also update aux array
-					//updateThreshold(my_passCount, my_aux_threshold, my_topk, count);
-#endif
 				}
 
 				continue;
@@ -648,19 +617,11 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
 					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
-#ifdef USE_DYNAMIC
-					// also update aux array
-					//updateThreshold(my_passCount, my_aux_threshold, my_topk, count);
-#endif
 				}
 			}
 
 		}
 	}
-#ifdef USE_DYNAMIC	
-	// update main threshold to aux threshold after processing a query
-	*my_aux_threshold = *my_threshold;
-#endif
 }
 //end for AT
 
@@ -711,14 +672,14 @@ int GPUGenie::build_queries(vector<query>& queries, inv_table& table,
 			if(count > max_count) max_count = count;
 		}
 			
-#ifdef USE_DYNAMIC
-		// EXPERIMENT
-		int MPI_rank, MPI_size;
-		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-		int offset = dims.size() / MPI_size;
-		rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
-#endif
+//#ifdef USE_DYNAMIC
+//		// EXPERIMENT
+//		int MPI_rank, MPI_size;
+//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+//		int offset = dims.size() / MPI_size;
+//		rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
+//#endif
 
 		return max_count;
 	} catch(std::bad_alloc &e){
@@ -867,18 +828,18 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-#ifdef USE_DYNAMIC
-		// this event is used to record whether the "match_AT" kernel is finished
-		cudaEvent_t kernel_finish;
-		cudaEventCreate(&kernel_finish);
-		// declare aux array on GPU (values set to 1 later)
-		thrust::device_vector<u32> aux_threshold(queries.size());
-		// calculate offset
-		int MPI_rank, MPI_size;
-		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-		int offset = queries.size() / MPI_size;
-#endif
+//#ifdef USE_DYNAMIC
+//		// this event is used to record whether the "match_AT" kernel is finished
+//		cudaEvent_t kernel_finish;
+//		cudaEventCreate(&kernel_finish);
+//		// declare aux array on GPU (values set to 1 later)
+//		thrust::device_vector<u32> aux_threshold(queries.size());
+//		// calculate offset
+//		int MPI_rank, MPI_size;
+//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
+//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+//		int offset = queries.size() / MPI_size;
+//#endif
 
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
@@ -895,10 +856,10 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
             d_threshold.resize(queries.size());
             thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
             u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
-#ifdef USE_DYNAMIC
-			thrust::fill(aux_threshold.begin(), aux_threshold.end(), 1);
-			u32 *aux_threshold_p = thrust::raw_pointer_cast(aux_threshold.data());
-#endif
+//#ifdef USE_DYNAMIC
+//			thrust::fill(aux_threshold.begin(), aux_threshold.end(), 1);
+//			u32 *aux_threshold_p = thrust::raw_pointer_cast(aux_threshold.data());
+//#endif
 
             //which num_of_max_count should be used?
 
@@ -914,39 +875,39 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
             u32 * d_topks_p = thrust::raw_pointer_cast(d_topks.data());
 
 
-#ifdef USE_DYNAMIC
-			for (int i = 0; i < MPI_size; ++i) {
-				device::match_AT<<<dims.size() / MPI_size, GPUGenie_device_THREADS_PER_BLOCK>>>(
-						table.m_size(),
-						table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
-						hash_table_size,
-						table.d_inv_p,
-						d_dims_p,
-						d_hash_table,
-						d_bitmap_p,
-						bitmap_bits,
-						d_topks_p,
-						d_threshold_p,//initialized as 1, and increase gradually
-						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
-						num_of_max_count,//number of maximum count per query
-						d_noiih_p,
-						d_overflow,
-						shift_bits_subsequence,
-						aux_threshold_p,
-						offset * i);
-				//cudaCheckErrors(cudaDeviceSynchronize());
-				cout << "launched " << i << " kernels" << endl;
-				//MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
-
-				// check for kernel finish
-				cudaEventRecord(kernel_finish);
-				while (cudaEventQuery(kernel_finish) != cudaSuccess) {
-					usleep(1000);
-					// CUDA-aware MPI Allreduce operation on aux array
-					MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
-				}
-			}
-#else
+//#ifdef USE_DYNAMIC
+//			for (int i = 0; i < MPI_size; ++i) {
+//				device::match_AT<<<dims.size() / MPI_size, GPUGenie_device_THREADS_PER_BLOCK>>>(
+//						table.m_size(),
+//						table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
+//						hash_table_size,
+//						table.d_inv_p,
+//						d_dims_p,
+//						d_hash_table,
+//						d_bitmap_p,
+//						bitmap_bits,
+//						d_topks_p,
+//						d_threshold_p,//initialized as 1, and increase gradually
+//						d_passCount_p,//initialized as 0, count the number of items passing one d_threshold
+//						num_of_max_count,//number of maximum count per query
+//						d_noiih_p,
+//						d_overflow,
+//						shift_bits_subsequence,
+//						aux_threshold_p,
+//						offset * i);
+//				//cudaCheckErrors(cudaDeviceSynchronize());
+//				cout << "launched " << i << " kernels" << endl;
+//				//MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+//
+//				// check for kernel finish
+//				cudaEventRecord(kernel_finish);
+//				while (cudaEventQuery(kernel_finish) != cudaSuccess) {
+//					usleep(1000);
+//					// CUDA-aware MPI Allreduce operation on aux array
+//					MPI_Allreduce(MPI_IN_PLACE, aux_threshold_p, queries.size(), MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+//				}
+//			}
+//#else
             device::match_AT<<<dims.size(), GPUGenie_device_THREADS_PER_BLOCK>>>
             (table.m_size(),
                     table.i_size() * ((unsigned int)1<<shift_bits_subsequence),
@@ -964,7 +925,7 @@ void GPUGenie::match(inv_table& table, vector<query>& queries,
                     d_overflow,
                     shift_bits_subsequence);
             cudaCheckErrors(cudaDeviceSynchronize());
-#endif
+//#endif
 
 /*
             if(!table.is_stored_in_gpu)
