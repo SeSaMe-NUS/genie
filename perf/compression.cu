@@ -494,6 +494,7 @@ void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
         int uncomprInvStart = invPos[pos];
         int uncomprInvEnd = invPos[pos+1];
         int expectedUncomrLength = uncomprInvEnd - uncomprInvStart;
+        (void)expectedUncomrLength
         assert(expectedUncomrLength == (int)uncomprLength);
 
         for (int i = 0; i < (int)uncomprLength; i++){
@@ -541,6 +542,9 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         Logger::log(Logger::ALERT, "Error writing inverted table to binary file %s!", binaryInvTableFile.c_str());
         return std::string();
     }
+
+    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
+    delete[] table;
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
@@ -838,9 +842,9 @@ int main(int argc, char **argv)
             }
             else if (data == std::string("uniform"))
             {
-                if (uniform_distr_max - uniform_distr_min <= SCAN_MAX_LARGE_ARRAY_SIZE)
+                if (uniform_distr_max - uniform_distr_min <= (int)SCAN_MAX_LARGE_ARRAY_SIZE)
                 {
-                    std::cerr << "Uniform distribution error, min and max values too narrow!" << std::endl;
+                    std::cerr << "Uniform distribution error, min and max range too narrow!" << std::endl;
                     return 1;
                 }
                 h_Input = (generateUniformInput(SCAN_MAX_LARGE_ARRAY_SIZE, uniform_distr_min, uniform_distr_max, srand));
