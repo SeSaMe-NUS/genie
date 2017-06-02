@@ -62,7 +62,7 @@ void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 	u64 start = getTime();
 
 	knn(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load,
-			bitmap_bits, float(qmax + 1));
+			bitmap_bits);
 
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
@@ -87,7 +87,7 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 		}
 	
 	u64 start = getTime();
-	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
+	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits);
 	u64 end = getTime();
 
 	double elapsed = getInterval(start, end);
@@ -98,9 +98,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
 		int hash_table_size, int max_load, int bitmap_bits)
 {
-	Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size,
-			bitmap_bits, dim);
-	dim = 2;
+	Logger::log(Logger::DEBUG, "Parameters: %d,%d", hash_table_size, bitmap_bits);
 
 	device_vector<data_t> d_data;
 	device_vector<u32> d_bitmap;
@@ -175,7 +173,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 void
 GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
-		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits, vector<int>& dim)
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
 {
 	/* pre-process */
 	vector<device_vector<data_t> > d_data(table.size());
@@ -186,7 +184,6 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	vector<device_vector<data_t> > d_topk(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
-		dim[i] = 2;
 		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
 		//if (queries.at(i).empty())

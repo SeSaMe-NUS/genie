@@ -5,4 +5,5 @@ target_link_libraries(odgenie
 	${MPI_LIBRARIES}
 	${PROJECT_NAME}
 	${Boost_LIBRARIES}
+    -lcudadevrt
 	)

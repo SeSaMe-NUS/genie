@@ -4,4 +4,5 @@ target_link_libraries(csv2binary
 	${PROJECT_NAME}
 	${MPI_LIBRARIES}
 	${Boost_LIBRARIES}
+    -lcudadevrt
 	)

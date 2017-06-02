@@ -465,18 +465,18 @@ void GPUGenie::query::build_compressed(int max_load)
     vector<int>& inv_index = *table.inv_index();
     vector<int>& inv_pos = *table.inv_pos();
 
-    for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
+    for (std::map<int, std::vector<range>>::iterator di = _attr_map.begin();
             di != _attr_map.end(); ++di)
     {
         int index = di->first;
-        std::vector<range>& ranges = *(di->second);
+        std::vector<range> &ranges = di->second;
         int d = index << _ref_table->shifter();
 
         if (ranges.empty())
             continue;
 
         if (_dim_map.find(index) == _dim_map.end())
-            _dim_map[index] = new std::vector<dim>;
+            _dim_map[index] = std::vector<dim>();
 
         for (unsigned int i = 0; i < ranges.size(); ++i)
         {
@@ -511,7 +511,7 @@ void GPUGenie::query::build_compressed(int max_load)
             }
 
             // Generate compiled queries
-            std::vector<dim> *compiledQueriesVec = _dim_map[index];
+            std::vector<dim> &compiledQueriesVec = _dim_map[index];
             for (int ipos = beginInvListIndex; ipos < endInvListIndex; ipos++){
                 dim new_dim;
                 new_dim.weight = ran.weight;
@@ -520,7 +520,7 @@ void GPUGenie::query::build_compressed(int max_load)
                 new_dim.start_pos = inv_pos[ipos];
                 new_dim.end_pos = inv_pos[ipos+1];
 
-                compiledQueriesVec->push_back(new_dim);
+                compiledQueriesVec.push_back(new_dim);
             }
         }
 
@@ -539,10 +539,10 @@ int GPUGenie::query::dump(vector<dim>& vout)
         return _dims.size();
     }
     int count = 0;
-    for (std::map<int, std::vector<dim>*>::iterator di = _dim_map.begin();
+    for (std::map<int, std::vector<dim>>::iterator di = _dim_map.begin();
             di != _dim_map.end(); ++di)
     {
-        std::vector<dim>& ranges = *(di->second);
+        std::vector<dim> &ranges = di->second;
         count += ranges.size();
 
             //vector<int>& _inv_ = *_ref_table->inv();
@@ -559,10 +559,10 @@ int GPUGenie::query::dump(vector<range>& ranges)
 {
     int count = 0;
     ranges.clear();
-    for (std::map<int, std::vector<range>*>::iterator di = _attr_map.begin();
+    for (std::map<int, std::vector<range>>::iterator di = _attr_map.begin();
             di != _attr_map.end(); ++di)
     {
-        std::vector<range>& rangesInAttr = *(di->second);
+        std::vector<range> &rangesInAttr = di->second;
         count += rangesInAttr.size();
 
         for (range &r : rangesInAttr)

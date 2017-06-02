@@ -5,7 +5,7 @@ set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
 set(PROJECT_MINOR_VERSION 0.0)
 
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
 project(${PROJECT_NAME})
 enable_testing()
@@ -14,23 +14,14 @@ include(ExternalProject)
 
 option(COMPR "Build compression module" ON)
 option(SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
-
-set(CMAKE_CXX_STANDARD 11)
-
-## DEPENDENCIES
-find_package(CUDA REQUIRED)
-find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
-if (USE_MPI)
-  find_package(MPI REQUIRED)
-  find_package(OpenMP REQUIRED)
-  MESSAGE(STATUS "Building GENIE with MPI support")
-  #option(USE_DYNAMIC "Dynamic update of threshold" OFF)
-  include_directories(${MPI_INCLUDE_PATH})
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+option(USE_MPI "Build distributed GENIE" OFF)
+option(BUILD_SHARED_LIBS OFF)
+option(BUILD_STATIC_LIBS ON)
 
 
 ## COMPILERS
+
+set(CMAKE_CXX_STANDARD 11)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
@@ -47,27 +38,32 @@ if (NOT CONFIGURED_ONCE)
   set(CMAKE_CXX_FLAGS "${warnings} -D_GLIBCXX_USE_CXX11_ABI=0"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
-#SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
-SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52")
-SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
-SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
-set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-option(BUILD_SHARED_LIBS OFF)
-option(USE_MPI "Build distributed GENIE" OFF)
+# SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52")
+# SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
+# SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
 
+
 ## DEPENDENCIES
-set(Boost_USE_STATIC_LIBS YES)
+
 find_package(Boost 1.63.0 REQUIRED COMPONENTS serialization program_options)
-include_directories(${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
+
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
+if (USE_MPI)
+  find_package(MPI REQUIRED)
+  find_package(OpenMP REQUIRED)
+  MESSAGE(STATUS "Building GENIE with MPI support")
+  #option(USE_DYNAMIC "Dynamic update of threshold" OFF)
+  include_directories(${MPI_INCLUDE_PATH})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 find_package(CUDA REQUIRED)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
-option(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
 list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -rdc=true --compiler-options "${warnings_cuda}" -std=c++11 -g -G)
 # Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
@@ -75,6 +71,7 @@ list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=sm_35 -gencode arch=co
 set(CUDA_SEPARABLE_COMPILATION ON)
 
 link_directories("/usr/local/cuda/lib64/")
+
 
 if (COMPR)
     message(STATUS "Compression module enable -- compiling compression interface")

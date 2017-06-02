@@ -571,7 +571,6 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 
 			key_eligible = false;
 			if (count < *my_threshold)
-			//if (count < my_threshold)
 			{
 				continue;      //threshold has been increased, no need to insert
 			}
@@ -581,14 +580,12 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 					access_id,               
 					hash_table, hash_table_size, q, count, &key_eligible,
 					my_threshold, &pass_threshold);
-					//&my_threshold, &pass_threshold);
 
 			if (key_eligible)
 			{
 				if (pass_threshold)
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
-					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
 				}
 
 				continue;
@@ -600,14 +597,12 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				//access_id and its location are packed into a packed key
 
 				if (count < *my_threshold)
-				//if (count < my_threshold)
 				{
 					continue;//threshold has been increased, no need to insert
 				}
 
 				hash_kernel_AT(access_id, hash_table, hash_table_size, q, count,
 						my_threshold, my_noiih, overflow, &pass_threshold);
-						//&my_threshold, my_noiih, overflow, &pass_threshold);
 				if (*overflow)
 				{
 
@@ -616,7 +611,6 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 				if (pass_threshold)
 				{
 					updateThreshold(my_passCount, my_threshold, my_topk, count);
-					//updateThreshold(my_passCount, &my_threshold, my_topk, count);
 				}
 			}
 
@@ -671,15 +665,6 @@ int build_queries(vector<query>& queries, inv_table& table,
 
 			if(count > max_count) max_count = count;
 		}
-			
-//#ifdef USE_DYNAMIC
-//		// EXPERIMENT
-//		int MPI_rank, MPI_size;
-//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-//		int offset = dims.size() / MPI_size;
-//		rotate(dims.begin(), dims.begin() + offset * MPI_rank, dims.end());
-//#endif
 
         query_build_stop = getTime();
         Logger::log(Logger::INFO, ">>>>[time profiling]: match: build_queries function takes %f ms. ",
@@ -835,19 +820,6 @@ void match(inv_table& table, vector<query>& queries,
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
 		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
-//#ifdef USE_DYNAMIC
-//		// this event is used to record whether the "match_AT" kernel is finished
-//		cudaEvent_t kernel_finish;
-//		cudaEventCreate(&kernel_finish);
-//		// declare aux array on GPU (values set to 1 later)
-//		thrust::device_vector<u32> aux_threshold(queries.size());
-//		// calculate offset
-//		int MPI_rank, MPI_size;
-//		MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
-//		MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
-//		int offset = queries.size() / MPI_size;
-//#endif
-
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
 
@@ -863,10 +835,6 @@ void match(inv_table& table, vector<query>& queries,
             d_threshold.resize(queries.size());
             thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
             u32 * d_threshold_p = thrust::raw_pointer_cast(d_threshold.data());
-//#ifdef USE_DYNAMIC
-//			thrust::fill(aux_threshold.begin(), aux_threshold.end(), 1);
-//			u32 *aux_threshold_p = thrust::raw_pointer_cast(aux_threshold.data());
-//#endif
 
             //which num_of_max_count should be used?
 
@@ -898,9 +866,6 @@ void match(inv_table& table, vector<query>& queries,
                     d_noiih_p,
                     d_overflow,
                     shift_bits_subsequence);
-            cudaCheckErrors(cudaDeviceSynchronize());
-//#endif
-
             cudaCheckErrors(cudaDeviceSynchronize());
 			cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow, sizeof(bool), cudaMemcpyDeviceToHost));
 
@@ -1006,7 +971,7 @@ static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_
 }
 
 void
-GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits,
 		vector<device_vector<u32> >& d_noiih, vector<device_vector<u32> >& d_threshold,
@@ -1141,7 +1106,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		/* offset */
 		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
-		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::device::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
+		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
 
 		/* match kernel */
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
@@ -1150,7 +1115,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		{
 			if (queries.at(i).empty())
 				continue;
-			device::match_AT<<<dims.at(i).size(), GPUGenie_device_THREADS_PER_BLOCK>>>(
+			match_AT<<<dims.at(i).size(), MATCH_THREADS_PER_BLOCK>>>(
 				table.at(i)->m_size(),
 				table.at(i)->i_size() * ((unsigned int)1<<shift_bits_subsequence),
 				hash_table_size.at(i),
@@ -1177,7 +1142,7 @@ GPUGenie::match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		Logger::log(Logger::INFO,"[ 90%] Starting data converting......");
 
 		for (size_t i = start; i < finish; ++i)
-			device::convert_to_data<<<hash_table_size.at(i) * queries.at(i).size() / 1024 + 1, 1024>>>(d_hash_table.at(i), (u32)hash_table_size.at(i)*queries.at(i).size());
+			convert_to_data<<<hash_table_size.at(i) * queries.at(i).size() / 1024 + 1, 1024>>>(d_hash_table.at(i), (u32)hash_table_size.at(i)*queries.at(i).size());
 
 		Logger::log(Logger::INFO, "[100%] Matching is done!");
 
