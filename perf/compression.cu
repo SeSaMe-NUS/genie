@@ -750,13 +750,19 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
         // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
         // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
         // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
-        // thereby this test may fail for large datasets.
-        assert(refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]
-            && refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
-        assert(refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]
-            && refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
-        assert(refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]
-            && refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+        // thereby if the last k-th result count is the same as the first, we do not compare the result idx, otherwise
+        // the test would likely fail. GENIE does not guarantee that the result set will consist of lowest idx among
+        // results of the same count.
+        assert(refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+        assert(refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+        assert(refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+        // Only compare idxs in case the counts of the first result and k-th result are different
+        assert(refResultCounts[0 * config.num_of_topk] == refResultCounts[1 * config.num_of_topk -1] ||
+            refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]);
+        assert(refResultCounts[1 * config.num_of_topk] == refResultCounts[2 * config.num_of_topk -1] ||
+            refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]);
+        assert(refResultCounts[2 * config.num_of_topk] == refResultCounts[3 * config.num_of_topk -1] ||
+            refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]);
     }
 
 }
