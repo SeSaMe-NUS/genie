@@ -6,7 +6,9 @@
 #ifndef DEVICE_BIT_PACKING_HELPERS_H_
 #define DEVICE_BIT_PACKING_HELPERS_H_
 
-#include <SIMDCAI/include/util.h>
+#include <cstdint>
+#include <stdexcept>
+#include <vector>
 
 #include "DeviceDeltaHelper.h"
 
@@ -909,9 +911,13 @@ struct DeviceBitPackingHelpers {
 
     static void CheckMaxDiff(const std::vector<uint32_t> &refdata, unsigned bit) {
         for (size_t i = 1; i < refdata.size(); ++i) {
-            if (SIMDCompressionLib::gccbits(refdata[i] - refdata[i - 1]) > bit)
+            if (gccbits(refdata[i] - refdata[i - 1]) > bit)
                 throw std::runtime_error("bug");
         }
+    }
+
+    static inline uint32_t gccbits(const uint32_t v) {
+        return v == 0 ? 0 : 32 - __builtin_clz(v);
     }
 };
 

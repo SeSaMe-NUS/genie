@@ -1,10 +1,6 @@
 #ifndef DEVICE_BIT_PACKING_CODEC_H_
 #define DEVICE_BIT_PACKING_CODEC_H_
 
-#include <SIMDCAI/include/common.h>
-#include <SIMDCAI/include/util.h>
-#include <SIMDCAI/include/codecs.h>
-
 #include "DeviceCodecs.h"
 #include "DeviceBitPackingHelpers.h"
 
@@ -51,7 +47,7 @@ public:
                 accumulator |= in[k] - in[k - 1];
             }
             initoffset = in[BlockSize - 1];
-            return SIMDCompressionLib::gccbits(accumulator);
+            return DeviceBitPackingHelpers::gccbits(accumulator);
         }
 
         static void inline
@@ -79,7 +75,7 @@ public:
             for (uint32_t k = 0; k < BlockSize; ++k) {
                 accumulator |= in[k];
             }
-            return SIMDCompressionLib::gccbits(accumulator);
+            return DeviceBitPackingHelpers::gccbits(accumulator);
         }
 
         static void inline
@@ -149,7 +145,7 @@ public:
         for (uint32_t k = 0; k < BlockSize; ++k) {
             accumulator |= in[k];
         }
-        return SIMDCompressionLib::gccbits(accumulator);
+        return DeviceBitPackingHelpers::gccbits(accumulator);
     }
 
     static void inline

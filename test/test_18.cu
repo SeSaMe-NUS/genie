@@ -7,18 +7,15 @@
 #include <GPUGenie.h>
 
 #include <algorithm>
-#include <assert.h>
-#include <vector>
+#include <cassert>
+#include <cstdio>
+#include <fstream>
 #include <iostream>
-
 #include <sstream>
-#include <stdio.h>
+#include <vector>
 
-#include "codecfactory.h"
-#include "intersection.h"
 
 using namespace GPUGenie;
-using namespace SIMDCompressionLib;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";

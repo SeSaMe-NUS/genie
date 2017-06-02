@@ -11,6 +11,7 @@ include(CheckCXXCompilerFlag)
 include(ExternalProject)
 
 option(COMPR "Build compression module" ON)
+option(SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -51,33 +52,35 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 link_directories("/usr/local/cuda/lib64/")
 
 if (COMPR)
+    message(STATUS "Compression module enable -- compiling compression interface")
     add_definitions(-DCOMPR)
 
-    message(STATUS "Compression module enable -- compiling compression interface")
-    # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
-    # integer compression, delta encoding and intersections of posting lists
-    ExternalProject_Add(
-      SIMDCAI # Name for custom target
-      PREFIX "simdcai" # Root dir for entire project
-      GIT_REPOSITORY https://github.com/lemire/SIMDCompressionAndIntersection # URL of git repo
-      UPDATE_COMMAND "" # Source work-tree update command
-      PATCH_COMMAND bash -c "patch --directory=${PROJECT_BINARY_DIR}/simdcai/src/SIMDCAI --strip=1 --forward --quiet < ${PROJECT_SOURCE_DIR}/simdcai.patch $<SEMICOLON> echo OK "  # Patch SIMDCAI source for NVCC
-      CONFIGURE_COMMAND "" # Build tree configuration command
-      BUILD_COMMAND make "-j4" # Command to drive the native build
-      BUILD_IN_SOURCE 1 # Use source dir for build dir
-      INSTALL_COMMAND "" # Command to drive install after build
-      TEST_AFTER_INSTALL 1 # Add test step executed after install step
-      TEST_COMMAND "./unit" # Command to drive test
-    )
+    if (SIMDCAI)
+        # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
+        # integer compression, delta encoding and intersections of posting lists
+        ExternalProject_Add(
+          SIMDCAI_PROJ # Name for custom target
+          PREFIX "simdcai" # Root dir for entire project
+          GIT_REPOSITORY https://github.com/lemire/SIMDCompressionAndIntersection # URL of git repo
+          UPDATE_COMMAND "" # Source work-tree update command
+          PATCH_COMMAND bash -c "patch --directory=${PROJECT_BINARY_DIR}/simdcai/src/SIMDCAI --strip=1 --forward --quiet < ${PROJECT_SOURCE_DIR}/simdcai.patch $<SEMICOLON> echo OK "  # Patch SIMDCAI_PROJ source for NVCC
+          CONFIGURE_COMMAND "" # Build tree configuration command
+          BUILD_COMMAND make "-j4" # Command to drive the native build
+          BUILD_IN_SOURCE 1 # Use source dir for build dir
+          INSTALL_COMMAND "" # Command to drive install after build
+          TEST_AFTER_INSTALL 1 # Add test step executed after install step
+          TEST_COMMAND "./unit" # Command to drive test
+        )
 
-    # Retrieve the in-source build location of SIMDCAI
-    ExternalProject_Get_Property(SIMDCAI BINARY_DIR)
-    set(SIMDCAI_INSTALL_DIR ${BINARY_DIR})
-    # include_directories(${PROJECT_SOURCE_DIR}/simdcai/src)
-    message(STATUS "SIMDCAI_BINARY_DIR: ${BINARY_DIR}")
+        # Retrieve the in-source build location of SIMDCAI
+        ExternalProject_Get_Property(SIMDCAI_PROJ BINARY_DIR)
+        set(SIMDCAI_INSTALL_DIR ${BINARY_DIR})
+        # include_directories(${PROJECT_SOURCE_DIR}/simdcai/src)
+        message(STATUS "SIMDCAI_BINARY_DIR: ${BINARY_DIR}")
 
-    SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
-    cuda_include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
+        SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
+        cuda_include_directories(SYSTEM "${SIMDCAI_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
+    endif()
 
 else()
     message(STATUS "Compression module disabled")
