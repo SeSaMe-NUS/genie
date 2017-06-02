@@ -129,7 +129,7 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
 
     Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
     inv_table * table = NULL;
-    inv_compr_table * comprTable = NULL;
+    __attribute__((unused)) inv_compr_table * comprTable = NULL;
     preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != NULL);
     assert(table->build_status() == inv_table::builded);

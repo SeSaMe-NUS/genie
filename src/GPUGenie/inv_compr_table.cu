@@ -291,7 +291,7 @@ GPUGenie::inv_compr_table::read(const char* filename, inv_compr_table*& table)
     table = new inv_compr_table[_total_num_of_table];
     ifstream _ifs(filename, ios::binary|ios::in);
     
-    bool success;
+    bool success = false;
     for(int i=0 ; i<_total_num_of_table ; ++i)
     {
          success = table[i].read_from_file(_ifs);

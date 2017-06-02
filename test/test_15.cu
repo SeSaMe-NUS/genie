@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
         std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
 
         inv_table * table = NULL;
-        inv_compr_table * comprTable = NULL;
+        __attribute__((unused)) inv_compr_table * comprTable = NULL;
         preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
         assert(table != NULL);
         assert(table->build_status() == inv_table::builded);
