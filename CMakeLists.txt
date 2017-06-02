@@ -1,10 +1,12 @@
-## PROJECT SETTINGS
+## GENERAL PROJECT SETTINGS
 cmake_minimum_required(VERSION 3.5.1)
 
 set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
 set(PROJECT_MINOR_VERSION 0.0)
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
 project(${PROJECT_NAME})
 enable_testing()
 include(CheckCXXCompilerFlag)
@@ -14,6 +16,19 @@ option(COMPR "Build compression module" ON)
 option(SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
+
+## DEPENDENCIES
+find_package(CUDA REQUIRED)
+find_package(Boost 1.56.0 REQUIRED COMPONENTS serialization)
+if (USE_MPI)
+  find_package(MPI REQUIRED)
+  find_package(OpenMP REQUIRED)
+  MESSAGE(STATUS "Building GENIE with MPI support")
+  #option(USE_DYNAMIC "Dynamic update of threshold" OFF)
+  include_directories(${MPI_INCLUDE_PATH})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 
 ## COMPILERS
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
@@ -25,14 +40,24 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if (NOT CONFIGURED_ONCE)
-  set(CMAKE_C_FLAGS "${warnings}"
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
   # We use -D_GLIBCXX_USE_CXX11_ABI=0 to disable C++11 ABI, since nvcc uses old ABI, generating undefined symbols,
   # while raw g++ generates new ABI without old ABI, causing link time errors when linking host with device code. 
   set(CMAKE_CXX_FLAGS "${warnings} -D_GLIBCXX_USE_CXX11_ABI=0"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
+#SET(CUDA_NVCC_FLAGS "-arch=sm_35" CACHE STRING "nvcc flags" FORCE)
+SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52")
+SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
+SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
+set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
+option(BUILD_SHARED_LIBS OFF)
+option(USE_MPI "Build distributed GENIE" OFF)
+
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIRS})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
 
 ## DEPENDENCIES
 set(Boost_USE_STATIC_LIBS YES)
@@ -86,10 +111,17 @@ else()
     message(STATUS "Compression module disabled")
 endif()
 
+## OUTPUT OPTIONS
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+
+## CMAKE SUBDIRECTORIES
 add_subdirectory(src)
+if (USE_MPI)
+  add_subdirectory(src/DistGenie)
+endif()
+add_subdirectory(utility)
 add_subdirectory(test)
 add_subdirectory(static)
 add_subdirectory(perf)

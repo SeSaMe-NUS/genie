@@ -27,9 +27,138 @@ This creates an "out-of-source" build of GPUGenie containing both the GPUGenie l
 $ cmake -DBOOST_ROOT=/path/to/boost ..
 ```
 
+To compile with MPI support (**currently only OpenMPI is supported**), use
+
+```bash
+$ cmake -DUSE_MPI=on ..
+```
+
+To compile the release version, use
+
+```bash
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
 ## Running example
 
 Examples (tests) are available in the `bin` folder of your build directory.
+
+### Multi-node Multi-GPU example
+
+The current version supports loading multiple tables (i.e. clusters) and
+executing queries on corresponding clusters.
+
+#### Preparing dataset and queries
+
+##### Dataset
+
+First, you need to cluster a single `.csv` file into multiple files with
+one cluster of data in each file. Make sure the files have a common prefix
+in their file names and that the file names end with `_<cluster-id>`
+(e.g. `sift_0.csv`, `sift_1.csv`).
+
+After the clustering, you need to further split each file into multiple
+files for loading onto multiple GPUs. This could be done with the `split.sh`
+script in the `utility` folder (**currently it splits into 2 files for 2 GPUs**).
+If a cluster is named `sift_0.csv`, this will split it into `sift_0_0.csv`
+and `sift_0_1.csv`.
+
+Once the files are ready, you may want to convert them into binary format
+for faster loading (if you want to experiment a few times, this greatly
+speeds up the loading process for subsequent runs). The conversion could
+be done by the `csv2binary` program in `bin`. A helper script, `convert.sh`
+is also provided to convert multiple files at once. For example, given 20
+clusters and 2 GPUs (with prefix `sift`), we can do
+
+```bash
+$ bash convert.sh 20 2 sift
+```
+
+To make sure everything works, please place the above mentioned programs/scripts
+and your clustered `.csv` files into a single directory before processing the files.
+
+##### Queries
+
+The query is in JSON format, for 2 queries of dimension 5, you do
+
+```javascript
+{
+  "topk": 10,
+  "queries": [
+    {
+      "content": [1, 2, 3, 4, 5],
+      "clusters": [0, 9, 13]
+    },
+    {
+      "content": [90, 24, 33, 14, 5],
+      "clusters": [3, 7]
+    }
+  ]
+}
+```
+
+This sends query `1 2 3 4 5` and `90 24 33 14 5` with topk set to 10.
+Currently the user needs to specify the clusters to search for a
+given query.
+
+#### Running MPIGenie
+
+To run MPIGenie on a single node, use
+
+```bash
+$ mpirun -np <n> ./bin/odgenie static/online.config.json
+```
+
+To run MPIGenie on multiple nodes, use
+
+```bash
+$ /path/to/mpirun -np <n> -hostfile hosts ./bin/odgenie static/online.config.json
+```
+
+An example `hosts` file looks like
+
+```
+slave1 slots=3
+slave2 slots=3
+slave3 slots=3
+slave4 slots=3
+```
+
+Sometimes, you may need to specify which network interface to use
+
+```bash
+$ /path/to/mpi -np <n> -hostfile hosts --mca btl_tcp_if_include <interface> ./bin/odgenie static/online.config.json
+```
+
+**Modify the configuration file accordingly.** If you converted files into
+binary format, set `data_format` to be 1 in the configuration file.
+
+The program will listen for question on port 9090. You can send queries
+to the program by executing
+
+```bash
+$ nc <hostname> 9090 < queries.json
+```
+
+## Debugging
+
+Run MPI with ENABLE_GDB=1 environment variable:
+
+```bash
+$ mpirun -np 2 -x ENABLE_GDB=1 ./bin/odgenie ./static/online.config.json
+```
+
+If there is only one batch of MPI processes running, we can find PID automatically. Note that we need to set variable i to non-zero value to start the process after we have attached all gdbs we want.
+
+```bash
+$ pid=$(pgrep odgenie | sed -n 1p); gdb -q --pid "${pid}" -ex "up 100" -ex "down 1" -ex "set variable gdb_attached=1" -ex "continue"
+```
+
+To attach other processes, use their corresponding PID (PID of rank 0 process + rank). Do this before starting the rank 0 process by setting variable i.
+
+```bash
+$ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
+```
 
 ## Documentation
 

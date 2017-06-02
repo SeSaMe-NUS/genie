@@ -8,6 +8,7 @@
 #include <fstream>
 #include <exception>
 #include <iostream>
+#include <utility>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/serialization.hpp>
@@ -20,26 +21,29 @@
 using namespace std;
 using namespace GPUGenie;
 
-int*  inv_table::d_inv_p = NULL;
+//int*  inv_table::d_inv_p = NULL;
 int inv_table::max_inv_size = 0;
 
 bool GPUGenie::inv_table::cpy_data_to_gpu()
 {
-	try{
-        if(d_inv_p == NULL)
-        {
-            cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * max_inv_size));
-        }
-            u64 t=getTime();
-            
-            int *temp_inv = (int*)malloc(sizeof(int) * _inv.size());
-            std::copy(_inv.begin(), _inv.end(), temp_inv);
-		    cudaCheckErrors(cudaMemcpy(d_inv_p, temp_inv, sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
-            free(temp_inv);
+	try
+	{
+		if(d_inv_p == NULL)
+			cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * max_inv_size));
 
-        	u64 tt=getTime();
-        	cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
-	} catch(std::bad_alloc &e){
+		u64 t=getTime();
+			
+		int *temp_inv = (int*)malloc(sizeof(int) * _inv.size());
+		std::copy(_inv.begin(), _inv.end(), temp_inv);
+		cudaCheckErrors(cudaMemcpy(d_inv_p, temp_inv, sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
+		free(temp_inv);
+
+		u64 tt=getTime();
+		//cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
+		is_stored_in_gpu = true;
+	}
+	catch(std::bad_alloc &e)
+	{
 		throw(GPUGenie::gpu_bad_alloc(e.what()));
 	}
 
@@ -73,13 +77,11 @@ void GPUGenie::inv_table::clear_gpu_mem()
 	if (d_inv_p == NULL)
 		return;
 
-
     cout << "cudaFreeTime: " ;
 	u64 t1 = getTime();
     cudaCheckErrors(cudaFree(d_inv_p));
     u64 t2 = getTime();
     cout << getInterval(t1, t2) << " ms."<< endl;
-
 }
 
 bool GPUGenie::inv_table::empty()
@@ -260,6 +262,12 @@ GPUGenie::inv_table::inv_index()
 	return &_inv_index;
 }
 
+unordered_map<size_t, int>*
+GPUGenie::inv_table::inv_index_map()
+{
+	return &_inv_index_map;
+}
+
 vector<int>*
 GPUGenie::inv_table::inv_pos()
 {
@@ -326,6 +334,19 @@ GPUGenie::inv_table::build(size_t max_length, bool use_load_balance)
 	_inv_index.push_back(_inv_pos.size());
 	_inv_pos.push_back(_inv.size());
 
+	/* unordered map impl of inv_index */
+	_inv_index_map.clear();
+	for (size_t i = 0; i < _inv_lists.size(); ++i)
+	{
+		dim = i << _shifter;
+		for (int j = _inv_lists[i].min(); j <= _inv_lists[i].max() + 1; ++j)
+		{
+			key = dim + j - _inv_lists[i].min();
+			size_t unsigned_key = static_cast<size_t>(key);
+			_inv_index_map.insert(make_pair(unsigned_key, _inv_index.at(unsigned_key)));
+		}
+	}
+
     max_inv_size = (int)_inv.size() > max_inv_size?(int)_inv.size():max_inv_size;
 
 	_build_status = builded;
@@ -361,19 +382,16 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
     int temp_status = _build_status;
     ofs.write((char*)&temp_status, sizeof(int));
 
-    unsigned int _ck_size = _ck.size();
+    //unsigned int _ck_size = _ck.size();
     unsigned int _inv_size = _inv.size();
-    unsigned int _inv_index_size = _inv_index.size();
     unsigned int _inv_pos_size = _inv_pos.size();
     
-    ofs.write((char*)&_ck_size, sizeof(unsigned int));
+    //ofs.write((char*)&_ck_size, sizeof(unsigned int));
     ofs.write((char*)&_inv_size, sizeof(unsigned int));
-    ofs.write((char*)&_inv_index_size, sizeof(unsigned int));
     ofs.write((char*)&_inv_pos_size, sizeof(unsigned int));
 
-    ofs.write((char*)&_ck[0], _ck_size*sizeof(int));
+    //ofs.write((char*)&_ck[0], _ck_size*sizeof(int));
     ofs.write((char*)&_inv[0], _inv_size*sizeof(int));
-    ofs.write((char*)&_inv_index[0],_inv_index_size*sizeof(int));
     ofs.write((char*)&_inv_pos[0], _inv_pos_size*sizeof(int));
 
     unsigned int _list_upperbound_size = inv_list_upperbound.size();
@@ -398,6 +416,11 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
     
     if(gram_length_sequence != 1)
     {
+		/* save _inv_index for sequence search */
+		unsigned int _inv_index_size = _inv_index.size();
+		ofs.write((char*)&_inv_index_size, sizeof(unsigned int));
+		ofs.write((char*)&_inv_index[0],_inv_index_size*sizeof(int));
+
         unsigned int num_of_entry = _distinct_map.size();
         ofs.write((char*)&num_of_entry, sizeof(unsigned int));
         boost::archive::binary_oarchive oa(ofs);
@@ -406,6 +429,12 @@ GPUGenie::inv_table::write_to_file(ofstream& ofs)
             oa<<_distinct_map[i];
         }
     }
+	else
+	{
+		/* save _inv_index_map for other searches */
+		boost::archive::binary_oarchive oa(ofs);
+		oa << _inv_index_map;
+	}
 
     return true;
 }
@@ -430,24 +459,20 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
     _build_status = static_cast<status>(temp_status);
 
 
-    unsigned int _ck_size;
+    //unsigned int _ck_size;
     unsigned int _inv_size;
-    unsigned int _inv_index_size;
     unsigned int _inv_pos_size;
 
-    ifs.read((char*)&_ck_size, sizeof(unsigned int));
+    //ifs.read((char*)&_ck_size, sizeof(unsigned int));
     ifs.read((char*)&_inv_size, sizeof(unsigned int));
-    ifs.read((char*)&_inv_index_size, sizeof(unsigned int));
     ifs.read((char*)&_inv_pos_size, sizeof(unsigned int));
 
-    _ck.resize(_ck_size);
+    //_ck.resize(_ck_size);
     _inv.resize(_inv_size);
-    _inv_index.resize(_inv_index_size);
     _inv_pos.resize(_inv_pos_size);
 
-    ifs.read((char*)&_ck[0], _ck_size*sizeof(int));
+    //ifs.read((char*)&_ck[0], _ck_size*sizeof(int));
     ifs.read((char*)&_inv[0], _inv_size*sizeof(int));
-    ifs.read((char*)&_inv_index[0],_inv_index_size*sizeof(int));
     ifs.read((char*)&_inv_pos[0], _inv_pos_size*sizeof(int));
     
     unsigned int _list_upperbound_size;
@@ -475,6 +500,12 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
     //read distinct values
     if(gram_length_sequence != 1)
     {
+		/* read in _inv_index for sequence search */
+		unsigned int _inv_index_size;
+		ifs.read((char*)&_inv_index_size, sizeof(unsigned int));
+		_inv_index.resize(_inv_index_size);
+		ifs.read((char*)&_inv_index[0],_inv_index_size*sizeof(int));
+
         unsigned int num_of_entry;
         ifs.read((char*)&num_of_entry, sizeof(unsigned int));
         _distinct_map.resize(num_of_entry);
@@ -484,6 +515,12 @@ GPUGenie::inv_table::read_from_file(ifstream& ifs)
             ia>>_distinct_map[i];
         }
     }
+	else
+	{
+		/* read in _inv_index_map for other search */
+		boost::archive::binary_iarchive ia(ifs);
+		ia >> _inv_index_map;
+	}
 
     return true;
 }

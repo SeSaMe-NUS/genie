@@ -64,3 +64,8 @@ Doxyfile
 # research dirs
 /experiments
 /results
+
+#vim swap files
+*.swp
+
+src/GPUGenie/configure.h

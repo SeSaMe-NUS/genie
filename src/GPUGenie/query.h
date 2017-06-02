@@ -56,11 +56,13 @@ public:
      */
     struct dim
     {
-         int query;/*!< The query which the range belongs to */
-	     int order;/*!< Mainly used in subsequence search */
-         int start_pos;/*!< The starting position in the ListArray for this dim */
-         int end_pos;/*!< The ending position in the ListArray for this dim */
-         float weight;/*!< Weight of this dim */
+		int query;/*!< The query which the range belongs to */
+		int order;/*!< Mainly used in subsequence search */
+		int start_pos;/*!< The starting position in the ListArray for this dim */
+		int end_pos;/*!< The ending position in the ListArray for this dim */
+		float weight;/*!< Weight of this dim */
+		dim() = default;
+		dim(int query, int order, int start_pos, int end_pos, float weight);
     };
 private:
 	/*! \var inv_table * _ref_table
@@ -77,7 +79,7 @@ private:
 	 *  different ranges setting, the attribute saves the
 	 *  raw range settings.
 	 */
-	std::map<int, vector<range>*> _attr_map;
+	std::map<int, vector<range> > _attr_map;
 
 	/*! \var std::map<int, vector<dim>*> _dim_map
 	 *  \brief The queried ranges.
@@ -85,7 +87,7 @@ private:
      *   The queried ranges. In matching steps, this vector will
 	 *   be transferred to device.
 	 */
-	std::map<int, vector<dim>*> _dim_map;
+	std::map<int, vector<dim> > _dim_map;
 
 	/*! \var int _topk
 	 *  \brief The top k matches required.
@@ -258,6 +260,9 @@ public:
 	 */
 	void
 	build();
+
+	void
+	build(vector<dim> &);
 
 
 	/*! \fn int dump(vector<dim>& vout)

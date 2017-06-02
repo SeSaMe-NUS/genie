@@ -103,27 +103,54 @@ typedef struct _GPUGenie_Config
 	COMPRESSION_TYPE compression;
 
 	_GPUGenie_Config() :
-			num_of_topk(GPUGENIE_DEFAULT_TOPK), query_radius(
-					GPUGENIE_DEFAULT_RADIUS), count_threshold(
-					GPUGENIE_DEFAULT_THRESHOLD), hashtable_size(
-					GPUGENIE_DEFAULT_HASHTABLE_SIZE), use_device(
-					GPUGENIE_DEFAULT_DEVICE), data_points(NULL),
+		num_of_topk(GPUGENIE_DEFAULT_TOPK),
+		query_radius(GPUGENIE_DEFAULT_RADIUS),
+		count_threshold(GPUGENIE_DEFAULT_THRESHOLD),
+		hashtable_size(GPUGENIE_DEFAULT_HASHTABLE_SIZE),
+		use_device(GPUGENIE_DEFAULT_DEVICE),
+		data_points(NULL), data(NULL), index(NULL),
+		item_num(0), row_num(0), search_type(0),
+		data_type(0), max_data_size(0), save_to_gpu(false),
+		query_points(NULL), multirange_query_points(NULL),
+		dim(0), use_adaptive_range(GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE),
+		selectivity(GPUGENIE_DEFAULT_SELECTIVITY),
+		posting_list_max_length(GPUGENIE_DEFAULT_POSTING_LIST_LENGTH),
+		multiplier(GPUGENIE_DEFAULT_LOAD_MULTIPLIER),
+		use_load_balance(GPUGENIE_DEFAULT_USE_LOAD_BALANCE),
+		use_multirange(GPUGENIE_DEFAULT_USE_MULTIRANGE),
+		num_of_queries(GPUGENIE_DEFAULT_NUM_OF_QUERIES),
+		use_subsequence_search(false),
+		data_gram_length(3), num_of_iteration(1),
+		compression(DEFAULT_COMPRESSION_TYPE){}
 
-			data(NULL), index(NULL), item_num(0), row_num(0),
+	_GPUGenie_Config(const _GPUGenie_Config &config) :
+		num_of_topk(config.num_of_topk),
+		query_radius(config.query_radius),
+		count_threshold(config.count_threshold),
+		hashtable_size(config.hashtable_size),
+		use_device(config.use_device),
+		data_points(config.data_points),
+		data(config.data), index(config.index),
+		item_num(config.item_num), row_num(config.row_num),
+		search_type(config.search_type),
+		data_type(config.data_type),
+		max_data_size(config.max_data_size),
+		save_to_gpu(config.save_to_gpu),
+		query_points(config.query_points),
+		multirange_query_points(config.multirange_query_points),
+		dim(config.dim), use_adaptive_range(config.use_adaptive_range),
+		selectivity(config.selectivity),
+		posting_list_max_length(config.posting_list_max_length),
+		multiplier(config.multiplier),
+		use_load_balance(config.use_load_balance),
+		use_multirange(config.use_multirange),
+		num_of_queries(config.num_of_queries),
+		use_subsequence_search(config.use_subsequence_search),
+		data_gram_length(config.data_gram_length),
+		num_of_iteration(config.num_of_iteration),
+		compression(config.compression){}
 
-			search_type(0), data_type(0), max_data_size(0), save_to_gpu(false),
-
-			query_points(NULL), multirange_query_points(NULL), dim(0), use_adaptive_range(
-					GPUGENIE_DEFAULT_USE_ADAPTIVE_RANGE), selectivity(
-					GPUGENIE_DEFAULT_SELECTIVITY), posting_list_max_length(
-					GPUGENIE_DEFAULT_POSTING_LIST_LENGTH), multiplier(
-					GPUGENIE_DEFAULT_LOAD_MULTIPLIER), use_load_balance(
-					GPUGENIE_DEFAULT_USE_LOAD_BALANCE), use_multirange(
-					GPUGENIE_DEFAULT_USE_MULTIRANGE), num_of_queries(
-					GPUGENIE_DEFAULT_NUM_OF_QUERIES), use_subsequence_search(false),
-                    data_gram_length(3), num_of_iteration(1),
-                    compression(DEFAULT_COMPRESSION_TYPE)
-	{}
+                    
 } GPUGenie_Config;
 
 
@@ -210,6 +237,10 @@ void knn_search(vector<int>& result, GPUGenie_Config& config);
  */
 void knn_search(inv_table& table, vector<query>& queries,
 		vector<int>& h_topk, vector<int>& h_topk_count, GPUGenie_Config& config);
+
+/* Multi table search */
+void knn_search_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& config);
 
 /*! \fn knn_search_for_binary_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
  *  \brief knn_search for data read from a binary file

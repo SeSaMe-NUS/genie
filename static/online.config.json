@@ -1,0 +1,10 @@
+{
+	"data_file": "data/sift_big",
+	"dim": 128,
+	"count_threshold": 128,
+	"data_type": 0,
+	"search_type": 0,
+	"max_data_size": 0,
+	"num_of_cluster": 20,
+	"data_format": 0
+}
