@@ -462,7 +462,7 @@ void GPUGenie::query::build_sequence()
 void GPUGenie::query::build_compressed(int max_load)
 {
     inv_compr_table& table = *dynamic_cast<inv_compr_table*>(_ref_table);
-    vector<int>& inv_index = *table.inv_index();
+    unordered_map<size_t, int>& inv_index_map = *table.inv_index_map();
     vector<int>& inv_pos = *table.inv_pos();
 
     for (std::map<int, std::vector<range>>::iterator di = _attr_map.begin();
@@ -495,14 +495,17 @@ void GPUGenie::query::build_compressed(int max_load)
             _min = d + low - table.get_lowerbound_of_list(index);
             _max = d + up - table.get_lowerbound_of_list(index);
 
-            int beginInvListIndex = inv_index[_min]; // Index to inv_pos array of the first valid inverted list
-            int endInvListIndex = inv_index[_max+1]; // Index to inv_pos array after the last valid inverted list
+            // Index to inv_pos array of the first valid inverted list
+            int beginInvListIndex = inv_index_map.find(static_cast<size_t>(_min))->second; 
+            // Index to inv_pos array after the last valid inverted list
+            int endInvListIndex = inv_index_map.find(static_cast<size_t>(_max+1))->second; 
+
             assert (endInvListIndex > beginInvListIndex);
 
             if (max_load <= 0){
                 // Check that we are definitely not using multirange, i.e. check there is only one inv list in the
-                // compiled query
-                assert(inv_index[_min] + 1 == inv_index[_max+1]);
+                // compiled query, in case max_load is not specified
+                assert(beginInvListIndex + 1 == endInvListIndex);
             } else {
                 // Check that all the inverted lists in the compiled query will be smaller than max load
                 for (int ipos = beginInvListIndex; ipos < endInvListIndex; ipos++){
