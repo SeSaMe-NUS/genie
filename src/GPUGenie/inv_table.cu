@@ -538,7 +538,7 @@ GPUGenie::inv_table::write(const char* filename, inv_table*& table)
     if(!_ofs.is_open())
         return false;
     int _total_num_of_table = table[0].get_total_num_of_table();
-    bool success;
+    bool success = false;
     for(int i=0; i<_total_num_of_table; ++i)
     {
         success = table[i].write_to_file(_ofs);
@@ -564,7 +564,7 @@ GPUGenie::inv_table::read(const char* filename, inv_table*& table)
     table = new inv_table[_total_num_of_table];
     ifstream _ifs(filename, ios::binary|ios::in);
     
-    bool success;
+    bool success = false;
     for(int i=0 ; i<_total_num_of_table ; ++i)
     {
          success = table[i].read_from_file(_ifs);
