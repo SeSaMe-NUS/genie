@@ -1,4 +1,3 @@
-if (USE_MPI)
 function(add_test_case TARGET)
    cuda_add_executable(${TARGET} ${ARGN})
    add_dependencies(${TARGET} ${PROJECT_NAME})
@@ -7,22 +6,9 @@ function(add_test_case TARGET)
                          -lpthread
                          ${PROJECT_NAME}
 						 ${MPI_LIBRARIES}
-						 ${Boost_LIBRARIES}
 						 -lcudadevrt)
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
-else()
-function(add_test_case TARGET)
-   cuda_add_executable(${TARGET} ${ARGN})
-   add_dependencies(${TARGET} ${PROJECT_NAME})
-   target_link_libraries(${TARGET}
-                         -lpthread
-                         ${PROJECT_NAME}
-						 ${Boost_LIBRARIES}
-						 -lcudadevrt)
-   add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
-endfunction()
-endif()
 
 add_test_case(test_1_csv_input_sift_data test_1.cu)
 add_test_case(test_2_binary_input_sift_data test_2.cu)

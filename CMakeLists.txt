@@ -16,7 +16,6 @@ option(COMPR "Build compression module" ON)
 option(SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
 option(USE_MPI "Build distributed GENIE" OFF)
 option(BUILD_SHARED_LIBS OFF)
-option(BUILD_STATIC_LIBS ON)
 
 
 ## COMPILERS
@@ -33,9 +32,7 @@ endif()
 if (NOT CONFIGURED_ONCE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
-  # We use -D_GLIBCXX_USE_CXX11_ABI=0 to disable C++11 ABI, since nvcc uses old ABI, generating undefined symbols,
-  # while raw g++ generates new ABI without old ABI, causing link time errors when linking host with device code. 
-  set(CMAKE_CXX_FLAGS "${warnings} -D_GLIBCXX_USE_CXX11_ABI=0"
+  set(CMAKE_CXX_FLAGS "${warnings}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 endif()
 
@@ -43,16 +40,15 @@ endif()
 # SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
 # SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
-
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
-link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIRS})
-
-
 ## DEPENDENCIES
+set(Boost_USE_STATIC_LIBS ON)
+if (COMPR)
+  set(Boost_COMPONETNS serialization program_options)
+else()
+  set(Boost_COMPONETNS serialization)
+endif()
+find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 
-find_package(Boost 1.63.0 REQUIRED COMPONENTS serialization program_options)
-
-link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 if (USE_MPI)
   find_package(MPI REQUIRED)
   find_package(OpenMP REQUIRED)
@@ -70,7 +66,9 @@ list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=sm_35 -gencode arch=co
 # https://gitlab.kitware.com/cmake/cmake/issues/15157
 set(CUDA_SEPARABLE_COMPILATION ON)
 
-link_directories("/usr/local/cuda/lib64/")
+
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda/lib64/")
 
 
 if (COMPR)
@@ -103,9 +101,11 @@ if (COMPR)
         SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
         cuda_include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
     endif()
-
 else()
     message(STATUS "Compression module disabled")
+    if (SIMDCAI)
+        message(SEND_ERROR "SIMDCAI cannot be enabled without COMPR!" )
+    endif()
 endif()
 
 ## OUTPUT OPTIONS

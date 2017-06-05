@@ -59,7 +59,7 @@ cuda_add_library(
   ${LIB_SRC_LIST})
 
 target_link_libraries(
-  ${PROJECT_NAME} -lboost_serialization)
+  ${PROJECT_NAME} ${Boost_LIBRARIES})
 
 set_target_properties(
   ${PROJECT_NAME}
