@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <mpi.h>
 
 #include "GPUGenie.h"
 

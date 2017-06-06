@@ -217,7 +217,7 @@ public:
     /*! \fn ~inv_table()
      *  \brief The Destructor of the inv_table. It will also clear the related gpu memory.
      */
-	~inv_table();
+	virtual ~inv_table();
 
 
     /*! \fn vector<vector<int> >* distinct_value()
@@ -260,14 +260,14 @@ public:
     static bool
     read(const char* filename, inv_table*& table);
 
-    /*! \fn void set_table_index(int index)
+    /*! \fn void set_table_index(int attr_index)
      *  \brief Set the table_index to 'index'
      *  \param index The index value you wish to set.
      *
      *  Actually, users do not need to call this function.
      */
     void
-    set_table_index(int index);
+    set_table_index(int attr_index);
 
     /*! \fn void set_total_num_of_table(int num)
      *  \brief Set the total_num_of_table to 'num'
@@ -403,21 +403,21 @@ public:
 	 *
          *  \return The pointer points to _ck vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	ck();
 
 	/*! \fn vector<int>* inv()
 	 *
          *  \return The pointer points to _inv vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv();
 
 	/*! \fn vector<int>* inv_index()
 	 *
          *  \return The pointer points to _inv_index vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv_index();
 
 	unordered_map<size_t, int>*
@@ -427,27 +427,27 @@ public:
 	 *
          *  \return The pointer points to _inv_pos vector.
 	 */
-	vector<int>*
+	virtual vector<int>*
 	inv_pos();
 
 
-    /*! \fn int get_upperbound_of_list(int index)
+    /*! \fn int get_upperbound_of_list(int attr_index)
      *
      *  \param index Specify index of the inverted list
      *
      *  \return The maximum value of the inverted list at 'index'
      */
     int
-    get_upperbound_of_list(int index);
+    get_upperbound_of_list(int attr_index);
 
-    /*! \fn int get_lowerbound_of_list(int index)
+    /*! \fn int get_lowerbound_of_list(int attr_index)
      *
      *  \param index Specify index of the inverted list
      *
      *  \return The minimum value of the inverted list at 'index'
      */
     int
-    get_lowerbound_of_list(int index);
+    get_lowerbound_of_list(int attr_index);
 
 
 
@@ -469,7 +469,7 @@ public:
          *
          */
 	void
-	build(u64 max_length, bool use_load_balance);
+	virtual build(size_t max_length, bool use_load_balance);
 
 
     /*! \fn int get_posting_list_size(int attr_index, int value)
@@ -505,7 +505,7 @@ public:
      *  which is a static member of inv_table class.
      *
      */
-    bool
+    virtual bool
     write_to_file(ofstream& ofs);
 
     /*! \fn bool read_from_file(ifstream& ifs)
@@ -517,7 +517,7 @@ public:
      *  which is a static member of inv_table class.
      *
      */
-    bool
+    virtual bool
     read_from_file(ifstream& ifs);
 
 

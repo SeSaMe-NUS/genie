@@ -2,7 +2,6 @@
  *  \brief Implementation for interface declared in interface.h
  */
 
-#include "interface.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +16,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <string>
 #include <unordered_map>
 #include <list>
 
@@ -29,8 +27,11 @@
 #include "Logger.h"
 #include "Timing.h"
 
+#include "interface.h"
+
 using namespace GPUGenie;
 using namespace std;
+
 
 void swap(int * position, int offset1, int offset2)
 {
@@ -142,9 +143,18 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	{
 		if (config.data_points->size() > 0)
 		{
-            		_table = new inv_table[1];
-            		_table[0].set_table_index(0);
-            		_table[0].set_total_num_of_table(1);
+            if (config.compression == NO_COMPRESSION)
+                _table = new inv_table[1];
+            else
+            {
+                inv_compr_table * comprTable = new inv_compr_table[1];
+                comprTable[0].setCompression(config.compression);
+                comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
+                _table = comprTable;
+            }
+
+    		_table[0].set_table_index(0);
+    		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data_points...");
 			switch (config.search_type)
 			{
@@ -181,7 +191,10 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-		_table = new inv_table[table_num];
+        if (config.compression == NO_COMPRESSION)
+            _table = new inv_table[table_num];
+        else
+            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
 
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
@@ -257,9 +270,18 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 	{
 		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
 		{
-            		_table = new inv_table[1];
-            		_table[0].set_table_index(0);
-            		_table[0].set_total_num_of_table(1);
+            if (config.compression == NO_COMPRESSION)
+                _table = new inv_table[1];
+            else
+            {
+                inv_compr_table * comprTable = new inv_compr_table[1];
+                comprTable[0].setCompression(config.compression);
+                comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
+                _table = comprTable;
+            }
+
+    		_table[0].set_table_index(0);
+    		_table[0].set_total_num_of_table(1);
 			Logger::log(Logger::DEBUG, "build from data array...");
 			switch (config.search_type)
 			{
@@ -296,7 +318,11 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 			cycle = table_num - 2;
 		}
 
-		_table = new inv_table[table_num];
+        if (config.compression == NO_COMPRESSION)
+            _table = new inv_table[table_num];
+        else
+            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
+
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
 			unsigned int item_num = 0;
@@ -949,23 +975,17 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			table.i_size(), config.hashtable_size);
 
 	if (config.hashtable_size <= 2)
-	{
 		hashtable_size = table.i_size() * config.hashtable_size + 1;
-	}
 	else
-	{
 		hashtable_size = config.hashtable_size;
-	}
-	thrust::device_vector<int> d_topk, d_topk_count;
+	
+    thrust::device_vector<int> d_topk, d_topk_count;
 
 	int max_load = config.multiplier * config.posting_list_max_length + 1;
 
 	Logger::log(Logger::DEBUG, "max_load is %d", max_load);
 
-	GPUGenie::knn_bijectMap(
-			table, //basic API, since encode dimension and value is also finally transformed as a bijection map
-			queries, d_topk, d_topk_count, hashtable_size, max_load,
-			config.count_threshold);
+    knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
 
 	Logger::log(Logger::INFO, "knn search is done!");
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
@@ -1093,6 +1113,7 @@ void GPUGenie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<
         gram_data.push_back(line);
     }
 }
+
 void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
 {
     min_value = data[0][0];
@@ -1131,7 +1152,10 @@ void GPUGenie::init_genie(GPUGenie_Config &config)
 		config.use_device = GPUGENIE_DEFAULT_DEVICE;
 	}
 	cudaCheckErrors(cudaSetDevice(config.use_device));
+    Logger::log(Logger::INFO, "Using device %d", config.use_device);
 
-	Logger::log(Logger::INFO, "Using device %d...", config.use_device);
+    
+    cudaCheckErrors(cudaFree(0));
+	Logger::log(Logger::INFO, "Initialized CUDA context.");
 }
 

@@ -8,21 +8,18 @@ set(LIB_SRC_LIST
 
   GPUGenie/genie_errors.h
   GPUGenie/genie_errors.cu
-
-  GPUGenie/Logger.h
-  GPUGenie/Logger.cc
-  
-  GPUGenie/Timing.h
-  GPUGenie/Timing.cc
-
   GPUGenie/inv_list.h
   GPUGenie/inv_list.cu
   GPUGenie/inv_table.h
   GPUGenie/inv_table.cu
+  GPUGenie/inv_compr_table.h
+  GPUGenie/inv_compr_table.cu
   GPUGenie/query.h
   GPUGenie/query.cu
   GPUGenie/match.h
   GPUGenie/match.cu
+  GPUGenie/match_integrated.h
+  GPUGenie/match_integrated.cu
   GPUGenie/interface.h
   GPUGenie/interface.cu
   GPUGenie/knn.h
@@ -31,12 +28,36 @@ set(LIB_SRC_LIST
   GPUGenie/heap_count.cu  
   GPUGenie/FileReader.h
   GPUGenie/FileReader.cu
+  GPUGenie/DeviceCodecs.h
+  GPUGenie/DeviceCodecs.cu
+  GPUGenie/DeviceCodecFactory.h
+  GPUGenie/DeviceCodecFactory.cu
+  GPUGenie/DeviceCompositeCodec.h
+  GPUGenie/DeviceCompositeCodec.cu
+  GPUGenie/DeviceSerialCodec.h
+  GPUGenie/DeviceSerialCodec.cu
+  GPUGenie/DeviceDeltaHelper.h
+  GPUGenie/DeviceBitPackingCodec.h
+  GPUGenie/DeviceBitPackingCodec.cu
+  GPUGenie/DeviceBitPackingHelpers.h
+  GPUGenie/DeviceBitPackingHelpers.cu
+  GPUGenie/DeviceVarintCodec.h
+  GPUGenie/DeviceVarintCodec.cu
+  GPUGenie/scan.h
+  GPUGenie/scan.cu
+  GPUGenie/PerfLogger.hpp
+  GPUGenie/Logger.h
+  GPUGenie/Logger.cpp
+  GPUGenie/Timing.h
+  GPUGenie/Timing.cpp
 )
 
 cuda_add_library(
   ${PROJECT_NAME}
   ${LIB_SRC_LIST})
 
+target_link_libraries(
+  ${PROJECT_NAME} ${Boost_LIBRARIES})
 
 set_target_properties(
   ${PROJECT_NAME}

@@ -54,6 +54,17 @@ Makefile
 doc/html
 Doxyfile
 
+# IDE and text editor related files
+.clang_complete
+.idea
+*.sublime-project
+*.sublime-workspace
+.settings
+
+# research dirs
+/experiments
+/results
+
 #vim swap files
 *.swp
 

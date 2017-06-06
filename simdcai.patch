@@ -1,0 +1,51 @@
+diff -uar simdcai/include/simdvariablebyte.h simdcai_patched/include/simdvariablebyte.h
+--- simdcai/include/simdvariablebyte.h	2016-11-23 11:58:37.328418114 +0800
++++ simdcai_patched/include/simdvariablebyte.h	2016-11-24 13:42:18.712927159 +0800
+@@ -177,7 +177,7 @@
+     bytesize -= paddingBytes(in, length);
+     uint8_t *bytein = (uint8_t *)in;
+     uint8_t *byteininit = bytein;
+-    bytein += insert(bytein, bytesize, key);
++    bytein += insert((uint32_t *)bytein, bytesize, key);
+ 
+     while (needPaddingTo32Bits(bytein)) {
+       *bytein++ = 0xFF;
+diff -uar simdcai/include/synthetic.h simdcai_patched/include/synthetic.h
+--- simdcai/include/synthetic.h	2016-11-24 13:40:29.472817123 +0800
++++ simdcai_patched/include/synthetic.h	2016-11-24 13:42:16.036924488 +0800
+@@ -344,7 +344,7 @@
+  *  intersectionratio * minlength : length of the intersection
+  */
+ template <class generator>
+-pair<vector<uint32_t>, vector<uint32_t>>
++std::pair<vector<uint32_t>, vector<uint32_t>>
+ getPair(generator gen, uint32_t minlength, uint32_t Max, float sizeratio,
+         float intersectionratio) {
+   if (sizeratio < 1)
+@@ -354,7 +354,7 @@
+   if (intersectionratio > 1)
+     throw runtime_error("intersectionratio cannot be larger than 1");
+   const uint32_t maxlenth =
+-      static_cast<uint32_t>(round(static_cast<float>(minlength) * sizeratio));
++      static_cast<uint32_t>(std::round(static_cast<float>(minlength) * sizeratio));
+   if (maxlenth > Max)
+     throw runtime_error(
+         "I can't generate an array so large in such a small range.");
+@@ -362,7 +362,7 @@
+     throw runtime_error("something went wrong, possibly an overflow.");
+   // we basically assume that, if we do nothing, intersections are very small
+   const uint32_t intersize = static_cast<uint32_t>(
+-      round(static_cast<float>(minlength) * intersectionratio));
++      std::round(static_cast<float>(minlength) * intersectionratio));
+ 
+   vector<uint32_t> inter = gen.generate(intersize, Max);
+   vector<uint32_t> smallest =
+@@ -381,7 +381,7 @@
+               static_cast<double>(smallest.size()) -
+           sizeratio) > 0.05)
+     throw runtime_error("Bad size ratio. Fix me.");
+-  return pair<vector<uint32_t>, vector<uint32_t>>(smallest, largest);
++  return std::pair<vector<uint32_t>, vector<uint32_t>>(smallest, largest);
+ }
+ 
+ } // namespace SIMDCompressionLib

@@ -3,10 +3,10 @@
  */
 #include <math.h>
 #include <assert.h>
-#include <thrust/copy.h>
 
 #include "inv_list.h"
 #include "match.h"
+#include "match_integrated.h"
 #include "heap_count.h"
 
 #include "Logger.h"
@@ -61,7 +61,7 @@ void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 	u64 start = getTime();
 
 	knn(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load,
-			bitmap_bits, float(qmax + 1));
+			bitmap_bits);
 
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
@@ -86,7 +86,7 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 		}
 	
 	u64 start = getTime();
-	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits, qmaxs);
+	knn_MT(table, queries, d_top_indexes, d_top_count, hash_table_size, max_load, bitmap_bits);
 	u64 end = getTime();
 
 	double elapsed = getInterval(start, end);
@@ -95,11 +95,9 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 
 void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
-		int hash_table_size, int max_load, int bitmap_bits, int dim)
+		int hash_table_size, int max_load, int bitmap_bits)
 {
-	Logger::log(Logger::DEBUG, "Parameters: %d,%d,%d", hash_table_size,
-			bitmap_bits, dim);
-	dim = 2;
+	Logger::log(Logger::DEBUG, "Parameters: %d,%d", hash_table_size, bitmap_bits);
 
 	device_vector<data_t> d_data;
 	device_vector<u32> d_bitmap;
@@ -116,8 +114,24 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	u64 startMatch = getTime();
 
-	match(table, queries, d_data, d_bitmap, hash_table_size, max_load,
-			bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+	GPUGenie::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
+	if (comprTable){
+		MatchIntegratedFunPtr matchFn = GPUGenie::DeviceCodecFactory::getMatchingFunPtr(comprTable->getCompression());
+		if (!matchFn)
+		{
+			Logger::log(Logger::ALERT, "No matching function for %s compression!",
+				GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
+			throw GPUGenie::cpu_runtime_error("No compression matching function avaiable for required compression!");
+		}
+
+		matchFn(
+			*comprTable, queries, d_data, d_bitmap,
+			hash_table_size, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+
+	} else {
+		match(table, queries, d_data, d_bitmap,
+			hash_table_size, max_load, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
+	}
 
 	u64 endMatch = getTime();
 	Logger::log(Logger::VERBOSE,
@@ -127,9 +141,8 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::INFO, "Start topk....");
 	u64 start = getTime();
 
-	//topk(d_data, queries, d_top_indexes, float(dim));
 	thrust::device_vector<data_t> d_topk;
-	heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+	GPUGenie::heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
 			queries[0].topk(),queries.size());
 
 	u64 end = getTime();
@@ -159,7 +172,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 void
 GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
-		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits, vector<int>& dim)
+		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
 {
 	/* pre-process */
 	vector<device_vector<data_t> > d_data(table.size());
@@ -170,7 +183,6 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 	vector<device_vector<data_t> > d_topk(table.size());
 	for (size_t i = 0; i < table.size(); ++i)
 	{
-		dim[i] = 2;
 		d_num_of_items_in_hashtable.at(i).resize(queries.at(i).size());
 		Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load.at(i));
 		//if (queries.at(i).empty())

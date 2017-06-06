@@ -7,8 +7,10 @@
 #define INTERFACE_H_
 
 #include <vector>
+#include <string>
 
 #include "../GPUGenie.h"
+#include "DeviceCodecFactory.h"
 
 /*! \def GPUGENIE_DEFAULT_TOPK 10
  */
@@ -49,6 +51,7 @@
 /*! \def GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
  */
 #define GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
+
 
 namespace GPUGenie
 {
@@ -96,6 +99,9 @@ typedef struct _GPUGenie_Config
 
     unsigned int num_of_iteration;/*!< Number of iterations. This parameter is used major in sequence search, to cut off obtained knn.*/
 
+	/*! compression type used for posting lists */
+	COMPRESSION_TYPE compression;
+
 	_GPUGenie_Config() :
 		num_of_topk(GPUGENIE_DEFAULT_TOPK),
 		query_radius(GPUGENIE_DEFAULT_RADIUS),
@@ -114,9 +120,8 @@ typedef struct _GPUGenie_Config
 		use_multirange(GPUGENIE_DEFAULT_USE_MULTIRANGE),
 		num_of_queries(GPUGENIE_DEFAULT_NUM_OF_QUERIES),
 		use_subsequence_search(false),
-		data_gram_length(3), num_of_iteration(1)
-	{
-	}
+		data_gram_length(3), num_of_iteration(1),
+		compression(DEFAULT_COMPRESSION_TYPE){}
 
 	_GPUGenie_Config(const _GPUGenie_Config &config) :
 		num_of_topk(config.num_of_topk),
@@ -142,9 +147,10 @@ typedef struct _GPUGenie_Config
 		num_of_queries(config.num_of_queries),
 		use_subsequence_search(config.use_subsequence_search),
 		data_gram_length(config.data_gram_length),
-		num_of_iteration(config.num_of_iteration)
-	{}
+		num_of_iteration(config.num_of_iteration),
+		compression(config.compression){}
 
+                    
 } GPUGenie_Config;
 
 

@@ -9,12 +9,13 @@
 #include <thrust/device_vector.h>
 
 #include "inv_table.h"
+#include "inv_compr_table.h"
 #include "query.h"
 
 namespace GPUGenie
 {
 /*! \fn void knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
- *     device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits, int dim)
+ *     device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
  *  \brief Find the top k values in given inv_table.
  *
  *  \param table The given table.
@@ -24,19 +25,18 @@ namespace GPUGenie
  *  \param hash_table_size Size of hash table.
  *  \param max_load The max load for each gpu block
  *  \param bitmap_bits The value of maximum count(threshold) for one data point
- *  \param dim Number of dimensions of data points.
  *
  *  This function is basic and called by knn_bijectMap(). This function would carry out the process of match-count and topk selection.
  */
 void
 knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
-		device_vector<int>& d_top_count, int hash_table_size, int max_load,
-		int bitmap_bits, int dim);
+        device_vector<int>& d_top_count, int hash_table_size, int max_load,
+        int bitmap_bits);
 
 void
 knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<int> >& d_top_indexes,
 		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
-		int bitmap_bits, vector<int>& dim);
+		int bitmap_bits);
 
 /*! \fn void knn_bijectMap(inv_table& table, vector<query>& queries,
  *  device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
