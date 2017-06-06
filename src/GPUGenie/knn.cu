@@ -6,7 +6,6 @@
 
 #include "inv_list.h"
 #include "match.h"
-#include "match_sepkernel.h"
 #include "match_integrated.h"
 #include "heap_count.h"
 
