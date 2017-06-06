@@ -4,6 +4,8 @@
  *  Test for integer compression library lemire/SIMDCompressionAndIntersection and it's integration into GENIE  
  */
 
+#undef NDEBUG
+ 
 #include <GPUGenie.h>
 
 #include <algorithm>

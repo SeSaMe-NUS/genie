@@ -4,6 +4,8 @@
  *  Simple test for inverted compressed table interface and compression capabilities
  */
 
+#undef NDEBUG
+ 
 #include <GPUGenie.h>
 #include <GPUGenie/DeviceCodecFactory.h>
 

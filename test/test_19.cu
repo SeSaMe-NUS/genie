@@ -4,6 +4,8 @@
  *
  */
 
+#undef NDEBUG
+ 
 #include <assert.h>
 #include <sstream>
 #include <stdio.h>

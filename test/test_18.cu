@@ -4,6 +4,8 @@
  *      Tests matching kernels with enabled compression.
  */
 
+#undef NDEBUG
+ 
 #include <GPUGenie.h>
 
 #include <algorithm>

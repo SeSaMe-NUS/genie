@@ -4,6 +4,8 @@
  *  Test counting of queries on CPU. Similar to CPU-Idx in GENIE paper.
  */
 
+#undef NDEBUG
+ 
 #include <GPUGenie.h>
 
 #include <algorithm>
