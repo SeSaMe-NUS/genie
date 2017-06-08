@@ -717,26 +717,47 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
         << "fillingTime" << ","
         << "matchingTime" << ","
         << "convertTime" << ","
+        << "invSize" << ","
+        << "dimsSize" << ","
+        << "hashTableCapacityPerQuery" << ","
+        << "thresholdSize" << ","
+        << "passCountSize" << ","
+        << "bitMapSize" << ","
+        << "numItemsInHashTableSize" << ","
+        << "topksSize" << ","
+        << "hashTableSize" << ","
         << "comprRatio" << std::endl;
 
     GPUGenie::init_genie(config);
 
-    if (codec == "all" || codec == "no")
-        Logger::log(Logger::INFO, "Running GENIE with uncompressed table...");
-    else
-        Logger::log(Logger::INFO,
-            "Running GENIE with uncompressed table (to establish reference solution for codec %s", codec.c_str());
+    Logger::log(Logger::INFO, "Running GENIE with uncompressed table (also establishes reference solution)...");
     config.compression = NO_COMPRESSION;    
     std::vector<int> refResultIdxs;
     std::vector<int> refResultCounts;
     runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
+    if (codec == "no") // We only run GENIE without compression
+        return;
 
-    for (COMPRESSION_TYPE compr : DeviceCodecFactory::allCompressionTypes)
+    std::vector<COMPRESSION_TYPE> comprTypesToRun;
+    if (codec == "all")
     {
-        if (codec != "all" && codec != DeviceCodecFactory::getCompressionName(compr))
-            continue; // Skip this codec
+        comprTypesToRun = DeviceCodecFactory::allCompressionTypes;
+        comprTypesToRun.erase(std::remove(comprTypesToRun.begin(), comprTypesToRun.end(),NO_COMPRESSION),
+                comprTypesToRun.end()); // Run all but NO_COMPRESSION
+    }
+    else if (DeviceCodecFactory::getCompressionType(codec) != NO_COMPRESSION)
+    {
+        comprTypesToRun.push_back(DeviceCodecFactory::getCompressionType(codec)); // Run just the user specified type
+    }
+    else
+    {
+        Logger::log(Logger::INFO, "Unknown compression to run: %s", codec.c_str());
+        return;
+    }
 
-        Logger::log(Logger::INFO, "Running GENIE with compressed (%s) table...",
+    for (COMPRESSION_TYPE compr : comprTypesToRun)
+    {
+        Logger::log(Logger::INFO, "Running GENIE with compression %s...",
                 DeviceCodecFactory::getCompressionName(compr).c_str());
 
         config.compression = compr;

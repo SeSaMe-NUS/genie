@@ -447,7 +447,19 @@ void match(inv_table& table, vector<query>& queries,
             << std::fixed << std::setprecision(3) << 0.0 << "," // "allocationTime"
             << std::fixed << std::setprecision(3) << 0.0 << "," // "fillingTime"
             << std::fixed << std::setprecision(3) << kernel_elapsed << "," // "matchingTime"
-            << std::fixed << std::setprecision(3) << 0.0 << ","; // "convertTime"
+            << std::fixed << std::setprecision(3) << 0.0 << "," // "convertTime"
+
+            << std::fixed << std::setprecision(3) << sizeof(int) * table.inv()->size() << "," // "invSize"
+            << std::fixed << std::setprecision(3) << dims.size() * sizeof(query::dim) << "," // "dimsSize"
+
+            << std::fixed << std::setprecision(3) << hash_table_size << "," // "hashTableCapacityPerQuery"
+
+            << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "thresholdSize"
+            << std::fixed << std::setprecision(3) << queries.size() * num_of_max_count * sizeof(u32) << "," // "passCountSize"
+            << std::fixed << std::setprecision(3) << bitmap_size * sizeof(u32) << "," // "bitMapSize"
+            << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "numItemsInHashTableSize"
+            << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "topksSize"
+            << std::fixed << std::setprecision(3) << queries.size() * hash_table_size * sizeof(data_t) << ","; // "hashTableSize"
 
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());

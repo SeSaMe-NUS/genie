@@ -18,7 +18,7 @@ std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> initCodecInstancesMap
 {
     std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> map;
 
-    map[NO_COMPRESSION] = shared_ptr<DeviceIntegerCODEC>(new DeviceCopyCodec());
+    map[NO_COMPRESSION] = shared_ptr<DeviceIntegerCODEC>(nullptr);
     map[COPY] = shared_ptr<DeviceIntegerCODEC>(new DeviceCopyCodec());
     map[DELTA] = shared_ptr<DeviceIntegerCODEC>(new DeviceDeltaCodec());
     map[BP32] = shared_ptr<DeviceIntegerCODEC>(new DeviceBitPackingCodec());
@@ -71,7 +71,11 @@ std::map<COMPRESSION_TYPE, std::string> initCompressionNamesMap()
 {
     std::map<COMPRESSION_TYPE, std::string> map;    
     for (auto it = DeviceCodecFactory::codecInstancesMap.begin(); it != DeviceCodecFactory::codecInstancesMap.end(); it++)
-        map[it->first] = it->second->name();
+    {
+        if (it->second.get())
+            map[it->first] = it->second->name();
+    }
+    map[NO_COMPRESSION] = std::string("no");
     return map;
 }
 

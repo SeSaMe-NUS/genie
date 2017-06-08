@@ -445,8 +445,8 @@ match_integrated(
     Logger::log(Logger::INFO, "    Matching...");
     for (int loop_count = 1; ;loop_count++)
     {
-        Logger::log(Logger::INFO, "    Preparing matching... (attempt %d)", loop_count);
-        Logger::log(Logger::INFO, "    Filling matching memory on device...");
+        Logger::log(Logger::INFO, "        Preparing matching... (attempt %d)", loop_count);
+        Logger::log(Logger::INFO, "        Filling matching memory on device...");
         fillingStart = getTime();
 
         thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
@@ -462,7 +462,7 @@ match_integrated(
         fillingEnd = getTime();
         
 
-        Logger::log(Logger::INFO, "    Starting decompression & match kernel...");
+        Logger::log(Logger::INFO, "        Starting decompression & match kernel...");
         cudaEventRecord(startMatching);
         
         // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
@@ -489,20 +489,20 @@ match_integrated(
         cudaEventSynchronize(stopMatching);
         cudaCheckErrors(cudaDeviceSynchronize());
         
-        Logger::log(Logger::INFO, "    Checking for hash table overflow...");
+        Logger::log(Logger::INFO, "        Checking for hash table overflow...");
         cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow_p, sizeof(bool), cudaMemcpyDeviceToHost));
         if(!h_overflow[0]){
-            Logger::log(Logger::INFO, "    Matching succeeded");
+            Logger::log(Logger::INFO, "        Matching succeeded");
             break;
         }
 
-        Logger::log(Logger::INFO, "    Matching failed (hash table overflow)");
+        Logger::log(Logger::INFO, "        Matching failed (hash table overflow)");
         hash_table_size += num_of_max_count*max_topk;
         if(hash_table_size > table.i_size())
             hash_table_size = table.i_size();
         
         d_hash_table.resize(queries.size()*hash_table_size);
-        Logger::log(Logger::INFO, "    Resized hash table (now total of %d bytes)",
+        Logger::log(Logger::INFO, "        Resized hash table (now total of %d bytes)",
             queries.size() * hash_table_size * sizeof(data_t));
     };
 
@@ -542,7 +542,19 @@ match_integrated(
         << std::fixed << std::setprecision(3) << getInterval(allocationStart, allocationEnd) << "," // "allocationTime"
         << std::fixed << std::setprecision(3) << getInterval(fillingStart, fillingEnd) << "," // "fillingTime"
         << std::fixed << std::setprecision(3) << matchingTime << "," // "matchingTime"
-        << std::fixed << std::setprecision(3) << convertTime << ","; // "convertTime"
+        << std::fixed << std::setprecision(3) << convertTime << "," // "convertTime"
+
+        << std::fixed << std::setprecision(3) << sizeof(uint32_t) * table.compressedInv()->size() << "," // "invSize"
+        << std::fixed << std::setprecision(3) << dims.size() * sizeof(query::dim) << "," // "dimsSize"
+
+        << std::fixed << std::setprecision(3) << hash_table_size << "," // "hashTableCapacityPerQuery"
+
+        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "thresholdSize"
+        << std::fixed << std::setprecision(3) << queries.size() * num_of_max_count * sizeof(u32) << "," // "passCountSize"
+        << std::fixed << std::setprecision(3) << bitmap_size * sizeof(u32) << "," // "bitMapSize"
+        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "numItemsInHashTableSize"
+        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "topksSize"
+        << std::fixed << std::setprecision(3) << queries.size() * hash_table_size * sizeof(data_t) << ","; // "hashTableSize"
 }
 
 }
