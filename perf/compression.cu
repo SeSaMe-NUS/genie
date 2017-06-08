@@ -434,7 +434,7 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
 }
 
 void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement,
-        const std::string &dataset)
+        const std::string &dataset, int numRuns)
 {
     std::string sep("_"), dirsep("/"), datasetFilename = dataset;
 
@@ -451,7 +451,7 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
     if (datasetFilename.find_last_of(".") != std::string::npos) // Still contains a '.'
         Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n", destDir.c_str());
 
-    std::string fname(measurement+sep+datasetFilename+".csv");
+    std::string fname(measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
     openResultsFile(ofs, destDir, fname);
 }
 
@@ -936,7 +936,7 @@ int main(int argc, char **argv)
                 std::cerr << "Measurement \"intergrated\" requires a data argument!" << std::endl;
                 return 1;
             }
-            openResultsFile(ofs, dest, *it, data);
+            openResultsFile(ofs, dest, *it, data, numRuns);
             runGENIE(data, codec, ofs, numRuns, device);
             ofs.close();
         }
