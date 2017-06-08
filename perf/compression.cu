@@ -303,11 +303,15 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
 }
 
 
-void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
+void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs, int numRuns, int device)
 {
     uint *d_Input, *d_Output;
     size_t *d_decomprLength;
     uint *h_Input = sp_h_Input.get(), *h_InputCompr, *h_OutputCPU, *h_OutputGPU;
+
+    GPUGenie::GPUGenie_Config config;
+    config.use_device = device;
+    GPUGenie::init_genie(config);
 
     Logger::log(Logger::DEBUG,"Allocating and initializing CPU & CUDA arrays...\n");
     
@@ -323,57 +327,60 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
 
     ofs << "codec,array_size,compr_size,ratio,time,throughput" << std::endl;
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceCopyCodec>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    for (int run = 0; run < numRuns; run++)
+    {
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceCopyCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceDeltaCodec>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceDeltaCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceBitPackingCodec>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceBitPackingCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceVarintCodec>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceVarintCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
-    
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
-    
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
-    
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
-    
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
-    
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
 
-    for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-        runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
-                (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+        for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
+            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+    }
 
     free(h_OutputCPU);
     free(h_OutputGPU);
@@ -665,7 +672,6 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
     config.use_multirange = false;
     config.data_type = 0;
     config.multiplier = 1.0f;
-    config.use_device = 1;
     config.query_points = nullptr;
     config.data_points = nullptr;
 }
@@ -694,7 +700,7 @@ void convertTableToBinaryFormats(const std::string &dataFile, const std::string 
     }
 }
 
-void runGENIE(const std::string &dataFile, const std::string &codec, std::ostream &ofs)
+void runGENIE(const std::string &dataFile, const std::string &codec, std::ostream &ofs, int numRuns, int device)
 {
     std::string queryFile = dataFile;
     vector<vector<int>> queryPoints;
@@ -704,6 +710,7 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
     config.num_of_topk = 5;
     fillConfig(dataFile, config);
     config.query_points = &queryPoints;
+    config.use_device = device;
 
     GPUGenie::PerfLogger::get().ofs()
         << "codec" << ","
@@ -730,61 +737,65 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
 
     GPUGenie::init_genie(config);
 
-    Logger::log(Logger::INFO, "Running GENIE with uncompressed table (also establishes reference solution)...");
-    config.compression = NO_COMPRESSION;    
-    std::vector<int> refResultIdxs;
-    std::vector<int> refResultCounts;
-    runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
-    if (codec == "no") // We only run GENIE without compression
-        return;
-
-    std::vector<COMPRESSION_TYPE> comprTypesToRun;
-    if (codec == "all")
+    for(int run = 0; run < numRuns; run++)
     {
-        comprTypesToRun = DeviceCodecFactory::allCompressionTypes;
-        comprTypesToRun.erase(std::remove(comprTypesToRun.begin(), comprTypesToRun.end(),NO_COMPRESSION),
-                comprTypesToRun.end()); // Run all but NO_COMPRESSION
-    }
-    else if (DeviceCodecFactory::getCompressionType(codec) != NO_COMPRESSION)
-    {
-        comprTypesToRun.push_back(DeviceCodecFactory::getCompressionType(codec)); // Run just the user specified type
-    }
-    else
-    {
-        Logger::log(Logger::INFO, "Unknown compression to run: %s", codec.c_str());
-        return;
-    }
+        Logger::log(Logger::INFO, "Running GENIE (run %d)...", run);
 
-    for (COMPRESSION_TYPE compr : comprTypesToRun)
-    {
-        Logger::log(Logger::INFO, "Running GENIE with compression %s...",
-                DeviceCodecFactory::getCompressionName(compr).c_str());
+        Logger::log(Logger::INFO, "Running GENIE with uncompressed table (also establishes reference solution)...");
+        config.compression = NO_COMPRESSION;    
+        std::vector<int> refResultIdxs;
+        std::vector<int> refResultCounts;
+        runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, refResultIdxs, refResultCounts);
+        if (codec == "no") // We only run GENIE without compression
+            return;
 
-        config.compression = compr;
-        std::vector<int> resultIdxs;
-        std::vector<int> resultCounts;
-        runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, resultIdxs, resultCounts);
+        std::vector<COMPRESSION_TYPE> comprTypesToRun;
+        if (codec == "all")
+        {
+            comprTypesToRun = DeviceCodecFactory::allCompressionTypes;
+            comprTypesToRun.erase(std::remove(comprTypesToRun.begin(), comprTypesToRun.end(),NO_COMPRESSION),
+                    comprTypesToRun.end()); // Run all but NO_COMPRESSION
+        }
+        else if (DeviceCodecFactory::getCompressionType(codec) != NO_COMPRESSION)
+        {
+            comprTypesToRun.push_back(DeviceCodecFactory::getCompressionType(codec)); // Run just the user specified type
+        }
+        else
+        {
+            Logger::log(Logger::INFO, "Unknown compression to run: %s", codec.c_str());
+            return;
+        }
 
-        Logger::log(Logger::INFO, "Comparing reference and compressed results...");
-        // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
-        // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
-        // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
-        // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
-        // thereby if the last k-th result count is the same as the first, we do not compare the result idx, otherwise
-        // the test would likely fail. GENIE does not guarantee that the result set will consist of lowest idx among
-        // results of the same count.
-        assert(refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
-        assert(refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
-        assert(refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
-        // Only compare idxs in case the counts of the first result and k-th result are different
-        assert(refResultCounts[0 * config.num_of_topk] == refResultCounts[1 * config.num_of_topk -1] ||
-            refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]);
-        assert(refResultCounts[1 * config.num_of_topk] == refResultCounts[2 * config.num_of_topk -1] ||
-            refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]);
-        assert(refResultCounts[2 * config.num_of_topk] == refResultCounts[3 * config.num_of_topk -1] ||
-            refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]);
+        for (COMPRESSION_TYPE compr : comprTypesToRun)
+        {
+            Logger::log(Logger::INFO, "Running GENIE with compression %s...",
+                    DeviceCodecFactory::getCompressionName(compr).c_str());
+
+            config.compression = compr;
+            std::vector<int> resultIdxs;
+            std::vector<int> resultCounts;
+            runSingleGENIE(getBinaryFileName(dataFile, config.compression), queryFile, config, resultIdxs, resultCounts);
+
+            Logger::log(Logger::INFO, "Comparing reference and compressed results...");
+            // Compare the first docId from the GPU and CPU results -- note since we use points from the data file
+            // as queries, One of the resutls is a full-dim count match (self match), which is what we compare here.
+            // Note that for large datasets, the self match may not be included if config.num_of_topk is not high enough,
+            // which is due to all the config.num_of_topk having count equal to config.dims (match in all dimensions),
+            // thereby if the last k-th result count is the same as the first, we do not compare the result idx, otherwise
+            // the test would likely fail. GENIE does not guarantee that the result set will consist of lowest idx among
+            // results of the same count.
+            assert(refResultCounts[0 * config.num_of_topk] == resultCounts[0 * config.num_of_topk]);
+            assert(refResultCounts[1 * config.num_of_topk] == resultCounts[1 * config.num_of_topk]);
+            assert(refResultCounts[2 * config.num_of_topk] == resultCounts[2 * config.num_of_topk]);
+            // Only compare idxs in case the counts of the first result and k-th result are different
+            assert(refResultCounts[0 * config.num_of_topk] == refResultCounts[1 * config.num_of_topk -1] ||
+                refResultIdxs[0 * config.num_of_topk] == resultIdxs[0 * config.num_of_topk]);
+            assert(refResultCounts[1 * config.num_of_topk] == refResultCounts[2 * config.num_of_topk -1] ||
+                refResultIdxs[1 * config.num_of_topk] == resultIdxs[1 * config.num_of_topk]);
+            assert(refResultCounts[2 * config.num_of_topk] == refResultCounts[3 * config.num_of_topk -1] ||
+                refResultIdxs[2 * config.num_of_topk] == resultIdxs[2 * config.num_of_topk]);
+        } 
     }
-
 }
 
 int main(int argc, char **argv)
@@ -792,7 +803,7 @@ int main(int argc, char **argv)
     Logger::log(Logger::INFO,"Running %s", argv[0]);
 
     double geom_distr_coeff, geom_distr_multiplier;
-    int srand, numRuns, uniform_distr_min, uniform_distr_max;
+    int srand, numRuns, device, uniform_distr_min, uniform_distr_max;
     std::string dest, data, codec;
     std::vector<std::string> operations;
 
@@ -802,6 +813,8 @@ int main(int argc, char **argv)
             "produce help message")
         ("runs", po::value<int>(&numRuns)->default_value(1),
             "number of runs of each test (to average the results)")
+        ("device", po::value<int>(&device)->default_value(1),
+            "index of GPU device to use")
         ("srand", po::value<int>(&srand)->default_value(666),
             "seed for input data generator")
         ("uniform_distr_min", po::value<int>(&uniform_distr_min)->default_value(1),
@@ -850,7 +863,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (numRuns != 1)
+    if (numRuns < 1)
     {
         std::cerr << "Invalid numbers of runs" << std::endl;
         return 1;
@@ -908,7 +921,7 @@ int main(int argc, char **argv)
             }
             // printData(h_Input, MAX_UNCOMPRESSED_LENGTH);
             openResultsFile(ofs, dest, *it, numRuns, geom_distr_coeff, geom_distr_multiplier, srand);
-            measureCodecs(h_Input, ofs);
+            measureCodecs(h_Input, ofs, numRuns, device);
             ofs.close();
         }
         else if (*it == std::string("separate"))
@@ -924,7 +937,7 @@ int main(int argc, char **argv)
                 return 1;
             }
             openResultsFile(ofs, dest, *it, data);
-            runGENIE(data, codec, ofs);
+            runGENIE(data, codec, ofs, numRuns, device);
             ofs.close();
         }
         else if (*it == std::string("convert"))
