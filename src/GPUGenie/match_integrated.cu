@@ -530,7 +530,7 @@ match_integrated(
     cudaEventElapsedTime(&matchingTime, startMatching, stopMatching);
     cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
 
-    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Log()
+    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Log()
         .Compr(table.getCompression())
         .OverallTime(getInterval(overallStart, overallEnd))
         .QueryCompilationTime(getInterval(queryCompilationStart, queryCompilationEnd))

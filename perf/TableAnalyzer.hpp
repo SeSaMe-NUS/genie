@@ -126,10 +126,10 @@ protected:
 };
 
 
-class IntegratedMatchingPerfData
+class MatchingPerfData
 {
 public:
-    IntegratedMatchingPerfData() :
+    MatchingPerfData() :
         compr_(NO_COMPRESSION),
         overall_time_(0.0),
         query_compilation_time_(0.0),
@@ -202,127 +202,127 @@ public:
             << std::fixed << std::setprecision(3) << compr_ratio_ << std::endl;
     }
 
-    IntegratedMatchingPerfData& Compr (COMPRESSION_TYPE compr)
+    MatchingPerfData& Compr (COMPRESSION_TYPE compr)
     {
         compr_ = compr;
         return *this;
     }
 
-    IntegratedMatchingPerfData& OverallTime (float overall_time)
+    MatchingPerfData& OverallTime (float overall_time)
     {
         overall_time_ = overall_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& QueryCompilationTime (float query_compilation_time)
+    MatchingPerfData& QueryCompilationTime (float query_compilation_time)
     {
         query_compilation_time_ = query_compilation_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& PreprocessingTime (float preprocessing_time)
+    MatchingPerfData& PreprocessingTime (float preprocessing_time)
     {
         preprocessing_time_ = preprocessing_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& QueryTransferTime (float query_transfer_time)
+    MatchingPerfData& QueryTransferTime (float query_transfer_time)
     {
         query_transfer_time_ = query_transfer_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& DataTransferTime (float data_transfer_time)
+    MatchingPerfData& DataTransferTime (float data_transfer_time)
     {
         data_transfer_time_ = data_transfer_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& ConstantTransferTime (float constant_transfer_time)
+    MatchingPerfData& ConstantTransferTime (float constant_transfer_time)
     {
         constant_transfer_time_ = constant_transfer_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& AllocationTime (float allocation_time)
+    MatchingPerfData& AllocationTime (float allocation_time)
     {
         allocation_time_ = allocation_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& FillingTime (float filling_time)
+    MatchingPerfData& FillingTime (float filling_time)
     {
         filling_time_ = filling_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& MatchingTime (float matching_time)
+    MatchingPerfData& MatchingTime (float matching_time)
     {
         matching_time_ = matching_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& ConvertTime (float convert_time)
+    MatchingPerfData& ConvertTime (float convert_time)
     {
         convert_time_ = convert_time;
         return *this;
     }
 
-    IntegratedMatchingPerfData& InvSize (size_t inv_size)
+    MatchingPerfData& InvSize (size_t inv_size)
     {
         inv_size_ = inv_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& DimsSize (size_t dims_size)
+    MatchingPerfData& DimsSize (size_t dims_size)
     {
         dims_size_ = dims_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& HashTableCapacityPerQuery (size_t hash_table_capacity_per_query)
+    MatchingPerfData& HashTableCapacityPerQuery (size_t hash_table_capacity_per_query)
     {
         hash_table_capacity_per_query_ = hash_table_capacity_per_query;
         return *this;
     }
 
-    IntegratedMatchingPerfData& ThresholdSize (size_t threshold_size)
+    MatchingPerfData& ThresholdSize (size_t threshold_size)
     {
         threshold_size_ = threshold_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& PasscountSize (size_t passcount_size)
+    MatchingPerfData& PasscountSize (size_t passcount_size)
     {
         passcount_size_ = passcount_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& BitmapSize (size_t bitmap_size)
+    MatchingPerfData& BitmapSize (size_t bitmap_size)
     {
         bitmap_size_ = bitmap_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& NumItemsInHashTableSize (size_t num_items_in_hash_table_size)
+    MatchingPerfData& NumItemsInHashTableSize (size_t num_items_in_hash_table_size)
     {
         num_items_in_hash_table_size_ = num_items_in_hash_table_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& TopksSize (size_t topks_size)
+    MatchingPerfData& TopksSize (size_t topks_size)
     {
         topks_size_ = topks_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& HashTableSize (size_t hash_table_size)
+    MatchingPerfData& HashTableSize (size_t hash_table_size)
     {
         hash_table_size_ = hash_table_size;
         return *this;
     }
 
-    IntegratedMatchingPerfData& ComprRatio (float compr_ratio)
+    MatchingPerfData& ComprRatio (float compr_ratio)
     {
         compr_ratio_ = compr_ratio;
         return *this;

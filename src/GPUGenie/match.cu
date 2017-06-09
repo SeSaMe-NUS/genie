@@ -436,7 +436,7 @@ void match(inv_table& table, vector<query>& queries,
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Log()
+        genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Log()
             .OverallTime(getInterval(match_start, match_stop))
             .QueryCompilationTime(getInterval(match_query_start, match_query_end))
             .QueryTransferTime(getInterval(query_start, query_end))

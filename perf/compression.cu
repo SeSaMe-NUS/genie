@@ -474,7 +474,7 @@ void InitPerfLogger(const std::string &destDir, const std::string &measurement,
     std::string fname(measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
     std::string full_filename = GetFullFilename(destDir,fname);
     
-    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().New(full_filename);
+    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().New(full_filename);
 }
 
 std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE compression)
@@ -616,9 +616,9 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
     if (config.compression)
     {
         GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-        genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
+        genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
     }
-    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Next();
+    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Next();
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
     delete[] table;
