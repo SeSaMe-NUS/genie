@@ -31,6 +31,7 @@
 
 
 using namespace GPUGenie;
+using namespace genie::perf;
 namespace po = boost::program_options;
 
  const int MAX_UNCOMPRESSED_LENGTH = 1024;
@@ -436,7 +437,23 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
     openResultsFile(ofs, destDir, fname);
 }
 
-void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement,
+
+std::string GetFullFilename(const std::string &destDir, const std::string &fileName)
+{
+    struct stat sb;
+    if (stat(destDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
+    {
+        Logger::log(Logger::ALERT,"Destination directory %s is not a directory!\n", destDir.c_str());
+        exit(2);
+    }
+    std::string dirsep("/");
+    std::string fullPath(destDir+dirsep+fileName);
+    Logger::log(Logger::INFO,"Output file: %s", fileName.c_str());
+
+    return fullPath;
+}
+
+void InitPerfLogger(const std::string &destDir, const std::string &measurement,
         const std::string &dataset, int numRuns)
 {
     std::string sep("_"), dirsep("/"), datasetFilename = dataset;
@@ -452,10 +469,12 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
         datasetFilename = datasetFilename.substr(0, lastDot);
 
     if (datasetFilename.find_last_of(".") != std::string::npos) // Still contains a '.'
-        Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n", destDir.c_str());
+        Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n");
 
     std::string fname(measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
-    openResultsFile(ofs, destDir, fname);
+    std::string full_filename = GetFullFilename(destDir,fname);
+    
+    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().New(full_filename);
 }
 
 std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE compression)
@@ -594,14 +613,12 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
     // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, refResultIdxs, refResultCounts);
 
-    if (!config.compression){
-        GPUGenie::PerfLogger::get().ofs() << std::fixed << std::setprecision(3) << 0.0 << std::endl; // "comprRatio"
-    }
-    else {
+    if (config.compression)
+    {
         GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-        GPUGenie::PerfLogger::get().ofs() << std::fixed << std::setprecision(3)
-                << comprTable->getCompressionRatio() << std::endl; // "comprRatio"
+        genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
     }
+    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Next();
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
     delete[] table;
@@ -703,7 +720,7 @@ void convertTableToBinaryFormats(const std::string &dataFile, const std::string 
     }
 }
 
-void runGENIE(const std::string &dataFile, const std::string &codec, std::ostream &ofs, int numRuns, int device)
+void RunGENIE(const std::string &dataFile, const std::string &codec, int numRuns, int device)
 {
     std::string queryFile = dataFile;
     vector<vector<int>> queryPoints;
@@ -714,29 +731,6 @@ void runGENIE(const std::string &dataFile, const std::string &codec, std::ostrea
     fillConfig(dataFile, config);
     config.query_points = &queryPoints;
     config.use_device = device;
-
-    GPUGenie::PerfLogger::get().ofs()
-        << "codec" << ","
-        << "overallTime" << ","
-        << "queryCompilationTime" << ","
-        << "preprocessingTime" << ","
-        << "queryTransferTime" << ","
-        << "dataTransferTime" << ","
-        << "constantTransferTime" << ","
-        << "allocationTime" << ","
-        << "fillingTime" << ","
-        << "matchingTime" << ","
-        << "convertTime" << ","
-        << "invSize" << ","
-        << "dimsSize" << ","
-        << "hashTableCapacityPerQuery" << ","
-        << "thresholdSize" << ","
-        << "passCountSize" << ","
-        << "bitMapSize" << ","
-        << "numItemsInHashTableSize" << ","
-        << "topksSize" << ","
-        << "hashTableSize" << ","
-        << "comprRatio" << std::endl;
 
     GPUGenie::init_genie(config);
 
@@ -939,9 +933,8 @@ int main(int argc, char **argv)
                 std::cerr << "Measurement \"intergrated\" requires a data argument!" << std::endl;
                 return 1;
             }
-            openResultsFile(ofs, dest, *it, data, numRuns);
-            runGENIE(data, codec, ofs, numRuns, device);
-            ofs.close();
+            InitPerfLogger(dest, *it, data, numRuns);
+            RunGENIE(data, codec, numRuns, device);
         }
         else if (*it == std::string("convert"))
         {
@@ -951,10 +944,6 @@ int main(int argc, char **argv)
                 return 1;
             }
             convertTableToBinaryFormats(data, codec);
-        }
-        else if (*it == std::string("analyzer"))
-        {
-            genie::perf::testTableAnalyzer();
         }
         else
         {

@@ -11,7 +11,7 @@
 #include <thrust/device_vector.h>
 
 #include "Logger.h"
-#include "PerfLogger.hpp"
+#include "../perf/TableAnalyzer.hpp"
 #include "Timing.h"
 #include "genie_errors.h"
 #include "DeviceCodecFactory.h"
@@ -530,31 +530,27 @@ match_integrated(
     cudaEventElapsedTime(&matchingTime, startMatching, stopMatching);
     cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
 
-    Codec c;
-    PerfLogger::get().ofs()
-        << c.name() << ","
-        << std::fixed << std::setprecision(3) << getInterval(overallStart, overallEnd) << "," // "overallTime"
-        << std::fixed << std::setprecision(3) << getInterval(queryCompilationStart, queryCompilationEnd) << "," // "queryCompilationTime"
-        << std::fixed << std::setprecision(3) << getInterval(preprocessingStart, preprocessingEnd) << "," // "preprocessingTime"
-        << std::fixed << std::setprecision(3) << getInterval(queryTransferStart, queryTransferEnd) << "," // "queryTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << "," // "dataTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(constantTransferStart, constantTransferEnd) << "," // "constantTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(allocationStart, allocationEnd) << "," // "allocationTime"
-        << std::fixed << std::setprecision(3) << getInterval(fillingStart, fillingEnd) << "," // "fillingTime"
-        << std::fixed << std::setprecision(3) << matchingTime << "," // "matchingTime"
-        << std::fixed << std::setprecision(3) << convertTime << "," // "convertTime"
-
-        << std::fixed << std::setprecision(3) << sizeof(uint32_t) * table.compressedInv()->size() << "," // "invSize"
-        << std::fixed << std::setprecision(3) << dims.size() * sizeof(query::dim) << "," // "dimsSize"
-
-        << std::fixed << std::setprecision(3) << hash_table_size << "," // "hashTableCapacityPerQuery"
-
-        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "thresholdSize"
-        << std::fixed << std::setprecision(3) << queries.size() * num_of_max_count * sizeof(u32) << "," // "passCountSize"
-        << std::fixed << std::setprecision(3) << bitmap_size * sizeof(u32) << "," // "bitMapSize"
-        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "numItemsInHashTableSize"
-        << std::fixed << std::setprecision(3) << queries.size() * sizeof(u32) << "," // "topksSize"
-        << std::fixed << std::setprecision(3) << queries.size() * hash_table_size * sizeof(data_t) << ","; // "hashTableSize"
+    genie::perf::PerfLogger<genie::perf::IntegratedMatchingPerfData>::Instance().Log()
+        .Compr(table.getCompression())
+        .OverallTime(getInterval(overallStart, overallEnd))
+        .QueryCompilationTime(getInterval(queryCompilationStart, queryCompilationEnd))
+        .PreprocessingTime(getInterval(preprocessingStart, preprocessingEnd))
+        .QueryTransferTime(getInterval(queryTransferStart, queryTransferEnd))
+        .DataTransferTime(getInterval(dataTransferStart, dataTransferEnd))
+        .ConstantTransferTime(getInterval(constantTransferStart, constantTransferEnd))
+        .AllocationTime(getInterval(allocationStart, allocationEnd))
+        .FillingTime(getInterval(fillingStart, fillingEnd))
+        .MatchingTime(matchingTime)
+        .ConvertTime(convertTime)
+        .InvSize(sizeof(uint32_t) * table.compressedInv()->size())
+        .DimsSize(dims.size() * sizeof(query::dim))
+        .HashTableCapacityPerQuery(hash_table_size)
+        .ThresholdSize(queries.size() * sizeof(u32))
+        .PasscountSize(queries.size() * num_of_max_count * sizeof(u32))
+        .BitmapSize(bitmap_size * sizeof(u32))
+        .NumItemsInHashTableSize(queries.size() * sizeof(u32))
+        .TopksSize(queries.size() * sizeof(u32))
+        .HashTableSize(queries.size() * hash_table_size * sizeof(data_t));
 }
 
 }
