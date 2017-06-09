@@ -27,6 +27,9 @@
 #include <GPUGenie/DeviceVarintCodec.h>
 #include <GPUGenie/scan.h> 
 
+#include "TableAnalyzer.hpp"
+
+
 using namespace GPUGenie;
 namespace po = boost::program_options;
 
@@ -948,6 +951,10 @@ int main(int argc, char **argv)
                 return 1;
             }
             convertTableToBinaryFormats(data, codec);
+        }
+        else if (*it == std::string("analyzer"))
+        {
+            genie::perf::testTableAnalyzer();
         }
         else
         {
