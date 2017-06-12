@@ -11,7 +11,7 @@
 #include <thrust/device_vector.h>
 
 #include "Logger.h"
-#include "../perf/TableAnalyzer.hpp"
+#include "PerfLogger.hpp"
 #include "Timing.h"
 #include "genie_errors.h"
 #include "DeviceCodecFactory.h"

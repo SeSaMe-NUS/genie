@@ -34,7 +34,7 @@ using namespace GPUGenie;
 using namespace genie::perf;
 namespace po = boost::program_options;
 
- const int MAX_UNCOMPRESSED_LENGTH = 1024;
+const int MAX_UNCOMPRESSED_LENGTH = 1024;
 
 
 /**
@@ -178,8 +178,8 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
     }
 }
 
-void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output,
-    size_t arrayLength, std::ofstream &ofs)
+void RunSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output,
+    size_t arrayLength)
 {
     cudaCheckErrors(cudaMemset(d_Output, 0, SCAN_MAX_LARGE_ARRAY_SIZE * sizeof(uint)));
 
@@ -201,12 +201,17 @@ void runSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_
     double scanTime = getInterval(scanStart, scanEnd);
     Logger::log(Logger::DEBUG, "Scan, Array size: %d, Time: %.3f ms, Throughput: %.3f elements per millisecond"
         , arrayLength, scanTime, (double)arrayLength/scanTime);
-    ofs << arrayLength << ","
-        << std::fixed << std::setprecision(3) << scanTime << ","
-        << std::fixed << std::setprecision(3) <<(double)arrayLength/scanTime << std::endl;
+
+    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().Log()
+        .ArraySize(arrayLength)
+        .Time(scanTime)
+        .Throughput((double)arrayLength/scanTime);
+
+    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().Next();
+        
 }
 
-void measureScan(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
+void MeasureScan(std::shared_ptr<uint> sp_h_Input)
 {
     uint *d_Input, *d_Output;
     uint *h_Input = sp_h_Input.get(), *h_OutputCPU, *h_OutputGPU;
@@ -223,10 +228,9 @@ void measureScan(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
 
     Logger::log(Logger::DEBUG,"Measuring scan...\n\n");
 
-    ofs << "array_size,time,throughput" << std::endl;
     initScan();
     for (int length = 4; length <= (int)SCAN_MAX_SHORT_ARRAY_SIZE; length += 4){
-        runSingleScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, length, ofs);
+        RunSingleScan(h_Input, h_OutputGPU, h_OutputCPU, d_Input, d_Output, length);
     }
     closeScan();
 
@@ -239,8 +243,8 @@ void measureScan(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs)
 
 
 template <class CODEC>
-void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_InputCompr,
-        uint *d_Output, size_t arrayLength, size_t *d_decomprLength, std::ostream &ofs)
+void RunSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_InputCompr,
+        uint *d_Output, size_t arrayLength, size_t *d_decomprLength)
 {
     CODEC codec;
     Logger::log(Logger::DEBUG,"\n\nTesting codec...\n\n",codec.name().c_str());
@@ -254,12 +258,16 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
         // GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH
         Logger::log(Logger::DEBUG, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Compressed list too long",
             codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
-        ofs << codec.name() << ","
-            << arrayLength << ","
-            << comprLength << ","
-            << std::fixed << std::setprecision(3) << 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength) << ","
-            << std::fixed << std::setprecision(3) << 0 << ","
-            << std::fixed << std::setprecision(3) << 0 << std::endl;
+
+        genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Log()
+            .Codec(DeviceCodecFactory::getCompressionType(codec.name()))
+            .ArraySize(arrayLength)
+            .ComprSize(comprLength)
+            .ComprRatio(32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength))
+            .Time(0)
+            .Throughput(0);
+        genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Next();
+
         return;
     }
 
@@ -298,16 +306,19 @@ void runSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
     Logger::log(Logger::DEBUG, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Time (decompr): %.3f ms, Throughput: %.3f of elements per millisecond",
             codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength),
             decomprTime, (double)arrayLength/decomprTime);
-    ofs << codec.name() << ","
-        << arrayLength << ","
-        << comprLength << ","
-        << std::fixed << std::setprecision(3) << 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength) << ","
-        << std::fixed << std::setprecision(3) << decomprTime << ","
-        << std::fixed << std::setprecision(3) << (double)arrayLength/decomprTime << std::endl;
+
+    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Log()
+        .Codec(DeviceCodecFactory::getCompressionType(codec.name()))
+        .ArraySize(arrayLength)
+        .ComprSize(comprLength)
+        .ComprRatio(32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength))
+        .Time(decomprTime)
+        .Throughput((double)arrayLength/decomprTime);
+    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Next();
 }
 
 
-void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs, int numRuns, int device)
+void MeasureCodecs(std::shared_ptr<uint> sp_h_Input, int numRuns, int device)
 {
     uint *d_Input, *d_Output;
     size_t *d_decomprLength;
@@ -329,61 +340,59 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs, int num
     // Copy input to GPU
     cudaCheckErrors(cudaMemcpy(d_Input, h_Input, MAX_UNCOMPRESSED_LENGTH * sizeof(uint), cudaMemcpyHostToDevice));
 
-    ofs << "codec,array_size,compr_size,ratio,time,throughput" << std::endl;
-
     for (int run = 0; run < numRuns; run++)
     {
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceCopyCodec>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceCopyCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceDeltaCodec>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceDeltaCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceBitPackingCodec>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceBitPackingCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceVarintCodec>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceVarintCodec>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
         
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
         
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
         
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
         
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
         
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
 
         for (int i = 1; i <= MAX_UNCOMPRESSED_LENGTH; i++)
-            runSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
-                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength, ofs);
+            RunSingleCodec<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>
+                    (h_Input, h_InputCompr, h_OutputGPU, h_OutputCPU, d_Input, d_Output, i, d_decomprLength);
     }
 
     free(h_OutputCPU);
@@ -393,7 +402,8 @@ void measureCodecs(std::shared_ptr<uint> sp_h_Input, std::ofstream &ofs, int num
     cudaCheckErrors(cudaFree(d_decomprLength));
 }
 
-void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &fileName)
+
+void CheckWriteableDirectory(const std::string &destDir)
 {
     struct stat sb;
     if (stat(destDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
@@ -401,59 +411,9 @@ void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::
         Logger::log(Logger::ALERT,"Destination directory %s is not a directory!\n", destDir.c_str());
         exit(2);
     }
-    std::string dirsep("/");
-    std::string fullPath(destDir+dirsep+fileName);
-    Logger::log(Logger::INFO,"Output file: %s", fileName.c_str());
-
-    ofs.open(fullPath.c_str(), std::ios_base::out | std::ios_base::trunc);
-    GPUGenie::PerfLogger::get().setOutputFileStream(ofs);
-    assert(ofs.is_open());
 }
 
-void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement, int numOfRuns,
-        double geom_distr_coeff, double geom_distr_multiplier, int srand)
-{
-    std::string sep("_");
-    std::string fname(
-            measurement+sep
-            +"gd"+sep // geometric distribution
-            +"p"+std::to_string(geom_distr_coeff)+sep
-            +"m"+std::to_string(geom_distr_multiplier)+sep
-            +"r"+std::to_string(numOfRuns)+sep
-            +std::to_string(srand)+".csv");
-    openResultsFile(ofs, destDir, fname);
-}
-
-void openResultsFile(std::ofstream &ofs, const std::string &destDir, const std::string &measurement, int numOfRuns,
-        int minValue, int maxValue, int srand)
-{
-    std::string sep("_");
-    std::string fname(
-            measurement+sep
-            +"ud"+sep // geometric distribution
-            +"v"+std::to_string(minValue)+"-"+std::to_string(maxValue)+sep
-            +"r"+std::to_string(numOfRuns)+sep
-            +std::to_string(srand)+".csv");
-    openResultsFile(ofs, destDir, fname);
-}
-
-
-std::string GetFullFilename(const std::string &destDir, const std::string &fileName)
-{
-    struct stat sb;
-    if (stat(destDir.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode))
-    {
-        Logger::log(Logger::ALERT,"Destination directory %s is not a directory!\n", destDir.c_str());
-        exit(2);
-    }
-    std::string dirsep("/");
-    std::string fullPath(destDir+dirsep+fileName);
-    Logger::log(Logger::INFO,"Output file: %s", fileName.c_str());
-
-    return fullPath;
-}
-
-void InitPerfLogger(const std::string &destDir, const std::string &measurement,
+void InitMatchingPerfLogger(const std::string &destDir, const std::string &measurement,
         const std::string &dataset, int numRuns)
 {
     std::string sep("_"), dirsep("/"), datasetFilename = dataset;
@@ -471,26 +431,70 @@ void InitPerfLogger(const std::string &destDir, const std::string &measurement,
     if (datasetFilename.find_last_of(".") != std::string::npos) // Still contains a '.'
         Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n");
 
-    std::string fname(measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
-    std::string full_filename = GetFullFilename(destDir,fname);
+    std::string fname(destDir+dirsep+measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
+    Logger::log(Logger::INFO,"Output file: %s", fname.c_str());
     
-    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().New(full_filename);
+    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().New(fname);
 }
 
-std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE compression)
+void InitScanPerfLogger(const std::string &destDir, int numOfRuns, double geom_distr_coeff, double geom_distr_multiplier, int srand)
 {
-    std::string invSuffix(".inv");
-    std::string cinvSuffix(".cinv");
-
-    std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
-    std::string binaryInvTableFile;
-    if (!compression)
-        binaryInvTableFile = invTableFileBase + invSuffix;
-    else
-        binaryInvTableFile = invTableFileBase + std::string(".") +
-                DeviceCodecFactory::getCompressionName(compression) + cinvSuffix;
-    return binaryInvTableFile;
+    std::string sep("_"), dirsep("/");
+    std::string fname(
+            destDir+dirsep
+            +"scan"+sep
+            +"geom-dist"+sep // geometric distribution
+            +"p"+std::to_string(geom_distr_coeff)+sep
+            +"m"+std::to_string(geom_distr_multiplier)+sep
+            +"r"+std::to_string(numOfRuns)+sep
+            +std::to_string(srand)+".csv");
+    
+    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().New(fname);
 }
+
+void InitScanPerfLogger(const std::string &destDir, int numOfRuns, int minValue, int maxValue, int srand)
+{
+    std::string sep("_"), dirsep("/");
+    std::string fname(
+            destDir+dirsep
+            +"scan"+sep
+            +"unif-dist"+sep // geometric distribution
+            +"v"+std::to_string(minValue)+"-"+std::to_string(maxValue)+sep
+            +"r"+std::to_string(numOfRuns)+sep
+            +std::to_string(srand)+".csv");
+    
+    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().New(fname);
+}
+
+void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, double geom_distr_coeff, double geom_distr_multiplier, int srand)
+{
+    std::string sep("_"), dirsep("/");
+    std::string fname(
+            destDir+dirsep
+            +"cocec"+sep
+            +"geom-dist"+sep // geometric distribution
+            +"p"+std::to_string(geom_distr_coeff)+sep
+            +"m"+std::to_string(geom_distr_multiplier)+sep
+            +"r"+std::to_string(numOfRuns)+sep
+            +std::to_string(srand)+".csv");
+    
+    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().New(fname);
+}
+
+void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, int minValue, int maxValue, int srand)
+{
+    std::string sep("_"), dirsep("/");
+    std::string fname(
+            destDir+dirsep
+            +"cocec"+sep
+            +"unif-dist"+sep // geometric distribution
+            +"v"+std::to_string(minValue)+"-"+std::to_string(maxValue)+sep
+            +"r"+std::to_string(numOfRuns)+sep
+            +std::to_string(srand)+".csv");
+    
+    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().New(fname);
+}
+
 
 void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
 {
@@ -532,6 +536,20 @@ void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
     }
 }
 
+std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE compression)
+{
+    std::string invSuffix(".inv");
+    std::string cinvSuffix(".cinv");
+
+    std::string invTableFileBase = dataFile.substr(0, dataFile.find_last_of('.'));
+    std::string binaryInvTableFile;
+    if (!compression)
+        binaryInvTableFile = invTableFileBase + invSuffix;
+    else
+        binaryInvTableFile = invTableFileBase + std::string(".") +
+                DeviceCodecFactory::getCompressionName(compression) + cinvSuffix;
+    return binaryInvTableFile;
+}
 
 std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
 {
@@ -795,6 +813,53 @@ void RunGENIE(const std::string &dataFile, const std::string &codec, int numRuns
     }
 }
 
+std::vector<COMPRESSION_TYPE> GetListOfCompressionTypes(const std::string &codec)
+{
+    std::vector<COMPRESSION_TYPE> comprTypesToRun;
+    if (codec == "all")
+    {
+        comprTypesToRun = DeviceCodecFactory::allCompressionTypes;
+        comprTypesToRun.erase(std::remove(comprTypesToRun.begin(), comprTypesToRun.end(),NO_COMPRESSION),
+                comprTypesToRun.end()); // Run all but NO_COMPRESSION
+    }
+    else if (DeviceCodecFactory::getCompressionType(codec) != NO_COMPRESSION)
+    {
+        comprTypesToRun.push_back(DeviceCodecFactory::getCompressionType(codec)); // Run just the user specified type
+    }
+    else
+    {
+        Logger::log(Logger::INFO, "Unknown compression to run: %s", codec.c_str());
+        exit(1);
+    }
+    return comprTypesToRun;
+}
+
+
+void AnalyzeInvertedTable(const std::string &data_file, const std::string &codec, const std::string &dest_dir)
+{
+    std::vector<COMPRESSION_TYPE> compr_types_to_run = GetListOfCompressionTypes(codec);
+
+    for (COMPRESSION_TYPE compr : compr_types_to_run)
+    {
+        std::string binary_table_file = getBinaryFileName(data_file, compr);
+
+        Logger::log(Logger::INFO, "Analyzing table %s with compression %s...",
+                binary_table_file.c_str(), DeviceCodecFactory::getCompressionName(compr).c_str());
+
+        GPUGenie::inv_table *table;
+        if (compr == NO_COMPRESSION){
+            GPUGenie::inv_table::read(binary_table_file.c_str(), table);
+        }
+        else {
+            GPUGenie::inv_compr_table *comprTable;
+            GPUGenie::inv_compr_table::read(binary_table_file.c_str(), comprTable);
+            table = comprTable;
+        }
+
+        genie::perf_toolkit::TableAnalyzer::Analyze(table, dest_dir);
+    }
+}
+
 int main(int argc, char **argv)
 {    
     Logger::log(Logger::INFO,"Running %s", argv[0]);
@@ -823,7 +888,7 @@ int main(int argc, char **argv)
         ("geom_distr_multiplier", po::value<double>(&geom_distr_multiplier)->default_value(1.0),
             "multiplicative coefficient for numbers generated from the geometric_distribution")
         ("operation", po::value< std::vector<std::string>>(&operations),
-            "operation to run, one from: {scan, codecs, separate, integrated, convert}")
+            "operation to run, one from: {scan, codecs, separate, integrated, convert, analyze}")
         ("data", po::value<std::string>(&data),
             "* when operation = \"scan\" or \"codecs\", data determines distribution to use, one from {geometric, uniform}\n"
             "* when operation = \"separate\", \"integrated\" or \"convert\", data sets a path to csv file, currently"
@@ -866,15 +931,17 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::ofstream ofs;
     for (auto it = operations.begin(); it != operations.end(); it++)
     {
         if (*it == std::string("scan"))
         {
+            CheckWriteableDirectory(dest);
+
             std::shared_ptr<uint> h_Input;
             if (data == std::string("geometric"))
             {
                 h_Input = (generateGeometricDeltaInput(SCAN_MAX_LARGE_ARRAY_SIZE, geom_distr_coeff, geom_distr_multiplier, srand));
+                InitScanPerfLogger(dest, numRuns, geom_distr_coeff, geom_distr_multiplier, srand);
             }
             else if (data == std::string("uniform"))
             {
@@ -884,23 +951,25 @@ int main(int argc, char **argv)
                     return 1;
                 }
                 h_Input = (generateUniformInput(SCAN_MAX_LARGE_ARRAY_SIZE, uniform_distr_min, uniform_distr_max, srand));
+                InitScanPerfLogger(dest, numRuns, uniform_distr_min, uniform_distr_max, srand);
             }
             else 
             {
                 std::cerr << "Unknown distribution " << data << std::endl;
                 return 1;
             }
-            // printData(h_Input, 2048);
-            openResultsFile(ofs, dest, *it, numRuns, geom_distr_coeff, geom_distr_multiplier, srand);
-            measureScan(h_Input, ofs);
-            ofs.close();
+
+            MeasureScan(h_Input);
         }
         else if (*it == std::string("codecs"))
         {
+            CheckWriteableDirectory(dest);
+
             std::shared_ptr<uint> h_Input;
             if (data == std::string("geometric"))
             {
                 h_Input = generateGeometricDeltaInput(MAX_UNCOMPRESSED_LENGTH, geom_distr_coeff, geom_distr_multiplier, srand);
+                InitCodecPerfLogger(dest, numRuns, geom_distr_coeff, geom_distr_multiplier, srand);
             }
             else if (data == std::string("uniform"))
             {
@@ -910,16 +979,15 @@ int main(int argc, char **argv)
                     return 1;
                 }
                 h_Input = generateUniformInput(MAX_UNCOMPRESSED_LENGTH, uniform_distr_min, uniform_distr_max, srand);
+                InitCodecPerfLogger(dest, numRuns, uniform_distr_min, uniform_distr_max, srand);
             }
             else 
             {
                 std::cerr << "Unknown distribution " << data << std::endl;
                 return 1;
             }
-            // printData(h_Input, MAX_UNCOMPRESSED_LENGTH);
-            openResultsFile(ofs, dest, *it, numRuns, geom_distr_coeff, geom_distr_multiplier, srand);
-            measureCodecs(h_Input, ofs, numRuns, device);
-            ofs.close();
+
+            MeasureCodecs(h_Input, numRuns, device);
         }
         else if (*it == std::string("separate"))
         {
@@ -928,12 +996,14 @@ int main(int argc, char **argv)
         }
         else if (*it == std::string("integrated"))
         {
+            CheckWriteableDirectory(dest);
+
             if (!vm.count("data"))
             {
                 std::cerr << "Measurement \"intergrated\" requires a data argument!" << std::endl;
                 return 1;
             }
-            InitPerfLogger(dest, *it, data, numRuns);
+            InitMatchingPerfLogger(dest, *it, data, numRuns);
             RunGENIE(data, codec, numRuns, device);
         }
         else if (*it == std::string("convert"))
@@ -944,6 +1014,17 @@ int main(int argc, char **argv)
                 return 1;
             }
             convertTableToBinaryFormats(data, codec);
+        }
+        else if (*it == std::string("analyze"))
+        {
+            CheckWriteableDirectory(dest);
+
+            if (!vm.count("data"))
+            {
+                std::cerr << "Operation \"analyze\" requires a data argument!" << std::endl;
+                return 1;
+            }
+            AnalyzeInvertedTable(data, codec, dest);
         }
         else
         {
