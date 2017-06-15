@@ -458,7 +458,7 @@ void GPUGenie::query::build_sequence()
 }
 
 
-
+#ifdef GENIE_COMPR 
 void GPUGenie::query::build_compressed(int max_load)
 {
     inv_compr_table& table = *dynamic_cast<inv_compr_table*>(_ref_table);
@@ -529,7 +529,7 @@ void GPUGenie::query::build_compressed(int max_load)
 
     }
 }
-
+#endif
 
 int GPUGenie::query::dump(vector<dim>& vout)
 {

@@ -18,6 +18,11 @@ option(GENIE_SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related te
 option(GENIE_DISTRIBUTED "Build distributed GENIE" OFF)
 option(BUILD_SHARED_LIBS OFF)
 
+# If the user does not specify PREFIX, we default to ${CMAKE_BINARY_DIR} instead of system directory /usr
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "Default install path (prefix)" FORCE)
+endif()
+
 set(BOOST_ROOT "/home/lubos/boost") 
 
 
@@ -91,7 +96,6 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 
 if (GENIE_COMPR)
     message(STATUS "Compression module enable -- compiling compression interface")
-    add_definitions(-DCOMPR)
 
     if (GENIE_SIMDCAI)
         # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of

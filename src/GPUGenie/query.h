@@ -11,6 +11,8 @@
 #include "inv_table.h"
 #include "inv_list.h"
 
+#include "configure.h"
+
 #include <vector>
 
 using namespace std;
@@ -236,8 +238,10 @@ public:
     void
     build_and_apply_load_balance(int max_load);
 
+    #ifdef GENIE_COMPR
     void
 	build_compressed(int max_load);
+    #endif
 
 	/*! \fn void topk(int k)
 	 *  \brief Set top k matches.

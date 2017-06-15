@@ -1,1 +1,3 @@
-#cmakedefine USE_DYNAMIC
+#cmakedefine GENIE_COMPR
+#cmakedefine GENIE_SIMDCAI
+#cmakedefine GENIE_DISTRIBUTED

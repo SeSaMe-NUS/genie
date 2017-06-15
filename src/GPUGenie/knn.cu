@@ -13,6 +13,8 @@
 #include "Timing.h"
 #include "genie_errors.h"
 
+#include "configure.h"
+
 #include "knn.h"
 
 bool GPUGENIE_ERROR = false;
@@ -114,6 +116,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 
 	u64 startMatch = getTime();
 
+	#ifdef GENIE_COMPR
 	GPUGenie::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
 	if (comprTable){
 		MatchIntegratedFunPtr matchFn = GPUGenie::DeviceCodecFactory::getMatchingFunPtr(comprTable->getCompression());
@@ -128,7 +131,9 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 			*comprTable, queries, d_data, d_bitmap,
 			hash_table_size, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 
-	} else {
+	} else
+	#endif
+	{
 		match(table, queries, d_data, d_bitmap,
 			hash_table_size, max_load, bitmap_bits, d_num_of_items_in_hashtable, d_threshold, d_passCount);
 	}

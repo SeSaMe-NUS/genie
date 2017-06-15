@@ -172,12 +172,14 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         Logger::log(level, "Inv table not built.");
         return;
     }
-    GPUGenie::inv_compr_table* comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-    if (comprTable)
-    	Logger::log(level,"Compressed table: %s",
-            GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
-    else
-    	Logger::log(level,"Plain table: ");
+    #ifdef GENIE_COMPR 
+        GPUGenie::inv_compr_table* comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        if (comprTable)
+        	Logger::log(level,"Compressed table: %s",
+                GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
+        else
+        	Logger::log(level,"Plain table: ");
+    #endif
 
     std::stringstream ss;    
     std::vector<int> *ck = table->ck();
@@ -198,7 +200,11 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         ss.str(std::string());
         ss.clear();
     }
-    std::vector<int> *inv_pos = comprTable ? comprTable->uncompressedInvPos() : table->inv_pos();
+    std::vector<int> *inv_pos = 
+        #ifdef GENIE_COMPR 
+            comprTable ? comprTable->uncompressedInvPos() :
+        #endif
+        table->inv_pos();
     if (inv_pos)
     {
         auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
@@ -207,7 +213,11 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         ss.str(std::string());
         ss.clear();
     }
-    std::vector<int> *inv = comprTable ? comprTable->uncompressedInv() : table->inv();
+    std::vector<int> *inv =
+        #ifdef GENIE_COMPR 
+            comprTable ? comprTable->uncompressedInv() :
+        #endif
+        table->inv();
     if (inv)
     {
         auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
@@ -216,6 +226,7 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         ss.str(std::string());
         ss.clear();
     }
+    #ifdef GENIE_COMPR 
     if (comprTable)
     {
     	std::vector<int> *compr_inv_pos = comprTable->inv_pos();
@@ -244,6 +255,7 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
 	        ss.clear();
 	    }
     }
+    #endif
 }
 
 void Logger::logInvLists(int level, const std::vector<std::vector<uint32_t> > &rawInvertedLists,
