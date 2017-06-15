@@ -1,4 +1,5 @@
 ## GENERAL PROJECT SETTINGS
+
 cmake_minimum_required(VERSION 3.5.1)
 
 set(PROJECT_NAME GPUGenie)
@@ -12,10 +13,12 @@ enable_testing()
 include(CheckCXXCompilerFlag)
 include(ExternalProject)
 
-option(COMPR "Build compression module" ON)
-option(SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
-option(USE_MPI "Build distributed GENIE" OFF)
+option(GENIE_COMPR "Build compression module" ON)
+option(GENIE_SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
+option(GENIE_DISTRIBUTED "Build distributed GENIE" OFF)
 option(BUILD_SHARED_LIBS OFF)
+
+set(BOOST_ROOT "/home/lubos/boost") 
 
 
 ## COMPILERS
@@ -24,58 +27,73 @@ set(CMAKE_CXX_STANDARD 11)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
-    set(warnings_cuda "-Wall,-Wextra,-Wno-unused-parameter,-Wno-unused-variable") #-Werror
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /WX /EHsc")
 endif()
 
-if (NOT CONFIGURED_ONCE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${warnings}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-  set(CMAKE_CXX_FLAGS "${warnings}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-endif()
+set(CMAKE_C_FLAGS "${warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(CMAKE_CXX_FLAGS "${warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
 
-# SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52")
-# SET(CUDA_NVCC_FLAGS_DEBUG "${CUDA_NVCC_FLAGS_DEBUG} -lineinfo")
-# SET(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
 ## DEPENDENCIES
+
+### Boost
+
 set(Boost_USE_STATIC_LIBS ON)
-if (COMPR)
+if (GENIE_COMPR)
   set(Boost_COMPONETNS serialization program_options)
 else()
   set(Boost_COMPONETNS serialization)
 endif()
 find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 
-if (USE_MPI)
+### MPI & OpenMP
+
+if (GENIE_DISTRIBUTED)
   find_package(MPI REQUIRED)
   find_package(OpenMP REQUIRED)
   MESSAGE(STATUS "Building GENIE with MPI support")
-  #option(USE_DYNAMIC "Dynamic update of threshold" OFF)
   include_directories(${MPI_INCLUDE_PATH})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+### CUDA
+
 find_package(CUDA REQUIRED)
-set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 set(BUILD_SHARED_LIBS OFF)
-list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -rdc=true --compiler-options "${warnings_cuda}" -std=c++11 -g -G)
-# Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
-# https://gitlab.kitware.com/cmake/cmake/issues/15157
+set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+set(CUDA_NVCC_FLAGS --std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call)
+
+# Bug with CUDA_NVCC_FLAGS_CONFIG variable processing in currently used CMake
+# Workaround specify data
+# (not sure if newer version of CMake resolved this)
+# https://gitlab.kitware.com/cmake/cmake/issues/16411
+# set(CUDA_NVCC_FLAGS_DEBUG --debug;--device-debug --generate-line-info)
+# set(CUDA_NVCC_FLAGS_RELEASE --optimize 3 --generate-line-info) 
+# set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO --generate-line-info)
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
+if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --debug --device-debug --generate-line-info)
+elseif(CMAKE_BUILD_TYPE_UPPER STREQUAL "RELEASE")
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info) 
+else()
+  message(FATAL "Unknown build type, cannot determine NVCC flags")
+endif()
+
 set(CUDA_SEPARABLE_COMPILATION ON)
+# Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
+# Workaround: specify cudadevrt library manually ("/usr/local/cuda/lib64/")
+# (need to upgrade to CMake to 3.7)
+# https://gitlab.kitware.com/cmake/cmake/issues/15157
 
 
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
-link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda/lib64/")
+## COMPRESSION MODULE
 
-
-if (COMPR)
+if (GENIE_COMPR)
     message(STATUS "Compression module enable -- compiling compression interface")
     add_definitions(-DCOMPR)
 
-    if (SIMDCAI)
+    if (GENIE_SIMDCAI)
         # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
         # integer compression, delta encoding and intersections of posting lists
         ExternalProject_Add(
@@ -103,19 +121,28 @@ if (COMPR)
     endif()
 else()
     message(STATUS "Compression module disabled")
-    if (SIMDCAI)
+    if (GENIE_SIMDCAI)
         message(SEND_ERROR "SIMDCAI cannot be enabled without COMPR!" )
     endif()
 endif()
 
+
+## INCLUDES ANd LINK DIRECTORIES
+
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda/lib64/")
+
+
 ## OUTPUT OPTIONS
+
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 
 ## CMAKE SUBDIRECTORIES
+
 add_subdirectory(src)
-if (USE_MPI)
+if (GENIE_DISTRIBUTED)
   add_subdirectory(src/DistGenie)
 endif()
 add_subdirectory(utility)
