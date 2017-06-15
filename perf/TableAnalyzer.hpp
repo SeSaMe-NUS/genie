@@ -55,8 +55,9 @@ public:
         assert(invPos->size() == compressedInvPos->size());
 
         std::string dirsep("/");
-        PerfLogger<InvertedListData>::Instance().New(
-            dest_directory+dirsep+"table_"+DeviceCodecFactory::getCompressionName(compression)+"_lists.csv");
+        std::string fname(dest_directory+dirsep+"table_"
+            +DeviceCodecFactory::getCompressionName(compression)+"_lists.csv");
+        PerfLogger<InvertedListData>::Instance().New(fname);
 
         for (int pos = 0; pos < (int)invPos->size()-1; pos++)
         {

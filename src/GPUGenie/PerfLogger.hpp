@@ -32,6 +32,8 @@ public:
 
     T& New(const std::string &filename)
     {
+        if (ofs_.is_open())
+            ofs_.close();
         ofs_.open(filename.c_str(), std::ios_base::out | std::ios_base::trunc);
         assert(ofs_.good());
         perf_data_->WriteHeader(ofs_);

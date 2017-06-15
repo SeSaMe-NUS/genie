@@ -471,7 +471,7 @@ void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, double geom_
     std::string sep("_"), dirsep("/");
     std::string fname(
             destDir+dirsep
-            +"cocec"+sep
+            +"codec"+sep
             +"geom-dist"+sep // geometric distribution
             +"p"+std::to_string(geom_distr_coeff)+sep
             +"m"+std::to_string(geom_distr_multiplier)+sep
@@ -486,7 +486,7 @@ void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, int minValue
     std::string sep("_"), dirsep("/");
     std::string fname(
             destDir+dirsep
-            +"cocec"+sep
+            +"codec"+sep
             +"unif-dist"+sep // geometric distribution
             +"v"+std::to_string(minValue)+"-"+std::to_string(maxValue)+sep
             +"r"+std::to_string(numOfRuns)+sep
