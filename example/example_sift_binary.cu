@@ -33,8 +33,8 @@ int main(int argc, char * argv[])
 	//|...  |... |... |... |... |... |
 	//|9	|0   |50  |253 |1   |164 |
 
-	string  dataFile = "sift_1k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
-    string  queryFile= "sift_1k_query.csv";
+	string  dataFile = "../static/sift_1k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+    string  queryFile= "../static/sift_1k_query.csv";
 
 
 	/*** Configuration of KNN Search ***/

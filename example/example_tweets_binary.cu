@@ -27,8 +27,8 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	inv_table table;
     GPUGenie::GPUGenie_Config config;
 
-	string  dataFile = "tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
-    string  queryFile= "tweets_4k.csv";
+	string  dataFile = "../static/tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+    string  queryFile= "../static/tweets_4k.csv";
 
 	//Data dimension
 	//For string search, we use one-dimension-mulitple-values method,

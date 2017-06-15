@@ -27,8 +27,8 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	inv_table table;
     GPUGenie::GPUGenie_Config config;
 
-	string  dataFile = "tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
-    string  queryFile= "tweets_4k.csv";
+	string  dataFile = "../static/tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+    string  queryFile= "../static/tweets_4k.csv";
 
 	//Data dimension
 	//For string search, we use one-dimension-mulitple-values method,
@@ -108,7 +108,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
     preprocess_for_knn_binary(config, __table);
 
     u64 s1 = getTime();
-    inv_table::write("table.dat", __table);
+    inv_table::write("../static/table.dat", __table);
     u64 e1 = getTime();
 
     double time1 = getInterval(s1, e1);
@@ -118,7 +118,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
   //  unsigned int table_num = 1;
     inv_table * _table = NULL;
     u64 s2 = getTime();
-    inv_table::read("table.dat", _table);
+    inv_table::read("../static/table.dat", _table);
     u64 e2 = getTime();
 
     double time2 = getInterval(s2, e2);

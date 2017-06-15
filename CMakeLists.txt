@@ -145,12 +145,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 ## CMAKE SUBDIRECTORIES
 
+add_subdirectory(doc)
+add_subdirectory(example)
+add_subdirectory(perf)
 add_subdirectory(src)
 if (GENIE_DISTRIBUTED)
   add_subdirectory(src/DistGenie)
 endif()
-add_subdirectory(utility)
-add_subdirectory(test)
 add_subdirectory(static)
-add_subdirectory(perf)
-add_subdirectory(doc)
+add_subdirectory(test)
+add_subdirectory(utility)
