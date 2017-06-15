@@ -95,7 +95,7 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 ## COMPRESSION MODULE
 
 if (GENIE_COMPR)
-    message(STATUS "Compression module enable -- compiling compression interface")
+    message(STATUS "Compression module enabled -- compiling compression interface")
 
     if (GENIE_SIMDCAI)
         # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
