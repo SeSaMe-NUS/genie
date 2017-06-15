@@ -187,8 +187,8 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 }
 
 //for AT: for adaptiveThreshold
-__inline__ __device__
-void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
+__device__ __noinline__ void
+access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 		query::dim& q, u32 count, bool * key_found, u32* my_threshold,
 		bool * pass_threshold // if the count smaller that my_threshold, do not insert
 		)
@@ -286,8 +286,8 @@ void access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 }
 
 //for AT: for countHeap (with adaptiveThreshold)
-__inline__ __device__
-void hash_kernel_AT(
+__device__ __noinline__ void
+hash_kernel_AT(
 		u32 id,        
 		T_HASHTABLE* htable, int hash_table_size, query::dim& q, u32 count,
 		u32* my_threshold, //for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
@@ -449,8 +449,8 @@ void hash_kernel_AT(
 }
 
 //for AT: for adaptiveThreshold, this is function for bitmap
-__device__ __inline__
-u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
+__device__ __noinline__ u32
+bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 		bool * key_eligible)
 {
 	u32 value, count = 0, new_value;
@@ -475,7 +475,8 @@ u32 bitmap_kernel_AT(u32 access_id, u32 * bitmap, int bits, int my_threshold,
 
 }
 
-__device__ inline void updateThreshold(u32* my_passCount, u32* my_threshold,
+__device__ __noinline__ void
+updateThreshold(u32* my_passCount, u32* my_threshold,
 		u32 my_topk, u32 count)
 {
 	if (count < *my_threshold)
