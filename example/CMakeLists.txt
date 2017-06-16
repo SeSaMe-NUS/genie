@@ -22,3 +22,8 @@ genie_add_simple_executable (example_tweets
 genie_add_simple_executable (example_sift_subsequence
     example_sift_subsequence.cu)
 
+set(GENIE_STATIC_FILES_FOR_EXAMPLES
+    "../static/sift_1k.csv" "../static/sift_1k.dat" "../static/sift_1k_query.csv"
+    "../static/tweets_4k.csv" "../static/tweets_4k.dat")
+
+install(FILES ${GENIE_STATIC_FILES_FOR_EXAMPLES} DESTINATION static)

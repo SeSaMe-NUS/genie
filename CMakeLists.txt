@@ -20,7 +20,7 @@ option(BUILD_SHARED_LIBS OFF)
 
 # If the user does not specify PREFIX, we default to ${CMAKE_BINARY_DIR} instead of system directory /usr
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "Default install path (prefix)" FORCE)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Default install path (prefix)" FORCE)
 endif()
 
 
@@ -136,12 +136,14 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda
 ## HELPER FUNCTIONS
 
 function(genie_add_simple_executable TARGET)
-   cuda_add_executable(${TARGET} ${ARGN})
-   add_dependencies(${TARGET} ${PROJECT_NAME})
-   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
-   target_link_libraries(${TARGET}
+    cuda_add_executable(${TARGET} ${ARGN})
+    add_dependencies(${TARGET} ${PROJECT_NAME})
+    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+    target_link_libraries(${TARGET}
         ${PROJECT_NAME}
         -lcudadevrt)
+    install(TARGETS ${TARGET}
+        RUNTIME DESTINATION bin)
 endfunction()
 
 
