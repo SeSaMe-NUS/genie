@@ -32,8 +32,3 @@ genie_add_simple_executable (example_tweets
 genie_add_simple_executable (example_sift_subsequence
     example_sift_subsequence.cu)
 
-# Deprecated
-genie_add_simple_executable (convert_csv2dat
-    convert_csv2binary.cu)
-
-
