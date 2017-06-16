@@ -18,7 +18,7 @@ Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/
 
 You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum required versions are:
 - GCC with C++11 support (4.8)
-- CMake 3.5.1
+- CMake 3.7
 - CUDA 7.0
 - MPI 1.7 (for `USE_MPI` only, currently only OpenMPI is supported)
 - Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
@@ -43,6 +43,7 @@ Use target `$ make test` to run GENIE tests, `$ make doc` to build html code doc
 - `GENIE_DISTRIBUTED:BOOL` -- enable distributed GENIE module (default OFF)
 - `GENIE_COMPR:BOOL` -- enable compression GENIE module (default ON)
 - `GENIE_SIMDCAI:BOOL` -- enable compilation of SIMDCAI library (default OFF)
+- `GENIE_EXAMPLES:BOOL` -- enable compilation of GENIE examples (default ON)
 
 Example use of `cmake` command may look like this:
 ```bash

@@ -16,6 +16,7 @@ include(ExternalProject)
 option(GENIE_COMPR "Build compression module" ON)
 option(GENIE_SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
 option(GENIE_DISTRIBUTED "Build distributed GENIE" OFF)
+option(GENIE_EXAMPLES "Build GENIE examples" ON)
 option(BUILD_SHARED_LIBS OFF)
 
 # If the user does not specify PREFIX, we default to ${CMAKE_BINARY_DIR} instead of system directory /usr
@@ -48,7 +49,7 @@ if (GENIE_COMPR)
 else()
   set(Boost_COMPONETNS serialization)
 endif()
-# Note: CMake may issue a warning: Imported targets not available for Boost version 106400
+# WARNING: CMake may issue a warning: Imported targets not available for Boost version 106400
 # This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
 # 1.64, but CMake 3.8 already does. The warning causes missing Boost components dependencies, but may be ignored.
 find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
@@ -70,18 +71,18 @@ set(BUILD_SHARED_LIBS OFF)
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 set(CUDA_NVCC_FLAGS --std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call)
 
-# Bug with CUDA_NVCC_FLAGS_CONFIG variable processing in currently used CMake
-# Workaround specify data
-# (not sure if newer version of CMake resolved this)
+# BUG: with CUDA_NVCC_FLAGS_CONFIG variable processing in CMake
 # https://gitlab.kitware.com/cmake/cmake/issues/16411
-# set(CUDA_NVCC_FLAGS_DEBUG --debug;--device-debug --generate-line-info)
-# set(CUDA_NVCC_FLAGS_RELEASE --optimize 3 --generate-line-info) 
+# Workaround is to specify CUDA_NVCC_FLAGS manually based on build type
+# (Issue still present in CMake 3.8.2)
+# set(CUDA_NVCC_FLAGS_DEBUG  --debug --device-debug --generate-line-info)
+# set(CUDA_NVCC_FLAGS_RELEASE --optimize 3 --generate-line-info -DNDEBUG) 
 # set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO --generate-line-info)
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
 if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --debug --device-debug --generate-line-info)
 elseif(CMAKE_BUILD_TYPE_UPPER STREQUAL "RELEASE")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info) 
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info -DNDEBUG) 
 else()
   message(FATAL "Unknown build type, cannot determine NVCC flags")
 endif()
@@ -155,7 +156,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 ## CMAKE SUBDIRECTORIES
 
 add_subdirectory(doc)
-add_subdirectory(example)
+if (GENIE_EXAMPLES)
+  add_subdirectory(example)
+endif()
 add_subdirectory(perf)
 add_subdirectory(src)
 if (GENIE_DISTRIBUTED)
