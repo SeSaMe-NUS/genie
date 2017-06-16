@@ -1,6 +1,6 @@
 ## GENERAL PROJECT SETTINGS
 
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.7)
 
 set(PROJECT_NAME GPUGenie)
 set(PROJECT_API_VERSION 1)
@@ -48,6 +48,9 @@ if (GENIE_COMPR)
 else()
   set(Boost_COMPONETNS serialization)
 endif()
+# Note: CMake may issue a warning: Imported targets not available for Boost version 106400
+# This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
+# 1.64, but CMake 3.8 already does. The warning causes missing Boost components dependencies, but may be ignored.
 find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 
 ### MPI & OpenMP
@@ -83,10 +86,6 @@ else()
   message(FATAL "Unknown build type, cannot determine NVCC flags")
 endif()
 
-# Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
-# Workaround: specify cudadevrt library manually ("/usr/local/cuda/lib64/")
-# (need to upgrade to CMake to 3.7)
-# https://gitlab.kitware.com/cmake/cmake/issues/15157
 set(CUDA_SEPARABLE_COMPILATION ON)
 
 
@@ -130,7 +129,7 @@ endif()
 ## INCLUDES AND LINK DIRECTORIES
 
 include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
-link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda/lib64/")
+link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 
 
 ## HELPER FUNCTIONS
@@ -141,7 +140,7 @@ function(genie_add_simple_executable TARGET)
     set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
     target_link_libraries(${TARGET}
         ${PROJECT_NAME}
-        -lcudadevrt)
+        ${CUDA_cudadevrt_LIBRARY})
     install(TARGETS ${TARGET}
         RUNTIME DESTINATION bin)
 endfunction()

@@ -5,7 +5,7 @@ function(genie_add_test_case TARGET)
    target_link_libraries(${TARGET}
                          ${PROJECT_NAME}
                          ${MPI_LIBRARIES}
-                         -lcudadevrt)
+                         ${CUDA_cudadevrt_LIBRARY})
    add_test(${TARGET} ${PROJECT_BINARY_DIR}/bin/${TARGET})
 endfunction()
 
