@@ -23,8 +23,6 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "Default install path (prefix)" FORCE)
 endif()
 
-set(BOOST_ROOT "/home/lubos/boost") 
-
 
 ## COMPILERS
 
@@ -85,17 +83,17 @@ else()
   message(FATAL "Unknown build type, cannot determine NVCC flags")
 endif()
 
-set(CUDA_SEPARABLE_COMPILATION ON)
 # Separate compilation in CUDA is still a bugged feature of CMake.FindCUDA
 # Workaround: specify cudadevrt library manually ("/usr/local/cuda/lib64/")
 # (need to upgrade to CMake to 3.7)
 # https://gitlab.kitware.com/cmake/cmake/issues/15157
+set(CUDA_SEPARABLE_COMPILATION ON)
 
 
 ## COMPRESSION MODULE
 
 if (GENIE_COMPR)
-    message(STATUS "Compression module enabled -- compiling compression interface")
+    message(STATUS "Compression module enabled")
 
     if (GENIE_SIMDCAI)
         # Add external project lemire/SIMDCompressionAndIntersection - this is used for reference implementations of
@@ -117,8 +115,6 @@ if (GENIE_COMPR)
         # Retrieve the in-source build location of SIMDCAI
         ExternalProject_Get_Property(SIMDCAI_PROJ BINARY_DIR)
         set(SIMDCAI_PROJ_INSTALL_DIR ${BINARY_DIR})
-        # include_directories(${PROJECT_SOURCE_DIR}/simdcai/src)
-        message(STATUS "SIMDCAI_BINARY_DIR: ${BINARY_DIR}")
 
         SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
         cuda_include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
@@ -131,10 +127,22 @@ else()
 endif()
 
 
-## INCLUDES ANd LINK DIRECTORIES
+## INCLUDES AND LINK DIRECTORIES
 
 include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src ${Boost_INCLUDE_DIR})
 link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR} "/usr/local/cuda/lib64/")
+
+
+## HELPER FUNCTIONS
+
+function(genie_add_simple_executable TARGET)
+   cuda_add_executable(${TARGET} ${ARGN})
+   add_dependencies(${TARGET} ${PROJECT_NAME})
+   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+   target_link_libraries(${TARGET}
+        ${PROJECT_NAME}
+        -lcudadevrt)
+endfunction()
 
 
 ## OUTPUT OPTIONS

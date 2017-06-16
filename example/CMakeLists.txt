@@ -1,13 +1,3 @@
-
-function(genie_add_simple_executable TARGET)
-   cuda_add_executable(${TARGET} ${ARGN})
-   add_dependencies(${TARGET} ${PROJECT_NAME})
-   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
-   target_link_libraries(${TARGET}
-        ${PROJECT_NAME}
-        -lcudadevrt)
-endfunction()
-
 # Deprecated
 genie_add_simple_executable (example_sift_binary
     example_sift_binary.cu)
