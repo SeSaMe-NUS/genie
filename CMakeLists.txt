@@ -28,15 +28,13 @@ endif()
 ## COMPILERS
 
 set(CMAKE_CXX_STANDARD 11)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    set(warnings "/W4 /WX /EHsc")
+if (NOT ${CMAKE_COMPILER_IS_GNUCXX})
+  message(FATAL "Only GNU compilers are supported")
 endif()
+set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
 
-set(CMAKE_C_FLAGS "${warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "${warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(CMAKE_C_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(CMAKE_CXX_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
 
 
 ## DEPENDENCIES
