@@ -18,10 +18,10 @@ Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/
 
 You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum required versions are:
 - GCC with C++11 support (4.8)
-- CMake 3.5.1
+- CMake 3.7
 - CUDA 7.0
 - MPI 1.7 (for `USE_MPI` only, currently only OpenMPI is supported)
-- Boost 1.63: serialization (always required), program_options (for `COMPR` only)
+- Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
 
 To create an "out-of-source" build of GPUGenie containing both the GPUGenie library, tests and tools, you can use the
 standard CMake procedure:
@@ -30,32 +30,26 @@ standard CMake procedure:
 $ mkdir build
 $ cd build
 $ cmake ..
-$ make
+$ make -j8
 ```
-To run GENIE tests, simply run `$ make test`
+Use target `$ make test` to run GENIE tests, `$ make doc` to build html code documentation, `$ make install` to install GENIE.
 
-Build CMake parameters can be further configured using the following options: 
+`CMake` build parameters can be further configured using the following options:
+- `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Debug`)
+- `CMAKE_INSTALL_PREFIX:PATH` -- `cmake`'s option for installation prefix (default `${CMAKE_BINARY_DIR}/install`)
+- `BOOST_ROOT:PATH` -- root dir of Boost libraries (default from system paths)
+- `CUDA_TOOLKIT_ROOT_DIR:PATH` -- root dir of CUDA (default based on `nvcc` in path)
+- `DOXYGEN_EXECUTABLE:PATH` -- doxygen executable (default from system paths)
+- `GENIE_DISTRIBUTED:BOOL` -- enable distributed GENIE module (default OFF)
+- `GENIE_COMPR:BOOL` -- enable compression GENIE module (default ON)
+- `GENIE_SIMDCAI:BOOL` -- enable compilation of SIMDCAI library (default OFF)
+- `GENIE_EXAMPLES:BOOL` -- enable compilation of GENIE examples (default ON)
 
-Use Boost which is not in the system path, change `cmake` command to
+Example use of `cmake` command may look like this:
 ```bash
-$ cmake -DBOOST_ROOT=/path/to/boost ..
+$ cmake -DGENIE_SIMDCAI=ON -DCMAKE_BUILD_TYPE=Release -DGENIE_DISTRIBUTED=ON -DGENIE_COMPR=ON \
+        -DBOOST_ROOT=/home/lubos/boost -DCMAKE_INSTALL_PREFIX=/home/lubos/genie-install ..
 ```
-
-Compile with MPI support (default is OFF), use
-```bash
-$ cmake -DUSE_MPI=ON ..
-```
-
-Compile the release version (default is Debug), use
-```bash
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-```
-
-Disable compression support in GENIE, use
-```bash
-$ cmake -DCOMPR=OFF ..
-```
-
 
 ## Running GENIE
 

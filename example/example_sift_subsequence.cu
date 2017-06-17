@@ -22,8 +22,8 @@ using namespace GPUGenie;
 int main(int argc, char* argv[])
 {
     cudaDeviceReset();
-    string dataFile = "./sift_1k.dat";
-    string queryFile = "./sift_1k.csv";
+    string dataFile = "../static/sift_1k.dat";
+    string queryFile = "../static/sift_1k.csv";
     vector<vector<int> > queries;
     vector<vector<int> > data;
     inv_table * table = NULL;

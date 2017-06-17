@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
 	//|9	|0   |50  |253 |1   |164 |
 
 	int queryNum = 10;
-	string  dataFile = "sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+	string  dataFile = "../static/sift_1k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
        
 
 	read_file(data, dataFile.c_str(), -1);//for AT: for adaptiveThreshold

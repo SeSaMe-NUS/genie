@@ -11,6 +11,7 @@
 
 #include "../GPUGenie.h"
 #include "DeviceCodecFactory.h"
+#include "configure.h"
 
 /*! \def GPUGENIE_DEFAULT_TOPK 10
  */

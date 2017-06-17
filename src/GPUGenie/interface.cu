@@ -32,6 +32,9 @@
 using namespace GPUGenie;
 using namespace std;
 
+#ifndef GENIE_COMPR
+    const COMPRESSION_TYPE GPUGenie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+#endif
 
 void swap(int * position, int offset1, int offset2)
 {
@@ -145,6 +148,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		{
             if (config.compression == NO_COMPRESSION)
                 _table = new inv_table[1];
+            #ifdef GENIE_COMPR 
             else
             {
                 inv_compr_table * comprTable = new inv_compr_table[1];
@@ -152,6 +156,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
                 comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
                 _table = comprTable;
             }
+            #endif
 
     		_table[0].set_table_index(0);
     		_table[0].set_total_num_of_table(1);
@@ -272,6 +277,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
 		{
             if (config.compression == NO_COMPRESSION)
                 _table = new inv_table[1];
+            #ifdef GENIE_COMPR 
             else
             {
                 inv_compr_table * comprTable = new inv_compr_table[1];
@@ -279,6 +285,7 @@ bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
                 comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
                 _table = comprTable;
             }
+            #endif
 
     		_table[0].set_table_index(0);
     		_table[0].set_total_num_of_table(1);
