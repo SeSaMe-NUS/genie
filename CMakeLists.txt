@@ -29,7 +29,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 if (NOT ${CMAKE_COMPILER_IS_GNUCXX})
-  message(FATAL "Only GNU compilers are supported")
+  message(SEND_ERROR "Only GNU compilers are supported")
 endif()
 set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
 
@@ -56,7 +56,19 @@ find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 
 if (GENIE_DISTRIBUTED)
   find_package(MPI REQUIRED)
+  # Check for correct OpenMPI and version 
+  if (NOT MPIEXEC OR NOT MPI_C_FOUND OR NOT MPI_CXX_FOUND)
+    message(FATAL_ERROR "OpenMPI not found!")
+  endif()
+  execute_process(COMMAND ${MPI_C_COMPILER} --showme:version OUTPUT_VARIABLE MPI_VERSION)
+  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*" OR
+      NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
+    message(FATAL_ERROR "MPI not OpenMPI, or OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  endif()
+  message(STATUS "OpenMPI found")
+
   find_package(OpenMP REQUIRED)
+
   MESSAGE(STATUS "Building GENIE with MPI support")
   include_directories(${MPI_INCLUDE_PATH})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
