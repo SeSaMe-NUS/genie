@@ -55,7 +55,9 @@ find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 ### MPI & OpenMP
 
 if (GENIE_DISTRIBUTED)
-  find_package(MPI REQUIRED)
+  find_package(MPI REQUIRED) # Use MPI_HOME or env(MPI_HOME) to define root directory of MPI installation
+  message(STATUS "Found mpiexec: ${MPIEXEC}")
+
   # Check for correct OpenMPI and version 
   if (NOT MPIEXEC OR NOT MPI_C_FOUND OR NOT MPI_CXX_FOUND)
     message(FATAL_ERROR "OpenMPI not found!")
@@ -65,11 +67,10 @@ if (GENIE_DISTRIBUTED)
       NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
     message(FATAL_ERROR "MPI not OpenMPI, or OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
   endif()
-  message(STATUS "OpenMPI found")
 
   find_package(OpenMP REQUIRED)
 
-  MESSAGE(STATUS "Building GENIE with MPI support")
+  message(STATUS "Distributed GENIE module enabled")
   include_directories(${MPI_INCLUDE_PATH})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
@@ -94,7 +95,7 @@ if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
 elseif(CMAKE_BUILD_TYPE_UPPER STREQUAL "RELEASE")
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info -DNDEBUG) 
 else()
-  message(FATAL "Unknown build type, cannot determine NVCC flags")
+  message(FATAL_ERROR "Unknown build type, cannot determine NVCC flags")
 endif()
 
 set(CUDA_SEPARABLE_COMPILATION ON)
