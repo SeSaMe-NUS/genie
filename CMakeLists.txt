@@ -55,7 +55,17 @@ find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 ### MPI & OpenMP
 
 if (GENIE_DISTRIBUTED)
+  # WORKAROUND: Unset all variables for FindMPI. There are no input variables for FindMPI for MPI home directory.
+  # Unsetting MPI_HOME (undocumented variable FindMPI uses) is not sufficient.
+  set(_FINDMPI_CACHED_VARIABLES MPIEXEC MPIEXEC_MAX_NUMPROCS MPIEXEC_NUMPROC_FLAG MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS
+    MPI_CXX_COMPILER MPI_CXX_COMPILE_FLAGS MPI_CXX_INCLUDE_PATH MPI_CXX_LIBRARIES MPI_CXX_LINK_FLAGS MPI_C_COMPILER 
+    MPI_C_COMPILE_FLAGS MPI_C_INCLUDE_PATH MPI_C_LIBRARIES MPI_C_LINK_FLAGS MPI_EXTRA_LIBRARY MPI_LIBRARY)
+  foreach (_FINDMPI_VAR ${_FINDMPI_CACHED_VARIABLES})
+    unset(${_FINDMPI_VAR} CACHE)
+  endforeach()
+  
   find_package(MPI REQUIRED) # Use MPI_HOME or env(MPI_HOME) to define root directory of MPI installation
+  unset(MPI_HOME CACHE)
   message(STATUS "Found mpiexec: ${MPIEXEC}")
 
   # Check for correct OpenMPI and version 
