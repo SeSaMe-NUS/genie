@@ -14,7 +14,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/heap_count.cu  
   GPUGenie/FileReader.cu
   GPUGenie/scan.cu
-  GPUGenie/Logger.cpp
+  GPUGenie/Logger.cu
   GPUGenie/Timing.cpp
 )
 
@@ -67,7 +67,8 @@ if( GENIE_COMPR )
 endif()
 
 
-cuda_add_library( ${PROJECT_NAME}
+set(BUILD_SHARED_LIBS OFF)
+add_library( ${PROJECT_NAME}
   ${GENIE_COMPILATION_UNITS} ${GENIE_COMPRESSION_COMPILATION_UNITS})
 
 target_link_libraries( ${PROJECT_NAME}
@@ -75,8 +76,8 @@ target_link_libraries( ${PROJECT_NAME}
 
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES
-  VERSION ${PROJECT_API_VERSION}.${PROJECT_MINOR_VERSION}
-  SOVERSION ${PROJECT_API_VERSION})
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION})
 
 
 install(TARGETS ${PROJECT_NAME} 

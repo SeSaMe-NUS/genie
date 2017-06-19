@@ -1,14 +1,12 @@
 ## GENERAL PROJECT SETTINGS
 
-cmake_minimum_required(VERSION 3.7)
-
-set(PROJECT_NAME GPUGenie)
-set(PROJECT_API_VERSION 1)
-set(PROJECT_MINOR_VERSION 0.0)
+cmake_minimum_required(VERSION 3.8)
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
-project(${PROJECT_NAME})
+project("GPUGenie"
+  VERSION 0.1
+  LANGUAGES C CXX CUDA)
 enable_testing()
 include(CheckCXXCompilerFlag)
 include(ExternalProject)
@@ -29,12 +27,20 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 if (NOT ${CMAKE_COMPILER_IS_GNUCXX})
-  message(SEND_ERROR "Only GNU compilers are supported")
+  message(FATAL_ERROR "Only GNU compilers are supported")
 endif()
-set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
 
-set(CMAKE_C_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
+set(CMAKE_C_FLAGS "${genie_warnings}")
+set(CMAKE_CXX_FLAGS "${genie_warnings}")
+
+set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call")
+set(CMAKE_CUDA_FLAGS_DEBUG  "--debug --device-debug --generate-line-info")
+set(CMAKE_CUDA_FLAGS_RELEASE "--optimize 3 --generate-line-info -DNDEBUG")
+# set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO "--optimize 2 --generate-line-info")
+
+set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+set(CUDA_SEPARABLE_COMPILATION ON)
 
 
 ## DEPENDENCIES
@@ -85,31 +91,6 @@ if (GENIE_DISTRIBUTED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-### CUDA
-
-find_package(CUDA REQUIRED)
-set(BUILD_SHARED_LIBS OFF)
-set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-set(CUDA_NVCC_FLAGS --std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call)
-
-# BUG: with CUDA_NVCC_FLAGS_CONFIG variable processing in CMake
-# https://gitlab.kitware.com/cmake/cmake/issues/16411
-# Workaround is to specify CUDA_NVCC_FLAGS manually based on build type
-# (Issue still present in CMake 3.8.2)
-# set(CUDA_NVCC_FLAGS_DEBUG  --debug --device-debug --generate-line-info)
-# set(CUDA_NVCC_FLAGS_RELEASE --optimize 3 --generate-line-info -DNDEBUG) 
-# set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO --generate-line-info)
-string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
-if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --debug --device-debug --generate-line-info)
-elseif(CMAKE_BUILD_TYPE_UPPER STREQUAL "RELEASE")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info -DNDEBUG) 
-else()
-  message(FATAL_ERROR "Unknown build type, cannot determine NVCC flags")
-endif()
-
-set(CUDA_SEPARABLE_COMPILATION ON)
-
 
 ## COMPRESSION MODULE
 
@@ -138,7 +119,7 @@ if (GENIE_COMPR)
         set(SIMDCAI_PROJ_INSTALL_DIR ${BINARY_DIR})
 
         SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
-        cuda_include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
+        include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
     endif()
 else()
     message(STATUS "Compression module disabled")
@@ -157,7 +138,7 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 ## HELPER FUNCTIONS
 
 function(genie_add_simple_executable TARGET)
-    cuda_add_executable(${TARGET} ${ARGN})
+    add_executable(${TARGET} ${ARGN})
     add_dependencies(${TARGET} ${PROJECT_NAME})
     set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
     target_link_libraries(${TARGET}
