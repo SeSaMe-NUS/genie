@@ -10,7 +10,6 @@
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
 
-#include "match.h"
 #include "Logger.h"
 #include "PerfLogger.hpp"
 #include "Timing.h"
@@ -23,12 +22,8 @@
 
 #include "match_integrated.h"
 
-const size_t MATCH_THREADS_PER_BLOCK = 256;
+#include "match_inlines.cu"
 
-#define OFFSETS_TABLE_16 {0u,       3949349u, 8984219u, 9805709u,\
-                          7732727u, 1046459u, 9883879u, 4889399u,\
-                          2914183u, 3503623u, 1734349u, 8860463u,\
-                          1326319u, 1613597u, 8604269u, 9647369u}
 
 /**
  * Maximal length the codecs are able to decompress into.
@@ -37,10 +32,6 @@ const size_t MATCH_THREADS_PER_BLOCK = 256;
  * thread decompressed into 4 values), otherwise such codec will fail.
  */
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
-
-typedef u64 T_HASHTABLE;
-typedef u32 T_KEY;
-typedef u32 T_AGE;
 
 
 namespace GPUGenie

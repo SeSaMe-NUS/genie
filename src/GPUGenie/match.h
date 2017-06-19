@@ -108,46 +108,6 @@ typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
 
-extern __device__  __constant__ u32 offsets[16];
-
-__device__ void
-access_kernel_AT(
-        u32 id,
-        T_HASHTABLE* htable,
-        int hash_table_size,
-        query::dim& q,
-        u32 count,
-        bool * key_found,
-        u32* my_threshold,
-        bool * pass_threshold); // if the count smaller that my_threshold, do not insert
-
-__device__ void
-hash_kernel_AT(
-        u32 id,        
-        T_HASHTABLE* htable,
-        int hash_table_size,
-        query::dim& q,
-        u32 count,
-        u32* my_threshold,
-        u32 * my_noiih,
-        bool * overflow,
-        bool* pass_threshold);
-
-__device__ u32
-bitmap_kernel_AT(
-        u32 access_id,
-        u32 * bitmap,
-        int bits,
-        int my_threshold,
-        bool * key_eligible);
-
-__device__ void
-updateThreshold(
-        u32* my_passCount,
-        u32* my_threshold,
-        u32 my_topk,
-        u32 count);
-
 __global__ void
 convert_to_data(T_HASHTABLE* table, u32 size);
 
