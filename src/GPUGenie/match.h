@@ -10,33 +10,11 @@
 
 #include "query.h"
 #include "inv_table.h"
+#include "match_common.h"
 
 using namespace std;
 using namespace thrust;
-
-/*! \typedef unsigned char u8
- */
-typedef unsigned char u8;
-/*! \typedef uint32_t u32
- */
-typedef uint32_t u32;
-/*! \typedef unsigned long long u64
- */
-typedef unsigned long long u64;
-
-/*! \struct data_
- *  \brief This is the entry format of the hash table used in GPU.
- *  	   Will be treated as a 64-bit unsigned integer later.
- */
-
-/*! \typedef struct data_ data_t
- */
-typedef struct data_
-{
-	u32 id;/*!< Index of data point */
-	float aggregation;/*!< Count of data point*/
-} data_t;
-
+using namespace genie::core;
 
 namespace GPUGenie
 {
@@ -103,13 +81,6 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<devi
 int
 build_queries(vector<query>& queries, inv_table& table,
 		vector<query::dim>& dims, int max_load);
-
-typedef u64 T_HASHTABLE;
-typedef u32 T_KEY;
-typedef u32 T_AGE;
-
-__global__ void
-convert_to_data(T_HASHTABLE* table, u32 size);
 
 }
 #endif

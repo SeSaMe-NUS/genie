@@ -22,8 +22,11 @@
 #include "DeviceBitPackingCodec.h"
 
 #include "match.h"
+#include "match_common.h"
 
 #include "match_inlines.cu"
+
+using namespace genie::core;
 
 namespace GPUGenie
 {
@@ -147,19 +150,6 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 	}
 }
 //end for AT
-
-__global__
-void convert_to_data(T_HASHTABLE* table, u32 size)
-{
-	u32 tid = threadIdx.x + blockIdx.x * blockDim.x;
-	if (tid >= size)
-		return;
-	data_t *mytable = reinterpret_cast<data_t*>(&table[tid]);
-	u32 agg = get_key_attach_id(table[tid]);
-	u32 myid = get_key_pos(table[tid]);
-	mytable->id = myid;
-	mytable->aggregation = *reinterpret_cast<float*>(&agg);
-}
 
 int build_queries(vector<query>& queries, inv_table& table,
 		vector<query::dim>& dims, int max_load)
@@ -347,7 +337,8 @@ void match(inv_table& table, vector<query>& queries,
 		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
-		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+		cudaCheckErrors(
+			cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
@@ -635,7 +626,8 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		/* offset */
 		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 		u32 h_offsets[16] = OFFSETS_TABLE_16;
-		cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
+		cudaCheckErrors(
+			cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
 
 		/* match kernel */
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");

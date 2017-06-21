@@ -1,50 +1,23 @@
-/**
+/** \file match_common.h
+ *  \brief Basic utility functions to be used in matching kernels
+ *
  * This file is not a standalone translation unit. Instead, it is directly included in sources of matching functions.
  * The reason is that nvcc treats __forceinline__ and __inline__ (in release mode only) functions as static = does
- * not export symbols in the library, only inlines them.
+ * not export symbols in the library, only inlines them, similarly to C.
  *
  * Including this file allows two separate translation units to have a copy of these functions and inline them.
- **/
+ */
 
+#ifndef GENIE_MATCH_INLINES_H
+#define GENIE_MATCH_INLINES_H
 
-const size_t MATCH_THREADS_PER_BLOCK = 256;
+#include "query.h"
+#include "match_common.h"
 
-#define OFFSETS_TABLE_16 {0u,       3949349u, 8984219u, 9805709u,\
-                          7732727u, 1046459u, 9883879u, 4889399u,\
-                          2914183u, 3503623u, 1734349u, 8860463u,\
-                          1326319u, 1613597u, 8604269u, 9647369u}
-
-#define NULL_AGE 0
-#define MAX_AGE 16u
-
-
-namespace GPUGenie
+namespace genie
 {
-
-const u32 KEY_TYPE_BITS = 28u;
-const u32 KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-const u32 ATTACH_ID_TYPE_BITS = 32u;
-const u32 ATTACH_ID_TYPE_MASK = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
-const u32 KEY_TYPE_INIT_AGE = 1u;
-const u32 KEY_TYPE_NULL_AGE = 0u;
-
-/*******************Unused Constants***********************/
-//const u32 PACKED_KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-//const u32 KEY_TYPE_RANGE = u32(u64((1ull) << KEY_TYPE_BITS) - 2u);
-//const u32 UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-//const u32 PACKED_UNDEFINED_KEY = u32(u64((1ull) << KEY_TYPE_BITS) - 1ul);
-//
-//const u32 UNDEFINED_ATTACH_ID = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
-//const u32 MAX_ATTACH_ID_TYPE = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 2ul);
-//
-//const u32 KEY_TYPE_AGE_MASK = 15u;
-//const u32 KEY_TYPE_AGE_BITS = 4u;
-//const u32 KEY_TYPE_MAX_AGE = 16u;
-//const u32 KEY_TYPE_MAX_AGE_MASK = 4u;
-//const u32 KEY_TYPE_MAX_AGE_BITS = 4u;
-/***************End of Unused Constants********************/
-
-static __device__  __constant__ u32 offsets[16];
+namespace core
+{
 
 __forceinline__  __host__  __device__ T_KEY get_key_pos(T_HASHTABLE key)
 {
@@ -105,7 +78,7 @@ pack_count(u32 data, int offset, int bits, u32 count)
 }
 __forceinline__ __device__
 void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
-        query::dim& q, bool * key_found)
+        GPUGenie::query::dim& q, bool * key_found)
 {
     u32 location;
     T_HASHTABLE out_key, new_key;
@@ -172,7 +145,7 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 //for AT: for adaptiveThreshold
 __device__ __forceinline__ void
 access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
-        query::dim& q, u32 count, bool * key_found, u32* my_threshold,
+        GPUGenie::query::dim& q, u32 count, bool * key_found, u32* my_threshold,
         bool * pass_threshold // if the count smaller that my_threshold, do not insert
         )
 {
@@ -272,7 +245,7 @@ access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 __device__ __forceinline__ void
 hash_kernel_AT(
         u32 id,        
-        T_HASHTABLE* htable, int hash_table_size, query::dim& q, u32 count,
+        T_HASHTABLE* htable, int hash_table_size, GPUGenie::query::dim& q, u32 count,
         u32* my_threshold, //for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
         u32 * my_noiih, bool * overflow, bool* pass_threshold)
 {
@@ -485,4 +458,8 @@ updateThreshold(u32* my_passCount, u32* my_threshold,
     }
 }
 
-}
+} // namespace core
+
+} // namespace genie
+
+#endif

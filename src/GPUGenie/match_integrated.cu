@@ -20,10 +20,10 @@
 #include "DeviceBitPackingCodec.h"
 #include "DeviceVarintCodec.h"
 
+#include "match_common.h"
 #include "match_integrated.h"
 
 #include "match_inlines.cu"
-
 
 /**
  * Maximal length the codecs are able to decompress into.
@@ -401,7 +401,7 @@ match_integrated(
     constantTransferStart = getTime();
 
     u32 h_offsets[16] = OFFSETS_TABLE_16;
-    cudaCheckErrors(cudaMemcpyToSymbol(GPUGenie::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+    cudaCheckErrors(cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
     Logger::log(Logger::INFO, "        Transferring offsets table (total %d bytes)", sizeof(u32)*16);
 
     constantTransferEnd = getTime();
