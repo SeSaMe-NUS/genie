@@ -414,7 +414,7 @@ void CheckWriteableDirectory(const std::string &destDir)
 }
 
 void InitMatchingPerfLogger(const std::string &destDir, const std::string &measurement,
-        const std::string &dataset, int numRuns)
+        const std::string &dataset, const std::string &codecs, int numRuns)
 {
     std::string sep("_"), dirsep("/"), datasetFilename = dataset;
 
@@ -431,7 +431,8 @@ void InitMatchingPerfLogger(const std::string &destDir, const std::string &measu
     if (datasetFilename.find_last_of(".") != std::string::npos) // Still contains a '.'
         Logger::log(Logger::ALERT,"Output file may be incorrectly generated!\n");
 
-    std::string fname(destDir+dirsep+measurement+sep+datasetFilename+sep+std::to_string(numRuns)+"r"+".csv");
+    std::string fname(
+        destDir+dirsep+measurement+sep+datasetFilename+sep+codecs+sep+std::to_string(numRuns)+"r"+".csv");
     Logger::log(Logger::INFO,"Output file: %s", fname.c_str());
     
     genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().New(fname);
@@ -771,6 +772,10 @@ void RunGENIE(const std::string &dataFile, const std::string &codec, int numRuns
             comprTypesToRun.erase(std::remove(comprTypesToRun.begin(), comprTypesToRun.end(),NO_COMPRESSION),
                     comprTypesToRun.end()); // Run all but NO_COMPRESSION
         }
+        else if (codec == "some")
+        {
+            comprTypesToRun = {COPY, BP32, SERIAL_DELTA_VARINT, SERIAL_DELTA_BP32, SERIAL_DELTA_COMP_BP32_VARINT};
+        }
         else if (DeviceCodecFactory::getCompressionType(codec) != NO_COMPRESSION)
         {
             comprTypesToRun.push_back(DeviceCodecFactory::getCompressionType(codec)); // Run just the user specified type
@@ -1003,7 +1008,7 @@ int main(int argc, char **argv)
                 std::cerr << "Measurement \"intergrated\" requires a data argument!" << std::endl;
                 return 1;
             }
-            InitMatchingPerfLogger(dest, *it, data, numRuns);
+            InitMatchingPerfLogger(dest, *it, data, codec, numRuns);
             RunGENIE(data, codec, numRuns, device);
         }
         else if (*it == std::string("convert"))
