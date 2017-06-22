@@ -1,14 +1,12 @@
 ## GENERAL PROJECT SETTINGS
 
-cmake_minimum_required(VERSION 3.7)
-
-set(PROJECT_NAME GPUGenie)
-set(PROJECT_API_VERSION 1)
-set(PROJECT_MINOR_VERSION 0.0)
+cmake_minimum_required(VERSION 3.8)
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
-project(${PROJECT_NAME})
+project("GPUGenie"
+  VERSION 0.1
+  LANGUAGES C CXX CUDA)
 enable_testing()
 include(CheckCXXCompilerFlag)
 include(ExternalProject)
@@ -29,12 +27,20 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 if (NOT ${CMAKE_COMPILER_IS_GNUCXX})
-  message(FATAL "Only GNU compilers are supported")
+  message(FATAL_ERROR "Only GNU compilers are supported")
 endif()
-set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
 
-set(CMAKE_C_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "${genie_warnings}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(genie_warnings "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable") #-Werror
+set(CMAKE_C_FLAGS "${genie_warnings}")
+set(CMAKE_CXX_FLAGS "${genie_warnings}")
+
+set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call")
+set(CMAKE_CUDA_FLAGS_DEBUG  "--debug --device-debug --generate-line-info")
+set(CMAKE_CUDA_FLAGS_RELEASE "--optimize 3 --generate-line-info -DNDEBUG")
+# set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO "--optimize 2 --generate-line-info")
+
+set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+set(CUDA_SEPARABLE_COMPILATION ON)
 
 
 ## DEPENDENCIES
@@ -55,37 +61,35 @@ find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
 ### MPI & OpenMP
 
 if (GENIE_DISTRIBUTED)
-  find_package(MPI REQUIRED)
+  # WORKAROUND: Unset all variables for FindMPI. There are no input variables for FindMPI for MPI home directory.
+  # Unsetting MPI_HOME (undocumented variable FindMPI uses) is not sufficient.
+  set(_FINDMPI_CACHED_VARIABLES MPIEXEC MPIEXEC_MAX_NUMPROCS MPIEXEC_NUMPROC_FLAG MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS
+    MPI_CXX_COMPILER MPI_CXX_COMPILE_FLAGS MPI_CXX_INCLUDE_PATH MPI_CXX_LIBRARIES MPI_CXX_LINK_FLAGS MPI_C_COMPILER 
+    MPI_C_COMPILE_FLAGS MPI_C_INCLUDE_PATH MPI_C_LIBRARIES MPI_C_LINK_FLAGS MPI_EXTRA_LIBRARY MPI_LIBRARY)
+  foreach (_FINDMPI_VAR ${_FINDMPI_CACHED_VARIABLES})
+    unset(${_FINDMPI_VAR} CACHE)
+  endforeach()
+  
+  find_package(MPI REQUIRED) # Use MPI_HOME or env(MPI_HOME) to define root directory of MPI installation
+  unset(MPI_HOME CACHE)
+  message(STATUS "Found mpiexec: ${MPIEXEC}")
+
+  # Check for correct OpenMPI and version 
+  if (NOT MPIEXEC OR NOT MPI_C_FOUND OR NOT MPI_CXX_FOUND)
+    message(FATAL_ERROR "OpenMPI not found!")
+  endif()
+  execute_process(COMMAND ${MPI_C_COMPILER} --showme:version OUTPUT_VARIABLE MPI_VERSION)
+  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*" OR
+      NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
+    message(FATAL_ERROR "MPI not OpenMPI, or OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  endif()
+
   find_package(OpenMP REQUIRED)
-  MESSAGE(STATUS "Building GENIE with MPI support")
+
+  message(STATUS "Distributed GENIE module enabled")
   include_directories(${MPI_INCLUDE_PATH})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
-
-### CUDA
-
-find_package(CUDA REQUIRED)
-set(BUILD_SHARED_LIBS OFF)
-set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-set(CUDA_NVCC_FLAGS --std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call)
-
-# BUG: with CUDA_NVCC_FLAGS_CONFIG variable processing in CMake
-# https://gitlab.kitware.com/cmake/cmake/issues/16411
-# Workaround is to specify CUDA_NVCC_FLAGS manually based on build type
-# (Issue still present in CMake 3.8.2)
-# set(CUDA_NVCC_FLAGS_DEBUG  --debug --device-debug --generate-line-info)
-# set(CUDA_NVCC_FLAGS_RELEASE --optimize 3 --generate-line-info -DNDEBUG) 
-# set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO --generate-line-info)
-string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPER)
-if(CMAKE_BUILD_TYPE_UPPER STREQUAL "DEBUG")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --debug --device-debug --generate-line-info)
-elseif(CMAKE_BUILD_TYPE_UPPER STREQUAL "RELEASE")
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --optimize 3 --generate-line-info -DNDEBUG) 
-else()
-  message(FATAL "Unknown build type, cannot determine NVCC flags")
-endif()
-
-set(CUDA_SEPARABLE_COMPILATION ON)
 
 
 ## COMPRESSION MODULE
@@ -115,7 +119,7 @@ if (GENIE_COMPR)
         set(SIMDCAI_PROJ_INSTALL_DIR ${BINARY_DIR})
 
         SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem ")
-        cuda_include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
+        include_directories(SYSTEM "${SIMDCAI_PROJ_INSTALL_DIR}/include" ${PROJECT_SOURCE_DIR}/simdcai/src)
     endif()
 else()
     message(STATUS "Compression module disabled")
@@ -134,7 +138,7 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 ## HELPER FUNCTIONS
 
 function(genie_add_simple_executable TARGET)
-    cuda_add_executable(${TARGET} ${ARGN})
+    add_executable(${TARGET} ${ARGN})
     add_dependencies(${TARGET} ${PROJECT_NAME})
     set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
     target_link_libraries(${TARGET}

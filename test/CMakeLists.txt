@@ -1,5 +1,5 @@
 function(genie_add_test_case TARGET)
-   cuda_add_executable(${TARGET} ${ARGN})
+   add_executable(${TARGET} ${ARGN})
    add_dependencies(${TARGET} ${PROJECT_NAME})
    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
    target_link_libraries(${TARGET}

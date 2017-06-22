@@ -18,9 +18,9 @@ Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/
 
 You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum required versions are:
 - GCC with C++11 support (4.8)
-- CMake 3.7
+- CMake 3.8
 - CUDA 7.0
-- MPI 1.7 (for `GENIE_DISTRIBUTED` only, currently only OpenMPI is supported)
+- OpenMPI 1.7 (for `GENIE_DISTRIBUTED` only)
 - Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
 
 To create an "out-of-source" build of GPUGenie containing both the GPUGenie library, tests and tools, you can use the
@@ -38,8 +38,8 @@ Use target `$ make test` to run GENIE tests, `$ make doc` to build html code doc
 - `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Debug`)
 - `CMAKE_INSTALL_PREFIX:PATH` -- `cmake`'s option for installation prefix (default `${CMAKE_BINARY_DIR}/install`)
 - `BOOST_ROOT:PATH` -- root dir of Boost libraries (default from system paths)
-- `CUDA_TOOLKIT_ROOT_DIR:PATH` -- root dir of CUDA (default based on `nvcc` in path)
 - `DOXYGEN_EXECUTABLE:PATH` -- doxygen executable (default from system paths)
+- `MPI_HOME:PATH` -- root dir of OpenMPI installation (default from system paths)
 - `GENIE_DISTRIBUTED:BOOL` -- enable distributed GENIE module (default OFF)
 - `GENIE_COMPR:BOOL` -- enable compression GENIE module (default ON)
 - `GENIE_SIMDCAI:BOOL` -- enable compilation of SIMDCAI library (default OFF)
@@ -210,16 +210,5 @@ $ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
 
 ## Documentation
 
-Documentation for GPUGenie can be generated with Doxygen. To generate manually, run
-
-```bash
-$ cd doc
-$ doxygen doxy.config
-```
-
-Documentation can also be generated with CMake. After you configure CMake following steps in
-[Compilation anddevelopment](#compilation-and-development), just type
-
-```bash
-$ make doc
-```
+Code documentation for GPUGenie can be generated with `cmake` and `make`. After you configure CMake following steps in
+[Compilation and Development](#compilation-and-development), just run `$ make doc`.
