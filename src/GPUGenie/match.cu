@@ -336,9 +336,7 @@ void match(inv_table& table, vector<query>& queries,
 
 		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
 
-		u32 h_offsets[16] = OFFSETS_TABLE_16;
-		cudaCheckErrors(
-			cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+		cudaCheckErrors(cudaMemcpyToSymbol(d_offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
 
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");
 		cudaEventRecord(kernel_start);
@@ -625,9 +623,9 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 		/* offset */
 		Logger::log(Logger::INFO, "[ 33%] Copying memory to symbol...");
-		u32 h_offsets[16] = OFFSETS_TABLE_16;
-		cudaCheckErrors(
-			cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32) * 16, 0, cudaMemcpyHostToDevice));
+
+		cudaCheckErrors(cudaMemcpyToSymbol(d_offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+
 
 		/* match kernel */
 		Logger::log(Logger::INFO,"[ 40%] Starting match kernels...");

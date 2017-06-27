@@ -400,8 +400,8 @@ match_integrated(
     Logger::log(Logger::INFO, "    Transferring constant symbol memory to device...");
     constantTransferStart = getTime();
 
-    u32 h_offsets[16] = OFFSETS_TABLE_16;
-    cudaCheckErrors(cudaMemcpyToSymbol(genie::core::offsets, h_offsets, sizeof(u32)*16, 0, cudaMemcpyHostToDevice));
+    cudaCheckErrors(cudaMemcpyToSymbol(genie::core::d_offsets, genie::core::h_offsets, sizeof(u32)*16, 0,
+            cudaMemcpyHostToDevice));
     Logger::log(Logger::INFO, "        Transferring offsets table (total %d bytes)", sizeof(u32)*16);
 
     constantTransferEnd = getTime();

@@ -19,6 +19,20 @@ namespace genie
 namespace core
 {
 
+const T_AGE    MAX_AGE = 16u;
+const uint32_t KEY_TYPE_BITS = 28u;
+const uint32_t KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
+const uint32_t ATTACH_ID_TYPE_BITS = 32u;
+const uint32_t ATTACH_ID_TYPE_MASK = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
+const uint32_t KEY_TYPE_INIT_AGE = 1u;
+const uint32_t KEY_TYPE_NULL_AGE = 0u;
+
+static const uint32_t h_offsets[] =
+    {      0u, 3949349u, 8984219u, 9805709u, 7732727u, 1046459u, 9883879u, 4889399u,
+     2914183u, 3503623u, 1734349u, 8860463u, 1326319u, 1613597u, 8604269u, 9647369u};
+
+static __device__  __constant__ u32 d_offsets[16];
+
 __forceinline__  __host__  __device__ T_KEY get_key_pos(T_HASHTABLE key)
 {
     return key & KEY_TYPE_MASK;
@@ -51,7 +65,7 @@ T_HASHTABLE pack_key_pos_and_attach_id_and_age(T_KEY p, u32 i, T_AGE a)
 __forceinline__  __device__ u32 hash(T_KEY key, T_AGE age,
         int hash_table_size)
 {
-    return (offsets[age] + key) % hash_table_size;
+    return (d_offsets[age] + key) % hash_table_size;
 }
 
 __forceinline__ __device__ __host__

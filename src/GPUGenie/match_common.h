@@ -30,32 +30,14 @@ typedef u32 T_AGE;
  *  \brief This is the entry format of the hash table used in GPU.
  *         Will be treated as a 64-bit unsigned integer later.
  */
-typedef struct data_
+struct data_t
 {
-    u32 id;/*!< Index of data point */
+    uint32_t id;/*!< Index of data point */
     float aggregation;/*!< Count of data point*/
-} data_t;
+};
 
 
 const size_t MATCH_THREADS_PER_BLOCK = 256;
-
-#define OFFSETS_TABLE_16 {0u,       3949349u, 8984219u, 9805709u,\
-                          7732727u, 1046459u, 9883879u, 4889399u,\
-                          2914183u, 3503623u, 1734349u, 8860463u,\
-                          1326319u, 1613597u, 8604269u, 9647369u}
-
-#define NULL_AGE 0
-#define MAX_AGE 16u
-
-const u32 KEY_TYPE_BITS = 28u;
-const u32 KEY_TYPE_MASK = u32(u64((1ull) << KEY_TYPE_BITS) - 1u);
-const u32 ATTACH_ID_TYPE_BITS = 32u;
-const u32 ATTACH_ID_TYPE_MASK = u32(u64((1ull) << ATTACH_ID_TYPE_BITS) - 1ul);
-const u32 KEY_TYPE_INIT_AGE = 1u;
-const u32 KEY_TYPE_NULL_AGE = 0u;
-
-
-static __device__  __constant__ u32 offsets[16];
 
 __global__
 void convert_to_data(T_HASHTABLE* table, u32 size);
