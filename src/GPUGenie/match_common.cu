@@ -1,6 +1,5 @@
 #include "match_common.h"
-
-#include "match_inlines.cu"
+#include "match_device_utils.h"
 
 namespace genie
 {

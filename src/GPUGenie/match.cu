@@ -23,10 +23,11 @@
 
 #include "match.h"
 #include "match_common.h"
-
-#include "match_inlines.cu"
+#include "match_device_utils.h"
 
 using namespace genie::core;
+using namespace std;
+using namespace thrust;
 
 namespace GPUGenie
 {

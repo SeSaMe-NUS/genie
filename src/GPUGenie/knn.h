@@ -29,16 +29,26 @@ namespace GPUGenie
  *  This function is basic and called by knn_bijectMap(). This function would carry out the process of match-count and topk selection.
  */
 void
-knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
-        device_vector<int>& d_top_count, int hash_table_size, int max_load,
-        int bitmap_bits);
+knn(inv_table& table,
+    std::vector<query>& queries,
+    thrust::device_vector<int>& d_top_indexes,
+    thrust::device_vector<int>& d_top_count,
+    int hash_table_size,
+    int max_load,
+    int bitmap_bits);
 
 void
-knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device_vector<int> >& d_top_indexes,
-		vector<device_vector<int> >& d_top_count, vector<int>& hash_table_size, vector<int>& max_load,
-		int bitmap_bits);
+knn_MT(
+    std::vector<inv_table*>& table,
+    std::vector<std::vector<query> >& queries,
+    std::vector<thrust::device_vector<int> >& d_top_indexes,
+    std::vector<thrust::device_vector<int> >& d_top_count,
+    std::vector<int>& hash_table_size,
+    std::vector<int>& max_load,
+    int bitmap_bits);
 
-/*! \fn void knn_bijectMap(inv_table& table, vector<query>& queries,
+/*! \fn void knn_bijectMap(inv_table& table,
+vector<query>& queries,
  *  device_vector<int>& d_top_indexes, device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
  *  \brief Find the top k values in given inv_table.
  *
@@ -53,14 +63,24 @@ knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries, vector<device
  *  This function is called by function in interface.h. This function would call knn() in the end.
  */
 void
-knn_bijectMap(inv_table& table, vector<query>& queries,
-		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
-		int hash_table_size, int max_load, int bitmap_bits);
+knn_bijectMap(
+    inv_table& table,
+    std::vector<query>& queries,
+    thrust::device_vector<int>& d_top_indexes,
+    thrust::device_vector<int>& d_top_count,
+    int hash_table_size,
+    int max_load,
+    int bitmap_bits);
 
 void
-knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
-		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
-		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits);
+knn_bijectMap_MT(
+    std::vector<inv_table*>& table,
+    std::vector<std::vector<query> >& queries,
+    std::vector<thrust::device_vector<int> >& d_top_indexes,
+    std::vector<thrust::device_vector<int> >& d_top_count,
+    std::vector<int>& hash_table_size,
+    std::vector<int>& max_load,
+    int bitmap_bits);
 }
 
 #endif //ifndef KNN_H_

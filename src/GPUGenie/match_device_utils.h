@@ -8,8 +8,8 @@
  * Including this file allows two separate translation units to have a copy of these functions and inline them.
  */
 
-#ifndef GENIE_MATCH_INLINES_H
-#define GENIE_MATCH_INLINES_H
+#ifndef GENIE_MATCH_DEVICE_UTILS_H
+#define GENIE_MATCH_DEVICE_UTILS_H
 
 #include "query.h"
 #include "match_common.h"

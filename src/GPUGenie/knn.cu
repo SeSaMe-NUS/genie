@@ -17,6 +17,10 @@
 
 #include "knn.h"
 
+using namespace genie::core;
+using namespace std;
+using namespace thrust;
+
 bool GPUGENIE_ERROR = false;
 unsigned long long GPUGENIE_TIME = 0ull;
 

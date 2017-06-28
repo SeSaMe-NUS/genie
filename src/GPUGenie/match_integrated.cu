@@ -22,8 +22,8 @@
 
 #include "match_common.h"
 #include "match_integrated.h"
+#include "match_device_utils.h"
 
-#include "match_inlines.cu"
 
 /**
  * Maximal length the codecs are able to decompress into.
@@ -33,6 +33,9 @@
  */
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
+using namespace genie::core;
+using namespace std;
+using namespace thrust;
 
 namespace GPUGenie
 {

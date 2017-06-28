@@ -40,7 +40,8 @@ extern const COMPRESSION_TYPE HEAVYWEIGHT_COMPRESSION_TYPE;
  * Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated
  */
 class inv_compr_table;
-typedef void (*MatchIntegratedFunPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&,
+typedef void (
+        *MatchIntegratedFunPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<genie::core::data_t>&,
         thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
         thrust::device_vector<u32>&);
 

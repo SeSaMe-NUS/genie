@@ -34,7 +34,7 @@ template <class Codec> void
 match_integrated(
         inv_compr_table& table,
         std::vector<query>& queries,
-        thrust::device_vector<data_t>& d_data,
+        thrust::device_vector<genie::core::data_t>& d_data,
         thrust::device_vector<u32>& d_bitmap,
         int hash_table_size,
         int bitmap_bits,
