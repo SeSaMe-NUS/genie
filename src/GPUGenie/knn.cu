@@ -17,7 +17,7 @@
 
 #include "knn.h"
 
-using namespace genie::core;
+using namespace genie::matching;
 using namespace std;
 using namespace thrust;
 

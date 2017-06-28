@@ -46,7 +46,7 @@ void
 match(
     inv_table& table,
     std::vector<query>& queries,
-    thrust::device_vector<genie::core::data_t>& d_data,
+    thrust::device_vector<genie::matching::data_t>& d_data,
     thrust::device_vector<u32>& d_bitmap,
     int hash_table_size,
     int max_load,
@@ -59,7 +59,7 @@ void
 match_MT(
     std::vector<inv_table*>& table,
     std::vector<std::vector<query> >& queries,
-    std::vector<thrust::device_vector<genie::core::data_t> >& d_data,
+    std::vector<thrust::device_vector<genie::matching::data_t> >& d_data,
     std::vector<thrust::device_vector<u32> >& d_bitmap,
     std::vector<int>& hash_table_size,
     std::vector<int>& max_load,

@@ -16,7 +16,7 @@
 
 namespace genie
 {
-namespace core
+namespace matching
 {
 
 const T_AGE    MAX_AGE = 16u;
@@ -472,7 +472,7 @@ updateThreshold(u32* my_passCount, u32* my_threshold,
     }
 }
 
-} // namespace core
+} // namespace matching
 
 } // namespace genie
 

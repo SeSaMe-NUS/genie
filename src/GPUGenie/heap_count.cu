@@ -19,7 +19,7 @@
 
 using namespace std;
 using namespace thrust;
-using namespace genie::core;
+using namespace genie::matching;
 
 __global__
 void count_over_threshold(data_t * data, int * result, u32 * thresholds,

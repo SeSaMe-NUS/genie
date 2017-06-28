@@ -25,7 +25,7 @@
 #include "match_common.h"
 #include "match_device_utils.h"
 
-using namespace genie::core;
+using namespace genie::matching;
 using namespace std;
 using namespace thrust;
 

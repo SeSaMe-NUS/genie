@@ -34,8 +34,8 @@ namespace GPUGenie{
  *  \param topk The number of top items expected.
  *  \param num_of_queries The number of queries that the hash tables correspond to.
  */
-void heap_count_topk(thrust::device_vector<genie::core::data_t>& d_data,
-					 thrust::device_vector<genie::core::data_t>& d_topk,
+void heap_count_topk(thrust::device_vector<genie::matching::data_t>& d_data,
+					 thrust::device_vector<genie::matching::data_t>& d_topk,
 					 thrust::device_vector<u32>& d_threshold,
 					 thrust::device_vector<u32>& d_passCount,
 					 int topk,

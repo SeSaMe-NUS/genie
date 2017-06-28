@@ -41,7 +41,7 @@ extern const COMPRESSION_TYPE HEAVYWEIGHT_COMPRESSION_TYPE;
  */
 class inv_compr_table;
 typedef void (
-        *MatchIntegratedFunPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<genie::core::data_t>&,
+        *MatchIntegratedFunPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<genie::matching::data_t>&,
         thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
         thrust::device_vector<u32>&);
 

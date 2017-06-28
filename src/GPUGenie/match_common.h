@@ -15,7 +15,7 @@
 
 namespace genie
 {
-namespace core
+namespace matching
 {
 
 typedef unsigned char u8;
@@ -42,7 +42,7 @@ const size_t MATCH_THREADS_PER_BLOCK = 256;
 __global__
 void convert_to_data(T_HASHTABLE* table, u32 size);
 
-} // namespace core
+} // namespace matching
 
 } // namespace genie
 

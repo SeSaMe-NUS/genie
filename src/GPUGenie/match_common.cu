@@ -3,7 +3,7 @@
 
 namespace genie
 {
-namespace core
+namespace matching
 {
 
 __global__
@@ -19,7 +19,7 @@ void convert_to_data(T_HASHTABLE* table, u32 size)
     mytable->aggregation = *reinterpret_cast<float*>(&agg);
 }
 
-} // namespace core
+} // namespace matching
 
 } // namespace genie
 

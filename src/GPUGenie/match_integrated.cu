@@ -33,7 +33,7 @@
  */
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
-using namespace genie::core;
+using namespace genie::matching;
 using namespace std;
 using namespace thrust;
 
@@ -403,7 +403,7 @@ match_integrated(
     Logger::log(Logger::INFO, "    Transferring constant symbol memory to device...");
     constantTransferStart = getTime();
 
-    cudaCheckErrors(cudaMemcpyToSymbol(genie::core::d_offsets, genie::core::h_offsets, sizeof(u32)*16, 0,
+    cudaCheckErrors(cudaMemcpyToSymbol(genie::matching::d_offsets, genie::matching::h_offsets, sizeof(u32)*16, 0,
             cudaMemcpyHostToDevice));
     Logger::log(Logger::INFO, "        Transferring offsets table (total %d bytes)", sizeof(u32)*16);
 
