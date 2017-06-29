@@ -34,6 +34,7 @@
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
 using namespace genie::matching;
+using namespace genie::util;
 using namespace std;
 using namespace thrust;
 
@@ -445,8 +446,8 @@ match_integrated(
     Logger::log(Logger::INFO, "    Matching...");
     for (int loop_count = 1; ;loop_count++)
     {
-        Logger::log(Logger::INFO, "    Preparing matching... (attempt %d)", loop_count);
-        Logger::log(Logger::INFO, "    Filling matching memory on device...");
+        Logger::log(Logger::INFO, "        Preparing matching... (attempt %d)", loop_count);
+        Logger::log(Logger::INFO, "        Filling matching memory on device...");
         fillingStart = getTime();
 
         thrust::fill(d_threshold.begin(), d_threshold.end(), 1);
@@ -462,7 +463,7 @@ match_integrated(
         fillingEnd = getTime();
         
 
-        Logger::log(Logger::INFO, "    Starting decompression & match kernel...");
+        Logger::log(Logger::INFO, "        Starting decompression & match kernel...");
         cudaEventRecord(startMatching);
         
         // Call matching kernel, where each BLOCK does matching of one compiled query, only matching for the
@@ -489,20 +490,20 @@ match_integrated(
         cudaEventSynchronize(stopMatching);
         cudaCheckErrors(cudaDeviceSynchronize());
         
-        Logger::log(Logger::INFO, "    Checking for hash table overflow...");
+        Logger::log(Logger::INFO, "        Checking for hash table overflow...");
         cudaCheckErrors(cudaMemcpy(h_overflow, d_overflow_p, sizeof(bool), cudaMemcpyDeviceToHost));
         if(!h_overflow[0]){
-            Logger::log(Logger::INFO, "    Matching succeeded");
+            Logger::log(Logger::INFO, "        Matching succeeded");
             break;
         }
 
-        Logger::log(Logger::INFO, "    Matching failed (hash table overflow)");
+        Logger::log(Logger::INFO, "        Matching failed (hash table overflow)");
         hash_table_size += num_of_max_count*max_topk;
         if(hash_table_size > table.i_size())
             hash_table_size = table.i_size();
         
         d_hash_table.resize(queries.size()*hash_table_size);
-        Logger::log(Logger::INFO, "    Resized hash table (now total of %d bytes)",
+        Logger::log(Logger::INFO, "        Resized hash table (now total of %d bytes)",
             queries.size() * hash_table_size * sizeof(data_t));
     };
 
@@ -530,19 +531,27 @@ match_integrated(
     cudaEventElapsedTime(&matchingTime, startMatching, stopMatching);
     cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
 
-    Codec c;
-    PerfLogger::get().ofs()
-        << c.name() << ","
-        << std::fixed << std::setprecision(3) << getInterval(overallStart, overallEnd) << "," // "overallTime"
-        << std::fixed << std::setprecision(3) << getInterval(queryCompilationStart, queryCompilationEnd) << "," // "queryCompilationTime"
-        << std::fixed << std::setprecision(3) << getInterval(preprocessingStart, preprocessingEnd) << "," // "preprocessingTime"
-        << std::fixed << std::setprecision(3) << getInterval(queryTransferStart, queryTransferEnd) << "," // "queryTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << "," // "dataTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(constantTransferStart, constantTransferEnd) << "," // "constantTransferTime"
-        << std::fixed << std::setprecision(3) << getInterval(allocationStart, allocationEnd) << "," // "allocationTime"
-        << std::fixed << std::setprecision(3) << getInterval(fillingStart, fillingEnd) << "," // "fillingTime"
-        << std::fixed << std::setprecision(3) << matchingTime << "," // "matchingTime"
-        << std::fixed << std::setprecision(3) << convertTime << ","; // "convertTime"
+    PerfLogger<MatchingPerfData>::Instance().Log()
+        .Compr(table.getCompression())
+        .OverallTime(getInterval(overallStart, overallEnd))
+        .QueryCompilationTime(getInterval(queryCompilationStart, queryCompilationEnd))
+        .PreprocessingTime(getInterval(preprocessingStart, preprocessingEnd))
+        .QueryTransferTime(getInterval(queryTransferStart, queryTransferEnd))
+        .DataTransferTime(getInterval(dataTransferStart, dataTransferEnd))
+        .ConstantTransferTime(getInterval(constantTransferStart, constantTransferEnd))
+        .AllocationTime(getInterval(allocationStart, allocationEnd))
+        .FillingTime(getInterval(fillingStart, fillingEnd))
+        .MatchingTime(matchingTime)
+        .ConvertTime(convertTime)
+        .InvSize(sizeof(uint32_t) * table.compressedInv()->size())
+        .DimsSize(dims.size() * sizeof(query::dim))
+        .HashTableCapacityPerQuery(hash_table_size)
+        .ThresholdSize(queries.size() * sizeof(u32))
+        .PasscountSize(queries.size() * num_of_max_count * sizeof(u32))
+        .BitmapSize(bitmap_size * sizeof(u32))
+        .NumItemsInHashTableSize(queries.size() * sizeof(u32))
+        .TopksSize(queries.size() * sizeof(u32))
+        .HashTableSize(queries.size() * hash_table_size * sizeof(data_t));
 }
 
 }

@@ -26,6 +26,7 @@
 #include "match_device_utils.h"
 
 using namespace genie::matching;
+using namespace genie::util;
 using namespace std;
 using namespace thrust;
 
@@ -436,18 +437,21 @@ void match(inv_table& table, vector<query>& queries,
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        PerfLogger::get().ofs()
-            << "Vanilla" << ","
-            << std::fixed << std::setprecision(3) << getInterval(match_start, match_stop) << "," // "overallTime"
-            << std::fixed << std::setprecision(3) << getInterval(match_query_start, match_query_end) << "," // "queryCompilationTime"
-            << std::fixed << std::setprecision(3) << 0.0 << "," // "preprocessingTime"
-            << std::fixed << std::setprecision(3) << getInterval(query_start, query_end) << "," // "queryTransferTime"
-            << std::fixed << std::setprecision(3) << getInterval(dataTransferStart, dataTransferEnd) << "," // "dataTransferTime"
-            << std::fixed << std::setprecision(3) << 0.0 << "," // "constantTransferTime"
-            << std::fixed << std::setprecision(3) << 0.0 << "," // "allocationTime"
-            << std::fixed << std::setprecision(3) << 0.0 << "," // "fillingTime"
-            << std::fixed << std::setprecision(3) << kernel_elapsed << "," // "matchingTime"
-            << std::fixed << std::setprecision(3) << 0.0 << ","; // "convertTime"
+        PerfLogger<MatchingPerfData>::Instance().Log()
+            .OverallTime(getInterval(match_start, match_stop))
+            .QueryCompilationTime(getInterval(match_query_start, match_query_end))
+            .QueryTransferTime(getInterval(query_start, query_end))
+            .DataTransferTime(getInterval(dataTransferStart, dataTransferEnd))
+            .MatchingTime(kernel_elapsed)
+            .InvSize(sizeof(int) * table.inv()->size())
+            .DimsSize(dims.size() * sizeof(query::dim))
+            .HashTableCapacityPerQuery(hash_table_size)
+            .ThresholdSize(queries.size() * sizeof(u32))
+            .PasscountSize(queries.size() * num_of_max_count * sizeof(u32))
+            .BitmapSize(bitmap_size * sizeof(u32))
+            .NumItemsInHashTableSize(queries.size() * sizeof(u32))
+            .TopksSize(queries.size() * sizeof(u32))
+            .HashTableSize(queries.size() * hash_table_size * sizeof(data_t));
 
 	} catch(std::bad_alloc &e){
 		throw GPUGenie::gpu_bad_alloc(e.what());
