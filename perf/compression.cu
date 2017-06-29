@@ -27,7 +27,7 @@
 #include <GPUGenie/DeviceVarintCodec.h>
 #include <GPUGenie/scan.h> 
 
-#include "TableAnalyzer.hpp"
+#include "table_analyzer.hpp"
 
 
 using namespace GPUGenie;
