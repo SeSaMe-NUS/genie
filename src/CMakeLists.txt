@@ -9,6 +9,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/inv_table.cu
   GPUGenie/query.cu
   GPUGenie/match.cu
+  GPUGenie/match_common.cu
   GPUGenie/interface.cu
   GPUGenie/knn.cu
   GPUGenie/heap_count.cu  
@@ -28,6 +29,7 @@ set( GENIE_HEADERS
   GPUGenie/inv_table.h
   GPUGenie/query.h
   GPUGenie/match.h
+  GPUGenie/match_common.h
   GPUGenie/interface.h
   GPUGenie/knn.h
   GPUGenie/heap_count.h

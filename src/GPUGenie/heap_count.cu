@@ -18,6 +18,8 @@
 #define GPUGenie_Minus_One_THREADS_PER_BLOCK 1024
 
 using namespace std;
+using namespace thrust;
+using namespace genie::matching;
 
 __global__
 void count_over_threshold(data_t * data, int * result, u32 * thresholds,
