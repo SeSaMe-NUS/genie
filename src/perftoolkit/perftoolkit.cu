@@ -1,5 +1,5 @@
 /**
- * \brief Performance measurement toolkit for compression of inverted lists in GENIE
+ * \brief Performance measurement toolkit for GENIE
  *
  */
 
@@ -881,7 +881,7 @@ int main(int argc, char **argv)
     std::string dest, data, codec;
     std::vector<std::string> operations;
 
-    po::options_description desc("Compression performance measurements");
+    po::options_description desc("Performance measurements toolkit for GENIE");
     desc.add_options()
         ("help",
             "produce help message")
