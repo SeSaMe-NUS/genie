@@ -31,11 +31,14 @@
 
 
 using namespace GPUGenie;
-using namespace genie::perf;
+using namespace genie::util;
 namespace po = boost::program_options;
 
 const int MAX_UNCOMPRESSED_LENGTH = 1024;
 
+
+namespace perftoolkit
+{
 
 /**
  *  Generate data, where each number follows a geometrical distribution. Note that the array is not sorted and is
@@ -202,12 +205,12 @@ void RunSingleScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_
     Logger::log(Logger::DEBUG, "Scan, Array size: %d, Time: %.3f ms, Throughput: %.3f elements per millisecond"
         , arrayLength, scanTime, (double)arrayLength/scanTime);
 
-    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().Log()
+    PerfLogger<ScanPerfData>::Instance().Log()
         .ArraySize(arrayLength)
         .Time(scanTime)
         .Throughput((double)arrayLength/scanTime);
 
-    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().Next();
+    PerfLogger<ScanPerfData>::Instance().Next();
         
 }
 
@@ -259,14 +262,14 @@ void RunSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
         Logger::log(Logger::DEBUG, "Codec: %s, Array size: %d, Compressed size: %d, Ratio: %.3f bpi, Compressed list too long",
             codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength));
 
-        genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Log()
+        PerfLogger<CodecPerfData>::Instance().Log()
             .Codec(DeviceCodecFactory::getCompressionType(codec.name()))
             .ArraySize(arrayLength)
             .ComprSize(comprLength)
             .ComprRatio(32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength))
             .Time(0)
             .Throughput(0);
-        genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Next();
+        PerfLogger<CodecPerfData>::Instance().Next();
 
         return;
     }
@@ -307,14 +310,14 @@ void RunSingleCodec(uint *h_Input, uint *h_InputCompr, uint *h_OutputGPU, uint *
             codec.name().c_str(), arrayLength, comprLength, 32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength),
             decomprTime, (double)arrayLength/decomprTime);
 
-    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Log()
+    PerfLogger<CodecPerfData>::Instance().Log()
         .Codec(DeviceCodecFactory::getCompressionType(codec.name()))
         .ArraySize(arrayLength)
         .ComprSize(comprLength)
         .ComprRatio(32.0 * static_cast<double>(comprLength) / static_cast<double>(arrayLength))
         .Time(decomprTime)
         .Throughput((double)arrayLength/decomprTime);
-    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().Next();
+    PerfLogger<CodecPerfData>::Instance().Next();
 }
 
 
@@ -435,7 +438,7 @@ void InitMatchingPerfLogger(const std::string &destDir, const std::string &measu
         destDir+dirsep+measurement+sep+datasetFilename+sep+codecs+sep+std::to_string(numRuns)+"r"+".csv");
     Logger::log(Logger::INFO,"Output file: %s", fname.c_str());
     
-    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().New(fname);
+    PerfLogger<MatchingPerfData>::Instance().New(fname);
 }
 
 void InitScanPerfLogger(const std::string &destDir, int numOfRuns, double geom_distr_coeff, double geom_distr_multiplier, int srand)
@@ -450,7 +453,7 @@ void InitScanPerfLogger(const std::string &destDir, int numOfRuns, double geom_d
             +"r"+std::to_string(numOfRuns)+sep
             +std::to_string(srand)+".csv");
     
-    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().New(fname);
+    PerfLogger<ScanPerfData>::Instance().New(fname);
 }
 
 void InitScanPerfLogger(const std::string &destDir, int numOfRuns, int minValue, int maxValue, int srand)
@@ -464,7 +467,7 @@ void InitScanPerfLogger(const std::string &destDir, int numOfRuns, int minValue,
             +"r"+std::to_string(numOfRuns)+sep
             +std::to_string(srand)+".csv");
     
-    genie::perf::PerfLogger<genie::perf::ScanPerfData>::Instance().New(fname);
+    PerfLogger<ScanPerfData>::Instance().New(fname);
 }
 
 void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, double geom_distr_coeff, double geom_distr_multiplier, int srand)
@@ -479,7 +482,7 @@ void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, double geom_
             +"r"+std::to_string(numOfRuns)+sep
             +std::to_string(srand)+".csv");
     
-    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().New(fname);
+    PerfLogger<CodecPerfData>::Instance().New(fname);
 }
 
 void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, int minValue, int maxValue, int srand)
@@ -493,7 +496,7 @@ void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, int minValue
             +"r"+std::to_string(numOfRuns)+sep
             +std::to_string(srand)+".csv");
     
-    genie::perf::PerfLogger<genie::perf::CodecPerfData>::Instance().New(fname);
+    genie::util::PerfLogger<genie::util::CodecPerfData>::Instance().New(fname);
 }
 
 
@@ -635,9 +638,9 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
     if (config.compression)
     {
         GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-        genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
+        genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
     }
-    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Next();
+    genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Next();
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
     delete[] table;
@@ -861,12 +864,16 @@ void AnalyzeInvertedTable(const std::string &data_file, const std::string &codec
             table = comprTable;
         }
 
-        genie::perf_toolkit::TableAnalyzer::Analyze(table, dest_dir);
+        perftoolkit::TableAnalyzer::Analyze(table, dest_dir);
     }
 }
 
+} // namespace perftoolkit
+
+
 int main(int argc, char **argv)
 {    
+    using namespace perftoolkit;
     Logger::log(Logger::INFO,"Running %s", argv[0]);
 
     double geom_distr_coeff, geom_distr_multiplier;
@@ -1039,3 +1046,4 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+

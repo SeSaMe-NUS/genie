@@ -9,16 +9,13 @@
 #include <string>
 #include <vector>
 
-#include <GPUGenie/inv_table.h>
-#include <GPUGenie/inv_compr_table.h>
-#include <GPUGenie/Logger.h>
-
-using namespace GPUGenie;
+#include "DeviceCodecFactory.h"
+#include "Logger.h"
 
 namespace genie
 {
 
-namespace perf
+namespace util
 {
 
 template <typename T>
@@ -99,7 +96,7 @@ class MatchingPerfData
 {
 public:
     MatchingPerfData() :
-        compr_(NO_COMPRESSION),
+        compr_(GPUGenie::NO_COMPRESSION),
         overall_time_(0.0),
         query_compilation_time_(0.0),
         preprocessing_time_(0.0),
@@ -148,7 +145,7 @@ public:
 
     void WriteLine(std::ofstream &ofs)
     {
-        ofs << DeviceCodecFactory::getCompressionName(compr_) << ","
+        ofs << GPUGenie::DeviceCodecFactory::getCompressionName(compr_) << ","
             << std::fixed << std::setprecision(3) << overall_time_ << ","
             << std::fixed << std::setprecision(3) << query_compilation_time_ << ","
             << std::fixed << std::setprecision(3) << preprocessing_time_ << ","
@@ -171,7 +168,7 @@ public:
             << std::fixed << std::setprecision(3) << compr_ratio_ << std::endl;
     }
 
-    MatchingPerfData& Compr (COMPRESSION_TYPE compr)
+    MatchingPerfData& Compr (GPUGenie::COMPRESSION_TYPE compr)
     {
         compr_ = compr;
         return *this;
@@ -298,7 +295,7 @@ public:
     }
 
 protected:
-    COMPRESSION_TYPE compr_;
+    GPUGenie::COMPRESSION_TYPE compr_;
     float overall_time_;
     float query_compilation_time_;
     float preprocessing_time_;
@@ -399,7 +396,7 @@ public:
             << throughput_ << std::endl;
     }
 
-    CodecPerfData& Codec(COMPRESSION_TYPE codec)
+    CodecPerfData& Codec(GPUGenie::COMPRESSION_TYPE codec)
     {
         codec_ = codec;
         return *this;
@@ -436,7 +433,7 @@ public:
     }
 
 protected:
-    COMPRESSION_TYPE codec_;
+    GPUGenie::COMPRESSION_TYPE codec_;
     size_t array_size_;
     size_t compr_size_;
     float compr_ratio_;
@@ -446,7 +443,7 @@ protected:
 
 
 
-} // namespace perf
+} // namespace util
  
 } // namespace genie
 

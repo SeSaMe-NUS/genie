@@ -14,20 +14,14 @@
 #include <GPUGenie/DeviceCodecFactory.h>
 #include <GPUGenie/PerfLogger.hpp>
 
-using namespace GPUGenie;
-using namespace genie::perf;
-
-namespace genie
-{
-
-namespace perf_toolkit
+namespace perftoolkit
 {
 
 class InvertedListData
 {
 public:
     InvertedListData() :
-        compr_(NO_COMPRESSION),
+        compr_(GPUGenie::NO_COMPRESSION),
         length_(0),
         raw_size_(0),
         compr_size_(0),
@@ -54,7 +48,7 @@ public:
             << high_value_ << std::endl;
     }
 
-    InvertedListData& Compr(COMPRESSION_TYPE compr)
+    InvertedListData& Compr(GPUGenie::COMPRESSION_TYPE compr)
     {
         compr_ = compr;
         return *this;
@@ -91,7 +85,7 @@ public:
     }
 
 protected:
-    COMPRESSION_TYPE compr_;
+    GPUGenie::COMPRESSION_TYPE compr_;
     size_t length_;
     size_t raw_size_;
     size_t compr_size_;
@@ -139,17 +133,17 @@ protected:
 class TableAnalyzer
 {
 public:
-    static void Analyze(inv_table* table, const std::string &dest_directory)
+    static void Analyze(GPUGenie::inv_table* table, const std::string &dest_directory)
     {
         assert(table);
-        assert(table->build_status() == inv_compr_table::builded);
+        assert(table->build_status() == GPUGenie::inv_compr_table::builded);
 
-        COMPRESSION_TYPE compression = NO_COMPRESSION;
+        GPUGenie::COMPRESSION_TYPE compression = GPUGenie::NO_COMPRESSION;
         std::vector<int> *inv;
         std::vector<int> *invPos;
         std::vector<int> *compressedInvPos;
 
-        inv_compr_table *ctable = dynamic_cast<inv_compr_table*>(table);
+        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
         if (ctable)
         {
             compression = ctable->getCompression();
@@ -168,12 +162,12 @@ public:
 
         std::string dirsep("/");
         std::string fname(dest_directory+dirsep+"table_"
-            +DeviceCodecFactory::getCompressionName(compression)+"_lists.csv");
-        PerfLogger<InvertedListData>::Instance().New(fname);
+            +GPUGenie::DeviceCodecFactory::getCompressionName(compression)+"_lists.csv");
+        genie::util::PerfLogger<InvertedListData>::Instance().New(fname);
 
         for (int pos = 0; pos < (int)invPos->size()-1; pos++)
         {
-            genie::perf::PerfLogger<genie::perf_toolkit::InvertedListData>::Instance().Log()
+            genie::util::PerfLogger<InvertedListData>::Instance().Log()
                 .Compr(compression)
                 .Length((*invPos)[pos+1]-(*invPos)[pos])
                 .RawSize(((*invPos)[pos+1]-(*invPos)[pos]) * sizeof(int))
@@ -181,13 +175,11 @@ public:
                 .FirstValue((*inv)[((*invPos)[pos])])
                 .LastValue((*inv)[((*invPos)[pos+1]-1)]);
 
-            genie::perf::PerfLogger<genie::perf_toolkit::InvertedListData>::Instance().Next();
+            genie::util::PerfLogger<InvertedListData>::Instance().Next();
         }
     }
 };
 
-} // namespace perf_toolkit
+} // namespace perftoolkit
  
-} // namespace GENIE
-
 #endif

@@ -34,6 +34,7 @@
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
 using namespace genie::matching;
+using namespace genie::util;
 using namespace std;
 using namespace thrust;
 
@@ -530,7 +531,7 @@ match_integrated(
     cudaEventElapsedTime(&matchingTime, startMatching, stopMatching);
     cudaEventElapsedTime(&convertTime, startConvert, stopConvert);
 
-    genie::perf::PerfLogger<genie::perf::MatchingPerfData>::Instance().Log()
+    PerfLogger<MatchingPerfData>::Instance().Log()
         .Compr(table.getCompression())
         .OverallTime(getInterval(overallStart, overallEnd))
         .QueryCompilationTime(getInterval(queryCompilationStart, queryCompilationEnd))
