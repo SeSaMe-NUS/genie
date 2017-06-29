@@ -29,17 +29,8 @@ bool GPUGenie::inv_table::cpy_data_to_gpu()
 	try
 	{
 		if(d_inv_p == NULL)
-			cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * max_inv_size));
-
-		u64 t=getTime();
-			
-		int *temp_inv = (int*)malloc(sizeof(int) * _inv.size());
-		std::copy(_inv.begin(), _inv.end(), temp_inv);
-		cudaCheckErrors(cudaMemcpy(d_inv_p, temp_inv, sizeof(int) * _inv.size(),cudaMemcpyHostToDevice));
-		free(temp_inv);
-
-		u64 tt=getTime();
-		//cout<<"The inverted list(all data) transfer time = "<<getInterval(t,tt)<<"ms"<<endl;
+			cudaCheckErrors(cudaMalloc(&d_inv_p, sizeof(int) * _inv.size()));
+		cudaCheckErrors(cudaMemcpy(d_inv_p, &_inv[0], sizeof(int) * _inv.size(), cudaMemcpyHostToDevice));
 		is_stored_in_gpu = true;
 	}
 	catch(std::bad_alloc &e)
