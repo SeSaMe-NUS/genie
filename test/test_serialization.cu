@@ -7,9 +7,7 @@
  *
  *
  */
-
-
-#undef NDEBUG
+#pragma warning(disable:4099)
 
 #include <cassert>
 #include <fstream>
@@ -64,7 +62,7 @@ void testSerialization(GPUGenie::GPUGenie_Config &config)
 int main(int argc, char* argv[])
 {
     string dataFile = "../static/sift_20.csv";
-    
+
     Logger::log(Logger::INFO, "Reading csv data file %s ...", dataFile.c_str());
     std::vector<std::vector<int>> data;
     GPUGenie::GPUGenie_Config config;

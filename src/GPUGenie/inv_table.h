@@ -23,10 +23,14 @@ typedef unsigned long long u64;
 
 using namespace std;
 
+// Forward declaration of serialization functions
+// This can be removed and instead use #include "serialization.h", but only in case serialization.h does not define
+// the actual serialization functions (otherwise we get cross dependency). If serialize.h has only declarations, we
+// need to explicitly instantiate the functions for various Archive types.
 namespace GPUGenie { class inv_table; }
 namespace boost { namespace serialization {
-template <class Archive>
-void serialize(Archive &ar, GPUGenie::inv_table &table, const unsigned int);
+template <class Archive> void load(Archive &ar, GPUGenie::inv_table &table, const unsigned int);
+template <class Archive> void save(Archive &ar, const GPUGenie::inv_table &table, const unsigned int);
 }}
 
 /*! \namespace GPUGenie
@@ -583,7 +587,8 @@ public:
 
 private:
     friend class boost::serialization::access;
-    template <typename Ar> friend void boost::serialization::serialize(Ar&, GPUGenie::inv_table&, const unsigned);
+    template <typename Ar> friend void boost::serialization::load(Ar&, GPUGenie::inv_table&, const unsigned);
+    template <typename Ar> friend void boost::serialization::save(Ar&, const GPUGenie::inv_table&, const unsigned);
 
 
 };
