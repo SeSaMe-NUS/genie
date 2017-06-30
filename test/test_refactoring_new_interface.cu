@@ -21,9 +21,7 @@ int main()
 	// configure GENIE and get the execution policy
 	Config config = Config()
 		.SetK(5)
-		.SetQueryRange(0)
-		.SetNumOfQuery(5)
-		.SetGpuId(0);
+		.SetNumOfQuery(5);
 	shared_ptr<ExecutionPolicy> policy = ExecutionPolicyFactory::MakePolicy(config);
 
 	// search with GENIE using the execution policy

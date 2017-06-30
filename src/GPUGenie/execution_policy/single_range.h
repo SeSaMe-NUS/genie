@@ -22,6 +22,7 @@ class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
 				std::vector<GPUGenie::query>& queries) override final;
 		virtual genie::SearchResult KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
 				std::vector<std::vector<GPUGenie::query> >& queries) override final;
+		virtual void Validate() override final;
 		void SetQueryRange(uint32_t query_range);
 };
 

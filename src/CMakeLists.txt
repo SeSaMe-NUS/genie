@@ -23,6 +23,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/interface/io.cu
   GPUGenie/execution_policy/single_value.cu
   GPUGenie/execution_policy/single_range.cu
+  GPUGenie/execution_policy/validation.cc
   GPUGenie/exception/exception.cc
   GPUGenie/table/interface.cu
   GPUGenie/query/interface.cu

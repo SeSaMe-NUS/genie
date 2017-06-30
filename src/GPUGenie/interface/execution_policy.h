@@ -28,6 +28,7 @@ class ExecutionPolicy {
 		virtual genie::SearchResult KnnSearch(
 			std::vector<std::shared_ptr<GPUGenie::inv_table> >& tables,
 			std::vector<std::vector<GPUGenie::query> >& queries) = 0;
+		virtual void Validate();
 		void SetK(uint32_t k);
 		void SetNumOfQuery(uint32_t num_of_query);
 		uint32_t GetNumOfQuery();

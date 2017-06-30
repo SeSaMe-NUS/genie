@@ -2,6 +2,7 @@
 #include <GPUGenie/query/interface.h>
 #include <GPUGenie/matching/interface.h>
 #include <GPUGenie/exception/exception.h>
+#include "validation.h"
 #include "single_range.h"
 
 using namespace std;
@@ -35,4 +36,10 @@ SearchResult genie::execution_policy::SingleRangeExecutionPolicy::KnnSearch(std:
 				std::vector<std::vector<GPUGenie::query> >& queries)
 {
 	throw genie::exception::NotImplementedException();
+}
+
+void genie::execution_policy::SingleRangeExecutionPolicy::Validate()
+{
+	ExecutionPolicy::Validate();
+	execution_policy::validation::ValidateQueryRange(query_range_);
 }
