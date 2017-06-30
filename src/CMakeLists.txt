@@ -1,6 +1,6 @@
 configure_file(
-  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
-  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
+	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
+	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
 )
 
 set( GENIE_COMPILATION_UNITS
@@ -17,6 +17,16 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/scan.cu
   GPUGenie/Logger.cu
   GPUGenie/Timing.cpp
+  GPUGenie/interface/config.cc
+  GPUGenie/interface/execution_policy.cu
+  GPUGenie/interface/search.cu
+  GPUGenie/interface/io.cu
+  GPUGenie/execution_policy/single_value.cu
+  GPUGenie/execution_policy/single_range.cu
+  GPUGenie/exception/exception.cc
+  GPUGenie/table/interface.cu
+  GPUGenie/query/interface.cu
+  GPUGenie/matching/interface.cu
 )
 
 set( GENIE_TOP_LEVEL_HEADER

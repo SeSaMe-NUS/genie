@@ -51,7 +51,8 @@ genie_add_test_case(test_hashtable_overflow
 genie_add_test_case(test_multiple_search
     test_multiple_search.cu)
 
-
+genie_add_test_case(test_refactoring_new_interface
+	test_refactoring_new_interface.cu)
 
 if (GENIE_COMPR)
     genie_add_test_case(test_compression_naive
@@ -77,7 +78,6 @@ if (GENIE_COMPR)
         
         # Relatively complicated workaround:
         #       http://stackoverflow.com/questions/24560001/how-to-set-cmake-cuda-nvcc-flags-per-cu-file
-
         set(CUDA_NVCC_FLAGS_BACKUP ${CUDA_NVCC_FLAGS})
         set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--compiler-options -mssse3)
 
