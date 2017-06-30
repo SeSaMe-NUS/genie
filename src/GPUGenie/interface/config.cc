@@ -1,6 +1,8 @@
 #include "config.h"
+#include <GPUGenie/exception/exception.h>
 
 using namespace genie;
+using namespace std;
 
 uint32_t genie::Config::GetK()
 {
@@ -15,11 +17,6 @@ uint32_t genie::Config::GetQueryRange()
 uint32_t genie::Config::GetNumOfQuery()
 {
 	return num_of_query_;
-}
-
-uint32_t genie::Config::GetHashtableSize()
-{
-	return hashtable_size_;
 }
 
 bool genie::Config::GetSaveToGpu()
@@ -50,12 +47,6 @@ Config& genie::Config::SetNumOfQuery(uint32_t num_of_query)
 	return *this;
 }
 
-Config& genie::Config::SetHashtableSize(uint32_t hashtable_size)
-{
-	hashtable_size_ = hashtable_size;
-	return *this;
-}
-
 Config& genie::Config::SetSaveToGpu(bool save_to_gpu)
 {
 	save_to_gpu_ = save_to_gpu;
@@ -66,4 +57,9 @@ Config& genie::Config::SetGpuId(uint8_t gpu_id)
 {
 	gpu_id_ = gpu_id;
 	return *this;
+}
+
+Config& genie::Config::LoadFromFile(string& filename)
+{
+	throw genie::exception::NotImplementedException();
 }
