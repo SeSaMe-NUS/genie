@@ -35,6 +35,9 @@ set(CMAKE_C_FLAGS "${genie_warnings}")
 set(CMAKE_CXX_FLAGS "${genie_warnings}")
 
 set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call")
+# Disable cudafe warning: "type qualifier is meaningless on cast type" occuring in boost::archive
+# https://stackoverflow.com/questions/14831051/how-to-disable-compiler-warnings-with-nvcc
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=cast_to_qualified_type\"")
 set(CMAKE_CUDA_FLAGS_DEBUG  "--debug --device-debug --generate-line-info")
 set(CMAKE_CUDA_FLAGS_RELEASE "--optimize 3 --generate-line-info -DNDEBUG")
 # set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO "--optimize 2 --generate-line-info")

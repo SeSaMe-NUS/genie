@@ -28,7 +28,6 @@ void testSerialization(GPUGenie::GPUGenie_Config &config)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
     GPUGenie::inv_table * table = nullptr;
-    GPUGenie::inv_compr_table * comprTable = nullptr;
     GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
