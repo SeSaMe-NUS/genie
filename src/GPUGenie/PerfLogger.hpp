@@ -145,7 +145,11 @@ public:
 
     void WriteLine(std::ofstream &ofs)
     {
-        ofs << GPUGenie::DeviceCodecFactory::getCompressionName(compr_) << ","
+        std::string codec_name("no");
+        #ifdef GENIE_COMPR 
+            codec_name = GPUGenie::DeviceCodecFactory::getCompressionName(compr_);
+        #endif
+        ofs << codec_name << ","
             << std::fixed << std::setprecision(3) << overall_time_ << ","
             << std::fixed << std::setprecision(3) << query_compilation_time_ << ","
             << std::fixed << std::setprecision(3) << preprocessing_time_ << ","
