@@ -13,6 +13,8 @@
 #include <map>
 #include <unordered_map>
 #include "inv_list.h"
+#include <boost/serialization/serialization.hpp>
+// #include "serialization.h"
 
 /*! \var typedef unsigned long long u64
  *  \brief A type definition for a 64-bit unsigned integer
@@ -20,6 +22,12 @@
 typedef unsigned long long u64;
 
 using namespace std;
+
+namespace GPUGenie { class inv_table; }
+namespace boost { namespace serialization {
+template <class Archive>
+void serialize(Archive &ar, GPUGenie::inv_table &table, const unsigned int);
+}}
 
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
@@ -573,8 +581,9 @@ public:
     get_gram_length_sequence();
 
 
-
-
+private:
+    friend class boost::serialization::access;
+    template <typename Ar> friend void boost::serialization::serialize(Ar&, GPUGenie::inv_table&, const unsigned);
 
 
 };

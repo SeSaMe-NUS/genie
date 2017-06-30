@@ -51,8 +51,15 @@ genie_add_test_case(test_hashtable_overflow
 genie_add_test_case(test_multiple_search
     test_multiple_search.cu)
 
+<<<<<<< master
 genie_add_test_case(test_refactoring_new_interface
 	test_refactoring_new_interface.cu)
+=======
+genie_add_test_case(test_serialization
+    test_serialization.cu)
+
+
+>>>>>>> Testing inplementation of free boost serializer on inv_table
 
 if (GENIE_COMPR)
     genie_add_test_case(test_compression_naive
