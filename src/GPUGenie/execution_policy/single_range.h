@@ -9,8 +9,10 @@ namespace genie {
 namespace execution_policy {
 
 class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
-	protected:
+	friend class genie::ExecutionPolicyFactory;
+	private:
 		uint32_t query_range_;
+		SingleRangeExecutionPolicy() = default;
 	public:
 		using genie::ExecutionPolicy::KnnSearch;
 		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(genie::TableData& table_data) override final;
@@ -18,6 +20,8 @@ class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
 				genie::QueryData& query_data) override final;
 		virtual genie::SearchResult KnnSearch(std::shared_ptr<GPUGenie::inv_table>& table,
 				std::vector<GPUGenie::query>& queries) override final;
+		virtual genie::SearchResult KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
+				std::vector<std::vector<GPUGenie::query> >& queries) override final;
 		void SetQueryRange(uint32_t query_range);
 };
 

@@ -14,48 +14,49 @@ shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(Config& co
 
 	if (0 != config.GetQueryRange())
 	{
-		shared_ptr<execution_policy::SingleRangeExecutionPolicy> policy = make_shared<execution_policy::SingleRangeExecutionPolicy>();
+		//shared_ptr<execution_policy::SingleRangeExecutionPolicy> policy = make_shared<execution_policy::SingleRangeExecutionPolicy>();
+		execution_policy::SingleRangeExecutionPolicy* policy = new execution_policy::SingleRangeExecutionPolicy();
 		policy->SetK(config.GetK());
 		policy->SetNumOfQuery(config.GetNumOfQuery());
 		policy->SetQueryRange(config.GetQueryRange());
-		generated_policy = policy;
+		generated_policy = shared_ptr<execution_policy::SingleRangeExecutionPolicy>(policy);
 	}
 	else
 	{
-		shared_ptr<execution_policy::SingleValueExecutionPolicy> policy = make_shared<execution_policy::SingleValueExecutionPolicy>();
+		execution_policy::SingleValueExecutionPolicy* policy = new execution_policy::SingleValueExecutionPolicy();
 		policy->SetK(config.GetK());
 		policy->SetNumOfQuery(config.GetNumOfQuery());
-		generated_policy = policy;
+		generated_policy = shared_ptr<execution_policy::SingleValueExecutionPolicy>(policy);
 	}
 
 	return generated_policy;
 }
 
-shared_ptr<GPUGenie::inv_table> genie::ExecutionPolicy::LoadTable(TableData& table_data)
-{
-	throw genie::exception::NotImplementedException();
-}
-
-vector<GPUGenie::query> genie::ExecutionPolicy::LoadQuery(
-	shared_ptr<GPUGenie::inv_table>& table,
-	QueryData& query_data)
-{
-	throw genie::exception::NotImplementedException();
-}
-
-SearchResult genie::ExecutionPolicy::KnnSearch(
-	shared_ptr<GPUGenie::inv_table>& table,
-	vector<GPUGenie::query>& queries)
-{
-	throw genie::exception::NotImplementedException();
-}
-
-SearchResult genie::ExecutionPolicy::KnnSearch(
-	vector<shared_ptr<GPUGenie::inv_table> >& tables,
-	vector<vector<GPUGenie::query> >& queries)
-{
-	throw genie::exception::NotImplementedException();
-}
+//shared_ptr<GPUGenie::inv_table> genie::ExecutionPolicy::LoadTable(TableData& table_data)
+//{
+//	throw genie::exception::NotImplementedException();
+//}
+//
+//vector<GPUGenie::query> genie::ExecutionPolicy::LoadQuery(
+//	shared_ptr<GPUGenie::inv_table>& table,
+//	QueryData& query_data)
+//{
+//	throw genie::exception::NotImplementedException();
+//}
+//
+//SearchResult genie::ExecutionPolicy::KnnSearch(
+//	shared_ptr<GPUGenie::inv_table>& table,
+//	vector<GPUGenie::query>& queries)
+//{
+//	throw genie::exception::NotImplementedException();
+//}
+//
+//SearchResult genie::ExecutionPolicy::KnnSearch(
+//	vector<shared_ptr<GPUGenie::inv_table> >& tables,
+//	vector<vector<GPUGenie::query> >& queries)
+//{
+//	throw genie::exception::NotImplementedException();
+//}
 
 void genie::ExecutionPolicy::SetK(uint32_t k)
 {

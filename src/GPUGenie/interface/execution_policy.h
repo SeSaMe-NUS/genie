@@ -18,16 +18,16 @@ class ExecutionPolicy {
 		uint32_t num_of_query_;
 	public:
 		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(
-			genie::TableData& table_data);
+			genie::TableData& table_data) = 0;
 		virtual std::vector<GPUGenie::query> LoadQuery(
 			std::shared_ptr<GPUGenie::inv_table>& table,
-			genie::QueryData& query_data);
+			genie::QueryData& query_data) = 0;
 		virtual genie::SearchResult KnnSearch(
 			std::shared_ptr<GPUGenie::inv_table>& table,
-			std::vector<GPUGenie::query>& queries);
+			std::vector<GPUGenie::query>& queries) = 0;
 		virtual genie::SearchResult KnnSearch(
 			std::vector<std::shared_ptr<GPUGenie::inv_table> >& tables,
-			std::vector<std::vector<GPUGenie::query> >& queries);
+			std::vector<std::vector<GPUGenie::query> >& queries) = 0;
 		void SetK(uint32_t k);
 		void SetNumOfQuery(uint32_t num_of_query);
 		uint32_t GetNumOfQuery();

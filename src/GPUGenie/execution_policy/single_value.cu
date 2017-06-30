@@ -1,6 +1,7 @@
 #include <GPUGenie/table/interface.h>
 #include <GPUGenie/query/interface.h>
 #include <GPUGenie/matching/interface.h>
+#include <GPUGenie/exception/exception.h>
 #include "single_value.h"
 
 using namespace std;
@@ -23,4 +24,10 @@ SearchResult genie::execution_policy::SingleValueExecutionPolicy::KnnSearch(shar
 		vector<GPUGenie::query>& queries)
 {
 	return matching::Match(table, queries, dim_, k_);
+}
+
+SearchResult genie::execution_policy::SingleValueExecutionPolicy::KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
+				std::vector<std::vector<GPUGenie::query> >& queries)
+{
+	throw genie::exception::NotImplementedException();
 }

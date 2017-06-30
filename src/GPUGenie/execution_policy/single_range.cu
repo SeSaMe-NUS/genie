@@ -1,6 +1,7 @@
 #include <GPUGenie/table/interface.h>
 #include <GPUGenie/query/interface.h>
 #include <GPUGenie/matching/interface.h>
+#include <GPUGenie/exception/exception.h>
 #include "single_range.h"
 
 using namespace std;
@@ -28,4 +29,10 @@ SearchResult genie::execution_policy::SingleRangeExecutionPolicy::KnnSearch(shar
 void genie::execution_policy::SingleRangeExecutionPolicy::SetQueryRange(uint32_t query_range)
 {
 	query_range_ = query_range;
+}
+
+SearchResult genie::execution_policy::SingleRangeExecutionPolicy::KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
+				std::vector<std::vector<GPUGenie::query> >& queries)
+{
+	throw genie::exception::NotImplementedException();
 }
