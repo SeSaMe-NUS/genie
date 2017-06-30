@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
 project("GPUGenie"
   VERSION 0.1
@@ -11,7 +11,7 @@ enable_testing()
 include(CheckCXXCompilerFlag)
 include(ExternalProject)
 
-option(GENIE_COMPR "Build compression module" ON)
+option(GENIE_COMPR "Build compression module" OFF)
 option(GENIE_SIMDCAI "Build SIMDCAIR library (from Daniel Lemire) and related tests (COMPR must be ON)" OFF)
 option(GENIE_DISTRIBUTED "Build distributed GENIE" OFF)
 option(GENIE_EXAMPLES "Build GENIE examples" ON)

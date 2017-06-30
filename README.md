@@ -1,10 +1,10 @@
-# GPUGenie
+# GENIE
 
-GPUGenie is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then
-GPUGenie will consturct the inverted list table and transfer it to the device. GPUGenie provides a simple way to
+GENIE is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then
+GENIE will consturct the inverted list table and transfer it to the device. GENIE provides a simple way to
 perform the similarity queries. User may define queries and their matching ranges, then directly call the matching
 funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k
-search can also be simply perfromed. GPUGenie uses parallel searching to determine the top k values in a vector. It is
+search can also be simply perfromed. GENIE uses parallel searching to determine the top k values in a vector. It is
 much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not
 required to configure the device function call. Please refer to the following documents:
 
@@ -23,7 +23,7 @@ You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum req
 - OpenMPI 1.7 (for `GENIE_DISTRIBUTED` only)
 - Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
 
-To create an "out-of-source" build of GPUGenie containing both the GPUGenie library, tests and tools, you can use the
+To create an "out-of-source" build of GENIE containing both the GENIE library, tests and tools, you can use the
 standard CMake procedure:
 
 ```bash
@@ -35,13 +35,13 @@ $ make -j8
 Use target `$ make test` to run GENIE tests, `$ make doc` to build html code documentation, `$ make install` to install GENIE.
 
 `CMake` build parameters can be further configured using the following options:
-- `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Debug`)
+- `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Release`)
 - `CMAKE_INSTALL_PREFIX:PATH` -- `cmake`'s option for installation prefix (default `${CMAKE_BINARY_DIR}/install`)
 - `BOOST_ROOT:PATH` -- root dir of Boost libraries (default from system paths)
 - `DOXYGEN_EXECUTABLE:PATH` -- doxygen executable (default from system paths)
 - `MPI_HOME:PATH` -- root dir of OpenMPI installation (default from system paths)
 - `GENIE_DISTRIBUTED:BOOL` -- enable distributed GENIE module (default OFF)
-- `GENIE_COMPR:BOOL` -- enable compression GENIE module (default ON)
+- `GENIE_COMPR:BOOL` -- enable compression GENIE module (default OFF)
 - `GENIE_SIMDCAI:BOOL` -- enable compilation of SIMDCAI library (default OFF)
 - `GENIE_EXAMPLES:BOOL` -- enable compilation of GENIE examples (default ON)
 
@@ -67,7 +67,7 @@ of GENIE focused mainly on compression capability.
 
 To see all options of the compression performance toolkit, run:
 ```bash
-$ ./compression --help
+$ ./perftoolkit --help
 ```
 
 
@@ -210,5 +210,5 @@ $ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
 
 ## Documentation
 
-Code documentation for GPUGenie can be generated with `cmake` and `make`. After you configure CMake following steps in
+Code documentation for GENIE can be generated with `cmake` and `make`. After you configure CMake following steps in
 [Compilation and Development](#compilation-and-development), just run `$ make doc`.
