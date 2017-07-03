@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "execution_policy.h"
+#include "init.h"
 #include <GPUGenie/execution_policy/single_value.h>
 #include <GPUGenie/execution_policy/single_range.h>
 #include <GPUGenie/execution_policy/validation.h>
@@ -35,6 +36,7 @@ shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(Config& co
 	if (generated_policy)
 	{
 		generated_policy->Validate(); // will throw exception if the configuration is invalid
+		Init(config);
 		return generated_policy;
 	}
 	else

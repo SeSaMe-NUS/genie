@@ -21,6 +21,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/interface/execution_policy.cu
   GPUGenie/interface/search.cu
   GPUGenie/interface/io.cu
+  GPUGenie/interface/init.cu
   GPUGenie/execution_policy/single_value.cu
   GPUGenie/execution_policy/single_range.cu
   GPUGenie/execution_policy/validation.cc
