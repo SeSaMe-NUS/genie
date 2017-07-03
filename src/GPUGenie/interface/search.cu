@@ -8,8 +8,8 @@ using namespace std;
 using namespace genie;
 
 SearchResult genie::Search(shared_ptr<ExecutionPolicy>& policy,
-		string& table_filename,
-		string& query_filename)
+		const string& table_filename,
+		const string& query_filename)
 {
 	TableData table_data = ReadTableFromCsv(table_filename);
 	QueryData query_data = ReadQueryFromCsv(query_filename, policy);

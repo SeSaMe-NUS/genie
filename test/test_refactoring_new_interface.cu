@@ -23,11 +23,10 @@ int main()
 		.SetK(5)
 		.SetNumOfQuery(5);
 	shared_ptr<ExecutionPolicy> policy = ExecutionPolicyFactory::MakePolicy(config);
+	config.DisplayConfiguration();
 
 	// search with GENIE using the execution policy
-	string table_file = "../static/sift_20.csv";
-	string query_file = "../static/sift_20.csv";
-	SearchResult result = Search(policy, table_file, query_file);
+	SearchResult result = Search(policy, "../static/sift_20.csv", "../static/sift_20.csv");
 
 	assert(result.first[0] == 0);
 	assert(result.second[0] == 5);

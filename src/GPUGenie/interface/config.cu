@@ -1,4 +1,5 @@
 #include "config.h"
+#include <GPUGenie.h>
 #include <GPUGenie/exception/exception.h>
 
 using namespace genie;

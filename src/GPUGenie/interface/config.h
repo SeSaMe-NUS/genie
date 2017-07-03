@@ -34,6 +34,7 @@ class Config {
 		bool IsQueryRangeSet();
 		bool IsNumOfQuerySet();
 		void Validate();
+		void DisplayConfiguration();
 };
 
 } // end of namespace genie

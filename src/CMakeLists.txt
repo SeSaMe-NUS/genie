@@ -17,7 +17,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/scan.cu
   GPUGenie/Logger.cu
   GPUGenie/Timing.cpp
-  GPUGenie/interface/config.cc
+  GPUGenie/interface/config.cu
   GPUGenie/interface/execution_policy.cu
   GPUGenie/interface/search.cu
   GPUGenie/interface/io.cu

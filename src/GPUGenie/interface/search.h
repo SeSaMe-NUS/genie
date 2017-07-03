@@ -11,8 +11,8 @@
 namespace genie {
 
 SearchResult Search(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::string& table_filename,
-		std::string& query_filename);
+		const std::string& table_filename,
+		const std::string& query_filename);
 
 std::shared_ptr<GPUGenie::inv_table> LoadTable(std::shared_ptr<genie::ExecutionPolicy>& policy,
 		TableData& table_data);
