@@ -17,6 +17,7 @@
 
 #include "inv_table.h"
 
+
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
  */
@@ -186,6 +187,12 @@ public:
      */
     static bool
     read(const char* filename, inv_compr_table*& table);
+
+
+private:
+    friend class boost::serialization::access;
+    template <typename Ar> friend void boost::serialization::load(Ar&, GPUGenie::inv_table&, const unsigned);
+    template <typename Ar> friend void boost::serialization::save(Ar&, const GPUGenie::inv_table&, const unsigned);
 
 };
 }

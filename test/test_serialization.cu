@@ -24,15 +24,15 @@ using namespace std;
 using namespace GPUGenie;
 
 
-void testSerialization(GPUGenie::GPUGenie_Config &config)
+void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
     GPUGenie::inv_table * table = nullptr;
+    GPUGenie::inv_compr_table * ctable = nullptr;
     GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
 
-    string inv_filename("/tmp/genie_test_serialization.invtable");
     Logger::log(Logger::INFO, "Saving inverted table to file...");
     {
         std::ofstream ofs(inv_filename.c_str());
@@ -67,15 +67,16 @@ int main(int argc, char* argv[])
     GPUGenie::GPUGenie_Config config;
     config.data_points = &data;
     config.data_type = 0;
+    config.posting_list_max_length = 1024;
     GPUGenie::read_file(data, dataFile.c_str(), -1);
 
     // Test inv_table
     config.compression = NO_COMPRESSION;
-    testSerialization(config);
+    testSerialization(config,"/tmp/genie_test_serialization.invtable");
 
     // Test inv_compr_table
     config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
-    testSerialization(config);
+    testSerialization(config,"/tmp/genie_test_serialization.cinvtable");
 
     return 0;
 }

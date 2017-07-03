@@ -14,7 +14,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/genie_errors.cu
   GPUGenie/inv_list.cu
   GPUGenie/inv_table.cu
-  GPUGenie/serialization.cc
+  GPUGenie/serialization.cu
   GPUGenie/query.cu
   GPUGenie/match.cu
   GPUGenie/match_common.cu
