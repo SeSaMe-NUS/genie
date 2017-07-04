@@ -12,7 +12,7 @@ namespace genie {
 
 TableData ReadTableFromCsv(const std::string& filename);
 std::shared_ptr<GPUGenie::inv_table> ReadTableFromBinary(const std::string& filename);
-QueryData ReadQueryFromCsv(const std::string& filename, std::shared_ptr<ExecutionPolicy>& policy);
+QueryData ReadQueryFromCsv(const std::string& filename, const std::shared_ptr<const ExecutionPolicy>& policy);
 
 } // end of namespace genie
 

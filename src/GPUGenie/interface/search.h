@@ -15,15 +15,15 @@ SearchResult Search(std::shared_ptr<genie::ExecutionPolicy>& policy,
 		const std::string& query_filename);
 
 std::shared_ptr<GPUGenie::inv_table> BuildTable(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		TableData& table_data);
+		const TableData& table_data);
 
 std::vector<GPUGenie::query> BuildQuery(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::shared_ptr<GPUGenie::inv_table>& table,
-		QueryData& query_data);
+		const std::shared_ptr<GPUGenie::inv_table>& table,
+		const QueryData& query_data);
 
 SearchResult Match(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::shared_ptr<GPUGenie::inv_table>& table,
-		std::vector<GPUGenie::query>& queries);
+		const std::shared_ptr<GPUGenie::inv_table>& table,
+		const std::vector<GPUGenie::query>& queries);
 
 } // end of namespace genie
 

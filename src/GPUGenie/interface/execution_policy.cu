@@ -10,7 +10,7 @@
 using namespace genie;
 using namespace std;
 
-shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(Config& config)
+shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(const Config& config)
 {
 	config.Validate();
 
@@ -36,24 +36,24 @@ shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(Config& co
 	if (generated_policy)
 	{
 		generated_policy->Validate(); // will throw exception if the configuration is invalid
-		Init(config);
+		Init(const_cast<Config&>(config));
 		return generated_policy;
 	}
 	else
 		throw exception::InvalidConfigurationException("No execution policy is available for the configuration");
 }
 
-void genie::ExecutionPolicy::SetK(uint32_t k)
+void genie::ExecutionPolicy::SetK(const uint32_t k)
 {
 	k_ = k;
 }
 
-void genie::ExecutionPolicy::SetNumOfQuery(uint32_t num_of_query)
+void genie::ExecutionPolicy::SetNumOfQuery(const uint32_t num_of_query)
 {
 	num_of_query_ = num_of_query;
 }
 
-uint32_t genie::ExecutionPolicy::GetNumOfQuery()
+uint32_t genie::ExecutionPolicy::GetNumOfQuery() const
 {
 	return num_of_query_;
 }

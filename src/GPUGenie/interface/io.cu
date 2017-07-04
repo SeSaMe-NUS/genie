@@ -21,7 +21,7 @@ shared_ptr<GPUGenie::inv_table> genie::ReadTableFromBinary(const string& filenam
 	return table;
 }
 
-QueryData genie::ReadQueryFromCsv(const string& filename, shared_ptr<ExecutionPolicy>& policy)
+QueryData genie::ReadQueryFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
 {
 	QueryData query_data;
 	GPUGenie::read_file(query_data, filename.c_str(), policy->GetNumOfQuery());

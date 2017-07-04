@@ -22,21 +22,21 @@ SearchResult genie::Search(shared_ptr<ExecutionPolicy>& policy,
 }
 
 shared_ptr<GPUGenie::inv_table> genie::BuildTable(shared_ptr<genie::ExecutionPolicy>& policy,
-		TableData& table_data)
+		const TableData& table_data)
 {
 	return policy->BuildTable(table_data);
 }
 
 vector<GPUGenie::query> genie::BuildQuery(shared_ptr<genie::ExecutionPolicy>& policy,
-		shared_ptr<GPUGenie::inv_table>& table,
-		QueryData& query_data)
+		const shared_ptr<GPUGenie::inv_table>& table,
+		const QueryData& query_data)
 {
 	return policy->BuildQuery(table, query_data);
 }
 
 SearchResult genie::Match(shared_ptr<genie::ExecutionPolicy>& policy,
-		shared_ptr<GPUGenie::inv_table>& table,
-		vector<GPUGenie::query>& queries)
+		const shared_ptr<GPUGenie::inv_table>& table,
+		const vector<GPUGenie::query>& queries)
 {
 	return policy->Match(table, queries);
 }

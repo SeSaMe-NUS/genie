@@ -18,22 +18,22 @@ class Config {
 		bool query_range_initialized_ = false;
 		bool num_of_query_initialized_ = false;
 	public:
-		uint32_t GetK();
-		uint32_t GetQueryRange();
-		uint32_t GetNumOfQuery();
-		bool GetSaveToGpu();
-		uint8_t GetGpuId();
-		Config& SetK(uint32_t k);
-		Config& SetQueryRange(uint32_t query_range);
-		Config& SetNumOfQuery(uint32_t num_of_query);
-		Config& SetSaveToGpu(bool save_to_gpu);
-		Config& SetGpuId(uint8_t gpu_id);
-		Config& LoadFromFile(std::string& filename);
+		uint32_t GetK() const;
+		uint32_t GetQueryRange() const;
+		uint32_t GetNumOfQuery() const;
+		bool GetSaveToGpu() const;
+		uint8_t GetGpuId() const;
+		Config& SetK(const uint32_t k);
+		Config& SetQueryRange(const uint32_t query_range);
+		Config& SetNumOfQuery(const uint32_t num_of_query);
+		Config& SetSaveToGpu(const bool save_to_gpu);
+		Config& SetGpuId(const uint8_t gpu_id);
+		Config& LoadFromFile(const std::string& filename);
 		// helper functions
-		bool IsKSet();
-		bool IsQueryRangeSet();
-		bool IsNumOfQuerySet();
-		void Validate();
+		bool IsKSet() const;
+		bool IsQueryRangeSet() const;
+		bool IsNumOfQuerySet() const;
+		void Validate() const;
 		void DisplayConfiguration();
 };
 
