@@ -17,15 +17,15 @@ class ExecutionPolicy {
 		uint32_t dim_;
 		uint32_t num_of_query_;
 	public:
-		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(
+		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(
 			genie::TableData& table_data) = 0;
-		virtual std::vector<GPUGenie::query> LoadQuery(
+		virtual std::vector<GPUGenie::query> BuildQuery(
 			std::shared_ptr<GPUGenie::inv_table>& table,
 			genie::QueryData& query_data) = 0;
-		virtual genie::SearchResult KnnSearch(
+		virtual genie::SearchResult Match(
 			std::shared_ptr<GPUGenie::inv_table>& table,
 			std::vector<GPUGenie::query>& queries) = 0;
-		virtual genie::SearchResult KnnSearch(
+		virtual genie::SearchResult Match(
 			std::vector<std::shared_ptr<GPUGenie::inv_table> >& tables,
 			std::vector<std::vector<GPUGenie::query> >& queries) = 0;
 		virtual void Validate();

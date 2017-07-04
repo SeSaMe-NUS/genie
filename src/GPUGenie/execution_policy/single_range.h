@@ -14,13 +14,12 @@ class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
 		uint32_t query_range_;
 		SingleRangeExecutionPolicy() = default;
 	public:
-		using genie::ExecutionPolicy::KnnSearch;
-		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(genie::TableData& table_data) override final;
-		virtual std::vector<GPUGenie::query> LoadQuery(std::shared_ptr<GPUGenie::inv_table>& table,
+		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(genie::TableData& table_data) override final;
+		virtual std::vector<GPUGenie::query> BuildQuery(std::shared_ptr<GPUGenie::inv_table>& table,
 				genie::QueryData& query_data) override final;
-		virtual genie::SearchResult KnnSearch(std::shared_ptr<GPUGenie::inv_table>& table,
+		virtual genie::SearchResult Match(std::shared_ptr<GPUGenie::inv_table>& table,
 				std::vector<GPUGenie::query>& queries) override final;
-		virtual genie::SearchResult KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
+		virtual genie::SearchResult Match(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
 				std::vector<std::vector<GPUGenie::query> >& queries) override final;
 		virtual void Validate() override final;
 		void SetQueryRange(uint32_t query_range);
