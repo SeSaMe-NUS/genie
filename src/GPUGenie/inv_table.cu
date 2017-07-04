@@ -213,13 +213,13 @@ GPUGenie::inv_table::set_total_num_of_table(int num)
 }
 
 int
-GPUGenie::inv_table::get_table_index()
+GPUGenie::inv_table::get_table_index() const
 {
     return table_index;
 }
     
 int
-GPUGenie::inv_table::get_total_num_of_table()
+GPUGenie::inv_table::get_total_num_of_table() const
 {
     return total_num_of_table;
 }

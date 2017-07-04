@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <memory>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -24,15 +25,47 @@ using namespace std;
 using namespace GPUGenie;
 
 
-void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
+void testSimpleSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
     GPUGenie::inv_table * table = nullptr;
-    GPUGenie::inv_compr_table * ctable = nullptr;
     GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
 
+    Logger::log(Logger::INFO, "Saving inverted table to file...");
+    genie::util::SaveTable(inv_filename, table);
+
+    Logger::log(Logger::INFO, "Loading inverted table from file...");
+    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::util::LoadTable(inv_filename);
+
+    Logger::log(Logger::INFO, "Checking loaded table correctness...");
+
+    // assert(table->table_index == loaded_table->table_index);
+
+    if (config.compression)
+    {
+        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(loaded_table.get());
+        assert(ctable);
+    }
+
+
+    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
+    delete[] table;
+}
+
+/**
+ * Run a test of inverted table serialization using custom boost arhive class, i.e. create new template instance of the
+ * serialization functions of the inverted table
+ */
+void testCustomSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
+{
+    Logger::log(Logger::INFO, "Preprocessing inverted table...");
+    GPUGenie::inv_table * table = nullptr;
+    GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
+    assert(table != nullptr);
+    assert(table->build_status() == inv_table::builded);
+    
     Logger::log(Logger::INFO, "Saving inverted table to file...");
     {
         std::ofstream ofs(inv_filename.c_str());
@@ -72,11 +105,19 @@ int main(int argc, char* argv[])
 
     // Test inv_table
     config.compression = NO_COMPRESSION;
-    testSerialization(config,"/tmp/genie_test_serialization.invtable");
+    testSimpleSerialization(config,"/tmp/genie_test_serialization.invtable");
 
     // Test inv_compr_table
     config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
-    testSerialization(config,"/tmp/genie_test_serialization.cinvtable");
+    testSimpleSerialization(config,"/tmp/genie_test_serialization.cinvtable");
+
+    // Test inv_table
+    config.compression = NO_COMPRESSION;
+    testCustomSerialization(config,"/tmp/genie_test_serialization.invtable.txt");
+
+    // Test inv_compr_table
+    config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
+    testCustomSerialization(config,"/tmp/genie_test_serialization.cinvtable.txt");
 
     return 0;
 }

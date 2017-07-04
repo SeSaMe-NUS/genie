@@ -296,7 +296,7 @@ public:
      *  \return The index of this table.
      */
     int
-    get_table_index();
+    get_table_index() const;
 
     /*! \fn int get_total_num_of_table()
      *  \brief return the total_num_of_table.
@@ -304,7 +304,7 @@ public:
      *  \return The total number of tables in the table array for one dataset.
      */
     int
-    get_total_num_of_table();
+    get_total_num_of_table() const;
 
 
     /*! \fn bool cpy_data_to_gpu()
