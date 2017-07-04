@@ -95,6 +95,7 @@ int main(int argc, char* argv[])
 {
     string dataFile = "../static/sift_20.csv";
 
+    Logger::set_level(Logger::DEBUG);
     Logger::log(Logger::INFO, "Reading csv data file %s ...", dataFile.c_str());
     std::vector<std::vector<int>> data;
     GPUGenie::GPUGenie_Config config;

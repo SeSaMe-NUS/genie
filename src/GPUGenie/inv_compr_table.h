@@ -13,6 +13,8 @@
 #include <memory>
 #include <string>
 
+#include <boost/serialization/base_object.hpp>
+
 #include "DeviceCodecFactory.h"
 
 #include "inv_table.h"
@@ -74,7 +76,7 @@ public:
      */
     size_t getUncompressedPostingListMaxLength() const;
 
-    void setUncompressedPostingListMaxLength(size_t length);
+        void setUncompressedPostingListMaxLength(size_t length);
 
     /* 
      * Returns compressed version of _inv (posting lists array)
@@ -188,14 +190,41 @@ public:
     static bool
     read(const char* filename, inv_compr_table*& table);
 
+    template <class Archive>
+    void load(Archive &ar, const unsigned int version)
+    {
+        Logger::log(Logger::DEBUG, "Loading inv_compr_table archive of version %d", version);
+        ar >> boost::serialization::base_object<inv_table>(*this);
+
+        ar >> m_isCompressed;
+        ar >> m_compression;
+        ar >> m_uncompressedInvListsMaxLength;
+        ar >> m_comprInv;
+        ar >> m_comprInvPos;
+
+    }
+
+    template <class Archive>
+    void save(Archive &ar, const unsigned int version) const
+    {
+        Logger::log(Logger::DEBUG, "Saving inv_compr_table archive of version %d", version);
+        ar << boost::serialization::base_object<inv_table>(*this);
+
+        ar << m_isCompressed;
+        ar << m_compression;
+        ar << m_uncompressedInvListsMaxLength;
+        ar << m_comprInv;
+        ar << m_comprInvPos;
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 private:
     friend class boost::serialization::access;
-    template <typename Ar> friend void boost::serialization::load(Ar&, GPUGenie::inv_table&, const unsigned);
-    template <typename Ar> friend void boost::serialization::save(Ar&, const GPUGenie::inv_table&, const unsigned);
 
 };
-}
 
+
+} 
 
 #endif

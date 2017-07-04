@@ -13,7 +13,14 @@
 #include <map>
 #include <unordered_map>
 #include "inv_list.h"
+
+#include "Logger.h"
 #include <boost/serialization/serialization.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/vector.hpp>
+
 // #include "serialization.h"
 
 /*! \var typedef unsigned long long u64
@@ -23,15 +30,6 @@ typedef unsigned long long u64;
 
 using namespace std;
 
-// Forward declaration of serialization functions
-// This can be removed and instead use #include "serialization.h", but only in case serialization.h does not define
-// the actual serialization functions (otherwise we get cross dependency). If serialize.h has only declarations, we
-// need to explicitly instantiate the functions for various Archive types.
-namespace GPUGenie { class inv_table; }
-namespace boost { namespace serialization {
-template <class Archive> void load(Archive &ar, GPUGenie::inv_table &table, const unsigned int);
-template <class Archive> void save(Archive &ar, const GPUGenie::inv_table &table, const unsigned int);
-}}
 
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
@@ -39,6 +37,7 @@ template <class Archive> void save(Archive &ar, const GPUGenie::inv_table &table
 namespace GPUGenie
 {
 
+class inv_compr_table;
 
 /*! \class inv_table
  *  \brief The declaration for class inv_table
@@ -585,11 +584,63 @@ public:
     get_gram_length_sequence();
 
 
+    template <class Archive>
+    void load(Archive &ar, const unsigned int version)
+    {
+        ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
+        Logger::log(Logger::DEBUG, "Loading inv_table archive of version %d", version);
+        ar >> table_index;
+        ar >> total_num_of_table;
+        ar >> _shifter;
+        ar >> _size;
+        ar >> _dim_size;
+        ar >> shift_bits_subsequence;
+        ar >> min_value_sequence;
+        ar >> max_value_sequence;
+        ar >> gram_length_sequence;
+        ar >> shift_bits_sequence;
+        ar >> _build_status;
+        ar >> _inv;
+        ar >> _inv_pos;
+        ar >> inv_list_lowerbound;
+        ar >> inv_list_upperbound;
+        ar >> posting_list_size;
+        ar >> _inv_index;
+        ar >> _inv_index_map;
+        ar >> _distinct_map;
+
+    }
+
+    template <class Archive>
+    void save(Archive &ar, const unsigned int version) const
+    {
+        ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
+        Logger::log(Logger::DEBUG, "Saving inv_table archive of version %d", version);
+        ar << table_index;
+        ar << total_num_of_table;
+        ar << _shifter;
+        ar << _size;
+        ar << _dim_size;
+        ar << shift_bits_subsequence;
+        ar << min_value_sequence;
+        ar << max_value_sequence;
+        ar << gram_length_sequence;
+        ar << shift_bits_sequence;
+        ar << _build_status;
+        ar << _inv;
+        ar << _inv_pos;
+        ar << inv_list_lowerbound;
+        ar << inv_list_upperbound;
+        ar << posting_list_size;
+        ar << _inv_index;
+        ar << _inv_index_map;
+        ar << _distinct_map;
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 private:
     friend class boost::serialization::access;
-    template <typename Ar> friend void boost::serialization::load(Ar&, GPUGenie::inv_table&, const unsigned);
-    template <typename Ar> friend void boost::serialization::save(Ar&, const GPUGenie::inv_table&, const unsigned);
-
 
 };
 }

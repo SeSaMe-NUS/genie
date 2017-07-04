@@ -15,16 +15,18 @@ genie::util::SaveTable(const std::string &filename, const GPUGenie::inv_table* t
 
     std::ofstream ofs(filename.c_str(), std::ios::binary | std::ios::trunc);
     boost::archive::text_oarchive oa(ofs);
-    oa << *table;
+    oa.register_type<GPUGenie::inv_compr_table>();
+    oa << table;
 }
 
 std::shared_ptr<GPUGenie::inv_table>
 genie::util::LoadTable(const std::string &filename)
 {
-    std::shared_ptr<GPUGenie::inv_table> loaded_table = make_shared<GPUGenie::inv_table>();
+    GPUGenie::inv_table *loaded_table = nullptr;
     std::ifstream ifs(filename.c_str(), std::ios::binary);
     boost::archive::text_iarchive ia(ifs);
-    ia >> *loaded_table;
-    return loaded_table;
+    ia.register_type<GPUGenie::inv_compr_table>();
+    ia >> loaded_table;
+    return shared_ptr<GPUGenie::inv_table>(loaded_table);
 }
 
