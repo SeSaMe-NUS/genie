@@ -17,25 +17,26 @@ class ExecutionPolicy {
 		uint32_t dim_;
 		uint32_t num_of_query_;
 	public:
-		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(
-			genie::TableData& table_data) = 0;
-		virtual std::vector<GPUGenie::query> LoadQuery(
-			std::shared_ptr<GPUGenie::inv_table>& table,
-			genie::QueryData& query_data) = 0;
-		virtual genie::SearchResult KnnSearch(
-			std::shared_ptr<GPUGenie::inv_table>& table,
-			std::vector<GPUGenie::query>& queries) = 0;
-		virtual genie::SearchResult KnnSearch(
-			std::vector<std::shared_ptr<GPUGenie::inv_table> >& tables,
-			std::vector<std::vector<GPUGenie::query> >& queries) = 0;
-		void SetK(uint32_t k);
-		void SetNumOfQuery(uint32_t num_of_query);
-		uint32_t GetNumOfQuery();
+		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(
+			const genie::TableData& table_data) = 0;
+		virtual std::vector<GPUGenie::query> BuildQuery(
+			const std::shared_ptr<const GPUGenie::inv_table>& table,
+			const genie::QueryData& query_data) = 0;
+		virtual genie::SearchResult Match(
+			const std::shared_ptr<const GPUGenie::inv_table>& table,
+			const std::vector<GPUGenie::query>& queries) = 0;
+		virtual genie::SearchResult Match(
+			const std::vector<std::shared_ptr<const GPUGenie::inv_table> >& tables,
+			const std::vector<std::vector<GPUGenie::query> >& queries) = 0;
+		virtual void Validate();
+		void SetK(const uint32_t k);
+		void SetNumOfQuery(const uint32_t num_of_query);
+		uint32_t GetNumOfQuery() const;
 };
 
 class ExecutionPolicyFactory {
 	public:
-		static std::shared_ptr<ExecutionPolicy> MakePolicy(Config& config);
+		static std::shared_ptr<ExecutionPolicy> MakePolicy(const Config& config);
 };
 
 } // end of namespace genie

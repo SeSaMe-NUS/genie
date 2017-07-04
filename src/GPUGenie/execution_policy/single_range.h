@@ -14,15 +14,19 @@ class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
 		uint32_t query_range_;
 		SingleRangeExecutionPolicy() = default;
 	public:
-		using genie::ExecutionPolicy::KnnSearch;
-		virtual std::shared_ptr<GPUGenie::inv_table> LoadTable(genie::TableData& table_data) override final;
-		virtual std::vector<GPUGenie::query> LoadQuery(std::shared_ptr<GPUGenie::inv_table>& table,
-				genie::QueryData& query_data) override final;
-		virtual genie::SearchResult KnnSearch(std::shared_ptr<GPUGenie::inv_table>& table,
-				std::vector<GPUGenie::query>& queries) override final;
-		virtual genie::SearchResult KnnSearch(std::vector<std::shared_ptr<GPUGenie::inv_table> >& table,
-				std::vector<std::vector<GPUGenie::query> >& queries) override final;
-		void SetQueryRange(uint32_t query_range);
+		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(
+				const genie::TableData& table_data) override final;
+		virtual std::vector<GPUGenie::query> BuildQuery(
+				const std::shared_ptr<const GPUGenie::inv_table>& table,
+				const genie::QueryData& query_data) override final;
+		virtual genie::SearchResult Match(
+				const std::shared_ptr<const GPUGenie::inv_table>& table,
+				const std::vector<GPUGenie::query>& queries) override final;
+		virtual genie::SearchResult Match(
+				const std::vector<std::shared_ptr<const GPUGenie::inv_table> >& table,
+				const std::vector<std::vector<GPUGenie::query> >& queries) override final;
+		virtual void Validate() override final;
+		void SetQueryRange(const uint32_t query_range);
 };
 
 }

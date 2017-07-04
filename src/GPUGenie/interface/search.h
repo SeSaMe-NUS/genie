@@ -11,19 +11,19 @@
 namespace genie {
 
 SearchResult Search(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::string& table_filename,
-		std::string& query_filename);
+		const std::string& table_filename,
+		const std::string& query_filename);
 
-std::shared_ptr<GPUGenie::inv_table> LoadTable(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		TableData& table_data);
+std::shared_ptr<GPUGenie::inv_table> BuildTable(std::shared_ptr<genie::ExecutionPolicy>& policy,
+		const TableData& table_data);
 
-std::vector<GPUGenie::query> LoadQuery(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::shared_ptr<GPUGenie::inv_table>& table,
-		QueryData& query_data);
+std::vector<GPUGenie::query> BuildQuery(std::shared_ptr<genie::ExecutionPolicy>& policy,
+		const std::shared_ptr<GPUGenie::inv_table>& table,
+		const QueryData& query_data);
 
-SearchResult KnnSearch(std::shared_ptr<genie::ExecutionPolicy>& policy,
-		std::shared_ptr<GPUGenie::inv_table>& table,
-		std::vector<GPUGenie::query>& queries);
+SearchResult Match(std::shared_ptr<genie::ExecutionPolicy>& policy,
+		const std::shared_ptr<GPUGenie::inv_table>& table,
+		const std::vector<GPUGenie::query>& queries);
 
 } // end of namespace genie
 

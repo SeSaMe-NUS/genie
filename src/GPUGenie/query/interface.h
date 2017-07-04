@@ -8,10 +8,10 @@
 namespace genie {
 namespace query {
 
-std::vector<GPUGenie::query> LoadQuery(std::shared_ptr<GPUGenie::inv_table>& table,
-		QueryData& query_data,
-		uint32_t query_range,
-		uint32_t k);
+std::vector<GPUGenie::query> LoadQuery(const std::shared_ptr<const GPUGenie::inv_table>& table,
+		const QueryData& query_data,
+		const uint32_t query_range,
+		const uint32_t k);
 
 }
 }

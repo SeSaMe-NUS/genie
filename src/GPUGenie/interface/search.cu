@@ -1,4 +1,5 @@
 #include <iostream>
+#include <GPUGenie/exception/exception.h>
 #include <GPUGenie/interface/types.h>
 #include <GPUGenie/interface/execution_policy.h>
 #include <GPUGenie/interface/io.h>
@@ -8,34 +9,34 @@ using namespace std;
 using namespace genie;
 
 SearchResult genie::Search(shared_ptr<ExecutionPolicy>& policy,
-		string& table_filename,
-		string& query_filename)
+		const string& table_filename,
+		const string& query_filename)
 {
 	TableData table_data = ReadTableFromCsv(table_filename);
 	QueryData query_data = ReadQueryFromCsv(query_filename, policy);
 
-	shared_ptr<GPUGenie::inv_table> table = LoadTable(policy, table_data);
-	vector<GPUGenie::query> queries = LoadQuery(policy, table, query_data);
+	shared_ptr<GPUGenie::inv_table> table = BuildTable(policy, table_data);
+	vector<GPUGenie::query> queries = BuildQuery(policy, table, query_data);
 
-	return KnnSearch(policy, table, queries);
+	return Match(policy, table, queries);
 }
 
-shared_ptr<GPUGenie::inv_table> genie::LoadTable(shared_ptr<genie::ExecutionPolicy>& policy,
-		TableData& table_data)
+shared_ptr<GPUGenie::inv_table> genie::BuildTable(shared_ptr<genie::ExecutionPolicy>& policy,
+		const TableData& table_data)
 {
-	return policy->LoadTable(table_data);
+	return policy->BuildTable(table_data);
 }
 
-vector<GPUGenie::query> genie::LoadQuery(shared_ptr<genie::ExecutionPolicy>& policy,
-		shared_ptr<GPUGenie::inv_table>& table,
-		QueryData& query_data)
+vector<GPUGenie::query> genie::BuildQuery(shared_ptr<genie::ExecutionPolicy>& policy,
+		const shared_ptr<GPUGenie::inv_table>& table,
+		const QueryData& query_data)
 {
-	return policy->LoadQuery(table, query_data);
+	return policy->BuildQuery(table, query_data);
 }
 
-SearchResult genie::KnnSearch(shared_ptr<genie::ExecutionPolicy>& policy,
-		shared_ptr<GPUGenie::inv_table>& table,
-		vector<GPUGenie::query>& queries)
+SearchResult genie::Match(shared_ptr<genie::ExecutionPolicy>& policy,
+		const shared_ptr<GPUGenie::inv_table>& table,
+		const vector<GPUGenie::query>& queries)
 {
-	return policy->KnnSearch(table, queries);
+	return policy->Match(table, queries);
 }

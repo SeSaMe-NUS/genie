@@ -2,16 +2,17 @@
 #define GENIE_MATCHING_INTERFACE_H_
 
 #include <memory>
+#include <vector>
 #include <GPUGenie.h>
 #include <GPUGenie/interface/types.h>
 
 namespace genie {
 namespace matching {
 
-SearchResult Match(std::shared_ptr<GPUGenie::inv_table>& table,
-		vector<GPUGenie::query>& queries,
-		uint32_t dim,
-		uint32_t k);
+SearchResult Match(const std::shared_ptr<const GPUGenie::inv_table>& table,
+		const std::vector<GPUGenie::query>& queries,
+		const uint32_t dim,
+		const uint32_t k);
 
 }
 }

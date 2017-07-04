@@ -8,7 +8,7 @@
 namespace genie {
 namespace table {
 
-std::shared_ptr<GPUGenie::inv_table> BuildTable(TableData& table_data);
+std::shared_ptr<GPUGenie::inv_table> BuildTable(const TableData& table_data);
 
 }
 }
