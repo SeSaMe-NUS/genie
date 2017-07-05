@@ -1,0 +1,20 @@
+var searchData=
+[
+  ['data_5f',['data_',['../structdata__.html',1,'']]],
+  ['data_5ft',['data_t',['../structgenie_1_1matching_1_1data__t.html',1,'genie::matching']]],
+  ['devicebitpackingcodec',['DeviceBitPackingCodec',['../classGPUGenie_1_1DeviceBitPackingCodec.html',1,'GPUGenie']]],
+  ['devicebitpackinghelpers',['DeviceBitPackingHelpers',['../structGPUGenie_1_1DeviceBitPackingHelpers.html',1,'GPUGenie']]],
+  ['devicebitpackingprefixedcodec',['DeviceBitPackingPrefixedCodec',['../classGPUGenie_1_1DeviceBitPackingPrefixedCodec.html',1,'GPUGenie']]],
+  ['devicecodecfactory',['DeviceCodecFactory',['../classGPUGenie_1_1DeviceCodecFactory.html',1,'GPUGenie']]],
+  ['devicecompositecodec',['DeviceCompositeCodec',['../classGPUGenie_1_1DeviceCompositeCodec.html',1,'GPUGenie']]],
+  ['devicecopycodec',['DeviceCopyCodec',['../classGPUGenie_1_1DeviceCopyCodec.html',1,'GPUGenie']]],
+  ['devicecopymultiblockcodec',['DeviceCopyMultiblockCodec',['../classGPUGenie_1_1DeviceCopyMultiblockCodec.html',1,'GPUGenie']]],
+  ['devicedeltacodec',['DeviceDeltaCodec',['../classGPUGenie_1_1DeviceDeltaCodec.html',1,'GPUGenie']]],
+  ['devicedeltahelper',['DeviceDeltaHelper',['../structGPUGenie_1_1DeviceDeltaHelper.html',1,'GPUGenie']]],
+  ['deviceintegercodec',['DeviceIntegerCODEC',['../classGPUGenie_1_1DeviceIntegerCODEC.html',1,'GPUGenie']]],
+  ['deviceintegratedblockpacker',['DeviceIntegratedBlockPacker',['../structGPUGenie_1_1DeviceBitPackingCodec_1_1DeviceIntegratedBlockPacker.html',1,'GPUGenie::DeviceBitPackingCodec']]],
+  ['devicenodeltablockpacker',['DeviceNoDeltaBlockPacker',['../structGPUGenie_1_1DeviceBitPackingCodec_1_1DeviceNoDeltaBlockPacker.html',1,'GPUGenie::DeviceBitPackingCodec']]],
+  ['deviceserialcodec',['DeviceSerialCodec',['../classGPUGenie_1_1DeviceSerialCodec.html',1,'GPUGenie']]],
+  ['devicevarintcodec',['DeviceVarintCodec',['../classGPUGenie_1_1DeviceVarintCodec.html',1,'GPUGenie']]],
+  ['dim',['dim',['../structGPUGenie_1_1query_1_1dim.html',1,'GPUGenie::query']]]
+];
