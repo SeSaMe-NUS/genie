@@ -45,6 +45,7 @@ genie::util::LoadTable(const std::string &filename)
 //     template<> struct version<gps_position> {BOOST_STATIC_CONSTANT(int, value = APP_INT_VERSION); };
 // }}
 BOOST_CLASS_VERSION(GPUGenie::inv_table, 0);
+BOOST_CLASS_VERSION(GPUGenie::inv_compr_table, 0);
 
 
 template <class Archive>
