@@ -25,7 +25,8 @@
 #include <GPUGenie/DeviceSerialCodec.h>
 #include <GPUGenie/DeviceBitPackingCodec.h>
 #include <GPUGenie/DeviceVarintCodec.h>
-#include <GPUGenie/scan.h> 
+#include <GPUGenie/scan.h>
+#include <GPUGenie/interface/io.h>
 
 #include "table_analyzer.hpp"
 
@@ -588,13 +589,8 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         verifyTableCompression(comprTable);
     }
 
-    if (!inv_table::write(binaryInvTableFile.c_str(), table)) {
-        Logger::log(Logger::ALERT, "Error writing inverted table to binary file %s!", binaryInvTableFile.c_str());
-        return std::string();
-    }
-
-    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
-    delete[] table;
+    std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    genie::SaveTableToBinary(binaryInvTableFile, sp_table);
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
@@ -605,15 +601,7 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    GPUGenie::inv_table *table;
-    if (!config.compression){
-        GPUGenie::inv_table::read(binaryInvTableFile.c_str(), table);
-    }
-    else {
-        GPUGenie::inv_compr_table *comprTable;
-        GPUGenie::inv_compr_table::read(binaryInvTableFile.c_str(), comprTable);
-        table = comprTable;
-    }
+    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     GPUGenie::read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
@@ -637,13 +625,13 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
 
     if (config.compression)
     {
-        GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-        genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Log().ComprRatio(comprTable->getCompressionRatio());
+        GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table.get());
+        genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Log().ComprRatio(
+            comprTable->getCompressionRatio());
     }
     genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Next();
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
-    delete[] table;
 }
 
 
@@ -854,15 +842,7 @@ void AnalyzeInvertedTable(const std::string &data_file, const std::string &codec
         Logger::log(Logger::INFO, "Analyzing table %s with compression %s...",
                 binary_table_file.c_str(), DeviceCodecFactory::getCompressionName(compr).c_str());
 
-        GPUGenie::inv_table *table;
-        if (compr == NO_COMPRESSION){
-            GPUGenie::inv_table::read(binary_table_file.c_str(), table);
-        }
-        else {
-            GPUGenie::inv_compr_table *comprTable;
-            GPUGenie::inv_compr_table::read(binary_table_file.c_str(), comprTable);
-            table = comprTable;
-        }
+        std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binary_table_file);
 
         perftoolkit::TableAnalyzer::Analyze(table, dest_dir);
     }

@@ -18,6 +18,7 @@ TableData ReadTableFromCsv(const std::string& filename);
  * \brief Reads data from a binary file and returns pre-built table.
  */
 std::shared_ptr<GPUGenie::inv_table> ReadTableFromBinary(const std::string& filename);
+void SaveTableToBinary(const std::string& filename, const std::shared_ptr<const GPUGenie::inv_table> &table);
 /*!
  * \brief Reads query from a CSV file and returns in QueryData format.
  */

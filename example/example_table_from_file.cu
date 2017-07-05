@@ -8,6 +8,8 @@
  */
 
 #include "GPUGenie.h" //for ide: change from "GPUGenie.h" to "../src/GPUGenie.h"
+#include <GPUGenie/interface/io.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -24,7 +26,6 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<std::vector<int> > queries;
 	std::vector<attr_t> multirange_queries;
 	//std::vector<std::vector<int> > data;
-	inv_table table;
     GPUGenie::GPUGenie_Config config;
 
 	string  dataFile = "../static/tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
@@ -108,17 +109,16 @@ int main(int argc, char * argv[])//for ide: from main to main4
     preprocess_for_knn_binary(config, __table);
 
     u64 s1 = getTime();
-    inv_table::write("../static/table.dat", __table);
+    std::shared_ptr<const GPUGenie::inv_table> sp_table(__table, [](inv_table* ptr){delete[] ptr;});
+    genie::SaveTableToBinary("../static/table.dat", sp_table);
     u64 e1 = getTime();
 
     double time1 = getInterval(s1, e1);
     cout<<"time1 = "<<time1<<endl;
-    delete[] __table;
   
   //  unsigned int table_num = 1;
-    inv_table * _table = NULL;
     u64 s2 = getTime();
-    inv_table::read("../static/table.dat", _table);
+    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary("../static/table.dat");
     u64 e2 = getTime();
 
     double time2 = getInterval(s2, e2);
@@ -129,7 +129,8 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	u64 start = getTime();
 	//GPUGenie::knn_search(result, result_count, config);
-    knn_search_after_preprocess(config, _table, result, result_count);
+    inv_table * rawptr_table = table.get();
+    knn_search_after_preprocess(config, rawptr_table, result, result_count);
 	u64 end = getTime();
 	double elapsed = getInterval(start, end);
 
