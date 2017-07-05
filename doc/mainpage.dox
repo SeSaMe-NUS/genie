@@ -1,0 +1,96 @@
+/*! \mainpage User's guide
+ *
+ * \section overview_sec Overview
+ *
+ * GENIE is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then GENIE will consturct the inverted list table and transfer it to the device. GENIE provides a simple way to perform the similarity queries. User may define queries and their matching ranges, then directly call the matching funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k search can also be simply perfromed. GENIE uses parallel searching to determine the top k values in a vector. It is much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not required to configure the device function call. Please refer to the following documents:
+ *
+ * > Generic Inverted Index on the GPU, Technical Report (TR 11/15), School of Computing, NUS. <br>
+ * > Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/~atung/publication/gpugenie.pdf
+ *
+ * \section install_sec Installation
+ *
+ * You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum required versions are:
+ *
+ * - GCC with C++11 support (4.8)
+ * - CMake 3.8
+ * - CUDA 7.0
+ * - OpenMPI 1.7 (for `GENIE_DISTRIBUTED` only)
+ * - Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
+ * 
+ * To create an "out-of-source" build of GENIE containing both the GENIE library, tests and tools, you can use the
+ * standard CMake procedure:
+ * 
+ * ```bash
+ * $ mkdir build
+ * $ cd build
+ * $ cmake ..
+ * $ make -j8
+ * ```
+ *
+ * Use target `$ make test` to run GENIE tests, `$ make doc` to build html code documentation, `$ make install` to install GENIE.
+ * 
+ * `CMake` build parameters can be further configured using the following options:
+ *
+ * - `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Release`)
+ * - `CMAKE_INSTALL_PREFIX:PATH` -- `cmake`'s option for installation prefix (default `${CMAKE_BINARY_DIR}/install`)
+ * - `BOOST_ROOT:PATH` -- root dir of Boost libraries (default from system paths)
+ * - `DOXYGEN_EXECUTABLE:PATH` -- doxygen executable (default from system paths)
+ * - `MPI_HOME:PATH` -- root dir of OpenMPI installation (default from system paths)
+ * - `GENIE_DISTRIBUTED:BOOL` -- enable distributed GENIE module (default OFF)
+ * - `GENIE_COMPR:BOOL` -- enable compression GENIE module (default OFF)
+ * - `GENIE_SIMDCAI:BOOL` -- enable compilation of SIMDCAI library (default OFF)
+ * - `GENIE_EXAMPLES:BOOL` -- enable compilation of GENIE examples (default ON)
+ * 
+ * Example use of `cmake` command may look like this:
+ *
+ * ```bash
+ * $ cmake -DGENIE_SIMDCAI=ON -DCMAKE_BUILD_TYPE=Release -DGENIE_DISTRIBUTED=ON -DGENIE_COMPR=ON \
+ *         -DBOOST_ROOT=/home/lubos/boost -DCMAKE_INSTALL_PREFIX=/home/lubos/genie-install ..
+ * ```
+ *
+ * \section usage_sec Usage
+ *
+ * \subsection usage_executable_sec Using the executable
+ *
+ * To be added.
+ *
+ * \subsection usage_library_sec Using GENIE as a library
+ * 
+ * The GENIE interface consists of 2 important classes. The `genie::Config` class is used to set configurations for GENIE.
+ * The `genie::ExecutionPolicy` class provides implementation for building table, building query, and matching.
+ *
+ * The interface also has several [functions](namespacegenie.html#func-members). The `genie::Search()`
+ * function is the 1st-level interface function for using GENIE. It accepts file paths to table and query CSV files and
+ * returns the result. There are also several 2nd-level interface functions, which are used by the `genie::Search()` function.
+ * They are
+ * - `genie::BuildTable()` for build the inverted index
+ * - `genie::BuildQuery()` for build the queries
+ * - `genie::Match()` for matching
+ *
+ * To use GENIE, it should first be configured with the `genie::Config` class. According to the configurations, a corresponding
+ * execution policy could be generated with the execution policy factory. Then the interface functions could be used to perform
+ * the search. Below is an example program demonstrating the usage of GENIE.
+ *
+ * ```cpp
+ * #include <memory>
+ * #include <GPUGenie/interface/genie.h>
+ * 
+ * using namespace std;
+ * using namespace genie;
+ * 
+ * int main()
+ * {
+ *     // configure GENIE and get the execution policy
+ *     Config config = Config()
+ *         .SetK(5)
+ *         .SetNumOfQuery(5);
+ *     shared_ptr<ExecutionPolicy> policy = ExecutionPolicyFactory::MakePolicy(config);
+ *     
+ *     // search with GENIE using the execution policy
+ *     SearchResult result = Search(policy, "../static/sift_20.csv", "../static/sift_20.csv");
+ *     
+ *     return EXIT_SUCCESS;
+ * }
+ * ```
+ * 
+ */
