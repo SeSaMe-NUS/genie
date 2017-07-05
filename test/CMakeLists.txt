@@ -24,9 +24,6 @@ genie_add_test_case(test_binary_input_multiload
 genie_add_test_case(test_save2gpu_sift
     test_save2gpu_sift.cu)
 
-genie_add_test_case(test_serialization_for_table
-    test_serialization_for_table.cu)
-
 genie_add_test_case(test_csv_input_tweets
     test_csv_input_tweets.cu)
 
