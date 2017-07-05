@@ -1,8 +1,10 @@
 #include <fstream>
 #include <memory>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
@@ -23,8 +25,13 @@ genie::util::SaveTable(const std::string &filename, const GPUGenie::inv_table* t
     if (table->get_table_index() != 0 || table->get_total_num_of_table() != 1)
         throw GPUGenie::genie_error("Saving multiple tables not supported");
 
-    std::ofstream ofs(filename.c_str(), std::ios::binary | std::ios::trunc);
-    boost::archive::text_oarchive oa(ofs);
+    std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+
+    boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+    out.push(boost::iostreams::bzip2_compressor());
+    out.push(ofs);
+
+    boost::archive::binary_oarchive oa(ofs);
     // oa.register_type<GPUGenie::inv_compr_table>();
     oa << table;
 }
@@ -32,10 +39,18 @@ genie::util::SaveTable(const std::string &filename, const GPUGenie::inv_table* t
 std::shared_ptr<GPUGenie::inv_table>
 genie::util::LoadTable(const std::string &filename)
 {
-    GPUGenie::inv_table *loaded_table = nullptr;
-    std::ifstream ifs(filename.c_str(), std::ios::binary);
-    boost::archive::text_iarchive ia(ifs);
+    std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
+    if (!ifs.good())
+        throw GPUGenie::genie_error("Loading from file failed (fstream not good)");
+
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+    in.push(boost::iostreams::bzip2_decompressor());
+    in.push(ifs);
+
+    boost::archive::binary_iarchive ia(ifs);
     // ia.register_type<GPUGenie::inv_compr_table>();
+
+    GPUGenie::inv_table *loaded_table = nullptr;
     ia >> loaded_table;
     return shared_ptr<GPUGenie::inv_table>(loaded_table);
 }

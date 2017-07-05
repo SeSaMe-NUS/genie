@@ -109,7 +109,8 @@ add_library( ${PROJECT_NAME}
   ${GENIE_COMPILATION_UNITS} ${GENIE_COMPRESSION_COMPILATION_UNITS})
 
 target_link_libraries( ${PROJECT_NAME}
-  ${Boost_LIBRARIES})
+  ${Boost_LIBRARIES}
+  bz2)
 
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES

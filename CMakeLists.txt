@@ -38,6 +38,9 @@ set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --g
 # Disable cudafe warning: "type qualifier is meaningless on cast type" occuring in boost::archive
 # https://stackoverflow.com/questions/14831051/how-to-disable-compiler-warnings-with-nvcc
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=cast_to_qualified_type\"")
+# Boost 1.64 has a bug with Cuda 7.5 and 8.0, where compilation fails on static assert from g++ standard library 
+# https://svn.boost.org/trac10/ticket/13049
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DBOOST_NO_CXX11_NOEXCEPT")
 set(CMAKE_CUDA_FLAGS_DEBUG  "--debug --device-debug --generate-line-info")
 set(CMAKE_CUDA_FLAGS_RELEASE "--optimize 3 --generate-line-info -DNDEBUG")
 # set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO "--optimize 2 --generate-line-info")
@@ -52,9 +55,9 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 
 set(Boost_USE_STATIC_LIBS ON)
 if (GENIE_COMPR)
-  set(Boost_COMPONETNS serialization program_options)
+  set(Boost_COMPONETNS iostreams serialization program_options)
 else()
-  set(Boost_COMPONETNS serialization)
+  set(Boost_COMPONETNS iostreams serialization)
 endif()
 # WARNING: CMake may issue a warning: Imported targets not available for Boost version 106400
 # This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
