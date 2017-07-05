@@ -38,14 +38,44 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
 
     Logger::log(Logger::INFO, "Checking loaded table correctness...");
 
-    // assert(table->table_index == loaded_table->table_index);
+    assert(loaded_table->d_inv_p == nullptr);
+    assert(loaded_table->is_stored_in_gpu == false);
+    assert(loaded_table->get_table_index() == 0);
+    assert(loaded_table->get_total_num_of_table() == 1);
+
+    assert(table->shift_bits_sequence == loaded_table->shift_bits_sequence);
+    assert(table->m_size() == loaded_table->m_size());
+    assert(table->i_size() == loaded_table->i_size());
+    assert(table->shifter() == loaded_table->shifter());
+    assert(table->_shift_bits_subsequence() == loaded_table->_shift_bits_subsequence());
+    assert(table->build_status() == loaded_table->build_status());
+    assert(*table->inv() == *loaded_table->inv());
+    assert(*table->inv_index() == *loaded_table->inv_index());
+    assert(*table->inv_pos() == *loaded_table->inv_pos());
+    assert(*table->inv_index_map() == *loaded_table->inv_index_map());
+    assert(table->get_min_value_sequence() == loaded_table->get_min_value_sequence());
+    assert(table->get_max_value_sequence() == loaded_table->get_max_value_sequence());
+    assert(table->get_gram_length_sequence() == loaded_table->get_gram_length_sequence());
+
+    // Private variables of inv_table not checked by this test:
+    //     _distinct_map
+    //     inv_list_lowerbound
+    //     inv_list_upperbound
+    //     posting_list_size
 
     if (config.compression)
     {
-        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(loaded_table.get());
+        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        GPUGenie::inv_compr_table *c_loaded_table = dynamic_cast<GPUGenie::inv_compr_table*>(loaded_table.get());
         assert(ctable);
+        assert(c_loaded_table);
+        assert(*ctable->compressedInv() == *c_loaded_table->compressedInv());
+        assert(*ctable->uncompressedInv() == *c_loaded_table->uncompressedInv());
+        assert(*ctable->compressedInvPos() == *c_loaded_table->compressedInvPos());
+        assert(*ctable->uncompressedInvPos() == *c_loaded_table->uncompressedInvPos());
+        assert(ctable->getUncompressedPostingListMaxLength() == c_loaded_table->getUncompressedPostingListMaxLength());
+        assert(ctable->getCompression() == c_loaded_table->getCompression());
     }
-
 
     Logger::log(Logger::DEBUG, "Deallocating inverted table...");
     delete[] table;
