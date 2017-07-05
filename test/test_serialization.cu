@@ -15,6 +15,7 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/export.hpp>
 
 #include <GPUGenie/interface.h>
 #include <GPUGenie/inv_table.h>
@@ -54,6 +55,7 @@ void testSimpleSerialization(GPUGenie::GPUGenie_Config &config, const std::strin
     delete[] table;
 }
 
+
 /**
  * Run a test of inverted table serialization using custom boost arhive class, i.e. create new template instance of the
  * serialization functions of the inverted table
@@ -70,15 +72,15 @@ void testCustomSerialization(GPUGenie::GPUGenie_Config &config, const std::strin
     {
         std::ofstream ofs(inv_filename.c_str());
         boost::archive::text_oarchive oa(ofs);
-        oa << *table;
+        oa << table;
     }
     
-    GPUGenie::inv_table * loaded_table = new inv_table();
+    GPUGenie::inv_table * loaded_table = nullptr;
     Logger::log(Logger::INFO, "Loading inverted table from file...");
     {
         std::ifstream ifs(inv_filename.c_str());
         boost::archive::text_iarchive ia(ifs);
-        ia >> *loaded_table;
+        ia >> loaded_table;
     }
 
     Logger::log(Logger::INFO, "Checking loaded table correctness...");

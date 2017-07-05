@@ -14,6 +14,7 @@
 #include <string>
 
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 
 #include "DeviceCodecFactory.h"
 
@@ -224,7 +225,8 @@ private:
 
 };
 
-
 } 
+
+BOOST_CLASS_EXPORT_KEY(GPUGenie::inv_compr_table)
 
 #endif

@@ -13,6 +13,8 @@
 
 #include "inv_compr_table.h"
 
+BOOST_CLASS_EXPORT_IMPLEMENT(GPUGenie::inv_compr_table)
+
 void
 GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
 {
