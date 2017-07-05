@@ -23,51 +23,54 @@ class Config {
 		/*!
 		 * \brief Return K.
 		 */
-		uint32_t GetK();
+		uint32_t GetK() const;
 		/*!
 		 * \brief Return the range used in range-based search.
 		 */
-		uint32_t GetQueryRange();
+		uint32_t GetQueryRange() const;
 		/*!
 		 * \brief Return the number of query to search.
 		 */
-		uint32_t GetNumOfQuery();
+		uint32_t GetNumOfQuery() const;
 		/*!
 		 * \brief Return whether table should be saved to GPU after search.
 		 */
-		bool GetSaveToGpu();
+		bool GetSaveToGpu() const;
 		/*!
 		 * \brief Return the ID of the GPU used.
 		 */
-		uint8_t GetGpuId();
+		uint8_t GetGpuId() const;
 		/*!
 		 * \brief Set k.
 		 */
-		Config& SetK(uint32_t k);
+		Config& SetK(const uint32_t k);
 		/*!
 		 * \brief Set the range used in range-based search.
 		 */
-		Config& SetQueryRange(uint32_t query_range);
+		Config& SetQueryRange(const uint32_t query_range);
 		/*!
 		 * \brief Set the number of query to search.
 		 */
-		Config& SetNumOfQuery(uint32_t num_of_query);
+		Config& SetNumOfQuery(const uint32_t num_of_query);
 		/*!
 		 * \brief Set whether table should be saved to GPU after search.
 		 */
-		Config& SetSaveToGpu(bool save_to_gpu);
+		Config& SetSaveToGpu(const bool save_to_gpu);
 		/*!
 		 * \brief Set the ID of the GPU used.
 		 */
-		Config& SetGpuId(uint8_t gpu_id);
+		Config& SetGpuId(const uint8_t gpu_id);
 		/*!
 		 * \brief Load configuration from a file.
 		 */
-		Config& LoadFromFile(std::string& filename);
-		bool IsKSet();
-		bool IsQueryRangeSet();
-		bool IsNumOfQuerySet();
-		void Validate();
+		Config& LoadFromFile(const std::string& filename);
+		/*!
+		 * \brief Return whether K has been set.
+		 */
+		bool IsKSet() const;
+		bool IsQueryRangeSet() const;
+		bool IsNumOfQuerySet() const;
+		void Validate() const;
 		/*!
 		 * \brief Display enabled configuration options.
 		 */
