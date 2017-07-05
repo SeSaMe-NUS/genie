@@ -13,7 +13,6 @@
 #include <memory>
 #include <string>
 
-#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 
 #include "DeviceCodecFactory.h"
@@ -192,31 +191,10 @@ public:
     read(const char* filename, inv_compr_table*& table);
 
     template <class Archive>
-    void load(Archive &ar, const unsigned int version)
-    {
-        Logger::log(Logger::DEBUG, "Loading inv_compr_table archive of version %d", version);
-        ar >> boost::serialization::base_object<inv_table>(*this);
-
-        ar >> m_isCompressed;
-        ar >> m_compression;
-        ar >> m_uncompressedInvListsMaxLength;
-        ar >> m_comprInv;
-        ar >> m_comprInvPos;
-
-    }
+    void load(Archive &ar, const unsigned int version);
 
     template <class Archive>
-    void save(Archive &ar, const unsigned int version) const
-    {
-        Logger::log(Logger::DEBUG, "Saving inv_compr_table archive of version %d", version);
-        ar << boost::serialization::base_object<inv_table>(*this);
-
-        ar << m_isCompressed;
-        ar << m_compression;
-        ar << m_uncompressedInvListsMaxLength;
-        ar << m_comprInv;
-        ar << m_comprInvPos;
-    }
+    void save(Archive &ar, const unsigned int version) const;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 

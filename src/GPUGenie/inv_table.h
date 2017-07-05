@@ -14,14 +14,8 @@
 #include <unordered_map>
 #include "inv_list.h"
 
-#include "Logger.h"
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/map.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
-#include <boost/serialization/unordered_map.hpp>
-#include <boost/serialization/vector.hpp>
-
-// #include "serialization.h"
 
 /*! \var typedef unsigned long long u64
  *  \brief A type definition for a 64-bit unsigned integer
@@ -585,57 +579,10 @@ public:
 
 
     template <class Archive>
-    void load(Archive &ar, const unsigned int version)
-    {
-        ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
-        Logger::log(Logger::DEBUG, "Loading inv_table archive of version %d", version);
-        ar >> table_index;
-        ar >> total_num_of_table;
-        ar >> _shifter;
-        ar >> _size;
-        ar >> _dim_size;
-        ar >> shift_bits_subsequence;
-        ar >> min_value_sequence;
-        ar >> max_value_sequence;
-        ar >> gram_length_sequence;
-        ar >> shift_bits_sequence;
-        ar >> _build_status;
-        ar >> _inv;
-        ar >> _inv_pos;
-        ar >> inv_list_lowerbound;
-        ar >> inv_list_upperbound;
-        ar >> posting_list_size;
-        ar >> _inv_index;
-        ar >> _inv_index_map;
-        ar >> _distinct_map;
-
-    }
+    void load(Archive &ar, const unsigned int version);
 
     template <class Archive>
-    void save(Archive &ar, const unsigned int version) const
-    {
-        ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
-        Logger::log(Logger::DEBUG, "Saving inv_table archive of version %d", version);
-        ar << table_index;
-        ar << total_num_of_table;
-        ar << _shifter;
-        ar << _size;
-        ar << _dim_size;
-        ar << shift_bits_subsequence;
-        ar << min_value_sequence;
-        ar << max_value_sequence;
-        ar << gram_length_sequence;
-        ar << shift_bits_sequence;
-        ar << _build_status;
-        ar << _inv;
-        ar << _inv_pos;
-        ar << inv_list_lowerbound;
-        ar << inv_list_upperbound;
-        ar << posting_list_size;
-        ar << _inv_index;
-        ar << _inv_index_map;
-        ar << _distinct_map;
-    }
+    void save(Archive &ar, const unsigned int version) const;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 

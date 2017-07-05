@@ -13,10 +13,6 @@
 #include <fstream>
 #include <memory>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
-
 #include <GPUGenie/interface.h>
 #include <GPUGenie/inv_table.h>
 #include <GPUGenie/inv_compr_table.h>
@@ -26,7 +22,7 @@ using namespace std;
 using namespace GPUGenie;
 
 
-void testSimpleSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
+void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
     GPUGenie::inv_table * table = nullptr;
@@ -56,43 +52,6 @@ void testSimpleSerialization(GPUGenie::GPUGenie_Config &config, const std::strin
 }
 
 
-/**
- * Run a test of inverted table serialization using custom boost arhive class, i.e. create new template instance of the
- * serialization functions of the inverted table
- */
-void testCustomSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
-{
-    Logger::log(Logger::INFO, "Preprocessing inverted table...");
-    GPUGenie::inv_table * table = nullptr;
-    GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
-    assert(table != nullptr);
-    assert(table->build_status() == inv_table::builded);
-    
-    Logger::log(Logger::INFO, "Saving inverted table to file...");
-    {
-        std::ofstream ofs(inv_filename.c_str());
-        boost::archive::text_oarchive oa(ofs);
-        oa << table;
-    }
-    
-    GPUGenie::inv_table * loaded_table = nullptr;
-    Logger::log(Logger::INFO, "Loading inverted table from file...");
-    {
-        std::ifstream ifs(inv_filename.c_str());
-        boost::archive::text_iarchive ia(ifs);
-        ia >> loaded_table;
-    }
-
-    Logger::log(Logger::INFO, "Checking loaded table correctness...");
-
-    // assert(table->table_index == loaded_table->table_index);
-
-    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
-    delete[] table;
-    delete loaded_table;
-
-}
-
 int main(int argc, char* argv[])
 {
     string dataFile = "../static/sift_20.csv";
@@ -108,19 +67,11 @@ int main(int argc, char* argv[])
 
     // Test inv_table
     config.compression = NO_COMPRESSION;
-    testSimpleSerialization(config,"/tmp/genie_test_serialization.invtable");
+    testSerialization(config,"/tmp/genie_test_serialization.invtable");
 
     // Test inv_compr_table
     config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
-    testSimpleSerialization(config,"/tmp/genie_test_serialization.cinvtable");
-
-    // Test inv_table
-    config.compression = NO_COMPRESSION;
-    testCustomSerialization(config,"/tmp/genie_test_serialization.invtable.txt");
-
-    // Test inv_compr_table
-    config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
-    testCustomSerialization(config,"/tmp/genie_test_serialization.cinvtable.txt");
+    testSerialization(config,"/tmp/genie_test_serialization.cinvtable");
 
     return 0;
 }
