@@ -3,7 +3,7 @@
 
 using namespace genie;
 
-void genie::Init(Config& config)
+void genie::utility::Init(Config& config)
 {
 	static bool initialized = false;
 	static uint32_t current_gpu_id = 0;
