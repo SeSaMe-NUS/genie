@@ -266,153 +266,6 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	return true;
 }
 
-bool GPUGenie::preprocess_for_knn_binary(GPUGenie_Config& config,
-		inv_table * &_table)
-{
-	unsigned int cycle = 0;
-    config.num_of_topk = config.num_of_iteration * config.num_of_topk;
-	if (config.max_data_size >= config.row_num || config.max_data_size <= 0)
-	{
-		if (config.item_num != 0 && config.index != NULL && config.item_num != 0 && config.row_num != 0)
-		{
-            if (config.compression == NO_COMPRESSION)
-                _table = new inv_table[1];
-            #ifdef GENIE_COMPR 
-            else
-            {
-                inv_compr_table * comprTable = new inv_compr_table[1];
-                comprTable[0].setCompression(config.compression);
-                comprTable[0].setUncompressedPostingListMaxLength(config.posting_list_max_length);
-                _table = comprTable;
-            }
-            #endif
-
-    		_table[0].set_table_index(0);
-    		_table[0].set_total_num_of_table(1);
-			Logger::log(Logger::DEBUG, "build from data array...");
-			switch (config.search_type)
-			{
-				case 0:
-					load_table(_table[0], config.data, config.item_num, config.index,
-						config.row_num, config);
-					break;
-				case 1:
-					load_table_bijectMap(_table[0], config.data, config.item_num,
-						config.index, config.row_num, config);
-					break;
-        		case 2:
-					//binary reading is gradually deprecated
-                	break;
-			}
-		}
-		else
-		{
-			throw GPUGenie::cpu_runtime_error("no data input!");
-		}
-	}
-	else
-	{
-		Logger::log(Logger::DEBUG, "build from data array...");
-       		unsigned int table_num;
-		if (config.row_num % config.max_data_size == 0)
-		{
-			table_num = config.row_num / config.max_data_size;
-			cycle = table_num;
-		}
-		else
-		{
-			table_num = config.row_num / config.max_data_size + 1;
-			cycle = table_num - 2;
-		}
-
-        if (config.compression == NO_COMPRESSION)
-            _table = new inv_table[table_num];
-        else
-            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
-
-		for (unsigned int i = 0; i < cycle; ++i)
-		{
-			unsigned int item_num = 0;
-			item_num = config.index[(i + 1) * config.max_data_size]
-					- config.index[i * config.max_data_size];
-			if (i == table_num - 1)
-				item_num = config.item_num
-						- config.index[config.max_data_size * (table_num - 1)];
-            		_table[i].set_table_index(i);
-            		_table[i].set_total_num_of_table(table_num);
-			switch (config.search_type)
-			{
-				case 0:
-					load_table(_table[i],
-						config.data + config.index[config.max_data_size * i],
-						item_num, config.index + config.max_data_size * i,
-						config.max_data_size, config);
-					break;
-				case 1:
-					load_table_bijectMap(_table[i],
-						config.data + config.index[config.max_data_size * i],
-						item_num, config.index + config.max_data_size * i,
-						config.max_data_size, config);
-					break;
-            	case 2:
-					//binary reading is deprecated
-                	break;
-			}
-		}
-
-		if (table_num != cycle)
-		{
-			unsigned int second_last_row_size = (config.row_num
-					- cycle * config.max_data_size) / 2;
-			unsigned int last_row_size = config.row_num - second_last_row_size
-					- cycle * config.max_data_size;
-			unsigned int second_last_item_size =
-					config.index[config.max_data_size * cycle
-							+ second_last_row_size]
-							- config.index[config.max_data_size * cycle];
-			unsigned int last_item_size = config.item_num
-					- config.index[config.max_data_size * cycle
-							+ second_last_row_size];
-            		_table[cycle].set_table_index(cycle);
-            		_table[cycle].set_total_num_of_table(table_num);
-            		_table[cycle + 1].set_table_index(cycle+1);
-            		_table[cycle + 1].set_total_num_of_table(table_num);
-			switch (config.search_type)
-			{
-				case 0:
-					load_table(_table[cycle],
-						config.data + config.index[config.max_data_size * cycle],
-						second_last_item_size,
-						config.index + config.max_data_size * cycle,
-						second_last_row_size, config);
-					load_table(_table[cycle + 1],
-						config.data + config.index[config.max_data_size * cycle
-										+ second_last_row_size], last_item_size,
-						config.index + config.max_data_size * cycle
-								+ second_last_row_size, last_row_size, config);
-					break;
-				case 1:
-					load_table_bijectMap(_table[cycle],
-						config.data + config.index[config.max_data_size * cycle],
-						second_last_item_size,
-						config.index + config.max_data_size * cycle,
-						second_last_row_size, config);
-					load_table_bijectMap(_table[cycle + 1],
-						config.data
-								+ config.index[config.max_data_size * cycle
-										+ second_last_row_size], last_item_size,
-						config.index + config.max_data_size * cycle
-								+ second_last_row_size, last_row_size, config);
-					break;
-            	case 2:
-					//deprecated
-            		break;
-			}
-		}
-	}
-	return true;
-}
-
 void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count)
@@ -889,19 +742,6 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
     
 }
 
-void GPUGenie::knn_search_for_binary_data(std::vector<int>& result,
-		std::vector<int>& result_count, GPUGenie_Config& config)
-{
-	
-	inv_table *_table = NULL;
-
-	preprocess_for_knn_binary(config, _table);
-
-	knn_search_after_preprocess(config, _table, result, result_count);
-
-	delete[] _table;
-}
-
 void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
@@ -936,11 +776,9 @@ void GPUGenie::knn_search(std::vector<int>& result,
 			cout<<"knn for csv finished!"<<endl;
             break;
 		case 1:
-			Logger::log(Logger::INFO, "search for binary data!");
-			knn_search_for_binary_data(result, result_count, config);
-			break;
-		default:
-			throw GPUGenie::cpu_runtime_error("Please check data type in config\n");
+			throw GPUGenie::cpu_runtime_error("Binary .dat data_type no longer supported\n");
+        default:
+            throw GPUGenie::cpu_runtime_error("Please check data type in config\n");
 		}
 
 		u64 endtime = getTime();

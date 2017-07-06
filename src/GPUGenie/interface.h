@@ -175,22 +175,6 @@ typedef struct _GPUGenie_Config
  */
 bool preprocess_for_knn_csv(GPUGenie_Config& config, inv_table * &_table);
 
-/*! \fn bool preprocess_for_knn_binary(GPUGenie_Config& config, inv_table * &_table)
- *  \brief pre-process for knn search on data set read from a binary file
- *
- *  \param config Settings by users
- *  \param _table Pointer to inv_table object array, which can be managed by users
- *
- *  This function includes the process of transferring a data set read from a binary file to
- *  an inv_table, if user turn on multiload feature , the second parameter will point to an
- *  array of inv_table objects. The inv_table objects contain all the information about
- *  corresponding inverted index structure for given data set
- *
- *  \return true only when no error occurs
- */
-bool preprocess_for_knn_binary(GPUGenie_Config& config, inv_table * &_table);
-
-
 /*! \fn knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table,vector<int>& result, vector<int>& result_count)
  *  \brief This function is called when preprocess is done,
  *
@@ -211,8 +195,7 @@ void knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table, v
  *  \param result_count Corresponding to result vector. It stores the count number for each result point
  *  \param config Settings by users
  *
- *  This function can help users complete search job in one go. This function would call knn_search_for_binary_data()
- *  or knn_search_for_csv_data depending on file tpye where dataset comes from.
+ *  This function can help users complete search job in one go.
  */
 void knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config);
 
@@ -242,18 +225,6 @@ void knn_search(inv_table& table, vector<query>& queries,
 /* Multi table search */
 void knn_search_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& config);
-
-/*! \fn knn_search_for_binary_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
- *  \brief knn_search for data read from a binary file
- *
- *  \param result Results for all queries
- *  \param result_count Corresponding count numbers for all results in result vector
- *  \param config Setting by users
- *
- *  If you already know the data is coming from a binary file you can call this function.
- *  This function contains all pre-process and post-process.
- */
-void knn_search_for_binary_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config);
 
 /*! \fn knn_search_for_csv_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
  *  \brief knn_search for data read from a csv file
