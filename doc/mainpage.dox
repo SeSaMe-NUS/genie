@@ -52,8 +52,12 @@
  *
  * \subsection usage_library_sec Using GENIE as a library
  * 
- * The GENIE interface consists of 2 important classes. The `genie::Config` class is used to set configurations for GENIE.
- * The `genie::ExecutionPolicy` class provides implementation for building table, building query, and matching.
+ * The GENIE interface consists of 4 important classes. They are
+ * 
+ * - `genie::Config` for configuring GENIE
+ * - `genie::ExecutionPolicy` for providing implementation for building table, building query, and matching
+ * - `GPUGenie::inv_table` for the constructed tables
+ * - `GPUGenie::query` for the constructed queries
  *
  * The interface also has several [functions](namespacegenie.html#func-members). The `genie::Search()`
  * function is the 1st-level interface function for using GENIE. It accepts file paths to table and query CSV files and
@@ -65,10 +69,8 @@
  * - `genie::BuildQuery()` for build the queries
  * - `genie::Match()` for matching
  *
- * To use the 2nd-level interface, you may want to check out the custom types we defined for the interface [here](namespacegenie.html#typedef-members).
- *
  * To use GENIE, it should first be configured with the `genie::Config` class. According to the configurations, a corresponding
- * execution policy could be generated with the execution policy factory. Then the interface functions could be used to perform
+ * execution policy could be generated with `genie::MakePolicy()`. Then the interface functions could be used to perform
  * the search. Below is an example program demonstrating the usage of GENIE.
  *
  * ```cpp
@@ -84,7 +86,7 @@
  *     Config config = Config()
  *         .SetK(5)
  *         .SetNumOfQuery(5);
- *     shared_ptr<ExecutionPolicy> policy = ExecutionPolicyFactory::MakePolicy(config);
+ *     shared_ptr<ExecutionPolicy> policy = MakePolicy(config);
  *     
  *     // search with GENIE using the execution policy
  *     SearchResult result = Search(policy, "../static/sift_20.csv", "../static/sift_20.csv");
