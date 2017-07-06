@@ -1,5 +1,8 @@
-body {
-  background-color: #CCCCCC;
+code {
+  background-color: #FBFCFD;
+  border-color: #C4CFE5;
+  border-width: 1px;
+  border-style: solid;
 }
 
 div.contents {
@@ -87,7 +90,7 @@ a, a.el, a.elRef, a.el:visited, a.elRef:visited {
 }
 
 body {
-  background-color: #efefef;
+  background-color: #EFEFEF;
 }
 
 
