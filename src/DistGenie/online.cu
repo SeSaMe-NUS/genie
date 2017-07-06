@@ -34,7 +34,8 @@ using namespace std;
  * by MPI rank 0.
  */
 static void ParseQueryAndSearch(int *count_ptr, array<char,BUFFER_SIZE> &recv_buf, GPUGenie_Config &config,
-		DistGenieConfig &extra_config, vector<inv_table*> &tables, vector<Cluster> &clusters, vector<int> &id_offset)
+		DistGenieConfig &extra_config, vector<shared_ptr<inv_table>> &tables, vector<Cluster> &clusters,
+		vector<int> &id_offset)
 {
 	/* broadcast query */
 	MPI_Bcast(count_ptr, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -78,7 +79,7 @@ static void WaitForGDB()
  * Calculates the global id offset for each table.
  * Offset will be used for generating global output id.
  */
-static void CalculateIdOffset(vector<int> &id_offset, vector<inv_table*> &tables)
+static void CalculateIdOffset(vector<int> &id_offset, vector<shared_ptr<inv_table>> &tables)
 {
 	/* gather length of all tables */
 	vector<int> local_tablesize;
@@ -127,7 +128,7 @@ int main(int argc, char *argv[])
 	init_genie(config);
 	vector<vector<int> > data;
 	config.data_points = &data;
-	vector<inv_table*> tables(extra_config.num_of_cluster);
+	vector<shared_ptr<inv_table>> tables(extra_config.num_of_cluster);
 	file::ReadData(config, extra_config, data, tables);
 	vector<int> id_offset(extra_config.num_of_cluster * g_mpi_size);
 	CalculateIdOffset(id_offset, tables);
