@@ -22,7 +22,7 @@ int main()
 	Config config = Config()
 		.SetK(5)
 		.SetNumOfQuery(5);
-	shared_ptr<ExecutionPolicy> policy = ExecutionPolicyFactory::MakePolicy(config);
+	shared_ptr<ExecutionPolicy> policy = MakePolicy(config);
 	config.DisplayConfiguration();
 
 	// search with GENIE using the execution policy
