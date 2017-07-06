@@ -89,6 +89,9 @@ $(document).ready(function(){initNavTree('classgenie_1_1ExecutionPolicy.html',''
 </div><!--header-->
 <div class="contents">
 
+<p><a class="el" href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. ">ExecutionPolicy</a> class is the interface for building table, building query, and matching.  
+ <a href="classgenie_1_1ExecutionPolicy.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for genie::ExecutionPolicy:</div>
@@ -104,20 +107,28 @@ Inheritance diagram for genie::ExecutionPolicy:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae40d9de87711f9cea826bbc45f40fcbe"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#ae40d9de87711f9cea826bbc45f40fcbe">BuildTable</a> (const <a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">genie::TableData</a> &amp;table_data)=0</td></tr>
+<tr class="memdesc:ae40d9de87711f9cea826bbc45f40fcbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds the inverted index with the given data.  <a href="#ae40d9de87711f9cea826bbc45f40fcbe">More...</a><br /></td></tr>
 <tr class="separator:ae40d9de87711f9cea826bbc45f40fcbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90dccd7d8ba2ff5c4c62b8a153667b5b"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a90dccd7d8ba2ff5c4c62b8a153667b5b">BuildQuery</a> (const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const <a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">genie::QueryData</a> &amp;query_data)=0</td></tr>
+<tr class="memdesc:a90dccd7d8ba2ff5c4c62b8a153667b5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds the queries with the given query data.  <a href="#a90dccd7d8ba2ff5c4c62b8a153667b5b">More...</a><br /></td></tr>
 <tr class="separator:a90dccd7d8ba2ff5c4c62b8a153667b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33521432a57a0baf2efb78bab7ff0c84"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">genie::SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a33521432a57a0baf2efb78bab7ff0c84">Match</a> (const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt; &amp;queries)=0</td></tr>
+<tr class="memdesc:a33521432a57a0baf2efb78bab7ff0c84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Match the given queries on the table.  <a href="#a33521432a57a0baf2efb78bab7ff0c84">More...</a><br /></td></tr>
 <tr class="separator:a33521432a57a0baf2efb78bab7ff0c84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a078e017eb0ad261b04069e9cf0adcec0"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">genie::SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a078e017eb0ad261b04069e9cf0adcec0">Match</a> (const std::vector&lt; std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &gt; &amp;tables, const std::vector&lt; std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt; &gt; &amp;queries)=0</td></tr>
+<tr class="memdesc:a078e017eb0ad261b04069e9cf0adcec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Batched matching with multiple tables and queries for those tables.  <a href="#a078e017eb0ad261b04069e9cf0adcec0">More...</a><br /></td></tr>
 <tr class="separator:a078e017eb0ad261b04069e9cf0adcec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3440a4d55d76026011eec62ddf55fd36"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a3440a4d55d76026011eec62ddf55fd36">Validate</a> ()</td></tr>
+<tr class="memdesc:a3440a4d55d76026011eec62ddf55fd36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks whether the given search parameters are in valid range.  <a href="#a3440a4d55d76026011eec62ddf55fd36">More...</a><br /></td></tr>
 <tr class="separator:a3440a4d55d76026011eec62ddf55fd36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7985f05fc72e310156963cc470b0f701"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a7985f05fc72e310156963cc470b0f701">SetK</a> (const uint32_t k)</td></tr>
+<tr class="memdesc:a7985f05fc72e310156963cc470b0f701"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets K.  <a href="#a7985f05fc72e310156963cc470b0f701">More...</a><br /></td></tr>
 <tr class="separator:a7985f05fc72e310156963cc470b0f701"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abeab928d6721a9e67ed313346c903f7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#abeab928d6721a9e67ed313346c903f7d">SetNumOfQuery</a> (const uint32_t num_of_query)</td></tr>
+<tr class="memdesc:abeab928d6721a9e67ed313346c903f7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the number of query.  <a href="#abeab928d6721a9e67ed313346c903f7d">More...</a><br /></td></tr>
 <tr class="separator:abeab928d6721a9e67ed313346c903f7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc360e4236c4e9587dd4decf94289a65"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#acc360e4236c4e9587dd4decf94289a65">GetNumOfQuery</a> () const</td></tr>
+<tr class="memdesc:acc360e4236c4e9587dd4decf94289a65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of query.  <a href="#acc360e4236c4e9587dd4decf94289a65">More...</a><br /></td></tr>
 <tr class="separator:acc360e4236c4e9587dd4decf94289a65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
@@ -130,8 +141,10 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:ac74c11ba9304c876376b03625df7af63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00014">14</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
+<div class="textblock"><p><a class="el" href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. ">ExecutionPolicy</a> class is the interface for building table, building query, and matching. </p>
+<p>This is the base class for all the concrete execution policies. Different types of search are implemented by different subclasses of the <a class="el" href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. ">ExecutionPolicy</a> class. </p>
+
+<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00021">21</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a90dccd7d8ba2ff5c4c62b8a153667b5b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a90dccd7d8ba2ff5c4c62b8a153667b5b">&#9670;&nbsp;</a></span>BuildQuery()</h2>
@@ -167,6 +180,8 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Builds the queries with the given query data. </p>
+
 <p>Implemented in <a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a54e836bb04912901db57b041516abf8b">genie::execution_policy::SingleRangeExecutionPolicy</a>, and <a class="el" href="classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#ad4e8ac85f0019d9c042e8598f0d9a0e6">genie::execution_policy::SingleValueExecutionPolicy</a>.</p>
 
 </div>
@@ -195,6 +210,8 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Builds the inverted index with the given data. </p>
+
 <p>Implemented in <a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a27e4be9e4e5c3195a6c766826e2eacf2">genie::execution_policy::SingleRangeExecutionPolicy</a>, and <a class="el" href="classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#af93bad4119d250f15e8da33c27673b96">genie::execution_policy::SingleValueExecutionPolicy</a>.</p>
 
 </div>
@@ -213,6 +230,8 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Returns the number of query. </p>
 
 <p class="definition">Definition at line <a class="el" href="execution__policy_8cu_source.html#l00056">56</a> of file <a class="el" href="execution__policy_8cu_source.html">execution_policy.cu</a>.</p>
 
@@ -252,6 +271,8 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Match the given queries on the table. </p>
+
 <p>Implemented in <a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a1c1e70e9a7c04e06839fe4aa8ea9a5d7">genie::execution_policy::SingleRangeExecutionPolicy</a>, and <a class="el" href="classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#ae56a7f3fd96a23fa29c536a23d3d8bfa">genie::execution_policy::SingleValueExecutionPolicy</a>.</p>
 
 </div>
@@ -290,6 +311,8 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Batched matching with multiple tables and queries for those tables. </p>
+
 <p>Implemented in <a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a5243937aafd2a6b2da07cd5bbb49cc5c">genie::execution_policy::SingleRangeExecutionPolicy</a>, and <a class="el" href="classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#a38c574a58fe32b03431c9249d42217d7">genie::execution_policy::SingleValueExecutionPolicy</a>.</p>
 
 </div>
@@ -310,6 +333,8 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Sets K. </p>
+
 <p class="definition">Definition at line <a class="el" href="execution__policy_8cu_source.html#l00046">46</a> of file <a class="el" href="execution__policy_8cu_source.html">execution_policy.cu</a>.</p>
 
 </div>
@@ -329,6 +354,8 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Sets the number of query. </p>
 
 <p class="definition">Definition at line <a class="el" href="execution__policy_8cu_source.html#l00051">51</a> of file <a class="el" href="execution__policy_8cu_source.html">execution_policy.cu</a>.</p>
 
@@ -357,6 +384,8 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Checks whether the given search parameters are in valid range. </p>
+
 <p>Reimplemented in <a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a9d86a2956cb5dde74e50c682bb2143b9">genie::execution_policy::SingleRangeExecutionPolicy</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="execution__policy_8cu_source.html#l00061">61</a> of file <a class="el" href="execution__policy_8cu_source.html">execution_policy.cu</a>.</p>
@@ -384,7 +413,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00017">17</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00024">24</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
 
 </div>
 </div>
@@ -408,7 +437,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00016">16</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00023">23</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
 
 </div>
 </div>
@@ -432,7 +461,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00018">18</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="execution__policy_8h_source.html#l00025">25</a> of file <a class="el" href="execution__policy_8h_source.html">execution_policy.h</a>.</p>
 
 </div>
 </div>

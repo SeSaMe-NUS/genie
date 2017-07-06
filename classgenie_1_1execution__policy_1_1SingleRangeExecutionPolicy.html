@@ -96,30 +96,38 @@ Inheritance diagram for genie::execution_policy::SingleRangeExecutionPolicy:</di
  <div class="center">
   <img src="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.png" usemap="#genie::execution_5Fpolicy::SingleRangeExecutionPolicy_map" alt=""/>
   <map id="genie::execution_5Fpolicy::SingleRangeExecutionPolicy_map" name="genie::execution_5Fpolicy::SingleRangeExecutionPolicy_map">
-<area href="classgenie_1_1ExecutionPolicy.html" alt="genie::ExecutionPolicy" shape="rect" coords="0,0,311,24"/>
+<area href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. " alt="genie::ExecutionPolicy" shape="rect" coords="0,0,311,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a27e4be9e4e5c3195a6c766826e2eacf2"><td class="memItemLeft" align="right" valign="top">virtual std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a27e4be9e4e5c3195a6c766826e2eacf2">BuildTable</a> (const <a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">genie::TableData</a> &amp;table_data) override final</td></tr>
+<tr class="memdesc:a27e4be9e4e5c3195a6c766826e2eacf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds the inverted index with the given data.  <a href="#a27e4be9e4e5c3195a6c766826e2eacf2">More...</a><br /></td></tr>
 <tr class="separator:a27e4be9e4e5c3195a6c766826e2eacf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54e836bb04912901db57b041516abf8b"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a54e836bb04912901db57b041516abf8b">BuildQuery</a> (const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const <a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">genie::QueryData</a> &amp;query_data) override final</td></tr>
+<tr class="memdesc:a54e836bb04912901db57b041516abf8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds the queries with the given query data.  <a href="#a54e836bb04912901db57b041516abf8b">More...</a><br /></td></tr>
 <tr class="separator:a54e836bb04912901db57b041516abf8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c1e70e9a7c04e06839fe4aa8ea9a5d7"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">genie::SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a1c1e70e9a7c04e06839fe4aa8ea9a5d7">Match</a> (const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt; &amp;queries) override final</td></tr>
+<tr class="memdesc:a1c1e70e9a7c04e06839fe4aa8ea9a5d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Match the given queries on the table.  <a href="#a1c1e70e9a7c04e06839fe4aa8ea9a5d7">More...</a><br /></td></tr>
 <tr class="separator:a1c1e70e9a7c04e06839fe4aa8ea9a5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5243937aafd2a6b2da07cd5bbb49cc5c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">genie::SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a5243937aafd2a6b2da07cd5bbb49cc5c">Match</a> (const std::vector&lt; std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &gt; &amp;table, const std::vector&lt; std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt; &gt; &amp;queries) override final</td></tr>
+<tr class="memdesc:a5243937aafd2a6b2da07cd5bbb49cc5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Batched matching with multiple tables and queries for those tables.  <a href="#a5243937aafd2a6b2da07cd5bbb49cc5c">More...</a><br /></td></tr>
 <tr class="separator:a5243937aafd2a6b2da07cd5bbb49cc5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d86a2956cb5dde74e50c682bb2143b9"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a9d86a2956cb5dde74e50c682bb2143b9">Validate</a> () override final</td></tr>
+<tr class="memdesc:a9d86a2956cb5dde74e50c682bb2143b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks whether the given search parameters are in valid range.  <a href="#a9d86a2956cb5dde74e50c682bb2143b9">More...</a><br /></td></tr>
 <tr class="separator:a9d86a2956cb5dde74e50c682bb2143b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29e36c3879de46ac5b08b26625655b7a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a29e36c3879de46ac5b08b26625655b7a">SetQueryRange</a> (const uint32_t query_range)</td></tr>
 <tr class="separator:a29e36c3879de46ac5b08b26625655b7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classgenie_1_1ExecutionPolicy"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classgenie_1_1ExecutionPolicy')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a></td></tr>
 <tr class="memitem:a7985f05fc72e310156963cc470b0f701 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#a7985f05fc72e310156963cc470b0f701">SetK</a> (const uint32_t k)</td></tr>
+<tr class="memdesc:a7985f05fc72e310156963cc470b0f701 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets K.  <a href="classgenie_1_1ExecutionPolicy.html#a7985f05fc72e310156963cc470b0f701">More...</a><br /></td></tr>
 <tr class="separator:a7985f05fc72e310156963cc470b0f701 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abeab928d6721a9e67ed313346c903f7d inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#abeab928d6721a9e67ed313346c903f7d">SetNumOfQuery</a> (const uint32_t num_of_query)</td></tr>
+<tr class="memdesc:abeab928d6721a9e67ed313346c903f7d inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the number of query.  <a href="classgenie_1_1ExecutionPolicy.html#abeab928d6721a9e67ed313346c903f7d">More...</a><br /></td></tr>
 <tr class="separator:abeab928d6721a9e67ed313346c903f7d inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc360e4236c4e9587dd4decf94289a65 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html#acc360e4236c4e9587dd4decf94289a65">GetNumOfQuery</a> () const</td></tr>
+<tr class="memdesc:acc360e4236c4e9587dd4decf94289a65 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of query.  <a href="classgenie_1_1ExecutionPolicy.html#acc360e4236c4e9587dd4decf94289a65">More...</a><br /></td></tr>
 <tr class="separator:acc360e4236c4e9587dd4decf94289a65 inherit pub_methods_classgenie_1_1ExecutionPolicy"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
@@ -175,6 +183,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Builds the queries with the given query data. </p>
+
 <p>Implements <a class="el" href="classgenie_1_1ExecutionPolicy.html#a90dccd7d8ba2ff5c4c62b8a153667b5b">genie::ExecutionPolicy</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="single__range_8cu_source.html#l00018">18</a> of file <a class="el" href="single__range_8cu_source.html">single_range.cu</a>.</p>
@@ -204,6 +214,8 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Builds the inverted index with the given data. </p>
 
 <p>Implements <a class="el" href="classgenie_1_1ExecutionPolicy.html#ae40d9de87711f9cea826bbc45f40fcbe">genie::ExecutionPolicy</a>.</p>
 
@@ -245,6 +257,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Match the given queries on the table. </p>
+
 <p>Implements <a class="el" href="classgenie_1_1ExecutionPolicy.html#a33521432a57a0baf2efb78bab7ff0c84">genie::ExecutionPolicy</a>.</p>
 
 </div>
@@ -262,7 +276,7 @@ Additional Inherited Members</h2></td></tr>
           <td class="memname">virtual <a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">genie::SearchResult</a> genie::execution_policy::SingleRangeExecutionPolicy::Match </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &gt; &amp;&#160;</td>
-          <td class="paramname"><em>table</em>, </td>
+          <td class="paramname"><em>tables</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -282,6 +296,8 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Batched matching with multiple tables and queries for those tables. </p>
 
 <p>Implements <a class="el" href="classgenie_1_1ExecutionPolicy.html#a078e017eb0ad261b04069e9cf0adcec0">genie::ExecutionPolicy</a>.</p>
 
@@ -329,6 +345,8 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Checks whether the given search parameters are in valid range. </p>
 
 <p>Reimplemented from <a class="el" href="classgenie_1_1ExecutionPolicy.html#a3440a4d55d76026011eec62ddf55fd36">genie::ExecutionPolicy</a>.</p>
 

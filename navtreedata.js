@@ -5,8 +5,8 @@ var NAVTREE =
       [ "Overview", "index.html#overview_sec", null ],
       [ "Installation", "index.html#install_sec", null ],
       [ "Usage", "index.html#usage_sec", [
-        [ "Using the executable", "index.html#usage_executable_sec", null ],
-        [ "Using GENIE as a library", "index.html#usage_library_sec", null ]
+        [ "Using GENIE as a library", "index.html#usage_library_sec", null ],
+        [ "Using the GENIE executable", "index.html#usage_executable_sec", null ]
       ] ]
     ] ],
     [ "Namespaces", null, [

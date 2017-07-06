@@ -90,7 +90,7 @@ $(document).ready(function(){initNavTree('namespacegenie.html','');});
 </div><!--header-->
 <div class="contents">
 
-<p>genie is the top-level namespace of the project  
+<p>This is the top-level namespace of the project.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -112,17 +112,22 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classgenie_1_1Config.html" title="Config class holds all user configurable settings of GENIE. ">Config</a> class holds all user configurable settings of GENIE.  <a href="classgenie_1_1Config.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. ">ExecutionPolicy</a> class is the interface for building table, building query, and matching.  <a href="classgenie_1_1ExecutionPolicy.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicyFactory.html">ExecutionPolicyFactory</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Factory class for building execution policies.  <a href="classgenie_1_1ExecutionPolicyFactory.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:aee69bc565f0eef0063aec62f97f680d7"><td class="memItemLeft" align="right" valign="top">typedef std::vector&lt; std::vector&lt; int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a></td></tr>
+<tr class="memdesc:aee69bc565f0eef0063aec62f97f680d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw table data format used for building the table.  <a href="#aee69bc565f0eef0063aec62f97f680d7">More...</a><br /></td></tr>
 <tr class="separator:aee69bc565f0eef0063aec62f97f680d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61e3b00607bdf98ce264a1cea53c2014"><td class="memItemLeft" align="right" valign="top">typedef std::vector&lt; std::vector&lt; int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a></td></tr>
+<tr class="memdesc:a61e3b00607bdf98ce264a1cea53c2014"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw query data format used for building the queries.  <a href="#a61e3b00607bdf98ce264a1cea53c2014">More...</a><br /></td></tr>
 <tr class="separator:a61e3b00607bdf98ce264a1cea53c2014"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f616d3208c7b49dc2662842b5aaf95d"><td class="memItemLeft" align="right" valign="top">typedef std::pair&lt; std::vector&lt; int &gt;, std::vector&lt; int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">SearchResult</a></td></tr>
+<tr class="memdesc:a6f616d3208c7b49dc2662842b5aaf95d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matching result (top K's ID and count).  <a href="#a6f616d3208c7b49dc2662842b5aaf95d">More...</a><br /></td></tr>
 <tr class="separator:a6f616d3208c7b49dc2662842b5aaf95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -130,22 +135,29 @@ Functions</h2></td></tr>
 <tr class="memitem:a25e8ebb8eba7779f26a5522b303b6c5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a25e8ebb8eba7779f26a5522b303b6c5c">Init</a> (<a class="el" href="classgenie_1_1Config.html">Config</a> &amp;config)</td></tr>
 <tr class="separator:a25e8ebb8eba7779f26a5522b303b6c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ea2205aacd7f28505daa165fdf64913"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a7ea2205aacd7f28505daa165fdf64913">ReadTableFromCsv</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a7ea2205aacd7f28505daa165fdf64913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a CSV file and returns in TableData format.  <a href="#a7ea2205aacd7f28505daa165fdf64913">More...</a><br /></td></tr>
 <tr class="separator:a7ea2205aacd7f28505daa165fdf64913"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#adeda6d8fdda1b628970bf3f0f5e0ed42">ReadTableFromBinary</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a binary file and returns pre-built table.  <a href="#adeda6d8fdda1b628970bf3f0f5e0ed42">More...</a><br /></td></tr>
 <tr class="separator:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb3c6a43ce29cebbe983448f91b5f490"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#afb3c6a43ce29cebbe983448f91b5f490">ReadQueryFromCsv</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; &amp;policy)</td></tr>
+<tr class="memdesc:afb3c6a43ce29cebbe983448f91b5f490"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads query from a CSV file and returns in QueryData format.  <a href="#afb3c6a43ce29cebbe983448f91b5f490">More...</a><br /></td></tr>
 <tr class="separator:afb3c6a43ce29cebbe983448f91b5f490"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a474230dd19d21b51f6e5dac6535d9364"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a474230dd19d21b51f6e5dac6535d9364">Search</a> (std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a> &gt; &amp;policy, const std::string &amp;table_filename, const std::string &amp;query_filename)</td></tr>
+<tr class="memdesc:a474230dd19d21b51f6e5dac6535d9364"><td class="mdescLeft">&#160;</td><td class="mdescRight">1st-level interface for end-to-end matching with given table and query CSV file paths.  <a href="#a474230dd19d21b51f6e5dac6535d9364">More...</a><br /></td></tr>
 <tr class="separator:a474230dd19d21b51f6e5dac6535d9364"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1b857f34a6de488acacdb58db805448"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#ae1b857f34a6de488acacdb58db805448">BuildTable</a> (std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a> &gt; &amp;policy, const <a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a> &amp;table_data)</td></tr>
+<tr class="memdesc:ae1b857f34a6de488acacdb58db805448"><td class="mdescLeft">&#160;</td><td class="mdescRight">2nd-level interface for building table with TableData.  <a href="#ae1b857f34a6de488acacdb58db805448">More...</a><br /></td></tr>
 <tr class="separator:ae1b857f34a6de488acacdb58db805448"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6df61bf772c376700ca20e74c59ffc5a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a6df61bf772c376700ca20e74c59ffc5a">BuildQuery</a> (std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a> &gt; &amp;policy, const std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const <a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a> &amp;query_data)</td></tr>
+<tr class="memdesc:a6df61bf772c376700ca20e74c59ffc5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">2nd-level interface for building queries with table and QueryData.  <a href="#a6df61bf772c376700ca20e74c59ffc5a">More...</a><br /></td></tr>
 <tr class="separator:a6df61bf772c376700ca20e74c59ffc5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2792d964ef384f74dc1f62a2564bd23"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#ad2792d964ef384f74dc1f62a2564bd23">Match</a> (std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a> &gt; &amp;policy, const std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table, const std::vector&lt; <a class="el" href="classGPUGenie_1_1query.html">GPUGenie::query</a> &gt; &amp;queries)</td></tr>
+<tr class="memdesc:ad2792d964ef384f74dc1f62a2564bd23"><td class="mdescLeft">&#160;</td><td class="mdescRight">2nd-level interface for matching with pre-built table and queries.  <a href="#ad2792d964ef384f74dc1f62a2564bd23">More...</a><br /></td></tr>
 <tr class="separator:ad2792d964ef384f74dc1f62a2564bd23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>genie is the top-level namespace of the project </p>
+<div class="textblock"><p>This is the top-level namespace of the project. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
 <a id="a61e3b00607bdf98ce264a1cea53c2014"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61e3b00607bdf98ce264a1cea53c2014">&#9670;&nbsp;</a></span>QueryData</h2>
@@ -159,7 +171,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00010">10</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p>Raw query data format used for building the queries. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00016">16</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -175,7 +189,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00011">11</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p>Matching result (top K's ID and count). </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00020">20</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -191,7 +207,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00009">9</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p>Raw table data format used for building the table. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00012">12</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -228,6 +246,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>2nd-level interface for building queries with table and QueryData. </p>
+
 </div>
 </div>
 <a id="ae1b857f34a6de488acacdb58db805448"></a>
@@ -255,6 +275,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>2nd-level interface for building table with TableData. </p>
 
 </div>
 </div>
@@ -310,6 +332,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>2nd-level interface for matching with pre-built table and queries. </p>
+
 </div>
 </div>
 <a id="afb3c6a43ce29cebbe983448f91b5f490"></a>
@@ -338,6 +362,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Reads query from a CSV file and returns in QueryData format. </p>
+
 </div>
 </div>
 <a id="adeda6d8fdda1b628970bf3f0f5e0ed42"></a>
@@ -356,6 +382,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Reads data from a binary file and returns pre-built table. </p>
+
 </div>
 </div>
 <a id="a7ea2205aacd7f28505daa165fdf64913"></a>
@@ -373,6 +401,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Reads data from a CSV file and returns in TableData format. </p>
 
 </div>
 </div>
@@ -407,6 +437,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>1st-level interface for end-to-end matching with given table and query CSV file paths. </p>
 
 </div>
 </div>

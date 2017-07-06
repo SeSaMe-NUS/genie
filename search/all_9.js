@@ -46,9 +46,9 @@ var searchData=
   ['ipackwithoutmask',['ipackwithoutmask',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a26e4450747576a818a81d983623dfcd6',1,'GPUGenie::DeviceBitPackingHelpers']]],
   ['is_5fload_5fbalanced',['is_load_balanced',['../classGPUGenie_1_1query.html#a1920caa76df3331c9a6155bd3b663797',1,'GPUGenie::query']]],
   ['is_5fstored_5fin_5fgpu',['is_stored_in_gpu',['../classGPUGenie_1_1inv__table.html#aeeb4b1f8e23d404a27f3286033ec978a',1,'GPUGenie::inv_table']]],
-  ['iskset',['IsKSet',['../classgenie_1_1Config.html#ad7e03067293b58da607ca139b1da627f',1,'genie::Config']]],
-  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#af2f8e6b0009224e2b53d17f67edce56a',1,'genie::Config']]],
-  ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#ab0e8c54bd6508b5e10f9d15d48e5a868',1,'genie::Config']]],
+  ['iskset',['IsKSet',['../classgenie_1_1Config.html#a2171673533ab7c709e2b86c76b7998cd',1,'genie::Config']]],
+  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#a48b82b6666209338cf81d574b1da7bec',1,'genie::Config']]],
+  ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#a246c3ca28fa2acb73d677e7b1cb4ced0',1,'genie::Config']]],
   ['item_5fnum',['item_num',['../structGPUGenie_1_1__GPUGenie__Config.html#aeeb1847188ed2853479d7eb5ee59f294',1,'GPUGenie::_GPUGenie_Config']]],
   ['iunpack',['iunpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#ab196f0634bc8356235060304f85e68a8',1,'GPUGenie::DeviceBitPackingHelpers']]]
 ];

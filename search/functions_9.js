@@ -29,8 +29,8 @@ var searchData=
   ['invert_5fsequence',['invert_sequence',['../classGPUGenie_1_1inv__list.html#a0bf8b244b33d25533162732db0325919',1,'GPUGenie::inv_list']]],
   ['invert_5fsubsequence',['invert_subsequence',['../classGPUGenie_1_1inv__list.html#a1d5754e7e1595439400069ff22ee833d',1,'GPUGenie::inv_list::invert_subsequence(vector&lt; vector&lt; int &gt; &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#a857a128b3308cd7c3d7679166aa453bb',1,'GPUGenie::inv_list::invert_subsequence(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num)']]],
   ['ipackwithoutmask',['ipackwithoutmask',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a26e4450747576a818a81d983623dfcd6',1,'GPUGenie::DeviceBitPackingHelpers']]],
-  ['iskset',['IsKSet',['../classgenie_1_1Config.html#ad7e03067293b58da607ca139b1da627f',1,'genie::Config']]],
-  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#af2f8e6b0009224e2b53d17f67edce56a',1,'genie::Config']]],
-  ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#ab0e8c54bd6508b5e10f9d15d48e5a868',1,'genie::Config']]],
+  ['iskset',['IsKSet',['../classgenie_1_1Config.html#a2171673533ab7c709e2b86c76b7998cd',1,'genie::Config']]],
+  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#a48b82b6666209338cf81d574b1da7bec',1,'genie::Config']]],
+  ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#a246c3ca28fa2acb73d677e7b1cb4ced0',1,'genie::Config']]],
   ['iunpack',['iunpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#ab196f0634bc8356235060304f85e68a8',1,'GPUGenie::DeviceBitPackingHelpers']]]
 ];
