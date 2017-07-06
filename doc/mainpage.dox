@@ -50,10 +50,6 @@
  *
  * \section usage_sec Usage
  *
- * \subsection usage_executable_sec Using the executable
- *
- * To be added.
- *
  * \subsection usage_library_sec Using GENIE as a library
  * 
  * The GENIE interface consists of 2 important classes. The `genie::Config` class is used to set configurations for GENIE.
@@ -61,11 +57,15 @@
  *
  * The interface also has several [functions](namespacegenie.html#func-members). The `genie::Search()`
  * function is the 1st-level interface function for using GENIE. It accepts file paths to table and query CSV files and
- * returns the result. There are also several 2nd-level interface functions, which are used by the `genie::Search()` function.
- * They are
+ * returns the matching result. There are also several 2nd-level interface functions, which are used internally by the
+ * `genie::Search()` function. These 2nd-level functions are meant to provide finer control of GENIE for advanced usage.
+ * These functions are
+ *
  * - `genie::BuildTable()` for build the inverted index
  * - `genie::BuildQuery()` for build the queries
  * - `genie::Match()` for matching
+ *
+ * To use the 2nd-level interface, you may want to check out the custom types we defined for the interface [here](namespacegenie.html#typedef-members).
  *
  * To use GENIE, it should first be configured with the `genie::Config` class. According to the configurations, a corresponding
  * execution policy could be generated with the execution policy factory. Then the interface functions could be used to perform
@@ -92,5 +92,9 @@
  *     return EXIT_SUCCESS;
  * }
  * ```
+ *
+ * \subsection usage_executable_sec Using the GENIE executable
+ *
+ * To be added.
  * 
  */
