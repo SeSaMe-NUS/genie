@@ -7,6 +7,7 @@
 #undef NDEBUG
  
 #include <GPUGenie.h>
+#include <GPUGenie/interface/io.h>
 
 #include <algorithm>
 #include <cassert>
@@ -141,10 +142,8 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         assert(config.compression == comprTable->getCompression());
     }
 
-    if (!inv_table::write(binaryInvTableFile.c_str(), table)) {
-        Logger::log(Logger::ALERT, "Error writing inverted table to binary file %s!", binaryInvTableFile.c_str());
-        return std::string();
-    }
+    std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    genie::SaveTableToBinary(binaryInvTableFile, sp_table);
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
@@ -155,15 +154,7 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    inv_table *table;
-    if (!config.compression){
-        inv_table::read(binaryInvTableFile.c_str(), table);
-    }
-    else {
-        inv_compr_table *comprTable;
-        inv_compr_table::read(binaryInvTableFile.c_str(), comprTable);
-        table = comprTable;
-    }
+    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);

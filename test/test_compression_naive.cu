@@ -8,6 +8,7 @@
  
 #include <GPUGenie.h>
 #include <GPUGenie/DeviceCodecFactory.h>
+#include <GPUGenie/interface/io.h>
 
 #include <algorithm>
 #include <cassert>
@@ -204,11 +205,9 @@ int main(int argc, char* argv[])
 
         
         Logger::log(Logger::INFO, "Writing inv_table to binary file %s ...", binaryInvTableFile.c_str());
-        if (!inv_table::write(binaryInvTableFile.c_str(), refTable)){
-            Logger::log(Logger::ALERT, "Error writing inv_table to binary file %s ...", binaryInvTableFile.c_str());
-            return 4;
-        }
-        
+
+        std::shared_ptr<const GPUGenie::inv_table> sp_ref_table(refTable, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+        genie::SaveTableToBinary(binaryInvTableFile, sp_ref_table);
 
         config.compression = compression;
 
@@ -227,19 +226,16 @@ int main(int argc, char* argv[])
         // check the compression was actually used in the table
         assert(config.compression == comprTable->getCompression());
 
-        if (!inv_table::write(binaryComprInvTableFile.c_str(), table)) {
-            Logger::log(Logger::ALERT, "Error writing inv_compr_table to binary file %s ...",
-                binaryInvTableFile.c_str());
-            return 4;
-        }
+        Logger::log(Logger::INFO, "Writing inv_compr_table to binary file %s ...", binaryComprInvTableFile.c_str());
+        std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+        genie::SaveTableToBinary(binaryComprInvTableFile, sp_table);
     }
 
     std::cout << "--------------------------------------------------------" << std::endl;
     std::cout << "Establishing reference solution on uncompressed table..." << std::endl;
 
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
-    inv_table *refTable;
-    inv_table::read(binaryInvTableFile.c_str(), refTable);
+    std::shared_ptr<GPUGenie::inv_table> refTable = genie::ReadTableFromBinary(binaryInvTableFile);
 
 
     std::cout << "Examining inverted lists...";
@@ -257,7 +253,7 @@ int main(int argc, char* argv[])
             attr_index, refTable->get_upperbound_of_list(attr_index));
     }
 
-    Logger::logTable(Logger::DEBUG,refTable);
+    Logger::logTable(Logger::DEBUG,refTable.get());
 
     std::cout << "Loading queries..." << std::endl;
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
@@ -280,8 +276,8 @@ int main(int argc, char* argv[])
     std::cout << "Testing compressed table..." << std::endl;
 
     Logger::log(Logger::INFO, "Opening binary inv_compr_table from %s ...", binaryComprInvTableFile.c_str());
-    inv_compr_table *comprTable;
-    inv_compr_table::read(binaryComprInvTableFile.c_str(), comprTable);
+    std::shared_ptr<inv_compr_table> comprTable =
+            dynamic_pointer_cast<inv_compr_table>(genie::ReadTableFromBinary(binaryComprInvTableFile));
 
     std::cout << "Examining compressed index..." << std::endl;
 
@@ -305,7 +301,7 @@ int main(int argc, char* argv[])
     Logger::log(Logger::DEBUG, "Uncompressed size of compressedInvPos index: %d bytes", compressedInvPos->size() * 4);
     Logger::log(Logger::DEBUG, "Average size of compressed posting list: %d", avg_compr_inv_list_length);
 
-    Logger::logTable(Logger::DEBUG,comprTable);
+    Logger::logTable(Logger::DEBUG,comprTable.get());
 
  
     std::cout << "Loading queries..." << std::endl;
