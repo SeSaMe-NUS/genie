@@ -21,7 +21,7 @@ You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum req
 - CMake 3.8
 - CUDA 7.0
 - OpenMPI 1.7 (for `GENIE_DISTRIBUTED` only)
-- Boost 1.63: serialization (always required), program_options (for `GENIE_COMPR` only)
+- Boost 1.63: serialization, iostreams, program_options (for `GENIE_COMPR` only)
 
 To create an "out-of-source" build of GPUGenie containing both the GPUGenie library, tests and tools, you can use the
 standard CMake procedure:
