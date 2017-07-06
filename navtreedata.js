@@ -52,7 +52,7 @@ var NAVTREEINDEX =
 "DeviceBitPackingHelpers_8h.html#a6bdfe7793085f30616e781aab7dd4367",
 "classGPUGenie_1_1DeviceDeltaCodec.html#a4aeebdc4b70d37a43c9615fdb5c6193f",
 "exception_8cc_source.html",
-"match__integrated_8cu_source.html"
+"match__integrated_8cu.html#abe58526726864d38f5ba749802eb5e9b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -105,6 +105,8 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespacegenie_1_1table"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1table.html">table</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1utility"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html">utility</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -113,9 +115,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classgenie_1_1ExecutionPolicy.html" title="ExecutionPolicy class is the interface for building table, building query, and matching. ">ExecutionPolicy</a> class is the interface for building table, building query, and matching.  <a href="classgenie_1_1ExecutionPolicy.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1ExecutionPolicyFactory.html">ExecutionPolicyFactory</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Factory class for building execution policies.  <a href="classgenie_1_1ExecutionPolicyFactory.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -132,8 +131,9 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a25e8ebb8eba7779f26a5522b303b6c5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a25e8ebb8eba7779f26a5522b303b6c5c">Init</a> (<a class="el" href="classgenie_1_1Config.html">Config</a> &amp;config)</td></tr>
-<tr class="separator:a25e8ebb8eba7779f26a5522b303b6c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65a8a0a253fab2bc932af6d0c54c0183"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a65a8a0a253fab2bc932af6d0c54c0183">MakePolicy</a> (const <a class="el" href="classgenie_1_1Config.html">Config</a> &amp;config)</td></tr>
+<tr class="memdesc:a65a8a0a253fab2bc932af6d0c54c0183"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds and returns a policy according to the configurations.  <a href="#a65a8a0a253fab2bc932af6d0c54c0183">More...</a><br /></td></tr>
+<tr class="separator:a65a8a0a253fab2bc932af6d0c54c0183"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ea2205aacd7f28505daa165fdf64913"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a7ea2205aacd7f28505daa165fdf64913">ReadTableFromCsv</a> (const std::string &amp;filename)</td></tr>
 <tr class="memdesc:a7ea2205aacd7f28505daa165fdf64913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a CSV file and returns in TableData format.  <a href="#a7ea2205aacd7f28505daa165fdf64913">More...</a><br /></td></tr>
 <tr class="separator:a7ea2205aacd7f28505daa165fdf64913"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -280,23 +280,25 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a25e8ebb8eba7779f26a5522b303b6c5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a25e8ebb8eba7779f26a5522b303b6c5c">&#9670;&nbsp;</a></span>Init()</h2>
+<a id="a65a8a0a253fab2bc932af6d0c54c0183"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65a8a0a253fab2bc932af6d0c54c0183">&#9670;&nbsp;</a></span>MakePolicy()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void genie::Init </td>
+          <td class="memname">shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; genie::MakePolicy </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classgenie_1_1Config.html">Config</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classgenie_1_1Config.html">Config</a> &amp;&#160;</td>
           <td class="paramname"><em>config</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="init_8cu_source.html#l00006">6</a> of file <a class="el" href="init_8cu_source.html">init.cu</a>.</p>
+<p>Builds and returns a policy according to the configurations. </p>
+
+<p class="definition">Definition at line <a class="el" href="execution__policy_8cu_source.html#l00013">13</a> of file <a class="el" href="execution__policy_8cu_source.html">execution_policy.cu</a>.</p>
 
 </div>
 </div>

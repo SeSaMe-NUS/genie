@@ -9,11 +9,11 @@ var classgenie_1_1Config =
     [ "IsKSet", "classgenie_1_1Config.html#a2171673533ab7c709e2b86c76b7998cd", null ],
     [ "IsNumOfQuerySet", "classgenie_1_1Config.html#a48b82b6666209338cf81d574b1da7bec", null ],
     [ "IsQueryRangeSet", "classgenie_1_1Config.html#a246c3ca28fa2acb73d677e7b1cb4ced0", null ],
-    [ "LoadFromFile", "classgenie_1_1Config.html#acae3fe0d4961a5072b1e33029d561416", null ],
-    [ "SetGpuId", "classgenie_1_1Config.html#abb6bf145df7e751b8c30ac4201fa7f34", null ],
-    [ "SetK", "classgenie_1_1Config.html#af6cd1dd453d9e8a2e624e966cc1c0149", null ],
-    [ "SetNumOfQuery", "classgenie_1_1Config.html#ae0e944e32db98bc71ed145e6d68ce1d4", null ],
-    [ "SetQueryRange", "classgenie_1_1Config.html#a9e4b44e372154294c1ec8b6bebe10ae9", null ],
-    [ "SetSaveToGpu", "classgenie_1_1Config.html#a602dfc15a297978694b7fb0f56982eaf", null ],
+    [ "LoadFromFile", "classgenie_1_1Config.html#a0e827e3346bad32b1026a491bad85b11", null ],
+    [ "SetGpuId", "classgenie_1_1Config.html#a36f3d2b51a3951723cbab9713e12e00b", null ],
+    [ "SetK", "classgenie_1_1Config.html#ae2f8432643c1f1ebc88287336bc753f7", null ],
+    [ "SetNumOfQuery", "classgenie_1_1Config.html#ab71a1ca6cd72bdee370976ba37ae4e9d", null ],
+    [ "SetQueryRange", "classgenie_1_1Config.html#a021ec541e717b27dff96ba215256fb6e", null ],
+    [ "SetSaveToGpu", "classgenie_1_1Config.html#ac58a3e5c75a214d3cab0e4ea2feed5d7", null ],
     [ "Validate", "classgenie_1_1Config.html#ab1f5f2f55a0b569a169ceedc90379140", null ]
 ];

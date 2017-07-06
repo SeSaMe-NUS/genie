@@ -6,5 +6,5 @@ var classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy =
     [ "Match", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a5243937aafd2a6b2da07cd5bbb49cc5c", null ],
     [ "SetQueryRange", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a29e36c3879de46ac5b08b26625655b7a", null ],
     [ "Validate", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a9d86a2956cb5dde74e50c682bb2143b9", null ],
-    [ "genie::ExecutionPolicyFactory", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a73f93c9961a1b84105ded9b06335f659", null ]
+    [ "genie::MakePolicy", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a039b82b62453f683e00f206654abb55e", null ]
 ];

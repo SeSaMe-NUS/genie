@@ -8,7 +8,7 @@ var searchData=
   ['load_5ftable',['load_table',['../namespaceGPUGenie.html#a3687a3a039cced336df6ec20d0470ffc',1,'GPUGenie::load_table(inv_table &amp;table, vector&lt; std::vector&lt; int &gt; &gt; &amp;data_points, GPUGenie_Config &amp;config)'],['../namespaceGPUGenie.html#a1ad762c19c6fbce36267677e45fdba18',1,'GPUGenie::load_table(inv_table &amp;table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, GPUGenie_Config &amp;config)']]],
   ['load_5ftable_5fbijectmap',['load_table_bijectMap',['../namespaceGPUGenie.html#aabf8fc2fc2d038d8c59a8cb571bf26fd',1,'GPUGenie::load_table_bijectMap(inv_table &amp;table, vector&lt; vector&lt; int &gt; &gt; &amp;data_points, GPUGenie_Config &amp;config)'],['../namespaceGPUGenie.html#a02932795f646385e78f336e18c6c1f58',1,'GPUGenie::load_table_bijectMap(inv_table &amp;table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, GPUGenie_Config &amp;config)']]],
   ['load_5ftable_5fsequence',['load_table_sequence',['../namespaceGPUGenie.html#a651a3d48f54ee106c5561bc713256252',1,'GPUGenie']]],
-  ['loadfromfile',['LoadFromFile',['../classgenie_1_1Config.html#acae3fe0d4961a5072b1e33029d561416',1,'genie::Config']]],
+  ['loadfromfile',['LoadFromFile',['../classgenie_1_1Config.html#a0e827e3346bad32b1026a491bad85b11',1,'genie::Config']]],
   ['loadquery',['LoadQuery',['../namespacegenie_1_1query.html#a9b8d8cf3fa0d5ed25cc1ea99c435582c',1,'genie::query']]],
   ['log',['log',['../classLogger.html#a232f44cb6b4255b09b976f07e90b1cb2',1,'Logger']]],
   ['loginvlists',['logInvLists',['../classLogger.html#a8a003522918b80da31c11d98c2a73613',1,'Logger']]],

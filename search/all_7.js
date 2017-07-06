@@ -2,7 +2,6 @@ var searchData=
 [
   ['exception',['exception',['../namespacegenie_1_1exception.html',1,'genie']]],
   ['execution_5fpolicy',['execution_policy',['../namespacegenie_1_1execution__policy.html',1,'genie']]],
-  ['executionpolicyfactory',['ExecutionPolicyFactory',['../classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a73f93c9961a1b84105ded9b06335f659',1,'genie::execution_policy::SingleRangeExecutionPolicy::ExecutionPolicyFactory()'],['../classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#a73f93c9961a1b84105ded9b06335f659',1,'genie::execution_policy::SingleValueExecutionPolicy::ExecutionPolicyFactory()']]],
   ['g_5fdecodearrayparallel',['g_decodeArrayParallel',['../namespaceGPUGenie.html#ab0f9dda112dc2c05bdf8f04539b175aa',1,'GPUGenie']]],
   ['g_5fscanexclusiveshared',['g_scanExclusiveShared',['../namespaceGPUGenie.html#aba1f7de5734acb9cf3d096714e4c8a39',1,'GPUGenie']]],
   ['g_5fscaninclusiveshared',['g_scanInclusiveShared',['../namespaceGPUGenie.html#a232ee9b4bd439ebd1f83b6bb9a674872',1,'GPUGenie']]],
@@ -91,8 +90,10 @@ var searchData=
   ['gpugenie_5fscan_5fmin_5fshort_5farray_5fsize',['GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE',['../scan_8h.html#ab4ab42a06d1ee64616ce24bbc1c73c41',1,'scan.h']]],
   ['gpugenie_5fscan_5fthreadblock_5fsize',['GPUGENIE_SCAN_THREADBLOCK_SIZE',['../scan_8h.html#a7364ee4235076d33509ab1b6994c354d',1,'scan.h']]],
   ['gpugenie_5ftime',['GPUGENIE_TIME',['../knn_8cu.html#af184c88d131e6f4c936abeb8e9a386aa',1,'knn.cu']]],
+  ['makepolicy',['MakePolicy',['../classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a039b82b62453f683e00f206654abb55e',1,'genie::execution_policy::SingleRangeExecutionPolicy::MakePolicy()'],['../classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html#a039b82b62453f683e00f206654abb55e',1,'genie::execution_policy::SingleValueExecutionPolicy::MakePolicy()']]],
   ['matching',['matching',['../namespacegenie_1_1matching.html',1,'genie']]],
   ['query',['query',['../namespacegenie_1_1query.html',1,'genie']]],
   ['table',['table',['../namespacegenie_1_1table.html',1,'genie']]],
+  ['utility',['utility',['../namespacegenie_1_1utility.html',1,'genie']]],
   ['validation',['validation',['../namespacegenie_1_1execution__policy_1_1validation.html',1,'genie::execution_policy']]]
 ];

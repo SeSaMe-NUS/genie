@@ -25,7 +25,6 @@ var hierarchy =
       [ "genie::execution_policy::SingleRangeExecutionPolicy", "classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html", null ],
       [ "genie::execution_policy::SingleValueExecutionPolicy", "classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html", null ]
     ] ],
-    [ "genie::ExecutionPolicyFactory", "classgenie_1_1ExecutionPolicyFactory.html", null ],
     [ "GPUGenie::inv_list", "classGPUGenie_1_1inv__list.html", null ],
     [ "GPUGenie::inv_table", "classGPUGenie_1_1inv__table.html", [
       [ "GPUGenie::inv_compr_table", "classGPUGenie_1_1inv__compr__table.html", null ]

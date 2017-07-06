@@ -10,7 +10,6 @@ var searchData=
   ['execution_5fpolicy_2ecu',['execution_policy.cu',['../execution__policy_8cu.html',1,'']]],
   ['execution_5fpolicy_2eh',['execution_policy.h',['../execution__policy_8h.html',1,'']]],
   ['executionpolicy',['ExecutionPolicy',['../classgenie_1_1ExecutionPolicy.html',1,'genie']]],
-  ['executionpolicyfactory',['ExecutionPolicyFactory',['../classgenie_1_1ExecutionPolicyFactory.html',1,'genie']]],
   ['exit',['exit',['../classLogger.html#a71189a53514af8f0e9e6333e9ec8a129',1,'Logger']]],
   ['extract_5findex_5fand_5fcount',['extract_index_and_count',['../knn_8cu.html#a4efd8ef606ce4c449a7bccf4d6b84f40',1,'knn.cu']]]
 ];

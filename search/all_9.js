@@ -4,7 +4,7 @@ var searchData=
   ['id',['id',['../structgenie_1_1matching_1_1data__t.html#a8ad6ba8bdca3fa855ebc523d28b502e6',1,'genie::matching::data_t']]],
   ['index',['index',['../structGPUGenie_1_1__GPUGenie__Config.html#a1c3420e272eb396cb5911e2bed840457',1,'GPUGenie::_GPUGenie_Config::index()'],['../classGPUGenie_1_1inv__list.html#a18fb1ce06ef10611d85992d71c0d5862',1,'GPUGenie::inv_list::index()'],['../classGPUGenie_1_1query.html#a44ac7cb0e956953cb9732b6cc116defb',1,'GPUGenie::query::index()']]],
   ['info',['INFO',['../classLogger.html#a13ad8458bac95a849b4129cb52931a7b',1,'Logger']]],
-  ['init',['Init',['../namespacegenie.html#a25e8ebb8eba7779f26a5522b303b6c5c',1,'genie']]],
+  ['init',['Init',['../namespacegenie_1_1utility.html#a943bc13a826b33ac16f73e40e11b567e',1,'genie::utility']]],
   ['init_2ecu',['init.cu',['../init_8cu.html',1,'']]],
   ['init_2eh',['init.h',['../init_8h.html',1,'']]],
   ['init_5fgenie',['init_genie',['../namespaceGPUGenie.html#a62c94fa56f1bbc52a2efffb2735d722f',1,'GPUGenie']]],

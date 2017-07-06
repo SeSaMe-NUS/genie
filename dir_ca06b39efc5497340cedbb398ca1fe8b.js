@@ -6,6 +6,7 @@ var dir_ca06b39efc5497340cedbb398ca1fe8b =
     [ "matching", "dir_b06486e5564ec710fe9e9170c5ad79a9.html", "dir_b06486e5564ec710fe9e9170c5ad79a9" ],
     [ "query", "dir_69012f9fea81684d400b3affb4af6704.html", "dir_69012f9fea81684d400b3affb4af6704" ],
     [ "table", "dir_f2aefbada23b48a8b12a626d2a4fd051.html", "dir_f2aefbada23b48a8b12a626d2a4fd051" ],
+    [ "utility", "dir_c4d022882ab02fee5cab9b4457bd1ce4.html", "dir_c4d022882ab02fee5cab9b4457bd1ce4" ],
     [ "configure.h", "configure_8h.html", "configure_8h" ],
     [ "DeviceBitPackingCodec.cu", "DeviceBitPackingCodec_8cu.html", null ],
     [ "DeviceBitPackingCodec.h", "DeviceBitPackingCodec_8h.html", "DeviceBitPackingCodec_8h" ],

@@ -2,7 +2,7 @@ var searchData=
 [
   ['i_5fsize',['i_size',['../classGPUGenie_1_1inv__table.html#a5161b01d00562f792eb02ae6c0e3d97f',1,'GPUGenie::inv_table']]],
   ['index',['index',['../classGPUGenie_1_1inv__list.html#a18fb1ce06ef10611d85992d71c0d5862',1,'GPUGenie::inv_list::index()'],['../classGPUGenie_1_1query.html#a44ac7cb0e956953cb9732b6cc116defb',1,'GPUGenie::query::index()']]],
-  ['init',['Init',['../namespacegenie.html#a25e8ebb8eba7779f26a5522b303b6c5c',1,'genie']]],
+  ['init',['Init',['../namespacegenie_1_1utility.html#a943bc13a826b33ac16f73e40e11b567e',1,'genie::utility']]],
   ['init_5fgenie',['init_genie',['../namespaceGPUGenie.html#a62c94fa56f1bbc52a2efffb2735d722f',1,'GPUGenie']]],
   ['initallcompressionnames',['initAllCompressionNames',['../DeviceCodecFactory_8cu.html#a361b2ccd9509a182d053dd50b556861a',1,'DeviceCodecFactory.cu']]],
   ['initallcompressiontypes',['initAllCompressionTypes',['../DeviceCodecFactory_8cu.html#a02bbf8f9abd2606c6a9a7cc5f01d2498',1,'DeviceCodecFactory.cu']]],
