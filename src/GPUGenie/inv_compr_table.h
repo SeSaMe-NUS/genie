@@ -156,40 +156,6 @@ public:
 
     void clear();
 
-        /*! \fn bool write_to_file(ofstream& ofs)
-     *  \brief Write one table object to a binary file
-     *
-     *  \param ofs An ofstream object
-     *
-     *  This function is always called by static write function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool write_to_file(ofstream& ofs);
-
-    /*! \fn bool read_from_file(ifstream& ifs)
-     *  \brief Read one table from a binary file
-     *
-     *  \param ifs An ifstream object
-     *
-     *  This function is always called by static read function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool read_from_file(ifstream& ifs);
-
-        /*! \fn static bool read(const char* filename, inv_table*& table)
-     *  \brief static member function responsible for deserialize inv_table objects from a binary file
-     *
-     *  \param filename The file to read.
-     *  \param table The table pointer. If the function finishes successfully, the 'table' would points
-     *  to the table recorded by the binary file.
-     *
-     *  \return True for successful operations, false for unsuccessful.
-     */
-    static bool
-    read(const char* filename, inv_compr_table*& table);
-
     template <class Archive>
     void load(Archive &ar, const unsigned int version);
 
