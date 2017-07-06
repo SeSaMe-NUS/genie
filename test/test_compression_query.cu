@@ -132,8 +132,8 @@ void knn_search_cpu(
 {
     assert(table.build_status() == GPUGenie::inv_table::status::builded);
 
-    std::vector<int> tmpResultIdxs(config.row_num);
-    std::vector<int> tmpResultCounts(config.row_num);
+    std::vector<int> tmpResultIdxs(config.data_points->size());
+    std::vector<int> tmpResultCounts(config.data_points->size());
     resultCounts.clear();
     resultIdxs.clear();
     resultCounts.reserve(config.num_of_topk * config.num_of_queries);
