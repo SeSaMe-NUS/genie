@@ -66,15 +66,9 @@ class ExecutionPolicy {
 };
 
 /*!
- * \brief Factory class for building execution policies.
+ * \brief Builds and returns a policy according to the configurations.
  */
-class ExecutionPolicyFactory {
-	public:
-		/*!
-		 * \brief Builds and returns a policy according to the configurations.
-		 */
-		static std::shared_ptr<ExecutionPolicy> MakePolicy(const Config& config);
-};
+std::shared_ptr<ExecutionPolicy> MakePolicy(const Config& config);
 
 } // end of namespace genie
 

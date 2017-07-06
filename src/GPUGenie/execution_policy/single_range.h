@@ -9,7 +9,7 @@ namespace genie {
 namespace execution_policy {
 
 class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
-	friend class genie::ExecutionPolicyFactory;
+	friend std::shared_ptr<genie::ExecutionPolicy> genie::MakePolicy(const genie::Config& config);
 	private:
 		uint32_t query_range_;
 		SingleRangeExecutionPolicy() = default;

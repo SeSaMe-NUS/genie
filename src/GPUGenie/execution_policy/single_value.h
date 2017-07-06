@@ -9,7 +9,7 @@ namespace genie {
 namespace execution_policy {
 
 class SingleValueExecutionPolicy : public genie::ExecutionPolicy {
-	friend class genie::ExecutionPolicyFactory;
+	friend std::shared_ptr<genie::ExecutionPolicy> genie::MakePolicy(const genie::Config& config);
 	private:
 		SingleValueExecutionPolicy() = default;
 	public:

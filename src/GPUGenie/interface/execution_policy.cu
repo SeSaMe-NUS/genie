@@ -10,7 +10,7 @@
 using namespace genie;
 using namespace std;
 
-shared_ptr<ExecutionPolicy> genie::ExecutionPolicyFactory::MakePolicy(const Config& config)
+shared_ptr<ExecutionPolicy> genie::MakePolicy(const Config& config)
 {
 	config.Validate();
 
