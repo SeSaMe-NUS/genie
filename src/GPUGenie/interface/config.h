@@ -8,6 +8,14 @@ namespace genie {
 
 /*!
  * \brief Config class holds all user configurable settings of GENIE
+ *
+ * The required options are:
+ * - K
+ * - Number of query
+ *
+ * The following options have default values:
+ * - Save to gpu = false
+ * - GPU ID = 0
  */
 class Config {
 	private:
@@ -68,8 +76,17 @@ class Config {
 		 * \brief Return whether K has been set.
 		 */
 		bool IsKSet() const;
+		/*!
+		 * \brief Return whether the query range has been set.
+		 */
 		bool IsQueryRangeSet() const;
+		/*!
+		 * \brief Return whether the number of query has been set.
+		 */
 		bool IsNumOfQuerySet() const;
+		/*!
+		 * \brief Validate that all required options are set.
+		 */
 		void Validate() const;
 		/*!
 		 * \brief Display enabled configuration options.

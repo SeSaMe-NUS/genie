@@ -2,7 +2,7 @@
 #define GENIE_INTERFACE_GENIE_H_
 
 /*! \namespace genie
- *  \brief genie is the top-level namespace of the project
+ *  \brief This is the top-level namespace of the project
  */
 
 #include "config.h"
