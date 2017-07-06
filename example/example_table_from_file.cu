@@ -23,12 +23,13 @@ using namespace std;
 int main(int argc, char * argv[])//for ide: from main to main4
 {
 	Logger::set_level(Logger::DEBUG);
-	std::vector<std::vector<int> > queries;
+    std::vector<std::vector<int> > queries;
+	std::vector<std::vector<int> > data;
 	std::vector<attr_t> multirange_queries;
 	//std::vector<std::vector<int> > data;
     GPUGenie::GPUGenie_Config config;
 
-	string  dataFile = "../static/tweets_4k.dat";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
+	string  dataFile = "../static/tweets_4k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
     string  queryFile= "../static/tweets_4k.csv";
 
 	//Data dimension
@@ -79,13 +80,13 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	config.use_multirange = false;
 
-    config.data_type = 1;
+    config.data_type = 0;
     config.search_type = 1;
     config.max_data_size = 0;
 
     config.num_of_queries = 10;
 
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
+    read_file(*config.data_points, dataFile.c_str(), -1);
 	if(config.use_multirange)
 	{
 		read_query(multirange_queries, queryFile.c_str(), -1);
@@ -106,7 +107,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
     //example of writing and reading operations
     inv_table * __table = NULL;
 	init_genie(config);
-    preprocess_for_knn_binary(config, __table);
+    preprocess_for_knn_csv(config, __table);
 
     u64 s1 = getTime();
     std::shared_ptr<const GPUGenie::inv_table> sp_table(__table, [](inv_table* ptr){delete[] ptr;});

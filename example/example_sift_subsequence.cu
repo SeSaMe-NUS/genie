@@ -22,7 +22,7 @@ using namespace GPUGenie;
 int main(int argc, char* argv[])
 {
     cudaDeviceReset();
-    string dataFile = "../static/sift_1k.dat";
+    string dataFile = "../static/sift_1k.csv";
     string queryFile = "../static/sift_1k.csv";
     vector<vector<int> > queries;
     vector<vector<int> > data;
@@ -46,22 +46,21 @@ int main(int argc, char* argv[])
     config.multiplier = 1.5f;
     config.use_multirange = false;
 
-    config.data_type = 1;
+    config.data_type = 0;
     config.search_type = 1;
     config.max_data_size = 0;
 
     config.num_of_queries = 20;
     config.use_subsequence_search = true;
     
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    //read_file(data, "sift_1k.csv", -1);
+    read_file(*config.data_points, dataFile.c_str(), -1);
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
 
 
 
 	init_genie(config);
-    preprocess_for_knn_binary(config, table);
+    preprocess_for_knn_csv(config, table);
    
 
     vector<int> & inv = *table[0].inv();

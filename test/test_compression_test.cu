@@ -22,7 +22,7 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const std::string DEFAULT_TEST_DATASET = "../static/tweets_20.dat";
+const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 
 void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
 {
@@ -108,22 +108,20 @@ int main(int argc, char* argv[])
     inv_table * table = NULL;
     GPUGenie_Config config;
 
-    config.data_points = NULL;
+
+    vector<vector<int>> data;
+    config.data_points = &data;
     config.use_load_balance = false;
-    config.data_type = 1;
+    config.data_type = 0;
 
     std::cout << "Reading data file " << dataFile << "..." << std::endl;  
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    assert(config.item_num > 0);
-    assert(config.row_num > 0);
-    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
-    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
+    read_file(*config.data_points, dataFile.c_str(), -1);
     std::cout << "Done reading data file!" << std::endl;  
 
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
     init_genie(config);
-    preprocess_for_knn_binary(config, table);
+    preprocess_for_knn_csv(config, table);
     std::cout << "Done preprocessing data..." << std::endl;  
 
     // check how many tables we have

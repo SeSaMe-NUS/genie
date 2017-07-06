@@ -12,14 +12,8 @@ endfunction()
 genie_add_test_case(test_csv_input_sift_data
     test_csv_input_sift_data.cu)
 
-genie_add_test_case(test_binary_input_sift_data
-    test_binary_input_sift_data.cu)
-
 genie_add_test_case(test_csv_input_multiload
     test_csv_input_multiload.cu)
-
-genie_add_test_case(test_binary_input_multiload
-    test_binary_input_multiload.cu)
 
 genie_add_test_case(test_save2gpu_sift
     test_save2gpu_sift.cu)
@@ -27,20 +21,11 @@ genie_add_test_case(test_save2gpu_sift
 genie_add_test_case(test_csv_input_tweets
     test_csv_input_tweets.cu)
 
-genie_add_test_case(test_binary_input_tweets
-    test_binary_input_tweets.cu)
-
 genie_add_test_case(test_csv_multiload_tweets
     test_csv_multiload_tweets.cu)
 
-genie_add_test_case(test_binary_multiload_tweets
-    test_binary_multiload_tweets.cu)
-
 genie_add_test_case(test_subsequence_search_csv_input
     test_subsequence_search_csv_input.cu)
-
-genie_add_test_case(test_subsequence_search_binary_input
-    test_subsequence_search_binary_input.cu)
 
 genie_add_test_case(test_hashtable_overflow
     test_hashtable_overflow.cu)
