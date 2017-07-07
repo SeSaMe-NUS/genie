@@ -13,9 +13,12 @@
 #include <memory>
 #include <string>
 
+#include <boost/serialization/export.hpp>
+
 #include "DeviceCodecFactory.h"
 
 #include "inv_table.h"
+
 
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
@@ -73,7 +76,7 @@ public:
      */
     size_t getUncompressedPostingListMaxLength() const;
 
-    void setUncompressedPostingListMaxLength(size_t length);
+        void setUncompressedPostingListMaxLength(size_t length);
 
     /* 
      * Returns compressed version of _inv (posting lists array)
@@ -153,42 +156,21 @@ public:
 
     void clear();
 
-        /*! \fn bool write_to_file(ofstream& ofs)
-     *  \brief Write one table object to a binary file
-     *
-     *  \param ofs An ofstream object
-     *
-     *  This function is always called by static write function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool write_to_file(ofstream& ofs);
+    template <class Archive>
+    void load(Archive &ar, const unsigned int version);
 
-    /*! \fn bool read_from_file(ifstream& ifs)
-     *  \brief Read one table from a binary file
-     *
-     *  \param ifs An ifstream object
-     *
-     *  This function is always called by static read function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool read_from_file(ifstream& ifs);
+    template <class Archive>
+    void save(Archive &ar, const unsigned int version) const;
 
-        /*! \fn static bool read(const char* filename, inv_table*& table)
-     *  \brief static member function responsible for deserialize inv_table objects from a binary file
-     *
-     *  \param filename The file to read.
-     *  \param table The table pointer. If the function finishes successfully, the 'table' would points
-     *  to the table recorded by the binary file.
-     *
-     *  \return True for successful operations, false for unsuccessful.
-     */
-    static bool
-    read(const char* filename, inv_compr_table*& table);
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+private:
+    friend class boost::serialization::access;
 
 };
-}
 
+} 
+
+BOOST_CLASS_EXPORT_KEY(GPUGenie::inv_compr_table)
 
 #endif

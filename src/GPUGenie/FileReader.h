@@ -101,35 +101,6 @@ void read_query(inv_table& table, const char* fname,
  */
 void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num);
 
-//convert a csv file to a binary file, the third arg determines write style(override or append)
-/*! \fn void csv2binary(const char* csvfile, const char* binaryfile, bool app_write = false)
- *  \brief This function can convert a csv file to a binary file
- *
- *  \param csvfile The name of the csv file
- *  \param binaryfile The name of the binary file
- *  \param app_write The writing mode. True for appending writing, false for trunc writing
- *
- *  Reading csv files is time-comsuming. If you want to read a csv file for many times, we suggest
- *  you first convert the csv file to a binary file. Reading binary file can save a lot of time. You can
- *  build real-time app based on binary reading and searching
- *
- */
-void csv2binary(const char* csvfile, const char* binaryfile, bool app_write = false);
-
-/*! \fn void read_file(const char* fname, int **_data, unsigned int& item_num, unsigned int **_index, unsigned int& row_num)
- *  \brief This function provides a way to read data points from given dataset.
- *
- *  \param fname The file name
- *  \param _data All elements of all data.
- *  \param item_num The number of elements in data array
- *  \param _index points to the address of a one-dimension array, storing starting position of each row in data array
- *  \param row_num Equal to the size of index array
- *
- *  Binary reading is recommended for reading large size of dataset or need to do search many times on a same dataset.
- *  It can save you a lot of time.
- */
-void read_file(const char* fname, int **_data, unsigned int& item_num, unsigned int **_index, unsigned int& row_num);
-
 } /* namespace GPUGenie */
 
 #endif /* FILEREADER_H_ */

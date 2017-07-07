@@ -12,38 +12,20 @@ endfunction()
 genie_add_test_case(test_csv_input_sift_data
     test_csv_input_sift_data.cu)
 
-genie_add_test_case(test_binary_input_sift_data
-    test_binary_input_sift_data.cu)
-
 genie_add_test_case(test_csv_input_multiload
     test_csv_input_multiload.cu)
-
-genie_add_test_case(test_binary_input_multiload
-    test_binary_input_multiload.cu)
 
 genie_add_test_case(test_save2gpu_sift
     test_save2gpu_sift.cu)
 
-genie_add_test_case(test_serialization_for_table
-    test_serialization_for_table.cu)
-
 genie_add_test_case(test_csv_input_tweets
     test_csv_input_tweets.cu)
-
-genie_add_test_case(test_binary_input_tweets
-    test_binary_input_tweets.cu)
 
 genie_add_test_case(test_csv_multiload_tweets
     test_csv_multiload_tweets.cu)
 
-genie_add_test_case(test_binary_multiload_tweets
-    test_binary_multiload_tweets.cu)
-
 genie_add_test_case(test_subsequence_search_csv_input
     test_subsequence_search_csv_input.cu)
-
-genie_add_test_case(test_subsequence_search_binary_input
-    test_subsequence_search_binary_input.cu)
 
 genie_add_test_case(test_hashtable_overflow
     test_hashtable_overflow.cu)
@@ -53,6 +35,10 @@ genie_add_test_case(test_multiple_search
 
 genie_add_test_case(test_refactoring_new_interface
 	test_refactoring_new_interface.cu)
+
+genie_add_test_case(test_serialization
+    test_serialization.cu)
+
 
 if (GENIE_COMPR)
     genie_add_test_case(test_compression_naive

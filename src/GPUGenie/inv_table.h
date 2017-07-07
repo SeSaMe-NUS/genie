@@ -14,6 +14,9 @@
 #include <unordered_map>
 #include "inv_list.h"
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/split_member.hpp>
+
 /*! \var typedef unsigned long long u64
  *  \brief A type definition for a 64-bit unsigned integer
  */
@@ -21,12 +24,14 @@ typedef unsigned long long u64;
 
 using namespace std;
 
+
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
  */
 namespace GPUGenie
 {
 
+class inv_compr_table;
 
 /*! \class inv_table
  *  \brief The declaration for class inv_table
@@ -236,30 +241,6 @@ public:
      */
     void append_sequence(inv_list& inv);
 
-    /*! \fn static bool write(const char* filename, inv_table*& table)
-     *  \brief static member function responsible for serialize inv_table objects to a binary file
-     *
-     *  \param filename The file to write.
-     *  \param table The table to be serialized. It should be the first table, if there are more than
-     *  one table.
-     *
-     *  \return True for successful operations, false for unsuccessful.
-     */
-    static bool
-    write(const char* filename, inv_table*& table);
-
-    /*! \fn static bool read(const char* filename, inv_table*& table)
-     *  \brief static member function responsible for deserialize inv_table objects from a binary file
-     *
-     *  \param filename The file to read.
-     *  \param table The table pointer. If the function finishes successfully, the 'table' would points
-     *  to the table recorded by the binary file.
-     *
-     *  \return True for successful operations, false for unsuccessful.
-     */
-    static bool
-    read(const char* filename, inv_table*& table);
-
     /*! \fn void set_table_index(int attr_index)
      *  \brief Set the table_index to 'index'
      *  \param index The index value you wish to set.
@@ -284,7 +265,7 @@ public:
      *  \return The index of this table.
      */
     int
-    get_table_index();
+    get_table_index() const;
 
     /*! \fn int get_total_num_of_table()
      *  \brief return the total_num_of_table.
@@ -292,7 +273,7 @@ public:
      *  \return The total number of tables in the table array for one dataset.
      */
     int
-    get_total_num_of_table();
+    get_total_num_of_table() const;
 
 
     /*! \fn bool cpy_data_to_gpu()
@@ -496,31 +477,6 @@ public:
     bool
     list_contain(int attr_index, int value);
 
-    /*! \fn bool write_to_file(ofstream& ofs)
-     *  \brief Write one table object to a binary file
-     *
-     *  \param ofs An ofstream object
-     *
-     *  This function is always called by static write function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool
-    write_to_file(ofstream& ofs);
-
-    /*! \fn bool read_from_file(ifstream& ifs)
-     *  \brief Read one table from a binary file
-     *
-     *  \param ifs An ifstream object
-     *
-     *  This function is always called by static read function,
-     *  which is a static member of inv_table class.
-     *
-     */
-    virtual bool
-    read_from_file(ifstream& ifs);
-
-
     /*! \fn void set_min_value_sequence(int min_value)
      *  \brief Used in sequence search. To set the min_value for all sequences' element.
      *
@@ -573,9 +529,16 @@ public:
     get_gram_length_sequence();
 
 
+    template <class Archive>
+    void load(Archive &ar, const unsigned int version);
 
+    template <class Archive>
+    void save(Archive &ar, const unsigned int version) const;
 
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
+private:
+    friend class boost::serialization::access;
 
 };
 }

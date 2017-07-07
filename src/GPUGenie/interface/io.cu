@@ -1,4 +1,6 @@
 #include <GPUGenie.h>
+#include <GPUGenie/serialization.h>
+
 #include "io.h"
 
 using namespace std;
@@ -14,11 +16,12 @@ TableData genie::ReadTableFromCsv(const string& filename)
 
 shared_ptr<GPUGenie::inv_table> genie::ReadTableFromBinary(const string& filename)
 {
-	GPUGenie::inv_table* table_ptr;
-	GPUGenie::inv_table::read(filename.c_str(), table_ptr);
-	shared_ptr<GPUGenie::inv_table> table(table_ptr, [](GPUGenie::inv_table* p) { delete[] p; });
+	return util::LoadTable(filename);;
+}
 
-	return table;
+void genie::SaveTableToBinary(const string& filename, const shared_ptr<const GPUGenie::inv_table> &table)
+{
+	util::SaveTable(filename, table);
 }
 
 QueryData genie::ReadQueryFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
@@ -28,3 +31,5 @@ QueryData genie::ReadQueryFromCsv(const string& filename, const shared_ptr<const
 
 	return query_data;
 }
+
+

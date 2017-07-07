@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "GPUGenie.h"
+#include <GPUGenie/interface/io.h>
 
 using namespace GPUGenie;
 
@@ -19,5 +20,6 @@ int main(int argc, char *argv[])
 	config.data_points = &data;
 	read_file(data, csv_filename, -1);
 	preprocess_for_knn_csv(config, table);
-	inv_table::write(binary_filename, table);
+	std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    genie::SaveTableToBinary(binary_filename, sp_table);
 }

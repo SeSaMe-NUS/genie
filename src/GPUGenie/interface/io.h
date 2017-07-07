@@ -19,6 +19,10 @@ TableData ReadTableFromCsv(const std::string& filename);
  */
 std::shared_ptr<GPUGenie::inv_table> ReadTableFromBinary(const std::string& filename);
 /*!
+ *  \brief Save inverted table to a binary file.
+ */
+void SaveTableToBinary(const std::string& filename, const std::shared_ptr<const GPUGenie::inv_table> &table);
+/*!
  * \brief Reads query from a CSV file and returns in QueryData format.
  */
 QueryData ReadQueryFromCsv(const std::string& filename, const std::shared_ptr<const ExecutionPolicy>& policy);

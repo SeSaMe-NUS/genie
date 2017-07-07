@@ -7,6 +7,7 @@
 #undef NDEBUG
  
 #include <GPUGenie.h>
+#include <GPUGenie/interface/io.h>
 
 #include <algorithm>
 #include <cassert>
@@ -19,7 +20,7 @@
 
 using namespace GPUGenie;
 
-const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
+const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
 const int         DEFAULT_DIMENSIONS = 5;
 const int         DEFAULT_NUM_QUERIES = 3;
@@ -118,18 +119,12 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
 
 
     Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
-        
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    assert(config.item_num > 0);
-    assert(config.row_num > 0);
-    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
-    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
-
+    read_file(*config.data_points, dataFile.c_str(), -1);
 
     Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
     inv_table * table = NULL;
     __attribute__((unused)) inv_compr_table * comprTable = NULL;
-    preprocess_for_knn_binary(config, table); // this returns inv_compr_table if config.compression is set
+    preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != NULL);
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
@@ -141,10 +136,8 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         assert(config.compression == comprTable->getCompression());
     }
 
-    if (!inv_table::write(binaryInvTableFile.c_str(), table)) {
-        Logger::log(Logger::ALERT, "Error writing inverted table to binary file %s!", binaryInvTableFile.c_str());
-        return std::string();
-    }
+    std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    genie::SaveTableToBinary(binaryInvTableFile, sp_table);
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
@@ -155,15 +148,7 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    inv_table *table;
-    if (!config.compression){
-        inv_table::read(binaryInvTableFile.c_str(), table);
-    }
-    else {
-        inv_compr_table *comprTable;
-        inv_compr_table::read(binaryInvTableFile.c_str(), comprTable);
-        table = comprTable;
-    }
+    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
@@ -195,6 +180,7 @@ int main(int argc, char* argv[])
     string queryFile = DEFAULT_QUERY_DATASET;
     
     vector<vector<int>> queryPoints;
+    vector<vector<int>> data;
 
     int dimensions = DEFAULT_DIMENSIONS;
     int numberOfQueries = DEFAULT_NUM_QUERIES;
@@ -213,14 +199,14 @@ int main(int argc, char* argv[])
     config.selectivity = 0.0f;
 
     config.query_points = &queryPoints;
-    config.data_points = NULL;
+    config.data_points = &data;
 
     config.use_load_balance = true;
     config.posting_list_max_length = 1024;
     config.multiplier = 1.0f;
     config.use_multirange = false;
 
-    config.data_type = 1;
+    config.data_type = 0;
     config.search_type = 0;
     config.max_data_size = 0;
 

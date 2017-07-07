@@ -14,6 +14,7 @@ set( GENIE_COMPILATION_UNITS
   GPUGenie/genie_errors.cu
   GPUGenie/inv_list.cu
   GPUGenie/inv_table.cu
+  GPUGenie/serialization.cu
   GPUGenie/query.cu
   GPUGenie/match.cu
   GPUGenie/match_common.cu
@@ -46,6 +47,7 @@ set( GENIE_HEADERS
   GPUGenie/genie_errors.h
   GPUGenie/inv_list.h
   GPUGenie/inv_table.h
+  GPUGenie/serialization.h
   GPUGenie/query.h
   GPUGenie/match.h
   GPUGenie/match_common.h
@@ -107,7 +109,8 @@ add_library( ${PROJECT_NAME}
   ${GENIE_COMPILATION_UNITS} ${GENIE_COMPRESSION_COMPILATION_UNITS})
 
 target_link_libraries( ${PROJECT_NAME}
-  ${Boost_LIBRARIES})
+  ${Boost_LIBRARIES}
+  ${BZIP2_LIBRARIES})
 
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES

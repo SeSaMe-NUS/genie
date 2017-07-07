@@ -17,7 +17,7 @@ using namespace GPUGenie;
 
 int main(int argc, char* argv[])
 {
-    string dataFile = "../static/tweets_20.dat";
+    string dataFile = "../static/tweets_20.csv";
     string queryFile = "../static/tweets_20.csv";
     vector<vector<int> > queries;
     vector<vector<int> > data;
@@ -38,24 +38,24 @@ int main(int argc, char* argv[])
     config.selectivity = 0.0f;
 
     config.query_points = &queries;
-    config.data_points = NULL;
+    config.data_points = &data;
 
     config.use_load_balance = false;
     config.posting_list_max_length = 6400;
     config.multiplier = 1.5f;
     config.use_multirange = false;
 
-    config.data_type = 1;
+    config.data_type = 0;
     config.search_type = 1;
     config.max_data_size = 0;
 
     config.num_of_queries = 20;
 
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
+    read_file(*config.data_points, dataFile.c_str(), -1);
     read_file(queries, queryFile.c_str(), config.num_of_queries);
 
 	init_genie(config);
-    preprocess_for_knn_binary(config, table);
+    preprocess_for_knn_csv(config, table);
 
     vector<int> result;
     vector<int> result_count;

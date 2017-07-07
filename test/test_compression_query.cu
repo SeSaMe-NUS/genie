@@ -22,7 +22,7 @@
 using namespace GPUGenie;
 using namespace SIMDCompressionLib;
 
-const std::string DEFAULT_TEST_DATASET = "../static/sift_20.dat";
+const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
 
 /**
@@ -130,12 +130,10 @@ void knn_search_cpu(
             const std::string &compression_name, // TODO make string name of compression part of config 
             bool manualDelta)
 {
-    assert(config.row_num > 0);
-    assert((int)config.row_num >= config.num_of_topk);
     assert(table.build_status() == GPUGenie::inv_table::status::builded);
 
-    std::vector<int> tmpResultIdxs(config.row_num);
-    std::vector<int> tmpResultCounts(config.row_num);
+    std::vector<int> tmpResultIdxs(config.data_points->size());
+    std::vector<int> tmpResultCounts(config.data_points->size());
     resultCounts.clear();
     resultIdxs.clear();
     resultCounts.reserve(config.num_of_topk * config.num_of_queries);
@@ -298,6 +296,7 @@ int main(int argc, char* argv[])
     string queryFile = DEFAULT_QUERY_DATASET;
 
     vector<vector<int>> queryPoints;
+    vector<vector<int>> data;
     inv_table * table = NULL;
     GPUGenie_Config config;
 
@@ -311,14 +310,14 @@ int main(int argc, char* argv[])
     config.selectivity = 0.0f;
 
     config.query_points = &queryPoints;
-    config.data_points = NULL;
+    config.data_points = &data;
 
     config.use_load_balance = false;
     config.posting_list_max_length = 6400;
     config.multiplier = 1.5f;
     config.use_multirange = false;
 
-    config.data_type = 1;
+    config.data_type = 0;
     config.search_type = 0;
     config.max_data_size = 0;
 
@@ -326,17 +325,13 @@ int main(int argc, char* argv[])
 
 
     std::cout << "Reading data file " << dataFile << "..." << std::endl;  
-    read_file(dataFile.c_str(), &config.data, config.item_num, &config.index, config.row_num);
-    assert(config.item_num > 0);
-    assert(config.row_num > 0);
-    Logger::log(Logger::DEBUG, "config.item_num: %d", config.item_num);
-    Logger::log(Logger::DEBUG, "config.row_num: %d", config.row_num);
+    read_file(*config.data_points, dataFile.c_str(), -1);
     std::cout << "Done reading data file!" << std::endl;  
 
 
     std::cout << "Preprocessing data (" << config.item_num << " items total)..." << std::endl;
     init_genie(config);
-    preprocess_for_knn_binary(config, table);
+    preprocess_for_knn_csv(config, table);
     // check how many tables we have
     assert(table != NULL);
     assert(table->get_total_num_of_table() == 1);

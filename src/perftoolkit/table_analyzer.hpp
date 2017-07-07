@@ -133,7 +133,7 @@ protected:
 class TableAnalyzer
 {
 public:
-    static void Analyze(GPUGenie::inv_table* table, const std::string &dest_directory)
+    static void Analyze(std::shared_ptr<GPUGenie::inv_table> table, const std::string &dest_directory)
     {
         assert(table);
         assert(table->build_status() == GPUGenie::inv_compr_table::builded);
@@ -143,7 +143,7 @@ public:
         std::vector<int> *invPos;
         std::vector<int> *compressedInvPos;
 
-        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        shared_ptr<GPUGenie::inv_compr_table> ctable = dynamic_pointer_cast<GPUGenie::inv_compr_table>(table);
         if (ctable)
         {
             compression = ctable->getCompression();
