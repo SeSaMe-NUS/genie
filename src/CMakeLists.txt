@@ -1,6 +1,13 @@
+macro(install_headers HEADERS)
+  foreach ( file ${${HEADERS}} )
+    get_filename_component( dir ${file} DIRECTORY )
+    install( FILES ${file} DESTINATION include/${dir} )
+  endforeach()
+endmacro()
+
 configure_file(
-	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
-	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
+  ${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
 )
 
 set( GENIE_COMPILATION_UNITS
@@ -50,6 +57,20 @@ set( GENIE_HEADERS
   GPUGenie/PerfLogger.hpp
   GPUGenie/Logger.h
   GPUGenie/Timing.h
+  GPUGenie/interface/genie.h
+  GPUGenie/interface/config.h
+  GPUGenie/interface/execution_policy.h
+  GPUGenie/interface/io.h
+  GPUGenie/interface/search.h
+  GPUGenie/interface/types.h
+  GPUGenie/execution_policy/single_value.h
+  GPUGenie/execution_policy/single_range.h
+  GPUGenie/execution_policy/validation.h
+  GPUGenie/exception/exception.h
+  GPUGenie/matching/interface.h
+  GPUGenie/query/interface.h
+  GPUGenie/table/interface.h
+  GPUGenie/utility/init.h
 )
 
 
@@ -95,9 +116,9 @@ set_target_properties( ${PROJECT_NAME}
 
 
 install(TARGETS ${PROJECT_NAME} 
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
-install(FILES ${GENIE_TOP_LEVEL_HEADER} DESTINATION include)
-install(FILES ${GENIE_HEADERS} DESTINATION include/GPUGenie)
-install(FILES ${GENIE_COMPRESSION_HEADERS} DESTINATION include/GPUGenie)
+install_headers(GENIE_TOP_LEVEL_HEADER)
+install_headers(GENIE_HEADERS)
+install_headers(GENIE_COMPRESSION_HEADERS)
