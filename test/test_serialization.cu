@@ -16,7 +16,7 @@
 #include <GPUGenie/interface.h>
 #include <GPUGenie/inv_table.h>
 #include <GPUGenie/inv_compr_table.h>
-#include <GPUGenie/serialization.h>
+#include <GPUGenie/interface/io.h>
 
 using namespace std;
 using namespace GPUGenie;
@@ -29,12 +29,13 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
     GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
+    shared_ptr<inv_table> sp_table(table, std::default_delete<inv_table[]>());
 
     Logger::log(Logger::INFO, "Saving inverted table to file...");
-    genie::util::SaveTable(inv_filename, table);
+    genie::SaveTableToBinary(inv_filename, sp_table);
 
     Logger::log(Logger::INFO, "Loading inverted table from file...");
-    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::util::LoadTable(inv_filename);
+    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::ReadTableFromBinary(inv_filename);
 
     Logger::log(Logger::INFO, "Checking loaded table correctness...");
 
@@ -76,9 +77,6 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
         assert(ctable->getUncompressedPostingListMaxLength() == c_loaded_table->getUncompressedPostingListMaxLength());
         assert(ctable->getCompression() == c_loaded_table->getCompression());
     }
-
-    Logger::log(Logger::DEBUG, "Deallocating inverted table...");
-    delete[] table;
 }
 
 

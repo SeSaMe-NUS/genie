@@ -19,7 +19,7 @@
 #include "serialization.h"
 
 void
-genie::util::SaveTable(const std::string &filename, const GPUGenie::inv_table* table)
+genie::util::SaveTable(const std::string &filename, const std::shared_ptr<const GPUGenie::inv_table> &table)
 {
     // Cannot save more than one table using this function
     if (table->get_table_index() != 0 || table->get_total_num_of_table() != 1)
@@ -33,7 +33,7 @@ genie::util::SaveTable(const std::string &filename, const GPUGenie::inv_table* t
 
     boost::archive::binary_oarchive oa(ofs);
     // oa.register_type<GPUGenie::inv_compr_table>();
-    oa << table;
+    oa << table.get();
 }
 
 std::shared_ptr<GPUGenie::inv_table>

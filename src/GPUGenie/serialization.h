@@ -10,7 +10,7 @@ namespace util
 {
 
 void
-SaveTable(const std::string &filename, const GPUGenie::inv_table* table);
+SaveTable(const std::string &filename, const std::shared_ptr<const GPUGenie::inv_table> &table);
 
 std::shared_ptr<GPUGenie::inv_table>
 LoadTable(const std::string &filename);

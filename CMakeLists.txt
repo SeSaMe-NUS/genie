@@ -97,6 +97,9 @@ if (GENIE_DISTRIBUTED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+## Bzip2
+
+find_package(BZip2 REQUIRED)
 
 ## COMPRESSION MODULE
 

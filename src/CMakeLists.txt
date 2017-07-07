@@ -110,7 +110,7 @@ add_library( ${PROJECT_NAME}
 
 target_link_libraries( ${PROJECT_NAME}
   ${Boost_LIBRARIES}
-  bz2)
+  ${BZIP2_LIBRARIES})
 
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES

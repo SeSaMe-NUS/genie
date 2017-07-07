@@ -21,7 +21,7 @@ shared_ptr<GPUGenie::inv_table> genie::ReadTableFromBinary(const string& filenam
 
 void genie::SaveTableToBinary(const string& filename, const shared_ptr<const GPUGenie::inv_table> &table)
 {
-	util::SaveTable(filename, table.get());
+	util::SaveTable(filename, table);
 }
 
 QueryData genie::ReadQueryFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
