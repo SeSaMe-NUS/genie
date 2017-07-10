@@ -35,7 +35,7 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
     genie::SaveTableToBinary(inv_filename, sp_table);
 
     Logger::log(Logger::INFO, "Loading inverted table from file...");
-    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::ReadTableFromBinary(inv_filename);
+    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::LoadTableFromBinary(inv_filename);
 
     Logger::log(Logger::INFO, "Checking loaded table correctness...");
 

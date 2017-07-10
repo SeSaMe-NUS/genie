@@ -6,7 +6,7 @@
 using namespace std;
 using namespace genie;
 
-TableData genie::ReadTableFromCsv(const string& filename)
+TableData genie::LoadTableDataFromCsv(const string& filename)
 {
 	TableData table_data;
 	GPUGenie::read_file(table_data, filename.c_str(), -1);
@@ -14,7 +14,7 @@ TableData genie::ReadTableFromCsv(const string& filename)
 	return table_data;
 }
 
-shared_ptr<GPUGenie::inv_table> genie::ReadTableFromBinary(const string& filename)
+shared_ptr<GPUGenie::inv_table> genie::LoadTableFromBinary(const string& filename)
 {
 	return util::LoadTable(filename);;
 }
@@ -24,7 +24,7 @@ void genie::SaveTableToBinary(const string& filename, const shared_ptr<const GPU
 	util::SaveTable(filename, table);
 }
 
-QueryData genie::ReadQueryFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
+QueryData genie::LoadQueryDataFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
 {
 	QueryData query_data;
 	GPUGenie::read_file(query_data, filename.c_str(), policy->GetNumOfQuery());

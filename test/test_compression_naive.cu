@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
     std::cout << "Establishing reference solution on uncompressed table..." << std::endl;
 
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
-    std::shared_ptr<GPUGenie::inv_table> refTable = genie::ReadTableFromBinary(binaryInvTableFile);
+    std::shared_ptr<GPUGenie::inv_table> refTable = genie::LoadTableFromBinary(binaryInvTableFile);
 
 
     std::cout << "Examining inverted lists...";
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 
     Logger::log(Logger::INFO, "Opening binary inv_compr_table from %s ...", binaryComprInvTableFile.c_str());
     std::shared_ptr<inv_compr_table> comprTable =
-            dynamic_pointer_cast<inv_compr_table>(genie::ReadTableFromBinary(binaryComprInvTableFile));
+            dynamic_pointer_cast<inv_compr_table>(genie::LoadTableFromBinary(binaryComprInvTableFile));
 
     std::cout << "Examining compressed index..." << std::endl;
 

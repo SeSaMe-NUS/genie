@@ -119,7 +119,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
   
   //  unsigned int table_num = 1;
     u64 s2 = getTime();
-    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary("../static/table.dat");
+    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary("../static/table.dat");
     u64 e2 = getTime();
 
     double time2 = getInterval(s2, e2);

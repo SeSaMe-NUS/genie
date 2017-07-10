@@ -12,8 +12,8 @@ SearchResult genie::Search(shared_ptr<ExecutionPolicy>& policy,
 		const string& table_filename,
 		const string& query_filename)
 {
-	TableData table_data = ReadTableFromCsv(table_filename);
-	QueryData query_data = ReadQueryFromCsv(query_filename, policy);
+	TableData table_data = LoadTableDataFromCsv(table_filename);
+	QueryData query_data = LoadQueryDataFromCsv(query_filename, policy);
 
 	shared_ptr<GPUGenie::inv_table> table = BuildTable(policy, table_data);
 	vector<GPUGenie::query> queries = BuildQuery(policy, table, query_data);
