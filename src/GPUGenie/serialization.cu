@@ -68,9 +68,6 @@ void GPUGenie::inv_table::load(Archive &ar, const unsigned int version)
 {
     ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
     Logger::log(Logger::DEBUG, "Loading inv_table archive of version %d", version);
-    ar >> table_index;
-    ar >> total_num_of_table;
-    ar >> _shifter;
     ar >> _size;
     ar >> _dim_size;
     ar >> shift_bits_subsequence;
@@ -95,9 +92,6 @@ void GPUGenie::inv_table::save(Archive &ar, const unsigned int version) const
 {
     ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
     Logger::log(Logger::DEBUG, "Saving inv_table archive of version %d", version);
-    ar << table_index;
-    ar << total_num_of_table;
-    ar << _shifter;
     ar << _size;
     ar << _dim_size;
     ar << shift_bits_subsequence;
