@@ -5,9 +5,9 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include "GPUGenie.h"
-#include <GPUGenie/interface/io.h>
-#include <GPUGenie/DeviceCodecFactory.h>
+#include <genie/GPUGenie.h>
+#include <genie/interface/io.h>
+#include <genie/compression/DeviceCodecFactory.h>
 
 using namespace GPUGenie;
 using namespace std;

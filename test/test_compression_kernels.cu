@@ -6,8 +6,8 @@
 
 #undef NDEBUG
  
-#include <GPUGenie.h>
-#include <GPUGenie/interface/io.h>
+#include <genie/GPUGenie.h>
+#include <genie/interface/io.h>
 
 #include <algorithm>
 #include <cassert>

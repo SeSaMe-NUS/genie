@@ -9,7 +9,7 @@
  */
 
 
-#include "GPUGenie.h"
+#include <genie/GPUGenie.h>
 
 #include <assert.h>
 #include <vector>

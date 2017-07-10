@@ -6,7 +6,7 @@
 
 #undef NDEBUG
  
-#include <GPUGenie.h>
+#include <genie/GPUGenie.h>
 
 #include <algorithm>
 #include <assert.h>

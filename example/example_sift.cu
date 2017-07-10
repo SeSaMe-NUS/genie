@@ -4,7 +4,7 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include "GPUGenie.h" //for ide: change from "GPUGenie.h" to "../src/GPUGenie.h"
+#include <genie/GPUGenie.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

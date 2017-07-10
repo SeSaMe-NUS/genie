@@ -11,7 +11,7 @@
 #include <memory>
 #include <iostream>
 #include <cassert>
-#include <GPUGenie/interface/genie.h>
+#include <genie/interface/genie.h>
 
 using namespace std;
 using namespace genie;

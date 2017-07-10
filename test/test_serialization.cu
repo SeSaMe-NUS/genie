@@ -13,10 +13,10 @@
 #include <fstream>
 #include <memory>
 
-#include <GPUGenie/interface.h>
-#include <GPUGenie/inv_table.h>
-#include <GPUGenie/inv_compr_table.h>
-#include <GPUGenie/interface/io.h>
+#include <genie/interface/interface.h>
+#include <genie/table/inv_table.h>
+#include <genie/table/inv_compr_table.h>
+#include <genie/interface/io.h>
 
 using namespace std;
 using namespace GPUGenie;
