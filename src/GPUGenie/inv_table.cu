@@ -247,11 +247,6 @@ GPUGenie::inv_table::inv()
 	return &_inv;
 }
 
-vector<int>*
-GPUGenie::inv_table::inv_index()
-{
-	return &_inv_index;
-}
 
 unordered_map<size_t, int>*
 GPUGenie::inv_table::inv_index_map()
@@ -270,9 +265,9 @@ void
 GPUGenie::inv_table::build(size_t max_length, bool use_load_balance)
 {
     u64 table_start = getTime();
+    vector<int> _inv_index;
 	_ck.clear();
     _inv.clear();
-	_inv_index.clear();
 	_inv_pos.clear();
     if(!use_load_balance)
     {

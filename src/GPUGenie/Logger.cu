@@ -191,15 +191,6 @@ void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_le
         ss.str(std::string());
         ss.clear();
     }
-    std::vector<int> *inv_index = table->inv_index();
-    if (inv_index)
-    {
-        auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
-        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(level, "  INV_INDEX:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
     std::vector<int> *inv_pos = 
         #ifdef GENIE_COMPR 
             comprTable ? comprTable->uncompressedInvPos() :

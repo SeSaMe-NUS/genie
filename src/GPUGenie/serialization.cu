@@ -68,24 +68,23 @@ void GPUGenie::inv_table::load(Archive &ar, const unsigned int version)
 {
     ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
     Logger::log(Logger::DEBUG, "Loading inv_table archive of version %d", version);
-    ar >> table_index;
-    ar >> total_num_of_table;
-    ar >> _shifter;
+    _build_status = builded;
+    // General structure
     ar >> _size;
     ar >> _dim_size;
+    // Inverted Index
+    ar >> _inv; 
+    ar >> _inv_pos;
+    ar >> _inv_index_map;
+    ar >> inv_list_lowerbound;
+    ar >> inv_list_upperbound;
+    ar >> posting_list_size;
+    // Subsequence related fields
     ar >> shift_bits_subsequence;
     ar >> min_value_sequence;
     ar >> max_value_sequence;
     ar >> gram_length_sequence;
     ar >> shift_bits_sequence;
-    ar >> _build_status;
-    ar >> _inv;
-    ar >> _inv_pos;
-    ar >> inv_list_lowerbound;
-    ar >> inv_list_upperbound;
-    ar >> posting_list_size;
-    ar >> _inv_index;
-    ar >> _inv_index_map;
     ar >> _distinct_map;
 
 }
@@ -95,24 +94,24 @@ void GPUGenie::inv_table::save(Archive &ar, const unsigned int version) const
 {
     ar.register_type(static_cast<GPUGenie::inv_compr_table*>(nullptr));
     Logger::log(Logger::DEBUG, "Saving inv_table archive of version %d", version);
-    ar << table_index;
-    ar << total_num_of_table;
-    ar << _shifter;
+    if (_build_status != builded)
+        throw GPUGenie::genie_error("Cannot serialize inv::table that has not yet been built.");
+    // General structure
     ar << _size;
     ar << _dim_size;
+    // Inverted Index
+    ar << _inv; 
+    ar << _inv_pos;
+    ar << _inv_index_map;
+    ar << inv_list_lowerbound;
+    ar << inv_list_upperbound;
+    ar << posting_list_size;
+    // Subsequence related fields
     ar << shift_bits_subsequence;
     ar << min_value_sequence;
     ar << max_value_sequence;
     ar << gram_length_sequence;
     ar << shift_bits_sequence;
-    ar << _build_status;
-    ar << _inv;
-    ar << _inv_pos;
-    ar << inv_list_lowerbound;
-    ar << inv_list_upperbound;
-    ar << posting_list_size;
-    ar << _inv_index;
-    ar << _inv_index_map;
     ar << _distinct_map;
 }
 

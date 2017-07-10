@@ -51,7 +51,6 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
     assert(table->_shift_bits_subsequence() == loaded_table->_shift_bits_subsequence());
     assert(table->build_status() == loaded_table->build_status());
     assert(*table->inv() == *loaded_table->inv());
-    assert(*table->inv_index() == *loaded_table->inv_index());
     assert(*table->inv_pos() == *loaded_table->inv_pos());
     assert(*table->inv_index_map() == *loaded_table->inv_index_map());
     assert(table->get_min_value_sequence() == loaded_table->get_min_value_sequence());

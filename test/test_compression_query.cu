@@ -152,7 +152,7 @@ void knn_search_cpu(
     std::vector<std::vector<uint32_t>> rawInvertedLists(rawInvertedListsSizes.size());
 
     int shifter = table.shifter();
-    std::vector<int> *inv_index = table.inv_index();
+    std::unordered_map<size_t,int> *inv_index_map = table.inv_index_map();
 
     IntegerCODEC &codec = *CODECFactory::getFromName(compression_name);
 
@@ -200,10 +200,11 @@ void knn_search_cpu(
                      r.query, r.dim, low, up, min, max);
 
             // Record ids of inverted lists to be counted
-            int invList = (*inv_index)[min];
+            int invList = inv_index_map->find(static_cast<size_t>(min))->second;
+            int invListEnd = inv_index_map->find(static_cast<size_t>(max+1))->second;
             do
                 invListsTocount.push_back(invList++);
-            while (invList < (*inv_index)[max+1]);
+            while (invList < invListEnd);
         }
 
         time_queryPreprocessing_stop = getTime();
@@ -362,7 +363,6 @@ int main(int argc, char* argv[])
 
     std::vector<int> *ck = table->ck();
     std::vector<int> *inv = table->inv();
-    std::vector<int> *inv_index = table->inv_index();
     std::vector<int> *inv_pos = table->inv_pos();
 
     std::vector<std::vector<uint32_t>> rawInvertedLists;
