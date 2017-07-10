@@ -24,56 +24,6 @@ using namespace SIMDCompressionLib;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 
-void log_table(GPUGenie::inv_table *table, size_t max_print_len = 256)
-{
-    if (table->build_status() == GPUGenie::inv_table::not_builded)
-    {
-        Logger::log(Logger::DEBUG, "Inv table not built.");
-        return;
-    }
-
-    std::stringstream ss;    
-    std::vector<int> *ck = table->ck();
-    if (ck)
-    {
-        auto end = (ck->size() <= max_print_len) ? ck->end() : (ck->begin() + max_print_len); 
-        std::copy(ck->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "CK:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-    std::vector<int> *inv = table->inv();
-    if (inv)
-    {
-        auto end = (inv->size() <= max_print_len) ? inv->end() : (inv->begin() + max_print_len); 
-        std::copy(inv->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-    std::vector<int> *inv_index = table->inv_index();
-    if (inv_index)
-    {
-        auto end = (inv_index->size() <= max_print_len) ? inv_index->end() : (inv_index->begin() + max_print_len); 
-        std::copy(inv_index->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_INDEX:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-
-
-    std::vector<int> *inv_pos = table->inv_pos();
-    if (inv_pos)
-    {
-        auto end = (inv_pos->size() <= max_print_len) ? inv_pos->end() : (inv_pos->begin() + max_print_len); 
-        std::copy(inv_pos->begin(), end, std::ostream_iterator<int>(ss, " "));
-        Logger::log(Logger::DEBUG, "INV_POS:\n %s", ss.str().c_str());
-        ss.str(std::string());
-        ss.clear();
-    }
-}
 
 void log_inv_lists(const std::vector<std::vector<uint32_t>> &rawInvertedLists, size_t max_print_len = 16)
 {
@@ -144,7 +94,6 @@ int main(int argc, char* argv[])
 
     std::vector<int> *ck = table->ck();
     std::vector<int> *inv = table->inv();
-    std::vector<int> *inv_index = table->inv_index();
     std::vector<int> *inv_pos = table->inv_pos();
 
     std::cout << "Copying inverted lists for compression..." << std::endl;

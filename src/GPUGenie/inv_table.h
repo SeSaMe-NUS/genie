@@ -166,10 +166,9 @@ private:
      */
      vector<int> _inv;
 
-     /*! \var vector<int> _inv_index
-      *  \brief The first level index lists of posting lists vector
+     /*! \var unordered_map<size_t,int> _inv_index_map
+      *  \brief The first level index lists of posting lists
       */
-     vector<int> _inv_index;
 	unordered_map<size_t, int> _inv_index_map;
 
      /*! \var vector<int> _inv_pos
@@ -394,13 +393,10 @@ public:
 	virtual vector<int>*
 	inv();
 
-	/*! \fn vector<int>* inv_index()
+	/*! \fn unordered_map<size_t, int>* inv_index_map()
 	 *
-         *  \return The pointer points to _inv_index vector.
+         *  \return The pointer points to _inv_index_map map.
 	 */
-	virtual vector<int>*
-	inv_index();
-
 	unordered_map<size_t, int>*
 	inv_index_map();
 

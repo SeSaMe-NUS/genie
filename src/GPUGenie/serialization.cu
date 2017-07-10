@@ -81,7 +81,6 @@ void GPUGenie::inv_table::load(Archive &ar, const unsigned int version)
     ar >> inv_list_lowerbound;
     ar >> inv_list_upperbound;
     ar >> posting_list_size;
-    ar >> _inv_index;
     ar >> _inv_index_map;
     ar >> _distinct_map;
 
@@ -105,7 +104,6 @@ void GPUGenie::inv_table::save(Archive &ar, const unsigned int version) const
     ar << inv_list_lowerbound;
     ar << inv_list_upperbound;
     ar << posting_list_size;
-    ar << _inv_index;
     ar << _inv_index_map;
     ar << _distinct_map;
 }
