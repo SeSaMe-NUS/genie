@@ -13,8 +13,11 @@
 #define GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE (8*GPUGENIE_SCAN_THREADBLOCK_SIZE) // 2048
 #define GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE (4*GPUGENIE_SCAN_THREADBLOCK_SIZE*GPUGENIE_SCAN_THREADBLOCK_SIZE) // 262144
 
-namespace GPUGenie
+namespace genie
 {
+namespace utility
+{
+
 
 extern const unsigned int SCAN_THREADBLOCK_SIZE;
 extern const unsigned int SCAN_MIN_SHORT_ARRAY_SIZE;
@@ -79,6 +82,7 @@ void scanExclusiveHost(
     unsigned int *src,
     unsigned int arrayLength);
 
-}
+} // namespace utility
+} // namesapce genie
 
 #endif

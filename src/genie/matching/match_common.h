@@ -13,10 +13,6 @@
 
 #include <cstdint>
 
-namespace genie
-{
-namespace matching
-{
 
 typedef unsigned char u8;
 typedef uint32_t u32;
@@ -25,6 +21,11 @@ typedef unsigned long long u64;
 typedef u64 T_HASHTABLE;
 typedef u32 T_KEY;
 typedef u32 T_AGE;
+
+namespace genie
+{
+namespace matching
+{
 
 /*! \struct data_
  *  \brief This is the entry format of the hash table used in GPU.
@@ -43,7 +44,6 @@ __global__
 void convert_to_data(T_HASHTABLE* table, u32 size);
 
 } // namespace matching
-
 } // namespace genie
 
 #endif

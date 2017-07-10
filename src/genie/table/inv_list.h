@@ -9,7 +9,9 @@
 #include <string>
 #include <unordered_map>
 
-namespace GPUGenie
+namespace genie
+{
+namespace table
 {
 
 /*! \class inv_list
@@ -280,6 +282,8 @@ public:
     value_range();
 
 };
-}
+
+} // namespace table
+} // namespace genie
 
 #endif

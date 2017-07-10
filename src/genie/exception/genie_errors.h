@@ -15,7 +15,7 @@
  *
  *  Please wrap all CUDA calls with this function.
  *
- *  Once a CUDA error is detected, a GPUGenie::gpu_runtime_error will be
+ *  Once a CUDA error is detected, a genie::exception::gpu_runtime_error will be
  *  thrown and the error will be logged.
  *
  *	\param err The CUDA error.
@@ -27,13 +27,13 @@
 /*! \fn cudaCheckErrors( err )
  *  \brief Check for existing cuda errors
  *
- *  Once a CUDA error is detected, a GPUGenie::gpu_runtime_error will be
+ *  Once a CUDA error is detected, a genie::exception::gpu_runtime_error will be
  *  thrown and the error will be logged.
  */
 #define CUDA_LAST_ERROR() __cudaGetLastError (__FILE__, __LINE__)
 
-namespace GPUGenie
-{
+namespace genie {
+namespace exception {
 
 /*! \class genie_error
  *  \brief The base class for genie error exceptions
@@ -53,11 +53,11 @@ public:
 /*! \class gpu_bad_alloc
  *  \brief The error class for memory exceptions occurred on GPU.
  *
- *  The gpu_bad_alloc error class is inherited from GPUGenie::genie_error.
+ *  The gpu_bad_alloc error class is inherited from genie::exception::genie_error.
  *  All memory exceptions on GPU will be casted to gpu_bad_alloc and
  *  the error message will be kept.
  *
- *  \ref GPUGenie::genie_error
+ *  \ref genie::exception::genie_error
  */
 class gpu_bad_alloc : public genie_error
 {
@@ -73,11 +73,11 @@ public:
 /*! \class gpu_runtime_error
  *  \brief The error class for runtime exceptions occurred on GPU.
  *
- *  The gpu_runtime_error error class is inherited from GPUGenie::genie_error.
+ *  The gpu_runtime_error error class is inherited from genie::exception::genie_error.
  *  All runtime exceptions on GPU will be casted to gpu_runtime_error and
  *  the error message will be kept.
  *
- *  \ref GPUGenie::genie_error
+ *  \ref genie::exception::genie_error
  */
 class gpu_runtime_error : public genie_error
 {
@@ -93,11 +93,11 @@ public:
 /*! \class cpu_bad_alloc
  *  \brief The error class for memory exceptions occurred on CPU.
  *
- *  The cpu_bad_alloc error class is inherited from GPUGenie::genie_error.
+ *  The cpu_bad_alloc error class is inherited from genie::exception::genie_error.
  *  All memory exceptions on CPU will be casted to cpu_bad_alloc and
  *  the error message will be kept.
  *
- *  \ref GPUGenie::genie_error
+ *  \ref genie::exception::genie_error
  */
 class cpu_bad_alloc : public genie_error
 {
@@ -113,11 +113,11 @@ public:
 /*! \class cpu_runtime_error
  *  \brief The error class for runtime exceptions occurred on CPU.
  *
- *  The cpu_runtime_error error class is inherited from GPUGenie::genie_error.
+ *  The cpu_runtime_error error class is inherited from genie::exception::genie_error.
  *  All runtime exceptions on CPU will be casted to cpu_runtime_error and
  *  the error message will be kept.
  *
- *  \ref GPUGenie::genie_error
+ *  \ref genie::exception::genie_error
  */
 class cpu_runtime_error : public genie_error
 {
@@ -129,7 +129,10 @@ public:
 	cpu_runtime_error(const char * msg):genie_error(msg){}
 
 };
-}
+
+} // namespace exception
+} // namespace genie
+
 
 /*! \fn inline void __cudaSafeCall(cudaError err, const char *file, const int line)
  *  \brief The hidden wrapper function to validate CUDA calls.
@@ -138,7 +141,7 @@ public:
  *  macro expansion cudaCheckErrors( err ) .
  *  Please wrap all CUDA calls with cudaCheckErrors.
  *
- *  Once cuda errors are detected, a GPUGenie::gpu_runtime_error will be
+ *  Once cuda errors are detected, a genie::exception::gpu_runtime_error will be
  *  thrown and the errors will be logged.
  *
  *	\param err The CUDA error.
@@ -152,8 +155,8 @@ inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 	{
 		char errstr[1000];
 		snprintf(errstr, 1000, "cudaSafeCall() failed at %s:%i : %s", file, line, cudaGetErrorString(err));
-		Logger::log(Logger::ALERT, "%s", errstr);
-		throw(GPUGenie::gpu_runtime_error(errstr));
+		genie::utility::Logger::log(genie::utility::Logger::ALERT, "%s", errstr);
+		throw(genie::exception::gpu_runtime_error(errstr));
 	}
 
 	return;
@@ -169,8 +172,8 @@ inline void __cudaGetLastError(const char *file, const int line)
     	char errstr[1000];
         snprintf(errstr, 1000, "cudaGetLastError() failed at %s:%i : ERR %d - %s.\n",
         	file, line, (int)err, cudaGetErrorString(err));
-        Logger::log(Logger::ALERT, "%s", errstr);
-		throw(GPUGenie::gpu_runtime_error(errstr));
+        genie::utility::Logger::log(genie::utility::Logger::ALERT, "%s", errstr);
+		throw(genie::exception::gpu_runtime_error(errstr));
     }
 }
 

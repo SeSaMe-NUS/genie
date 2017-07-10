@@ -129,29 +129,29 @@ int Logger::log(int level, const char *fmt, ...)
 }
 
 
-void Logger::logQueries(int level, std::vector<GPUGenie::query> &queries, size_t max_print_len)
+void Logger::logQueries(int level, std::vector<genie::query::Query> &queries, size_t max_print_len)
 {
-    for (GPUGenie::query &q : queries)
+    for (genie::query::Query &q : queries)
     {
         Logger::log(level, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
                     q.index(), q.topk(), q.count_ranges(), q.selectivity());
         q.print(max_print_len);
 
-        std::vector<GPUGenie::query::dim> dims;
+        std::vector<genie::query::Query::dim> dims;
         q.dump(dims);
 
-        for (GPUGenie::query::dim &d : dims){
+        for (genie::query::Query::dim &d : dims){
             Logger::log(level, "  Dim -- query: %d, order: %d, start_pos: %d, end_pos: %d",
                     d.query, d.order, d.start_pos, d.end_pos);
         }
     }
 }
 
-void Logger::logResults(int level, std::vector<GPUGenie::query> &queries, std::vector<int> &result,
+void Logger::logResults(int level, std::vector<genie::query::Query> &queries, std::vector<int> &result,
 		std::vector<int> &result_count, size_t max_print_len)
 {
     size_t resultsBeginIdx = 0;
-    for (GPUGenie::query &q : queries)
+    for (genie::query::Query &q : queries)
     {
         Logger::log(level, "Query idx: %d, topk: %d, count_ranges: %d, selectivity: %f",
                     q.index(), q.topk(), q.count_ranges(), q.selectivity());
@@ -165,18 +165,18 @@ void Logger::logResults(int level, std::vector<GPUGenie::query> &queries, std::v
     }
 }
 
-void Logger::logTable(int level, GPUGenie::inv_table *table, size_t max_print_len)
+void Logger::logTable(int level, genie::table::inv_table *table, size_t max_print_len)
 {
-    if (table->build_status() == GPUGenie::inv_table::not_builded)
+    if (table->build_status() == genie::table::inv_table::not_builded)
     {
         Logger::log(level, "Inv table not built.");
         return;
     }
     #ifdef GENIE_COMPR 
-        GPUGenie::inv_compr_table* comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        genie::table::inv_compr_table* comprTable = dynamic_cast<genie::table::inv_compr_table*>(table);
         if (comprTable)
         	Logger::log(level,"Compressed table: %s",
-                GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
+                genie::compression::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
         else
         	Logger::log(level,"Plain table: ");
     #endif

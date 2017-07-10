@@ -2,18 +2,18 @@
 
 #include "DeviceCodecTemplatesImpl.hpp"
 
-using namespace GPUGenie;
+using namespace genie::compression;
 
 // Explicit template instances for CPU decoding wrapper function of simple codecs
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
 // compilation units, as opposed to defining all these templates in one place.
 template void
-GPUGenie::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceBitPackingCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceBitPackingPrefixedCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 void
-GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
         const uint32_t *const initout(out);
         *out++ = static_cast<uint32_t>(length);
@@ -58,7 +58,7 @@ GPUGenie::DeviceBitPackingCodec::encodeArray(uint32_t *in, const size_t length, 
     }
 
 const uint32_t*
-GPUGenie::DeviceBitPackingCodec::decodeArray(const uint32_t *in, const size_t /*len*/, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceBitPackingCodec::decodeArray(const uint32_t *in, const size_t /*len*/, uint32_t *out, size_t &nvalue)
 {
     const uint32_t actuallength = *in++;
     const uint32_t *const initout(out);
@@ -99,7 +99,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArray(const uint32_t *in, const size_t /*
 }
 
 __device__ uint32_t*
-GPUGenie::DeviceBitPackingCodec::decodeArraySequential(
+genie::compression::DeviceBitPackingCodec::decodeArraySequential(
         uint32_t *d_in, size_t /*length*/, uint32_t *d_out, size_t &nvalue)
 {
     uint32_t actuallength = *d_in++;
@@ -141,7 +141,7 @@ GPUGenie::DeviceBitPackingCodec::decodeArraySequential(
 }
 
 __device__ uint32_t*
-GPUGenie::DeviceBitPackingCodec::decodeArrayParallel(
+genie::compression::DeviceBitPackingCodec::decodeArrayParallel(
         uint32_t *d_in, size_t /* comprLength */, uint32_t *d_out, size_t &capacity)
 {
     int idx = threadIdx.x;

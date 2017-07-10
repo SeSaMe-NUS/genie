@@ -3,7 +3,6 @@
 
 #include <genie/interface/execution_policy.h>
 #include <genie/interface/types.h>
-#include <genie/GPUGenie.h>
 
 namespace genie {
 namespace execution_policy {
@@ -14,17 +13,17 @@ class SingleRangeExecutionPolicy : public genie::ExecutionPolicy {
 		uint32_t query_range_;
 		SingleRangeExecutionPolicy() = default;
 	public:
-		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(
+		virtual std::shared_ptr<genie::table::inv_table> BuildTable(
 				const genie::TableData& table_data) override final;
-		virtual std::vector<GPUGenie::query> BuildQuery(
-				const std::shared_ptr<const GPUGenie::inv_table>& table,
+		virtual std::vector<genie::query::Query> BuildQuery(
+				const std::shared_ptr<const genie::table::inv_table>& table,
 				const genie::QueryData& query_data) override final;
 		virtual genie::SearchResult Match(
-				const std::shared_ptr<const GPUGenie::inv_table>& table,
-				const std::vector<GPUGenie::query>& queries) override final;
+				const std::shared_ptr<const genie::table::inv_table>& table,
+				const std::vector<genie::query::Query>& queries) override final;
 		virtual genie::SearchResult Match(
-				const std::vector<std::shared_ptr<const GPUGenie::inv_table> >& table,
-				const std::vector<std::vector<GPUGenie::query> >& queries) override final;
+				const std::vector<std::shared_ptr<const genie::table::inv_table> >& table,
+				const std::vector<std::vector<genie::query::Query> >& queries) override final;
 		virtual void Validate() override final;
 		void SetQueryRange(const uint32_t query_range);
 };

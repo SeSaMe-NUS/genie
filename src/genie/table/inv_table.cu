@@ -21,12 +21,11 @@
 #include "inv_table.h"
 
 using namespace std;
-using namespace GPUGenie;
 
 //int*  inv_table::d_inv_p = NULL;
 int inv_table::max_inv_size = 0;
 
-bool GPUGenie::inv_table::cpy_data_to_gpu()
+bool genie::table::inv_table::cpy_data_to_gpu()
 {
 	try
 	{
@@ -37,13 +36,13 @@ bool GPUGenie::inv_table::cpy_data_to_gpu()
 	}
 	catch(std::bad_alloc &e)
 	{
-		throw(GPUGenie::gpu_bad_alloc(e.what()));
+		throw(genie::table::gpu_bad_alloc(e.what()));
 	}
 
 	return true;
 }
 
-void GPUGenie::inv_table::clear()
+void genie::table::inv_table::clear()
 {
 	_build_status = not_builded;
 	_inv_lists.clear();
@@ -51,7 +50,7 @@ void GPUGenie::inv_table::clear()
 	_inv.clear();
 }
 
-GPUGenie::inv_table::~inv_table()
+genie::table::inv_table::~inv_table()
 {
     if(d_inv_p != NULL)
     {
@@ -65,7 +64,7 @@ GPUGenie::inv_table::~inv_table()
     cout << getInterval(t1, t2) << " ms."<< endl;
     }
 }
-void GPUGenie::inv_table::clear_gpu_mem()
+void genie::table::inv_table::clear_gpu_mem()
 {
 	if (d_inv_p == NULL)
 		return;
@@ -77,33 +76,33 @@ void GPUGenie::inv_table::clear_gpu_mem()
     cout << getInterval(t1, t2) << " ms."<< endl;
 }
 
-bool GPUGenie::inv_table::empty()
+bool genie::table::inv_table::empty()
 {
 	return _size == -1;
 }
 
-int GPUGenie::inv_table::m_size()
+int genie::table::inv_table::m_size()
 {
     return _dim_size;
 	//return _inv_lists.size();
 }
 
-int GPUGenie::inv_table::i_size()
+int genie::table::inv_table::i_size()
 {
 	return _size <= -1 ? 0 : _size;
 }
 
-int GPUGenie::inv_table::shifter()
+int genie::table::inv_table::shifter()
 {
 	return _shifter;
 }
 
-unordered_map<int, int>* GPUGenie::inv_table::get_distinct_map(int dim)
+unordered_map<int, int>* genie::table::inv_table::get_distinct_map(int dim)
 {
     return &_distinct_map[dim];
 }
 
-void GPUGenie::inv_table::append(inv_list& inv)
+void genie::table::inv_table::append(inv_list& inv)
 {
 	if (_size == -1 || _size == inv.size())
 	{
@@ -126,7 +125,7 @@ void GPUGenie::inv_table::append(inv_list& inv)
 	}
 }
 
-void GPUGenie::inv_table::append_sequence(inv_list& inv)
+void genie::table::inv_table::append_sequence(inv_list& inv)
 {
     // As for now, we built all data sequence together. Therefore, the _distanct_map is always of size 1
     if(_size == -1)
@@ -151,7 +150,7 @@ void GPUGenie::inv_table::append_sequence(inv_list& inv)
 
 }
 
-void GPUGenie::inv_table::append(inv_list* inv)
+void genie::table::inv_table::append(inv_list* inv)
 {
 	if (inv != NULL)
 	{
@@ -160,7 +159,7 @@ void GPUGenie::inv_table::append(inv_list* inv)
 }
 
 int
-GPUGenie::inv_table::get_posting_list_size(int attr_index, int value)
+genie::table::inv_table::get_posting_list_size(int attr_index, int value)
 {
     if((unsigned int)attr_index<posting_list_size.size() && value>=inv_list_lowerbound[attr_index] && value<=inv_list_upperbound[attr_index])
         return posting_list_size[attr_index][value-inv_list_lowerbound[attr_index]];
@@ -169,7 +168,7 @@ GPUGenie::inv_table::get_posting_list_size(int attr_index, int value)
 }
 
 bool
-GPUGenie::inv_table::list_contain(int attr_index, int value)
+genie::table::inv_table::list_contain(int attr_index, int value)
 {
     if(value <= inv_list_upperbound[attr_index] && value >= inv_list_lowerbound[attr_index])
         return true;
@@ -180,7 +179,7 @@ GPUGenie::inv_table::list_contain(int attr_index, int value)
 
 
 int
-GPUGenie::inv_table::get_upperbound_of_list(int attr_index)
+genie::table::inv_table::get_upperbound_of_list(int attr_index)
 {
     if((unsigned int)attr_index < inv_list_upperbound.size())
         return inv_list_upperbound[attr_index];
@@ -189,7 +188,7 @@ GPUGenie::inv_table::get_upperbound_of_list(int attr_index)
 }
 
 int
-GPUGenie::inv_table::get_lowerbound_of_list(int attr_index)
+genie::table::inv_table::get_lowerbound_of_list(int attr_index)
 {
     if((unsigned int)attr_index < inv_list_lowerbound.size())
         return inv_list_lowerbound[attr_index];
@@ -198,73 +197,73 @@ GPUGenie::inv_table::get_lowerbound_of_list(int attr_index)
 }
 
 unsigned int
-GPUGenie::inv_table::_shift_bits_subsequence()
+genie::table::inv_table::_shift_bits_subsequence()
 {
     return shift_bits_subsequence;
 }
 
 void
-GPUGenie::inv_table::set_table_index(int attr_index)
+genie::table::inv_table::set_table_index(int attr_index)
 {
     table_index = attr_index;
 }
 void
-GPUGenie::inv_table::set_total_num_of_table(int num)
+genie::table::inv_table::set_total_num_of_table(int num)
 {
     total_num_of_table = num;
 }
 
 int
-GPUGenie::inv_table::get_table_index() const
+genie::table::inv_table::get_table_index() const
 {
     return table_index;
 }
     
 int
-GPUGenie::inv_table::get_total_num_of_table() const
+genie::table::inv_table::get_total_num_of_table() const
 {
     return total_num_of_table;
 }
 
-GPUGenie::inv_table::status GPUGenie::inv_table::build_status()
+genie::table::inv_table::status genie::table::inv_table::build_status()
 {
 	return _build_status;
 }
 
 vector<inv_list>*
-GPUGenie::inv_table::inv_lists()
+genie::table::inv_table::inv_lists()
 {
 	return &_inv_lists;
 }
 
 vector<int>*
-GPUGenie::inv_table::ck()
+genie::table::inv_table::ck()
 {
 	return &_ck;
 }
 
 vector<int>*
-GPUGenie::inv_table::inv()
+genie::table::inv_table::inv()
 {
 	return &_inv;
 }
 
 
 unordered_map<size_t, int>*
-GPUGenie::inv_table::inv_index_map()
+genie::table::inv_table::inv_index_map()
 {
 	return &_inv_index_map;
 }
 
 vector<int>*
-GPUGenie::inv_table::inv_pos()
+genie::table::inv_table::inv_pos()
 {
 	return &_inv_pos;
 }
 
 
 void
-GPUGenie::inv_table::build(size_t max_length, bool use_load_balance)
+genie::table::inv_table::build(size_t max_length, bool use_load_balance)
 {
     u64 table_start = getTime();
     vector<int> _inv_index;
@@ -349,39 +348,39 @@ GPUGenie::inv_table::build(size_t max_length, bool use_load_balance)
 }
 
 void
-GPUGenie::inv_table::set_min_value_sequence(int min_value)
+genie::table::inv_table::set_min_value_sequence(int min_value)
 {
     min_value_sequence = min_value;
 }
 
 int
-GPUGenie::inv_table::get_min_value_sequence()
+genie::table::inv_table::get_min_value_sequence()
 {
     return min_value_sequence;
 }
 
 void
-GPUGenie::inv_table::set_max_value_sequence(int max_value)
+genie::table::inv_table::set_max_value_sequence(int max_value)
 {
     max_value_sequence = max_value;
 }
 
 int
-GPUGenie::inv_table::get_max_value_sequence()
+genie::table::inv_table::get_max_value_sequence()
 {
      return max_value_sequence;
 }
 
     
 void
-GPUGenie::inv_table::set_gram_length_sequence(int gram_length)
+genie::table::inv_table::set_gram_length_sequence(int gram_length)
 {
     gram_length_sequence = gram_length;
 
 }
 
 int
-GPUGenie::inv_table::get_gram_length_sequence()
+genie::table::inv_table::get_gram_length_sequence()
 {
     return gram_length_sequence;
 }

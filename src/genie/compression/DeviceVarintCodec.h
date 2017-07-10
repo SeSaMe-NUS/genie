@@ -3,7 +3,10 @@
 
 #include "DeviceCodecs.h"
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 // threadblock size is 256, same for all codecs (can be up to 1024 for compute capability >= 2.0)
 #define GPUGENIE_CODEC_VARINT_THREADBLOCK_SIZE (256)
@@ -79,6 +82,7 @@ private:
 
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

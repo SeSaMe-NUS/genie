@@ -6,7 +6,10 @@
 
 #include <genie/utility/scan.h>
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 // threadblock size is 256, same for all codecs (can be up to 1024 for compute capability >= 2.0)
 #define GPUGENIE_CODEC_BPP_THREADBLOCK_SIZE (256)
@@ -268,6 +271,7 @@ public:
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

@@ -6,7 +6,9 @@
 
 #include "genie_errors.h"
 
-GPUGenie::genie_error::genie_error(const char * msg): std::runtime_error(msg){
+using namespace genie::utility;
+
+genie::exception::genie_error::genie_error(const char * msg): std::runtime_error(msg){
 	Logger::log(Logger::ALERT, "%s", msg);
 }
 

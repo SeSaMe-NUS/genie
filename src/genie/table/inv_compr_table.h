@@ -19,16 +19,15 @@
 
 #include "inv_table.h"
 
-
-/*! \namespace GPUGenie
- *  \brief GPUGenie is the top namespace for the project
- */
-namespace GPUGenie
+namespace genie
 {
+namespace table
+{
+
     struct DeviceIntegerCODEC;
 
 
-class inv_compr_table : public inv_table
+class inv_compr_table : public genie::table::inv_table
 {
 protected:
 
@@ -38,7 +37,7 @@ protected:
 
     std::vector<int> m_comprInvPos;
 
-    COMPRESSION_TYPE m_compression;
+    genie::compression::COMPRESSION_TYPE m_compression;
 
     uint32_t *m_d_compr_inv_p;
 
@@ -51,7 +50,7 @@ public:
      */
     inv_compr_table(): inv_table(),
             m_isCompressed(false),
-            m_compression(DEFAULT_COMPRESSION_TYPE),
+            m_compression(genie::compression::DEFAULT_COMPRESSION_TYPE),
             m_d_compr_inv_p(nullptr),
             m_uncompressedInvListsMaxLength(0)
     {
@@ -64,9 +63,9 @@ public:
     virtual ~inv_compr_table();
 
 
-    GPUGenie::COMPRESSION_TYPE getCompression() const;
+    genie::compression::COMPRESSION_TYPE getCompression() const;
 
-    void setCompression(GPUGenie::COMPRESSION_TYPE compression);
+    void setCompression(genie::compression::COMPRESSION_TYPE compression);
 
 
     /*
@@ -169,8 +168,10 @@ private:
 
 };
 
-} 
+} // namespace table
+} // namespace genie
 
-BOOST_CLASS_EXPORT_KEY(GPUGenie::inv_compr_table)
+
+BOOST_CLASS_EXPORT_KEY(genie::table::inv_compr_table)
 
 #endif

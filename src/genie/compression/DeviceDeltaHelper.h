@@ -6,7 +6,10 @@
 #ifndef DEVICE_DELTA_HELPER_H_
 #define DEVICE_DELTA_HELPER_H_
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 template <class T>
 struct DeviceDeltaHelper {
@@ -56,6 +59,7 @@ struct DeviceDeltaHelper {
     }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

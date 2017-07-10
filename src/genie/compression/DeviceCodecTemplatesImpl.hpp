@@ -2,7 +2,7 @@
 #define DEVICE_CODEC_TEMPLATES_IMPL_HPP_
 
 template <class CODEC> __global__ void
-GPUGenie::g_decodeArrayParallel(uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)
+genie::compression::g_decodeArrayParallel(uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)
 {
     CODEC codec;
     assert(blockDim.x == codec.decodeArrayParallel_lengthPerBlock() / codec.decodeArrayParallel_threadLoad());
@@ -35,7 +35,7 @@ GPUGenie::g_decodeArrayParallel(uint32_t *d_Input, size_t arrayLength, uint32_t 
 
 
 template <class CODEC> void
-GPUGenie::decodeArrayParallel(
+genie::compression::decodeArrayParallel(
         int blocks,
         int threads,
         uint32_t *d_Input,
@@ -44,7 +44,7 @@ GPUGenie::decodeArrayParallel(
         size_t capacity,
         size_t *d_decomprLength)
 {
-    GPUGenie::g_decodeArrayParallel<CODEC><<<blocks,threads>>>(d_Input, arrayLength, d_Output, capacity, d_decomprLength);
+    genie::compression::g_decodeArrayParallel<CODEC><<<blocks,threads>>>(d_Input, arrayLength, d_Output, capacity, d_decomprLength);
 }
 
 #endif

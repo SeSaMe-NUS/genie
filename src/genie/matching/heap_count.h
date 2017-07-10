@@ -10,7 +10,10 @@
 #include <thrust/device_vector.h>
 #include <genie/matching/match.h>
 
-namespace GPUGenie{
+namespace genie
+{
+namespace matching
+{
 
 /*! \fn heap_count_topk(thrust::device_vector<data_t>& d_data,
 				 thrust::device_vector<data_t>& d_topk,
@@ -41,6 +44,7 @@ void heap_count_topk(thrust::device_vector<genie::matching::data_t>& d_data,
 					 int topk,
 					 int num_of_queries);
 
+}
 }
 
 #endif

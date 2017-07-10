@@ -20,7 +20,7 @@ using namespace std;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-GPUGenie::query::query()
+genie::query::Query::query()
 {
 	_ref_table = NULL;
 	_attr_map.clear();
@@ -33,7 +33,7 @@ GPUGenie::query::query()
 	use_load_balance = false;
 }
 
-GPUGenie::query::query(inv_table* ref, int index)
+genie::query::Query::query(inv_table* ref, int index)
 {
 	_ref_table = ref;
 	_attr_map.clear();
@@ -46,7 +46,7 @@ GPUGenie::query::query(inv_table* ref, int index)
 	use_load_balance = false;
 }
 
-GPUGenie::query::query(inv_table& ref, int index)
+genie::query::Query::query(inv_table& ref, int index)
 {
 	_ref_table = &ref;
 	_attr_map.clear();
@@ -59,30 +59,30 @@ GPUGenie::query::query(inv_table& ref, int index)
 	use_load_balance = false;
 }
 
-GPUGenie::query::dim::dim(int query, int order, int start_pos, int end_pos, float weight)
+genie::query::Query::dim::dim(int query, int order, int start_pos, int end_pos, float weight)
 	: query(query),
 	  order(order),
 	  start_pos(start_pos),
 	  end_pos(end_pos),
 	  weight(weight) {}
 
-GPUGenie::inv_table* GPUGenie::query::ref_table()
+genie::query::inv_table* genie::query::Query::ref_table()
 {
 	return _ref_table;
 }
 
-void GPUGenie::query::attr(int index, int low, int up, float weight, int order)
+void genie::query::Query::attr(int index, int low, int up, float weight, int order)
 {
 	attr(index, low, up, weight, -1, order);
 }
 
-void GPUGenie::query::attr(int index, int value, float weight,
+void genie::query::Query::attr(int index, int value, float weight,
 		float selectivity, int order)
 {
 	attr(index, value, value, weight, selectivity, order);
 }
 
-void GPUGenie::query::attr(int index, int low, int up, float weight,
+void genie::query::Query::attr(int index, int low, int up, float weight,
 		float selectivity, int order)
 {
 	if (index < 0 || index >= _ref_table->m_size())
@@ -111,7 +111,7 @@ void GPUGenie::query::attr(int index, int low, int up, float weight,
 }
 
 
-void GPUGenie::query::clear_dim(int index)
+void genie::query::Query::clear_dim(int index)
 {
 	if (_attr_map.find(index) == _attr_map.end())
 	{
@@ -126,17 +126,17 @@ void GPUGenie::query::clear_dim(int index)
 	_attr_map.erase(index);
 }
 
-void GPUGenie::query::selectivity(float s)
+void genie::query::Query::selectivity(float s)
 {
 	_selectivity = s;
 }
 
-float GPUGenie::query::selectivity()
+float genie::query::Query::selectivity()
 {
 	return _selectivity;
 }
 
-void GPUGenie::query::build_and_apply_load_balance(int max_load)
+void genie::query::Query::build_and_apply_load_balance(int max_load)
 {
     this->build();
 
@@ -191,7 +191,7 @@ void GPUGenie::query::build_and_apply_load_balance(int max_load)
 
 
 
-void GPUGenie::query::apply_adaptive_query_range()
+void genie::query::Query::apply_adaptive_query_range()
 {
 	inv_table& table = *_ref_table;
 
@@ -258,17 +258,17 @@ void GPUGenie::query::apply_adaptive_query_range()
 	}
 }
 
-void GPUGenie::query::topk(int k)
+void genie::query::Query::topk(int k)
 {
 	_topk = k;
 }
 
-int GPUGenie::query::topk()
+int genie::query::Query::topk()
 {
 	return _topk;
 }
 
-void GPUGenie::query::build()
+void genie::query::Query::build()
 {
 	int low, up;
 	float weight;
@@ -330,7 +330,7 @@ void GPUGenie::query::build()
 	}
 }
 
-void GPUGenie::query::build(vector<dim> &dims)
+void genie::query::Query::build(vector<dim> &dims)
 {
 	int low, up, order, start_pos, end_pos;
 	float weight;
@@ -373,7 +373,7 @@ void GPUGenie::query::build(vector<dim> &dims)
 	}
 }
 
-void GPUGenie::query::build_sequence()
+void genie::query::Query::build_sequence()
 {
 	int low, up;
 	float weight;
@@ -459,7 +459,7 @@ void GPUGenie::query::build_sequence()
 
 
 #ifdef GENIE_COMPR 
-void GPUGenie::query::build_compressed(int max_load)
+void genie::query::Query::build_compressed(int max_load)
 {
     inv_compr_table& table = *dynamic_cast<inv_compr_table*>(_ref_table);
     unordered_map<size_t, int>& inv_index_map = *table.inv_index_map();
@@ -531,7 +531,7 @@ void GPUGenie::query::build_compressed(int max_load)
 }
 #endif
 
-int GPUGenie::query::dump(vector<dim>& vout)
+int genie::query::Query::dump(vector<dim>& vout)
 {
     if (is_load_balanced)
     {
@@ -558,7 +558,7 @@ int GPUGenie::query::dump(vector<dim>& vout)
 }
 
 
-int GPUGenie::query::dump(vector<range>& ranges)
+int genie::query::Query::dump(vector<range>& ranges)
 {
     int count = 0;
     ranges.clear();
@@ -574,17 +574,17 @@ int GPUGenie::query::dump(vector<range>& ranges)
 	return count;
 }
 
-int GPUGenie::query::index()
+int genie::query::Query::index()
 {
 	return _index;
 }
 
-int GPUGenie::query::count_ranges()
+int genie::query::Query::count_ranges()
 {
 	return _count;
 }
 
-void GPUGenie::query::print(int limit)
+void genie::query::Query::print(int limit)
 {
 	Logger::log(Logger::DEBUG, "This query has %d dimensions.",
 			_attr_map.size());

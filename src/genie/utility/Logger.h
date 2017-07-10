@@ -12,12 +12,16 @@
 #include <stdio.h>
 #include <vector>
 
-namespace GPUGenie
+
+namespace genie
 {
-	struct query;
-	struct inv_table;
-	struct inv_compr_table;
-}
+	namespace query {struct Query;}
+	namespace table {struct inv_table;}
+	namespace table {struct inv_compr_table;}
+
+namespace utility
+{
+
 
 /*! \class Logger
  *  \brief A utility class to record logs into disk files.
@@ -84,12 +88,12 @@ public:
 	 */
 	static int log(int level, const char *fmt, ...);
 
-	static void logQueries(int level, std::vector<GPUGenie::query> &queries, size_t max_print_len = 128);
+	static void logQueries(int level, std::vector<genie::query::Query> &queries, size_t max_print_len = 128);
 
-	static void logResults(int level, std::vector<GPUGenie::query> &queries, std::vector<int> &result,
+	static void logResults(int level, std::vector<genie::query::Query> &queries, std::vector<int> &result,
 		std::vector<int> &result_count, size_t max_print_len = 128);
 
-	static void logTable(int level, GPUGenie::inv_table *table, size_t max_print_len = 32);
+	static void logTable(int level, genie::table::inv_table *table, size_t max_print_len = 32);
 
 	static void logInvLists(int level, const std::vector<std::vector<uint32_t> > &rawInvertedLists,
 		size_t max_print_len = 128);
@@ -182,4 +186,7 @@ private:
 	static Logger* _logger(void);
 };
 
-#endif /* LOGGER_H_ */
+} // namespace utility
+} // namesapce genie
+
+#endif

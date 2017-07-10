@@ -7,6 +7,11 @@
 
 #include <string>
 
+namespace genie
+{
+namespace utility
+{
+
 /*! \fn std::string currentDateTime()
  *  \brief Get current data time
  *
@@ -30,5 +35,8 @@ unsigned long long getTime();
  *  \return time interval(millisecond) between start and stop
  */
 double getInterval(unsigned long long start, unsigned long long stop);
+
+} // namespace utility
+} // namesapce genie
 
 #endif /* TIMING_H_ */

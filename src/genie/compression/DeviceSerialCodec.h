@@ -19,7 +19,10 @@
 
 
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 template <class Codec1, class Codec2>
 class DeviceSerialCodec : public DeviceIntegerCODEC {
@@ -86,6 +89,7 @@ public:
     }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

@@ -92,7 +92,7 @@ pack_count(u32 data, int offset, int bits, u32 count)
 }
 __forceinline__ __device__
 void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
-        GPUGenie::query::dim& q, bool * key_found)
+        genie::query::Query::dim& q, bool * key_found)
 {
     u32 location;
     T_HASHTABLE out_key, new_key;
@@ -159,7 +159,7 @@ void access_kernel(u32 id, T_HASHTABLE* htable, int hash_table_size,
 //for AT: for adaptiveThreshold
 __device__ __forceinline__ void
 access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
-        GPUGenie::query::dim& q, u32 count, bool * key_found, u32* my_threshold,
+        genie::query::Query::dim& q, u32 count, bool * key_found, u32* my_threshold,
         bool * pass_threshold // if the count smaller that my_threshold, do not insert
         )
 {
@@ -259,7 +259,7 @@ access_kernel_AT(u32 id, T_HASHTABLE* htable, int hash_table_size,
 __device__ __forceinline__ void
 hash_kernel_AT(
         u32 id,        
-        T_HASHTABLE* htable, int hash_table_size, GPUGenie::query::dim& q, u32 count,
+        T_HASHTABLE* htable, int hash_table_size, genie::query::Query::dim& q, u32 count,
         u32* my_threshold, //for AT: for adaptiveThreshold, if the count is smaller than my_threshold, this item is also expired in the hashTable
         u32 * my_noiih, bool * overflow, bool* pass_threshold)
 {
@@ -473,7 +473,6 @@ updateThreshold(u32* my_passCount, u32* my_threshold,
 }
 
 } // namespace matching
-
 } // namespace genie
 
 #endif

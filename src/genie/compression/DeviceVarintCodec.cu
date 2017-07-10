@@ -4,16 +4,14 @@
 
 #include "DeviceCodecTemplatesImpl.hpp"
 
-using namespace GPUGenie;
-
 // Explicit template instances for CPU decoding wrapper function of simple codecs
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
 // compilation units, as opposed to defining all these templates in one place.
 template void
-GPUGenie::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 void
-GPUGenie::DeviceVarintCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceVarintCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
 
     uint8_t *bout = reinterpret_cast<uint8_t *>(out);
@@ -31,7 +29,7 @@ GPUGenie::DeviceVarintCodec::encodeArray(uint32_t *in, const size_t length, uint
 }
 
 void
-GPUGenie::DeviceVarintCodec::encodeToByteArray(uint32_t *in, const size_t length, uint8_t *bout, size_t &nvalue) {
+genie::compression::DeviceVarintCodec::encodeToByteArray(uint32_t *in, const size_t length, uint8_t *bout, size_t &nvalue) {
     const uint8_t *const initbout = bout;
     for (size_t k = 0; k < length; ++k) {
         const uint32_t val = in[k];
@@ -77,7 +75,7 @@ GPUGenie::DeviceVarintCodec::encodeToByteArray(uint32_t *in, const size_t length
 }
 
 const uint32_t*
-GPUGenie::DeviceVarintCodec::decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceVarintCodec::decodeArray(const uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
     decodeFromByteArray((const uint8_t *)in, length * sizeof(uint32_t), out, nvalue);
     return in + length;
@@ -86,7 +84,7 @@ GPUGenie::DeviceVarintCodec::decodeArray(const uint32_t *in, const size_t length
 
 
 const uint8_t*
-GPUGenie::DeviceVarintCodec::decodeFromByteArray(const uint8_t *inbyte, const size_t length, uint32_t *out,
+genie::compression::DeviceVarintCodec::decodeFromByteArray(const uint8_t *inbyte, const size_t length, uint32_t *out,
         size_t &nvalue)
 {
     if (length == 0) {
@@ -155,14 +153,14 @@ GPUGenie::DeviceVarintCodec::decodeFromByteArray(const uint8_t *inbyte, const si
 
 
 __device__ uint32_t*
-GPUGenie::DeviceVarintCodec::decodeArraySequential(
+genie::compression::DeviceVarintCodec::decodeArraySequential(
     uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &nvalue)
 {
     return nullptr;
 }
 
 __device__ uint32_t*
-GPUGenie::DeviceVarintCodec::decodeArrayParallel(
+genie::compression::DeviceVarintCodec::decodeArrayParallel(
     uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &capacity)
 {
     int idx = threadIdx.x;
@@ -187,10 +185,10 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
     }
 
     // do a scan of s_numInts to find d_out position for each thread
-    uint comprLengthPow2 = GPUGenie::d_pow2ceil_32(comprLength);
+    uint comprLengthPow2 = genie::utility::d_pow2ceil_32(comprLength);
     uint comprLength4 = (comprLength + 3) / 4;
     __syncthreads();
-    GPUGenie::d_scanExclusivePerBlockShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
+    genie::utility::d_scanExclusivePerBlockShared((uint4 *)s_numIntsScanned, (uint4 *)s_numInts, comprLength4, comprLengthPow2);
     __syncthreads();
 
     int decomprLength = s_numIntsScanned[comprLength-1] + s_numInts[comprLength-1];
@@ -258,7 +256,7 @@ GPUGenie::DeviceVarintCodec::decodeArrayParallel(
 }
 
 __device__ int
-GPUGenie::DeviceVarintCodec::numIntsStartingHere(uint32_t *d_in, int idxUnpack, int comprLength)
+genie::compression::DeviceVarintCodec::numIntsStartingHere(uint32_t *d_in, int idxUnpack, int comprLength)
 {
     // This function checks the last byte of the preceding uint32_t and the first 3 bytes of the current uint32_t, i.e.
     // d_in[idxUnpack]. If such byte value has 1 in the highest bit, then a new int must start in this uint32_t

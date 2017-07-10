@@ -31,7 +31,7 @@
 #include "table_analyzer.hpp"
 
 
-using namespace GPUGenie;
+using namespace genie::compression;
 using namespace genie::util;
 namespace po = boost::program_options;
 
@@ -140,7 +140,7 @@ void printData(std::shared_ptr<uint> sp_h_Input, size_t length)
  *  and if (top-k > number of resutls with match count greater than 0), then remaining docIds in the result vector are
  *  set to 0, thus the result and count vectors cannot be sorted conventionally. 
  */
-void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
+void sortGenieResults(genie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
                             std::vector<int> &gpuResultCounts)
 {
     std::vector<int> gpuResultHelper(config.num_of_topk),
@@ -328,9 +328,9 @@ void MeasureCodecs(std::shared_ptr<uint> sp_h_Input, int numRuns, int device)
     size_t *d_decomprLength;
     uint *h_Input = sp_h_Input.get(), *h_InputCompr, *h_OutputCPU, *h_OutputGPU;
 
-    GPUGenie::GPUGenie_Config config;
+    genie::GPUGenie_Config config;
     config.use_device = device;
-    GPUGenie::init_genie(config);
+    genie::init_genie(config);
 
     Logger::log(Logger::DEBUG,"Allocating and initializing CPU & CUDA arrays...\n");
     
@@ -501,7 +501,7 @@ void InitCodecPerfLogger(const std::string &destDir, int numOfRuns, int minValue
 }
 
 
-void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
+void verifyTableCompression(genie::table::inv_compr_table *comprTable)
 {
     std::vector<int> &inv = *(comprTable->uncompressedInv());
     std::vector<int> &invPos = *(comprTable->uncompressedInvPos());
@@ -510,7 +510,8 @@ void verifyTableCompression(GPUGenie::inv_compr_table *comprTable)
     size_t maxUncomprLength = comprTable->getUncompressedPostingListMaxLength();
 
 
-    std::shared_ptr<GPUGenie::DeviceIntegerCODEC> codec = DeviceCodecFactory::getCodec(comprTable->getCompression());
+    std::shared_ptr<genie::compression::DeviceIntegerCODEC> codec =
+            DeviceCodecFactory::getCodec(comprTable->getCompression());
 
     // A vector for decompressing inv lists
     std::vector<uint32_t> uncompressedInv(maxUncomprLength,0);
@@ -556,7 +557,7 @@ std::string getBinaryFileName(const std::string &dataFile, COMPRESSION_TYPE comp
     return binaryInvTableFile;
 }
 
-std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+std::string convertTableToBinary(const std::string &dataFile, genie::GPUGenie_Config &config)
 {
     std::string binaryInvTableFile = getBinaryFileName(dataFile, config.compression);
 
@@ -572,15 +573,15 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         Logger::log(Logger::INFO, "File %s already exists. Will ve overwritten!");
 
     Logger::log(Logger::INFO, "Preprocessing inverted table from %s ...", dataFile.c_str());
-    GPUGenie::inv_table * table = nullptr;
-    GPUGenie::inv_compr_table * comprTable = nullptr;
-    GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
+    genie::table::inv_table * table = nullptr;
+    genie::table::inv_compr_table * comprTable = nullptr;
+    genie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
     assert(table->get_total_num_of_table() == 1); // check how many tables we have
 
     if (config.compression){
-        comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
+        comprTable = dynamic_cast<genie::table::inv_compr_table*>(table);
         assert((int)comprTable->getUncompressedPostingListMaxLength() <= config.posting_list_max_length);
         // check the compression was actually used in the table
         assert(config.compression == comprTable->getCompression());
@@ -589,26 +590,26 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         verifyTableCompression(comprTable);
     }
 
-    std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    std::shared_ptr<const genie::table::inv_table> sp_table(table, [](genie::table::inv_table* ptr){delete[] ptr;});
     genie::SaveTableToBinary(binaryInvTableFile, sp_table);
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
 }
 
-void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &queryFile, GPUGenie::GPUGenie_Config &config,
+void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &queryFile, genie::GPUGenie_Config &config,
         std::vector<int> &refResultIdxs, std::vector<int> &refResultCounts)
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
+    std::shared_ptr<genie::table::inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
-    GPUGenie::read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
+    genie::read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
 
     Logger::log(Logger::INFO, "Loading queries into table...");
     std::vector<query> refQueries;
-    GPUGenie::load_query(*table, refQueries, config);
+    genie::load_query(*table, refQueries, config);
 
     Logger::log(Logger::INFO, "Running KNN on GPU...");
     std::cout << "KNN_SEARCH_CPU"
@@ -618,14 +619,14 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
               << ", compression: " << (!config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str())
               << std::endl;
 
-    GPUGenie::knn_search(*table, refQueries, refResultIdxs, refResultCounts, config);
+    genie::knn_search(*table, refQueries, refResultIdxs, refResultCounts, config);
     // Top k results from GENIE don't have to be sorted. In order to compare with CPU implementation, we have to
     // sort the results manually from individual queries => sort subsequence relevant to each query independently
     sortGenieResults(config, refResultIdxs, refResultCounts);
 
     if (config.compression)
     {
-        GPUGenie::inv_compr_table *comprTable = dynamic_cast<GPUGenie::inv_compr_table*>(table.get());
+        genie::table::inv_compr_table *comprTable = dynamic_cast<genie::table::inv_compr_table*>(table.get());
         genie::util::PerfLogger<genie::util::MatchingPerfData>::Instance().Log().ComprRatio(
             comprTable->getCompressionRatio());
     }
@@ -635,7 +636,7 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
 }
 
 
-void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+void fillConfig(const std::string &dataFile, genie::GPUGenie_Config &config)
 {
 
     std::string invSuffix(".inv");
@@ -709,13 +710,13 @@ void fillConfig(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
 
 void convertTableToBinaryFormats(const std::string &dataFile, const std::string &codec)
 {
-    GPUGenie::GPUGenie_Config config;
+    genie::GPUGenie_Config config;
     fillConfig(dataFile, config);
 
     Logger::log(Logger::INFO, "Reading data file %s ...", dataFile.c_str());
     std::vector<std::vector<int>> data;
     config.data_points = &data;
-    GPUGenie::read_file(data, dataFile.c_str(), -1);
+    genie::read_file(data, dataFile.c_str(), -1);
 
     if (codec == "all" || codec == "no")
         std::string binaryInvTableFile = convertTableToBinary(dataFile, config);
@@ -735,14 +736,14 @@ void RunGENIE(const std::string &dataFile, const std::string &codec, int numRuns
     std::string queryFile = dataFile;
     std::vector<std::vector<int>> queryPoints;
 
-    GPUGenie::GPUGenie_Config config;
+    genie::GPUGenie_Config config;
     config.num_of_queries = 5;
     config.num_of_topk = 5;
     fillConfig(dataFile, config);
     config.query_points = &queryPoints;
     config.use_device = device;
 
-    GPUGenie::init_genie(config);
+    genie::init_genie(config);
 
     for(int run = 0; run < numRuns; run++)
     {
@@ -842,7 +843,7 @@ void AnalyzeInvertedTable(const std::string &data_file, const std::string &codec
         Logger::log(Logger::INFO, "Analyzing table %s with compression %s...",
                 binary_table_file.c_str(), DeviceCodecFactory::getCompressionName(compr).c_str());
 
-        std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binary_table_file);
+        std::shared_ptr<genie::table::inv_table> table = genie::LoadTableFromBinary(binary_table_file);
 
         perftoolkit::TableAnalyzer::Analyze(table, dest_dir);
     }

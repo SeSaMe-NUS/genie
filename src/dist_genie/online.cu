@@ -24,7 +24,7 @@
 #define NO_EXTERN
 #include "global.h"
 
-using namespace GPUGenie;
+using namespace genie;
 using namespace distgenie;
 using namespace std;
 

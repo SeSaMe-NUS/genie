@@ -54,7 +54,7 @@
 #define GPUGENIE_DEFAULT_NUM_OF_QUERIES 0
 
 
-namespace GPUGenie
+namespace genie
 {
 
 /*! \struct _GPUGenie_Config
@@ -87,7 +87,7 @@ typedef struct _GPUGenie_Config
 	bool save_to_gpu; /*!< true for transferring data to gpu and keeping in gpu memory */
 
 	std::vector<std::vector<int> > * query_points;/*!< query set, for non-multirange query */
-	std::vector<attr_t> * multirange_query_points;/*!< query set, for multirange query */
+	std::vector<genie::utility::attr_t> * multirange_query_points;/*!< query set, for multirange query */
 	int posting_list_max_length;/*!< maximum length of one posting list, used only under load balance setting*/
 	float multiplier;/*!< for calculating how long posting list should be fit into one gpu block, used under load balance setting */
 	bool use_load_balance;/*!< whether to use load balance feature */
@@ -101,7 +101,7 @@ typedef struct _GPUGenie_Config
     unsigned int num_of_iteration;/*!< Number of iterations. This parameter is used major in sequence search, to cut off obtained knn.*/
 
 	/*! compression type used for posting lists */
-	COMPRESSION_TYPE compression;
+	genie::compression::COMPRESSION_TYPE compression;
 
 	_GPUGenie_Config() :
 		num_of_topk(GPUGENIE_DEFAULT_TOPK),
@@ -122,7 +122,7 @@ typedef struct _GPUGenie_Config
 		num_of_queries(GPUGENIE_DEFAULT_NUM_OF_QUERIES),
 		use_subsequence_search(false),
 		data_gram_length(3), num_of_iteration(1),
-		compression(DEFAULT_COMPRESSION_TYPE){}
+		compression(genie::compression::DEFAULT_COMPRESSION_TYPE){}
 
 	_GPUGenie_Config(const _GPUGenie_Config &config) :
 		num_of_topk(config.num_of_topk),
@@ -173,7 +173,7 @@ typedef struct _GPUGenie_Config
  *
  *  \return true only when no error occurs
  */
-bool preprocess_for_knn_csv(GPUGenie_Config& config, inv_table * &_table);
+bool preprocess_for_knn_csv(GPUGenie_Config& config, genie::table::inv_table * &_table);
 
 /*! \fn knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table,vector<int>& result, vector<int>& result_count)
  *  \brief This function is called when preprocess is done,
@@ -186,7 +186,7 @@ bool preprocess_for_knn_csv(GPUGenie_Config& config, inv_table * &_table);
  *  This function handle the rest procedure after preprocess finishes,
  *  Multiload is also handled in this function. The results need to be merged in multiload situation
  */
-void knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table, std::vector<int>& result, std::vector<int>& result_count);
+void knn_search_after_preprocess(GPUGenie_Config& config, genie::table::inv_table * &_table, std::vector<int>& result, std::vector<int>& result_count);
 
 /*! \fn knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
  *  \brief Simplest form for use.
@@ -219,11 +219,11 @@ void knn_search(std::vector<int>& result, GPUGenie_Config& config);
  *
  *  This function is seldom called by users. It is relatively more basic.
  */
-void knn_search(inv_table& table, std::vector<query>& queries,
+void knn_search(genie::table::inv_table& table, std::vector<genie::query::Query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count, GPUGenie_Config& config);
 
 /* Multi table search */
-void knn_search_MT(std::vector<inv_table*>& table, std::vector<std::vector<query> >& queries,
+void knn_search_MT(std::vector<genie::table::inv_table*>& table,std::vector<std::vector<genie::query::Query>>& queries,
 		std::vector<std::vector<int> >& h_topk, std::vector<std::vector<int> >& h_topk_count, std::vector<GPUGenie_Config>& config);
 
 /*! \fn knn_search_for_csv_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
@@ -246,7 +246,7 @@ void knn_search_for_csv_data(std::vector<int>& result, std::vector<int>& result_
  *  \param data_points Vector storing all data points
  *  \param config Settings by users
  */
-void load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
+void load_table(genie::table::inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 /*! \fn void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config)
  *  \brief This function constructs the corresponding query structure for a specific inv_table object
@@ -258,7 +258,7 @@ void load_table(inv_table& table, std::vector<std::vector<int> >& data_points, G
  *  This function would make a choice between load_query_singlerange and load_query_multirange. The
  *  actual constructing process is finished by one of these two functions.
  */
-void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+void load_query(genie::table::inv_table& table, std::vector<genie::query::Query>& queries, GPUGenie_Config& config);
 
 /*! \fn void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config)
  *  \brief This function construct query structure for queries of non-multirange
@@ -267,7 +267,7 @@ void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& 
  *  \param queries Constructed queries would be returned by this parameter
  *  \param config Settings by users
  */
-void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+void load_query_singlerange(genie::table::inv_table& table, std::vector<genie::query::Query>& queries, GPUGenie_Config& config);
 
 /*! \fn void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config)
  *  \brief This function constructs query structure for queries of multirange
@@ -276,7 +276,7 @@ void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGe
  *  \param queries Constructed queries would be returned by this parameter
  *  \param config Settings by users
  */
-void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+void load_query_multirange(genie::table::inv_table& table, std::vector<genie::query::Query>& queries, GPUGenie_Config& config);
 
 /*! \fn void load_table_bijectMap(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
  *  \brief This function constructs the inv_table object for dataset consisting of non-sift data point vectors
@@ -287,7 +287,7 @@ void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGen
  *
  *  The input dataset can be short text sets.
  */
-void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
+void load_table_bijectMap(genie::table::inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 /*! \fn void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, GPUGenie_Config& config)
  *  \brief This function constructs the inv_table for dataset from binary files
@@ -302,7 +302,7 @@ void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data
  *  This function is responsible for handling data set from binary files. All
  *  data is sift.
  */
-void load_table(inv_table& table, int *data, unsigned int item_num,
+void load_table(genie::table::inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config);
 
 /*! \fn void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, GPUGenie_Config& config)
@@ -318,7 +318,7 @@ void load_table(inv_table& table, int *data, unsigned int item_num,
  *  This function is responsible for handling data set from binary files. And
  *  the data is for short-text-like data set.
  */
-void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
+void load_table_bijectMap(genie::table::inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config);
 
 
@@ -330,7 +330,7 @@ void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
  *  \param data_points The data set to be searched.
  *  \param config The settings from User.
  */
-void load_table_sequence(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
+void load_table_sequence(genie::table::inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 
 /*! \fn void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Config& config)
@@ -341,7 +341,7 @@ void load_table_sequence(inv_table& table, std::vector<std::vector<int> >& data_
  *  \param config User settings.
  *
  */
-void load_query_sequence(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
+void load_query_sequence(genie::table::inv_table& table, std::vector<genie::query::Query>& queries, GPUGenie_Config& config);
 
 /*! \fn void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gram_data, int max_value, int gram_length)
  *  \brief This function is used to convert initial sequence data to sequences represented by n-gram data

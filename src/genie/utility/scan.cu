@@ -9,11 +9,11 @@
 
 const uint THREADBLOCK_SIZE = GPUGENIE_SCAN_THREADBLOCK_SIZE;
 
-const uint GPUGenie::SCAN_THREADBLOCK_SIZE     = GPUGENIE_SCAN_THREADBLOCK_SIZE;
-const uint GPUGenie::SCAN_MIN_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE;
-const uint GPUGenie::SCAN_MAX_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE;
-const uint GPUGenie::SCAN_MIN_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE;
-const uint GPUGenie::SCAN_MAX_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE;
+const uint genie::utility::SCAN_THREADBLOCK_SIZE     = GPUGENIE_SCAN_THREADBLOCK_SIZE;
+const uint genie::utility::SCAN_MIN_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE;
+const uint genie::utility::SCAN_MAX_SHORT_ARRAY_SIZE = GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE;
+const uint genie::utility::SCAN_MIN_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE;
+const uint genie::utility::SCAN_MAX_LARGE_ARRAY_SIZE = GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE;
 
 // Naive inclusive scan: O(N * log2(N)) operations
 // Allocate 2 * 'size' local memory, initialize the first half with 'size' zeros avoiding if(pos >= offset) condition
@@ -71,7 +71,7 @@ inline __device__ uint4 scan4Exclusive(uint4 idata4, volatile uint *s_Data, uint
     return odata4;
 }
 
-__global__ void GPUGenie::g_scanExclusiveShared(
+__global__ void genie::utility::g_scanExclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -92,7 +92,7 @@ __global__ void GPUGenie::g_scanExclusiveShared(
         d_Dst[pos] = odata4;
 }
 
-__device__ void GPUGenie::d_scanExclusivePerBlockShared(
+__device__ void genie::utility::d_scanExclusivePerBlockShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -113,7 +113,7 @@ __device__ void GPUGenie::d_scanExclusivePerBlockShared(
         d_Dst[pos] = odata4;
 }
 
-__device__ void GPUGenie::d_scanExclusiveShared(
+__device__ void genie::utility::d_scanExclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -134,7 +134,7 @@ __device__ void GPUGenie::d_scanExclusiveShared(
         d_Dst[pos] = odata4;
 }
 
-__global__ void GPUGenie::g_scanInclusiveShared(
+__global__ void genie::utility::g_scanInclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -155,7 +155,7 @@ __global__ void GPUGenie::g_scanInclusiveShared(
         d_Dst[pos] = odata4;
 }
 
-__device__ void GPUGenie::d_scanInclusivePerBlockShared(
+__device__ void genie::utility::d_scanInclusivePerBlockShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -176,7 +176,7 @@ __device__ void GPUGenie::d_scanInclusivePerBlockShared(
         d_Dst[pos] = odata4;
 }
 
-__device__ void GPUGenie::d_scanInclusiveShared(
+__device__ void genie::utility::d_scanInclusiveShared(
     uint4 *d_Dst,
     uint4 *d_Src,
     uint activeThreads,
@@ -264,19 +264,19 @@ __global__ void uniformUpdate(
 //Internal exclusive scan buffer
 static uint *d_Buf;
 
-void GPUGenie::initScan(void)
+void genie::utility::initScan(void)
 {
     cudaCheckErrors(cudaMalloc((void **)&d_Buf, THREADBLOCK_SIZE * sizeof(uint)));
 }
 
-void GPUGenie::closeScan(void)
+void genie::utility::closeScan(void)
 {
     cudaCheckErrors(cudaFree(d_Buf));
 }
 
 
 // Returns the first power of two greater or equal to x
-__device__ uint GPUGenie::d_pow2ceil_32 (uint x)
+__device__ uint genie::utility::d_pow2ceil_32 (uint x)
 {
     if (x == 0)
         return 0;
@@ -290,7 +290,7 @@ __device__ uint GPUGenie::d_pow2ceil_32 (uint x)
 }
 
 // Returns the first power of two greater or equal to x
-uint GPUGenie::h_pow2ceil_32 (uint x)
+uint genie::utility::h_pow2ceil_32 (uint x)
 {
     if (x == 0)
         return 0;
@@ -308,7 +308,7 @@ static uint iDivUp(uint dividend, uint divisor)
     return ((dividend % divisor) == 0) ? (dividend / divisor) : (dividend / divisor + 1);
 }
 
-size_t GPUGenie::scanExclusiveShort(
+size_t genie::utility::scanExclusiveShort(
     uint *d_Dst,
     uint *d_Src,
     uint arrayLength)
@@ -338,7 +338,7 @@ size_t GPUGenie::scanExclusiveShort(
     return THREADBLOCK_SIZE;
 }
 
-size_t GPUGenie::scanExclusiveLarge(
+size_t genie::utility::scanExclusiveLarge(
     uint *d_Dst,
     uint *d_Src,
     uint arrayLength)
@@ -388,7 +388,7 @@ size_t GPUGenie::scanExclusiveLarge(
     return THREADBLOCK_SIZE;
 }
 
-void GPUGenie::scanExclusiveHost(
+void genie::utility::scanExclusiveHost(
     uint *dst,
     uint *src,
     uint arrayLength)

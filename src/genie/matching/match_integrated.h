@@ -13,7 +13,9 @@
 
 
 
-namespace GPUGenie
+namespace genie
+{
+namespace matching
 {
 
 /*! \fn void match(inv_table& table, vector<query>& queries, device_vector<data_t>& d_data, device_vector<u32>& d_bitmap,int hash_table_size,
@@ -33,8 +35,8 @@ namespace GPUGenie
  */
 template <class Codec> void
 match_integrated(
-        inv_compr_table& table,
-        std::vector<query>& queries,
+        genie::table::inv_compr_table& table,
+        std::vector<genie::query::Query>& queries,
         thrust::device_vector<genie::matching::data_t>& d_data,
         thrust::device_vector<u32>& d_bitmap,
         int hash_table_size,
@@ -43,6 +45,7 @@ match_integrated(
         thrust::device_vector<u32>& d_threshold,
         thrust::device_vector<u32>& d_passCount);
 
-}
+} // namespace matching
+} // namespace genie
 
 #endif

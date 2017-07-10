@@ -6,46 +6,44 @@
 
 #include "DeviceSerialCodec.h"
 
-using namespace GPUGenie;
-
 // Explicit template instances for Serial Codecs
 
 template class
-GPUGenie::DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>;
+genie::compression::DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>;
 template class
-GPUGenie::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
+genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
 
 // Explicit template instances for decoding wrapper function for Serial Codecs
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
 // compilation units, as opposed to defining all these templates in one place
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 
 template <class Codec1, class Codec2> void
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceSerialCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
     assert(length > 0);
     assert(nvalue > 0);
@@ -65,7 +63,7 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size
 
 
 template <class Codec1, class Codec2> const uint32_t*
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, const size_t comprLength, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceSerialCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, const size_t comprLength, uint32_t *out, size_t &nvalue)
 {
 
     uint32_t mid[nvalue];
@@ -92,14 +90,14 @@ GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, cons
 
 
 template <class Codec1, class Codec2> __device__ uint32_t*
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+genie::compression::DeviceSerialCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
     return nullptr;
 }
 
 
 template <class Codec1, class Codec2> __device__ uint32_t*
-GPUGenie::DeviceSerialCodec<Codec1,Codec2>::decodeArrayParallel(
+genie::compression::DeviceSerialCodec<Codec1,Codec2>::decodeArrayParallel(
             uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &nvalue)
 {
     __shared__ uint32_t s_Mid[GPUGENIE_CODEC_SERIAL_MAX_UNCOMPR_LENGTH];

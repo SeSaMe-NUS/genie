@@ -13,10 +13,10 @@
 
 #include "inv_compr_table.h"
 
-BOOST_CLASS_EXPORT_IMPLEMENT(GPUGenie::inv_compr_table)
+BOOST_CLASS_EXPORT_IMPLEMENT(genie::table::inv_compr_table)
 
 void
-GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
+genie::table::inv_compr_table::build(size_t max_length, bool use_load_balance)
 {
     Logger::log(Logger::DEBUG, "Bulding uncompressed inv_table...");
     inv_table::build(max_length, use_load_balance);
@@ -107,20 +107,20 @@ GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
 }
 
 
-GPUGenie::inv_compr_table::~inv_compr_table()
+genie::table::inv_compr_table::~inv_compr_table()
 {
     clear_gpu_mem();
 }
 
 
-GPUGenie::COMPRESSION_TYPE
-GPUGenie::inv_compr_table::getCompression() const
+genie::compression::COMPRESSION_TYPE
+genie::table::inv_compr_table::getCompression() const
 {
     return m_compression;
 }
 
 double
-GPUGenie::inv_compr_table::getCompressionRatio()
+genie::table::inv_compr_table::getCompressionRatio()
 {
     if (this->build_status() != builded)
     {
@@ -133,7 +133,7 @@ GPUGenie::inv_compr_table::getCompressionRatio()
 }
 
 void
-GPUGenie::inv_compr_table::setCompression(COMPRESSION_TYPE compression)
+genie::table::inv_compr_table::setCompression(COMPRESSION_TYPE compression)
 {
     if (this->build_status() == builded)
     {
@@ -144,59 +144,59 @@ GPUGenie::inv_compr_table::setCompression(COMPRESSION_TYPE compression)
 }
 
 size_t
-GPUGenie::inv_compr_table::getUncompressedPostingListMaxLength() const
+genie::table::inv_compr_table::getUncompressedPostingListMaxLength() const
 {
     return m_uncompressedInvListsMaxLength;
 }
 
 void
-GPUGenie::inv_compr_table::setUncompressedPostingListMaxLength(size_t length)
+genie::table::inv_compr_table::setUncompressedPostingListMaxLength(size_t length)
 {
     this->m_uncompressedInvListsMaxLength = length;
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::inv()
+genie::table::inv_compr_table::inv()
 {
     return reinterpret_cast<std::vector<int>*>(&m_comprInv);
 }
 
 std::vector<uint32_t>*
-GPUGenie::inv_compr_table::compressedInv()
+genie::table::inv_compr_table::compressedInv()
 {
     return &m_comprInv;
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::uncompressedInv()
+genie::table::inv_compr_table::uncompressedInv()
 {
     return inv_table::inv();
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::inv_pos()
+genie::table::inv_compr_table::inv_pos()
 {
     return &m_comprInvPos;
 }
 std::vector<int>*
-GPUGenie::inv_compr_table::compressedInvPos()
+genie::table::inv_compr_table::compressedInvPos()
 {
     return &m_comprInvPos;
 }
 
 std::vector<int>*
-GPUGenie::inv_compr_table::uncompressedInvPos()
+genie::table::inv_compr_table::uncompressedInvPos()
 {
     return inv_table::inv_pos();;
 }
 
 uint32_t*
-GPUGenie::inv_compr_table::deviceCompressedInv() const
+genie::table::inv_compr_table::deviceCompressedInv() const
 {
     return m_d_compr_inv_p;
 }
 
-bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
+bool genie::table::inv_compr_table::cpy_data_to_gpu()
 {
     try{
         if(m_d_compr_inv_p == NULL)
@@ -204,13 +204,13 @@ bool GPUGenie::inv_compr_table::cpy_data_to_gpu()
         cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(uint32_t) * m_comprInv.size(),
                 cudaMemcpyHostToDevice));
     } catch(std::bad_alloc &e){
-        throw(GPUGenie::gpu_bad_alloc(e.what()));
+        throw(genie::table::gpu_bad_alloc(e.what()));
     }
 
     return true;
 }
 
-void GPUGenie::inv_compr_table::clear()
+void genie::table::inv_compr_table::clear()
 {
     inv_table::clear();
 
@@ -219,7 +219,7 @@ void GPUGenie::inv_compr_table::clear()
     m_comprInvPos.clear();
 }
 
-void GPUGenie::inv_compr_table::clear_gpu_mem()
+void genie::table::inv_compr_table::clear_gpu_mem()
 {
     if (m_d_compr_inv_p == NULL)
         return;

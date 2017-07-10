@@ -29,11 +29,13 @@
 
 #include "interface.h"
 
-using namespace GPUGenie;
+using namespace genie;
+using namespace genie::compression;
+using namespace genie::utility;
 using namespace std;
 
 #ifndef GENIE_COMPR
-    const COMPRESSION_TYPE GPUGenie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+    const COMPRESSION_TYPE genie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
 #endif
 
 void swap(int * position, int offset1, int offset2)
@@ -134,7 +136,7 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
     u64 end_merge = getTime();
     cout << "Merge time = " << getInterval(start_merge, end_merge) << "ms. "<<endl;
 }
-bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
+bool genie::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table)
 {
 	unsigned int cycle = 0;
@@ -173,12 +175,12 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
                 	load_table_sequence(_table[0], *(config.data_points), config);
                 	break;
 				default:
-					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+					throw genie::exception::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		else
 		{
-			throw GPUGenie::cpu_runtime_error("no data input!");
+			throw genie::exception::cpu_runtime_error("no data input!");
 		}
 	}
 	else
@@ -199,7 +201,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
         if (config.compression == NO_COMPRESSION)
             _table = new inv_table[table_num];
         else
-            throw new GPUGenie::cpu_runtime_error("Compression for multiple tables to yet supported");
+            throw new genie::exception::cpu_runtime_error("Compression for multiple tables to yet supported");
 
 		for (unsigned int i = 0; i < cycle; ++i)
 		{
@@ -223,7 +225,7 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
                 	load_table_sequence(_table[i], temp, config);
                		break;
 				default:
-					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+					throw genie::exception::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 		if (table_num != cycle)
@@ -259,14 +261,14 @@ bool GPUGenie::preprocess_for_knn_csv(GPUGenie_Config& config,
                		load_table_sequence(_table[cycle + 1], temp2,config);
                 	break;
 				default:
-					throw GPUGenie::cpu_runtime_error("Unrecognised search type!");
+					throw genie::exception::cpu_runtime_error("Unrecognised search type!");
 			}
 		}
 	}
 	return true;
 }
 
-void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
+void genie::knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count)
 {
@@ -300,7 +302,7 @@ void GPUGenie::knn_search_after_preprocess(GPUGenie_Config& config,
 
 
 }
-void GPUGenie::load_table(inv_table& table,
+void genie::load_table(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
 {
 	inv_list list;
@@ -339,7 +341,7 @@ void GPUGenie::load_table(inv_table& table,
 
 }
 
-void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
+void genie::load_table(inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config)
 {
 	inv_list list;
@@ -387,7 +389,7 @@ void GPUGenie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 }
 
-void GPUGenie::load_query(inv_table& table, std::vector<query>& queries,
+void genie::load_query(inv_table& table, std::vector<query>& queries,
 		GPUGenie_Config& config)
 {
     if(config.search_type == 2)
@@ -411,7 +413,7 @@ void GPUGenie::load_query(inv_table& table, std::vector<query>& queries,
 // 0   0   15     0.04        1
 // 0   1   6      0.04        1
 // ....
-void GPUGenie::load_query_multirange(inv_table& table,
+void genie::load_query_multirange(inv_table& table,
 		std::vector<query>& queries, GPUGenie_Config& config)
 {
 	queries.clear();
@@ -457,7 +459,7 @@ void GPUGenie::load_query_multirange(inv_table& table,
 	Logger::log(Logger::DEBUG, "%d queries are loaded.", queries.size());
 
 }
-void GPUGenie::load_query_singlerange(inv_table& table,
+void genie::load_query_singlerange(inv_table& table,
 		std::vector<query>& queries, GPUGenie_Config& config)
 {
 
@@ -503,7 +505,7 @@ void GPUGenie::load_query_singlerange(inv_table& table,
 			timeInterval);
 }
 
-void GPUGenie::load_query_sequence(inv_table& table,
+void genie::load_query_sequence(inv_table& table,
 		vector<query>& queries, GPUGenie_Config& config)
 {
 
@@ -605,7 +607,7 @@ void GPUGenie::load_query_sequence(inv_table& table,
 
 
 
-void GPUGenie::load_table_bijectMap(inv_table& table,
+void genie::load_table_bijectMap(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
 {
 	u64 starttime = getTime();
@@ -633,7 +635,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table,
 
 }
 
-void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
+void genie::load_table_bijectMap(inv_table& table, int *data,
 		unsigned int item_num, unsigned int *index, unsigned int row_num,
 		GPUGenie_Config& config)
 {
@@ -664,7 +666,7 @@ void GPUGenie::load_table_bijectMap(inv_table& table, int *data,
 
 }
 
-void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
+void genie::load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
 {
     u64 starttime = getTime();
     int min_value, max_value;
@@ -742,7 +744,7 @@ void GPUGenie::load_table_sequence(inv_table& table, vector<vector<int> >& data_
     
 }
 
-void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
+void genie::knn_search_for_csv_data(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	inv_table *_table = NULL;
@@ -757,13 +759,13 @@ void GPUGenie::knn_search_for_csv_data(std::vector<int>& result,
 	delete[] _table;
 }
 
-void GPUGenie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
+void genie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 {
 	std::vector<int> result_count;
 	knn_search(result, result_count, config);
 }
 
-void GPUGenie::knn_search(std::vector<int>& result,
+void genie::knn_search(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	try{
@@ -776,9 +778,9 @@ void GPUGenie::knn_search(std::vector<int>& result,
 			cout<<"knn for csv finished!"<<endl;
             break;
 		case 1:
-			throw GPUGenie::cpu_runtime_error("Binary .dat data_type no longer supported\n");
+			throw genie::exception::cpu_runtime_error("Binary .dat data_type no longer supported\n");
         default:
-            throw GPUGenie::cpu_runtime_error("Please check data type in config\n");
+            throw genie::exception::cpu_runtime_error("Please check data type in config\n");
 		}
 
 		u64 endtime = getTime();
@@ -790,27 +792,27 @@ void GPUGenie::knn_search(std::vector<int>& result,
 	}
 	catch (thrust::system::system_error &e){
         cout<<"system_error : "<<e.what()<<endl;
-		throw GPUGenie::gpu_runtime_error(e.what());
-	} catch (GPUGenie::gpu_bad_alloc &e){
+		throw genie::exception::gpu_runtime_error(e.what());
+	} catch (genie::exception::gpu_bad_alloc &e){
         cout<<"bad_alloc"<<endl;
 		throw e;
-	} catch (GPUGenie::gpu_runtime_error &e){
+	} catch (genie::exception::gpu_runtime_error &e){
 		cout<<"run time error"<<endl;
         throw e;
 	} catch(std::bad_alloc &e){
         cout<<"cpu bad alloc"<<endl;
-		throw GPUGenie::cpu_bad_alloc(e.what());
+		throw genie::exception::cpu_bad_alloc(e.what());
 	} catch(std::exception &e){
         cout<<"cpu runtime"<<endl;
-		throw GPUGenie::cpu_runtime_error(e.what());
+		throw genie::exception::cpu_runtime_error(e.what());
 	} catch(...){
         cout<<"other error"<<endl;
 		std::string msg = "Warning: Unknown Exception! Please try again or contact the author.\n";
-		throw GPUGenie::cpu_runtime_error(msg.c_str());
+		throw genie::exception::cpu_runtime_error(msg.c_str());
 	}
 }
 
-void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
+void genie::knn_search(inv_table& table, std::vector<query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count,
 		GPUGenie_Config& config)
 {
@@ -843,7 +845,7 @@ void GPUGenie::knn_search(inv_table& table, std::vector<query>& queries,
 			h_topk_count.begin());
 }
 
-void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& queries,
+void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
 {
 	/* hashtable size */
@@ -867,7 +869,7 @@ void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >&
 	}
 
 	vector<thrust::device_vector<int> > d_topk(configs.size()), d_topk_count(configs.size());
-	GPUGenie::knn_bijectMap_MT(
+	genie::knn_bijectMap_MT(
 			tables, //basic API, since encode dimension and value is also finally transformed as a bijection map
 			queries, d_topk, d_topk_count, hashtable_sizes, max_loads,
 			configs.at(0).count_threshold); // threshold is the same
@@ -896,12 +898,12 @@ void GPUGenie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >&
 }
 
 
-void GPUGenie::reset_device()
+void genie::reset_device()
 {
     cudaDeviceReset();
 }
 
-void GPUGenie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
+void genie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
                     vector<int> &resultOffset, unsigned int shift_bits)
 {
     for(unsigned int i = 0 ; i < result.size() ; ++i)
@@ -914,7 +916,7 @@ void GPUGenie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
     }
 }
 
-void GPUGenie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int> >& gram_data,
+void genie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int> >& gram_data,
         int max_value, int gram_length)
 {
     int num_of_value = max_value + 1;
@@ -959,7 +961,7 @@ void GPUGenie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<
     }
 }
 
-void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
+void genie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
 {
     min_value = data[0][0];
     max_value = min_value;
@@ -980,14 +982,14 @@ void GPUGenie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vec
     }
 }
 
-void GPUGenie::init_genie(GPUGenie_Config &config)
+void genie::init_genie(GPUGenie_Config &config)
 {
 	int device_count;
 
 	cudaCheckErrors(cudaGetDeviceCount(&device_count));
 	if (device_count == 0)
 	{
-		throw GPUGenie::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
+		throw genie::exception::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
 	}
 	else if (device_count <= config.use_device)
 	{

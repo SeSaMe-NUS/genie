@@ -8,11 +8,32 @@
 
 #include <thrust/device_vector.h>
 
-#include "DeviceCodecs.h"
-#include <genie/matching/match.h>
+#include <genie/matching/match_common.h>
 #include <genie/utility/Logger.h>
 
-namespace GPUGenie {
+#include "DeviceCodecs.h"
+
+namespace genie { namespace table {class inv_compr_table;}}
+namespace genie { namespace query {class Query; }}
+namespace genie { namespace matching {struct data_t; }}
+
+/**
+ * Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated
+ */
+typedef void (*MatchIntegratedFunPtr)(
+    genie::table::inv_compr_table&,
+    std::vector<genie::query::Query>&,
+    thrust::device_vector<genie::matching::data_t>&,
+    thrust::device_vector<u32>&, int, int,
+    thrust::device_vector<u32>&,
+    thrust::device_vector<u32>&,
+    thrust::device_vector<u32>&);
+
+namespace genie
+{
+
+namespace compression
+{
 
 enum COMPRESSION_TYPE {
     NO_COMPRESSION = 0, // make (bool)NO_COMPRESSION evaluate as false 
@@ -36,14 +57,6 @@ extern const COMPRESSION_TYPE LIGHTWEIGHT_COMPRESSION_TYPE;
 extern const COMPRESSION_TYPE MIDDLEWEIGHT_COMPRESSION_TYPE;
 extern const COMPRESSION_TYPE HEAVYWEIGHT_COMPRESSION_TYPE;
 
-/**
- * Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated
- */
-class inv_compr_table;
-typedef void (
-        *MatchIntegratedFunPtr)(inv_compr_table&, std::vector<query>&, thrust::device_vector<genie::matching::data_t>&,
-        thrust::device_vector<u32>&, int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&,
-        thrust::device_vector<u32>&);
 
 
 class DeviceCodecFactory {
@@ -80,7 +93,7 @@ public:
     {
         if (codecInstancesMap.find(type) == codecInstancesMap.end())
         {
-            Logger::log(Logger::ALERT, "Unknown codec requested (%d)!", (int)type);
+            genie::utility::Logger::log(genie::utility::Logger::ALERT, "Unknown codec requested (%d)!", (int)type);
             return nullCodec;
         }
         return codecInstancesMap.at(type);
@@ -90,7 +103,8 @@ public:
     {
         if (integratedKernelsMap.find(type) == integratedKernelsMap.end())
         {
-            Logger::log(Logger::ALERT, "Unknown integrated matching function pointer requested (%d)!", (int)type);
+            genie::utility::Logger::log(genie::utility::Logger::ALERT,
+                "Unknown integrated matching function pointer requested (%d)!", (int)type);
             return nullptr;
         }
         return integratedKernelsMap.at(type);
@@ -102,6 +116,7 @@ protected:
 
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

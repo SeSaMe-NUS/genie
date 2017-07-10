@@ -15,7 +15,7 @@ void genie::utility::Init(Config& config)
 		CUDA_CHECK_ERROR(cudaGetDeviceCount(&device_count));
 		if (device_count == 0)
 		{
-			throw GPUGenie::cpu_runtime_error("Nvidia CUDA-supported GPU not found.");
+			throw genie::exception::cpu_runtime_error("Nvidia CUDA-supported GPU not found.");
 		}
 		else if (device_count <= new_gpu_id)
 		{

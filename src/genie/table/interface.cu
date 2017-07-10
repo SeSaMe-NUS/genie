@@ -3,14 +3,14 @@
 using namespace std;
 using namespace genie;
 
-shared_ptr<GPUGenie::inv_table> genie::table::BuildTable(const TableData& table_data)
+shared_ptr<genie::table::inv_table> genie::table::BuildTable(const TableData& table_data)
 {
-	GPUGenie::GPUGenie_Config config;
+	genie::GPUGenie_Config config;
 	config.data_points = &const_cast<TableData&>(table_data);
-	GPUGenie::inv_table* table_ptr = nullptr;
-	GPUGenie::preprocess_for_knn_csv(config, table_ptr);
+	genie::table::inv_table* table_ptr = nullptr;
+	genie::preprocess_for_knn_csv(config, table_ptr);
 	// Note: force array deleter to be used
-	shared_ptr<GPUGenie::inv_table> table(table_ptr, [](GPUGenie::inv_table* p) { delete[] p; });
+	shared_ptr<genie::table::inv_table> table(table_ptr, [](genie::table::inv_table* p) { delete[] p; });
 
 	return table;
 }

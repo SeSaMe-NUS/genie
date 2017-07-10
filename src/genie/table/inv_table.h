@@ -23,10 +23,9 @@
 typedef unsigned long long u64;
 
 
-/*! \namespace GPUGenie
- *  \brief GPUGenie is the top namespace for the project
- */
-namespace GPUGenie
+namespace genie
+{
+namespace table
 {
 
 class inv_compr_table;
@@ -535,7 +534,8 @@ private:
     friend class boost::serialization::access;
 
 };
-}
 
+} // namespace table
+} // namespace genie
 
 #endif

@@ -12,15 +12,13 @@
 #include <map>
 #include <iostream>
 
-#include "FileReader.h"
-
 #include <genie/utility/Logger.h>
 
-using namespace GPUGenie;
+#include "FileReader.h"
+
 using namespace std;
 
-namespace GPUGenie
-{
+
 vector<string> split(string& str, const char* c)
 {
 	char *cstr, *p;
@@ -47,9 +45,9 @@ string eraseSpace(string origin)
 		end--;
 	return origin.substr(start, end - start + 1);
 }
-}
 
-void GPUGenie::read_file(vector<vector<int> >& dest, const char* fname, int num)
+
+void genie::utility::read_file(vector<vector<int> >& dest, const char* fname, int num)
 {
 	string line;
 	ifstream ifile(fname);
@@ -86,7 +84,7 @@ void GPUGenie::read_file(vector<vector<int> >& dest, const char* fname, int num)
 // 0   0   15     0.04        1
 // 0   1   6      0.04        1
 // ....
-void GPUGenie::read_query(std::vector<attr_t>& data, const char* file_name,
+void genie::utility::read_query(std::vector<genie::utility::attr_t>& data, const char* file_name,
 		int num)
 {
 
@@ -128,8 +126,8 @@ void GPUGenie::read_query(std::vector<attr_t>& data, const char* file_name,
 }
 
 //Read old format query data: same format as data files
-void GPUGenie::read_query(inv_table& table, const char* fname,
-		vector<query>& queries, int num_of_queries, int num_of_query_dims,
+void genie::utility::read_query(genie::table::inv_table& table, const char* fname,
+		vector<genie::query::Query>& queries, int num_of_queries, int num_of_query_dims,
 		int radius, int topk, float selectivity)
 {
 
@@ -173,4 +171,3 @@ void GPUGenie::read_query(inv_table& table, const char* fname,
 	Logger::log(Logger::DEBUG, "%d queries are loaded.", num_of_queries);
 }
 
-/* namespace GPUGenie */

@@ -13,18 +13,18 @@ configure_file(
 set( GENIE_COMPILATION_UNITS
   genie/exception/exception.cc
   genie/exception/genie_errors.cu
-  genie/execution_policy/single_range.cu
-  genie/execution_policy/single_value.cu
-  genie/execution_policy/validation.cc
-  genie/interface/config.cu
-  genie/interface/execution_policy.cu
-  genie/interface/interface.cu
-  genie/interface/io.cu
-  genie/interface/search.cu
+  # genie/execution_policy/single_range.cu
+  # genie/execution_policy/single_value.cu
+  # genie/execution_policy/validation.cc
+  # genie/interface/config.cu
+  # genie/interface/execution_policy.cu
+  # genie/interface/interface.cu
+  # genie/interface/io.cu
+  # genie/interface/search.cu
   genie/matching/heap_count.cu  
   genie/matching/interface.cu
   genie/matching/knn.cu
-  genie/matching/match.cu
+  # genie/matching/match.cu
   genie/matching/match_common.cu
   genie/query/interface.cu
   genie/query/query.cu

@@ -7,7 +7,10 @@
 
 #include "DeviceCodecs.h"
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 /**
  * This is a useful class for CODEC that only compress data having length a multiple of some unit length.
@@ -74,6 +77,7 @@ public:
     }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

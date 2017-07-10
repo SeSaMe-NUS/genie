@@ -8,7 +8,7 @@ namespace utility {
 
 void Init(genie::Config& config);
 
-}
-}
+} // namespace utility
+} // namesapce genie
 
 #endif

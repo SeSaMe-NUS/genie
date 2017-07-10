@@ -17,7 +17,10 @@
 
 #include "knn.h"
 
+using namespace genie::table;
+using namespace genie::query;
 using namespace genie::matching;
+using namespace genie::utility;
 using namespace std;
 using namespace thrust;
 
@@ -50,8 +53,8 @@ void extract_index_and_count(data_t * data, int * id, int * count, int size)
 	count[tId] = (int) data[tId].aggregation;
 }
 
-void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
-		vector<GPUGenie::query>& queries, device_vector<int>& d_top_indexes,
+void genie::matching::knn_bijectMap(genie::table::inv_table& table,
+		vector<Query>& queries, device_vector<int>& d_top_indexes,
 		device_vector<int>& d_top_count, int hash_table_size, int max_load,
 		int bitmap_bits)
 {
@@ -75,7 +78,7 @@ void GPUGenie::knn_bijectMap(GPUGenie::inv_table& table,
 
 }
 
-void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+void genie::matching::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<Query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
 {
@@ -99,7 +102,7 @@ void GPUGenie::knn_bijectMap_MT(vector<inv_table*>& table, vector<vector<query> 
 	Logger::log(Logger::VERBOSE, ">>>>>>> knn takes %fms <<<<<<", elapsed);
 }
 
-void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
+void genie::matching::knn(genie::table::inv_table& table, vector<Query>& queries,
 		device_vector<int>& d_top_indexes, device_vector<int>& d_top_count,
 		int hash_table_size, int max_load, int bitmap_bits)
 {
@@ -115,20 +118,20 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	Logger::log(Logger::DEBUG, "[knn] max_load is %d.", max_load);
 
 	if(queries.empty()){
-		throw GPUGenie::cpu_runtime_error("Queries not loaded!");
+		throw genie::exception::cpu_runtime_error("Queries not loaded!");
 	}
 
 	u64 startMatch = getTime();
 
 	#ifdef GENIE_COMPR
-	GPUGenie::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
+	genie::table::inv_compr_table *comprTable = dynamic_cast<inv_compr_table*>(&table);
 	if (comprTable){
-		MatchIntegratedFunPtr matchFn = GPUGenie::DeviceCodecFactory::getMatchingFunPtr(comprTable->getCompression());
+		MatchIntegratedFunPtr matchFn = genie::compression::DeviceCodecFactory::getMatchingFunPtr(comprTable->getCompression());
 		if (!matchFn)
 		{
 			Logger::log(Logger::ALERT, "No matching function for %s compression!",
-				GPUGenie::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
-			throw GPUGenie::cpu_runtime_error("No compression matching function avaiable for required compression!");
+				genie::compression::DeviceCodecFactory::getCompressionName(comprTable->getCompression()).c_str());
+			throw genie::exception::cpu_runtime_error("No compression matching function avaiable for required compression!");
 		}
 
 		matchFn(
@@ -151,7 +154,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 	u64 start = getTime();
 
 	thrust::device_vector<data_t> d_topk;
-	GPUGenie::heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
+	genie::matching::heap_count_topk(d_data, d_topk, d_threshold, d_passCount,
 			queries[0].topk(),queries.size());
 
 	u64 end = getTime();
@@ -179,7 +182,7 @@ void GPUGenie::knn(GPUGenie::inv_table& table, vector<GPUGenie::query>& queries,
 }
 
 void
-GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+genie::matching::knn_MT(vector<inv_table*>& table, vector<vector<Query> >& queries,
 		vector<device_vector<int> >& d_top_indexes, vector<device_vector<int> >& d_top_count,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits)
 {
@@ -218,7 +221,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 					queries.at(finish).size() * sizeof(u32) + // d_threshold
 					queries.at(finish).size() * table.at(finish)->m_size() + // d_passCount
 					queries.at(finish).size() * sizeof(u32) + // d_topk in match
-					queries.at(finish).size() * table.at(finish)->m_size() * sizeof(query::dim) + // d_dims
+					queries.at(finish).size() * table.at(finish)->m_size() * sizeof(Query::dim) + // d_dims
 					queries.at(finish).size() * table.at(finish)->i_size(); // d_bitmap
 				if (!queries.at(finish).empty())
 					query_bytesize += queries.at(finish).size() * queries.at(finish).at(0).topk() * sizeof(data_t); // d_topk
@@ -231,7 +234,7 @@ GPUGenie::knn_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				}
 				/* cannot fit a single table */
 				else if (start == finish)
-					throw GPUGenie::gpu_bad_alloc("MEMORY NOT ENOUGH");
+					throw genie::exception::gpu_bad_alloc("MEMORY NOT ENOUGH");
 			}
 			/* match and extract top k for a batch */
 			match_MT(table, queries, d_data, d_bitmap, hash_table_size, max_load,

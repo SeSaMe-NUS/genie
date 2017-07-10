@@ -12,7 +12,10 @@
 
 #include "DeviceDeltaHelper.h"
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 void __device__ __host__ __fastunpack0 (const uint32_t * in, uint32_t * out);
 void __device__ __host__ __fastunpack1 (const uint32_t * in, uint32_t * out);
@@ -921,6 +924,7 @@ struct DeviceBitPackingHelpers {
     }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

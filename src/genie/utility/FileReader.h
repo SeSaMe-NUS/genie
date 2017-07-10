@@ -6,12 +6,16 @@
 #ifndef FILEREADER_H_
 #define FILEREADER_H_
 
-#include <genie/query/query.h>
-
 #include <vector>
 
-namespace GPUGenie
+namespace genie {namespace table {class inv_table; }}
+namespace genie {namespace query {class Query; }}
+
+namespace genie
 {
+namespace utility
+{
+
 /*! \struct _GPUGenie_Query_Data
  *  \brief This struct is used to construct query in multirange mode
  *
@@ -81,11 +85,11 @@ void read_file(std::vector<std::vector<int> >& dest, const char* fname, int num)
  *  \param selectivity Selectivity of queries
  */
 
-void read_query(inv_table& table, const char* fname,
-		std::vector<query>& queries, int num_of_queries, int num_of_query_dims,
-		int radius, int topk, float selectivity);
+void read_query(
+        genie::table::inv_table &table, const char* fname, std::vector<genie::query::Query> &queries,
+        int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity);
 
-/*! \fn void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num)
+/*! \fn void read_query(vector<attr_t>& data, const char* file_name, int num)
  *  \brief Read new format query in multirange mode.
  *
  *  \param data Query would be stored in this variable.
@@ -101,6 +105,7 @@ void read_query(inv_table& table, const char* fname,
  */
 void read_query(std::vector<attr_t>& data, const char* file_name, int num);
 
-} /* namespace GPUGenie */
+} // namespace utility
+} // namesapce genie
 
 #endif /* FILEREADER_H_ */

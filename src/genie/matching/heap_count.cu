@@ -134,7 +134,7 @@ void write_hashtable_to_file(thrust::device_vector<data_t>& d_data, int num_of_q
 	thrust::host_vector<data_t> h_data(d_data);
 	FILE * fout = NULL;
 	FILE * fout_compact = NULL;
-	std::string s = currentDateTime();
+	std::string s = genie::utility::currentDateTime();
 	char fout_name[100];
 	char fout_compact_name[100];
 	sprintf(fout_name, "%s.txt", s.c_str());
@@ -158,7 +158,7 @@ void write_hashtable_to_file(thrust::device_vector<data_t>& d_data, int num_of_q
 	fclose(fout_compact);
 }
 
-void GPUGenie::heap_count_topk(thrust::device_vector<data_t>& d_data,
+void genie::matching::heap_count_topk(thrust::device_vector<data_t>& d_data,
 		thrust::device_vector<data_t>& d_topk,
 		thrust::device_vector<u32>& d_threshold,
 		thrust::device_vector<u32>& d_passCount, int topk, int num_of_queries)
@@ -280,3 +280,4 @@ void GPUGenie::heap_count_topk(thrust::device_vector<data_t>& d_data,
 	//free(h_result);
 	//free(h_topk_result);
 }
+

@@ -6,16 +6,16 @@
 
 namespace genie
 {
-namespace util
+namespace utility
 {
 
 void
-SaveTable(const std::string &filename, const std::shared_ptr<const GPUGenie::inv_table> &table);
+SaveTable(const std::string &filename, const std::shared_ptr<const genie::table::inv_table> &table);
 
-std::shared_ptr<GPUGenie::inv_table>
+std::shared_ptr<genie::table::inv_table>
 LoadTable(const std::string &filename);
 
-} // namespace util
+} // namespace utility
 } // namesapce genie
 
 #endif

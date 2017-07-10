@@ -12,7 +12,9 @@
 #include <genie/table/inv_table.h>
 #include "match_common.h"
 
-namespace GPUGenie
+namespace genie
+{
+namespace matching
 {
 
 /*! \fn int cal_max_topk(vector<query>& queries)
@@ -27,7 +29,7 @@ namespace GPUGenie
  *
  */
 int
-cal_max_topk(std::vector<query>& queries);
+cal_max_topk(std::vector<genie::query::Query>& queries);
 
 /*!
  *  \brief Search the inv_table and save the match result into d_count and d_aggregation.
@@ -44,8 +46,8 @@ cal_max_topk(std::vector<query>& queries);
  */
 void
 match(
-    inv_table& table,
-    std::vector<query>& queries,
+    genie::table::inv_table& table,
+    std::vector<genie::query::Query>& queries,
     thrust::device_vector<genie::matching::data_t>& d_data,
     thrust::device_vector<u32>& d_bitmap,
     int hash_table_size,
@@ -57,8 +59,8 @@ match(
 
 void
 match_MT(
-    std::vector<inv_table*>& table,
-    std::vector<std::vector<query> >& queries,
+    std::vector<genie::table::inv_table*>& table,
+    std::vector<std::vector<genie::query::Query> >& queries,
     std::vector<thrust::device_vector<genie::matching::data_t> >& d_data,
     std::vector<thrust::device_vector<u32> >& d_bitmap,
     std::vector<int>& hash_table_size,
@@ -82,7 +84,10 @@ match_MT(
  *  \return The max value of counts of queries in the query set.
  */
 int
-build_queries(std::vector<query>& queries, inv_table& table, std::vector<query::dim>& dims, int max_load);
+build_queries(std::vector<genie::query::Query>& queries, genie::table::inv_table& table,
+    std::vector<genie::query::Query::dim>& dims, int max_load);
 
-}
+} // namespace matching
+} // namespace genie
+
 #endif

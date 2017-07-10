@@ -1,6 +1,8 @@
 #include "DeviceBitPackingHelpers.h"
 
-namespace GPUGenie
+namespace genie
+{
+namespace compression
 {
 
 void __device__ __host__ __fastunpack0(const uint32_t *, uint32_t * out) {
@@ -15697,4 +15699,5 @@ void __integratedfastpack16(const uint32_t initoffset,
 }
 
 
-}
+} // namespace compression
+} // namespace genie

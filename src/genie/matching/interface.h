@@ -3,14 +3,15 @@
 
 #include <memory>
 #include <vector>
-#include <genie/GPUGenie.h>
+#include <genie/query/query.h>
+#include <genie/table/inv_table.h>
 #include <genie/interface/types.h>
 
 namespace genie {
 namespace matching {
 
-SearchResult Match(const std::shared_ptr<const GPUGenie::inv_table>& table,
-		const std::vector<GPUGenie::query>& queries,
+SearchResult Match(const std::shared_ptr<const genie::table::inv_table>& table,
+		const std::vector<genie::query::Query>& queries,
 		const uint32_t dim,
 		const uint32_t k);
 

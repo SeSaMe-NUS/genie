@@ -7,26 +7,24 @@
 
 #include "DeviceCodecTemplatesImpl.hpp"
 
-using namespace GPUGenie;
-
 // Explicit template instances for Composite Codecs
 
 template class
-GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>;
+genie::compression::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>;
 template class
-GPUGenie::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>;
+genie::compression::DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>;
 
 // Explicit template instances for CPU decoding wrapper function for Composite Codecs
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
 // compilation units, as opposed to defining all these templates in one place
 template void
-GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 template void
-GPUGenie::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 
 template <class Codec1, class Codec2> void
-GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceCompositeCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)
 {
     assert(length > 0);
     assert(nvalue > 0);
@@ -56,7 +54,7 @@ GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::encodeArray(uint32_t *in, const s
 }
 
 template <class Codec1, class Codec2> const uint32_t*
-GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, const size_t comprLength, uint32_t *out, size_t &nvalue)
+genie::compression::DeviceCompositeCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, const size_t comprLength, uint32_t *out, size_t &nvalue)
 {
     size_t firstCodecComprLength = *in++;
 
@@ -98,7 +96,7 @@ GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArray(const uint32_t *in, c
 
 
 template <class Codec1, class Codec2> __device__ uint32_t*
-GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
+genie::compression::DeviceCompositeCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue)
 {
     return nullptr;
 }
@@ -106,7 +104,7 @@ GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArraySequential(uint32_t *d
 
 
 template <class Codec1, class Codec2> __device__ uint32_t*
-GPUGenie::DeviceCompositeCodec<Codec1,Codec2>::decodeArrayParallel(
+genie::compression::DeviceCompositeCodec<Codec1,Codec2>::decodeArrayParallel(
             uint32_t *d_in, size_t comprLength, uint32_t *d_out, size_t &nvalue)
 {
     size_t firstCodecComprLength = *d_in++;

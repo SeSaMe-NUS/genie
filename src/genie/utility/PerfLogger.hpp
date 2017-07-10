@@ -15,8 +15,7 @@
 
 namespace genie
 {
-
-namespace util
+namespace utility
 {
 
 template <typename T>
@@ -97,7 +96,7 @@ class MatchingPerfData
 {
 public:
     MatchingPerfData() :
-        compr_(GPUGenie::NO_COMPRESSION),
+        compr_(genie::compression::NO_COMPRESSION),
         overall_time_(0.0),
         query_compilation_time_(0.0),
         preprocessing_time_(0.0),
@@ -148,7 +147,7 @@ public:
     {
         std::string codec_name("no");
         #ifdef GENIE_COMPR 
-            codec_name = GPUGenie::DeviceCodecFactory::getCompressionName(compr_);
+            codec_name = genie::compression::DeviceCodecFactory::getCompressionName(compr_);
         #endif
         ofs << codec_name << ","
             << std::fixed << std::setprecision(3) << overall_time_ << ","
@@ -173,7 +172,7 @@ public:
             << std::fixed << std::setprecision(3) << compr_ratio_ << std::endl;
     }
 
-    MatchingPerfData& Compr (GPUGenie::COMPRESSION_TYPE compr)
+    MatchingPerfData& Compr (genie::compression::COMPRESSION_TYPE compr)
     {
         compr_ = compr;
         return *this;
@@ -300,7 +299,7 @@ public:
     }
 
 protected:
-    GPUGenie::COMPRESSION_TYPE compr_;
+    genie::compression::COMPRESSION_TYPE compr_;
     float overall_time_;
     float query_compilation_time_;
     float preprocessing_time_;
@@ -401,7 +400,7 @@ public:
             << throughput_ << std::endl;
     }
 
-    CodecPerfData& Codec(GPUGenie::COMPRESSION_TYPE codec)
+    CodecPerfData& Codec(genie::compression::COMPRESSION_TYPE codec)
     {
         codec_ = codec;
         return *this;
@@ -438,7 +437,7 @@ public:
     }
 
 protected:
-    GPUGenie::COMPRESSION_TYPE codec_;
+    genie::compression::COMPRESSION_TYPE codec_;
     size_t array_size_;
     size_t compr_size_;
     float compr_ratio_;
@@ -446,10 +445,7 @@ protected:
     float throughput_;
 };
 
-
-
-} // namespace util
- 
-} // namespace genie
+} // namespace utility
+} // namesapce genie
 
 #endif

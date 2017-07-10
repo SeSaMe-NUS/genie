@@ -12,7 +12,9 @@
 #include <genie/table/inv_compr_table.h>
 #include <genie/query/query.h>
 
-namespace GPUGenie
+namespace genie
+{
+namespace matching
 {
 /*! \fn void knn(inv_table& table, vector<query>& queries, device_vector<int>& d_top_indexes,
  *     device_vector<int>& d_top_count, int hash_table_size, int max_load, int bitmap_bits)
@@ -29,8 +31,8 @@ namespace GPUGenie
  *  This function is basic and called by knn_bijectMap(). This function would carry out the process of match-count and topk selection.
  */
 void
-knn(inv_table& table,
-    std::vector<query>& queries,
+knn(genie::table::inv_table& table,
+    std::vector<genie::query::Query>& queries,
     thrust::device_vector<int>& d_top_indexes,
     thrust::device_vector<int>& d_top_count,
     int hash_table_size,
@@ -39,8 +41,8 @@ knn(inv_table& table,
 
 void
 knn_MT(
-    std::vector<inv_table*>& table,
-    std::vector<std::vector<query> >& queries,
+    std::vector<genie::table::inv_table*>& table,
+    std::vector<std::vector<genie::query::Query> >& queries,
     std::vector<thrust::device_vector<int> >& d_top_indexes,
     std::vector<thrust::device_vector<int> >& d_top_count,
     std::vector<int>& hash_table_size,
@@ -64,8 +66,8 @@ vector<query>& queries,
  */
 void
 knn_bijectMap(
-    inv_table& table,
-    std::vector<query>& queries,
+    genie::table::inv_table& table,
+    std::vector<genie::query::Query>& queries,
     thrust::device_vector<int>& d_top_indexes,
     thrust::device_vector<int>& d_top_count,
     int hash_table_size,
@@ -74,13 +76,15 @@ knn_bijectMap(
 
 void
 knn_bijectMap_MT(
-    std::vector<inv_table*>& table,
-    std::vector<std::vector<query> >& queries,
+    std::vector<genie::table::inv_table*>& table,
+    std::vector<std::vector<genie::query::Query> >& queries,
     std::vector<thrust::device_vector<int> >& d_top_indexes,
     std::vector<thrust::device_vector<int> >& d_top_count,
     std::vector<int>& hash_table_size,
     std::vector<int>& max_load,
     int bitmap_bits);
-}
 
-#endif //ifndef KNN_H_
+} // namespace matching
+} // namespace genie
+
+#endif

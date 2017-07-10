@@ -8,27 +8,27 @@
 using namespace std;
 using namespace genie;
 
-shared_ptr<GPUGenie::inv_table> genie::execution_policy::SingleRangeExecutionPolicy::BuildTable(const TableData& table_data)
+shared_ptr<genie::table::inv_table> genie::execution_policy::SingleRangeExecutionPolicy::BuildTable(const TableData& table_data)
 {
 	dim_ = table_data.at(0).size();
 
 	return table::BuildTable(table_data);
 }
 
-vector<GPUGenie::query> genie::execution_policy::SingleRangeExecutionPolicy::BuildQuery(const shared_ptr<const GPUGenie::inv_table>& table,
+vector<genie::query::Query> genie::execution_policy::SingleRangeExecutionPolicy::BuildQuery(const shared_ptr<const genie::table::inv_table>& table,
 		const QueryData& query_data)
 {
 	return query::LoadQuery(table, query_data, query_range_, k_);
 }
 
-SearchResult genie::execution_policy::SingleRangeExecutionPolicy::Match(const shared_ptr<const GPUGenie::inv_table>& table,
-		const vector<GPUGenie::query>& queries)
+SearchResult genie::execution_policy::SingleRangeExecutionPolicy::Match(const shared_ptr<const genie::table::inv_table>& table,
+		const vector<genie::query::Query>& queries)
 {
 	return matching::Match(table, queries, dim_, k_);
 }
 
-SearchResult genie::execution_policy::SingleRangeExecutionPolicy::Match(const vector<shared_ptr<const GPUGenie::inv_table> >& table,
-				const vector<vector<GPUGenie::query> >& queries)
+SearchResult genie::execution_policy::SingleRangeExecutionPolicy::Match(const vector<shared_ptr<const genie::table::inv_table> >& table,
+				const vector<vector<genie::query::Query> >& queries)
 {
 	throw genie::exception::NotImplementedException();
 }

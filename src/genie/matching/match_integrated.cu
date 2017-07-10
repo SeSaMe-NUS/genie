@@ -38,7 +38,9 @@ using namespace genie::util;
 using namespace std;
 using namespace thrust;
 
-namespace GPUGenie
+namespace genie
+{
+namespace matching
 {
 
 // Instances of all possible matching functions

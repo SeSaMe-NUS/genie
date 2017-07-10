@@ -6,7 +6,7 @@
 #include "sorting.h"
 #include "global.h"
 
-using namespace GPUGenie;
+using namespace genie;
 using namespace std;
 
 /*
@@ -30,7 +30,7 @@ static void LoadQueries(GPUGenie_Config &config, vector<shared_ptr<inv_table>> &
  * builds the queries and calls GENIE to search them.
  */
 void distgenie::search::ExecuteMultitableQuery(GPUGenie_Config &config, DistGenieConfig &extra_config,
-		vector<shared_ptr<GPUGenie::inv_table>> &tables, vector<Cluster> &clusters, vector<Result> &results,
+		vector<shared_ptr<genie::table::inv_table>> &tables, vector<Cluster> &clusters, vector<Result> &results,
 		vector<int> &id_offset)
 {
 	vector<vector<query> > queries(clusters.size());

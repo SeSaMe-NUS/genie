@@ -10,8 +10,8 @@ namespace distgenie
 {
 	namespace file
 	{
-		void ReadData(GPUGenie::GPUGenie_Config &, distgenie::DistGenieConfig &, std::vector<std::vector<int> > &, std::vector<std::shared_ptr<GPUGenie::inv_table>> &);
-		void GenerateOutput(std::vector<distgenie::Result> &, GPUGenie::GPUGenie_Config &, distgenie::DistGenieConfig &);
+		void ReadData(genie::GPUGenie_Config &, distgenie::DistGenieConfig &, std::vector<std::vector<int> > &, std::vector<std::shared_ptr<genie::table::inv_table>> &);
+		void GenerateOutput(std::vector<distgenie::Result> &, genie::GPUGenie_Config &, distgenie::DistGenieConfig &);
 	}
 }
 

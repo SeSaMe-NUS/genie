@@ -6,7 +6,7 @@
 #include "global.h"
 #include <genie/utility/serialization.h>
 
-using namespace GPUGenie;
+using namespace genie;
 using namespace std;
 
 void distgenie::file::ReadData(GPUGenie_Config &config, DistGenieConfig &extra_config, vector<vector<int> > &data, vector<shared_ptr<inv_table>> &tables)

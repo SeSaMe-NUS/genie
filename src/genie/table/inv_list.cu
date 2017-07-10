@@ -14,41 +14,41 @@ int cv(string& s)
 	return atoi(s.c_str());
 }
 
-GPUGenie::inv_list::inv_list(vector<int>& vin)
+genie::table::inv_list::inv_list(vector<int>& vin)
 {
 	invert(vin);
 }
 
-GPUGenie::inv_list::inv_list(vector<int>* vin)
+genie::table::inv_list::inv_list(vector<int>* vin)
 {
 	invert(vin);
 }
 
-GPUGenie::inv_list::inv_list(vector<string>& vin)
+genie::table::inv_list::inv_list(vector<string>& vin)
 {
 	invert(vin);
 }
 
-GPUGenie::inv_list::inv_list(vector<string>* vin)
+genie::table::inv_list::inv_list(vector<string>* vin)
 {
 	invert(vin);
 }
 
-int GPUGenie::inv_list::min()
+int genie::table::inv_list::min()
 {
 	return _bound.first;
 }
 
-int GPUGenie::inv_list::max()
+int genie::table::inv_list::max()
 {
 	return _bound.second;
 }
 
-int GPUGenie::inv_list::size()
+int genie::table::inv_list::size()
 {
 	return _size;
 }
-void GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
+void genie::table::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 {
 	_size = vin.size();
 	if (vin.empty())
@@ -84,7 +84,7 @@ void GPUGenie::inv_list::invert_bijectMap(vector<vector<int> > & vin)
 }
 
 
-void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int shift_bits)
+void genie::table::inv_list::invert_sequence(vector<vector<int> > & vin, int shift_bits)
         //, vector<int> & respective_id)
 {
 	_size = vin.size();
@@ -157,7 +157,7 @@ void GPUGenie::inv_list::invert_sequence(vector<vector<int> > & vin, int shift_b
 }
 
 
-void GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num,
+void genie::table::inv_list::invert_bijectMap(int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num)
 {
 	_size = row_num;
@@ -186,7 +186,7 @@ void GPUGenie::inv_list::invert_bijectMap(int *data, unsigned int item_num,
 	return;
 }
 
-void GPUGenie::inv_list::invert_subsequence(vector<vector<int> > & vin)
+void genie::table::inv_list::invert_subsequence(vector<vector<int> > & vin)
 {
 	_size = vin.size();
 	if (vin.empty())
@@ -229,7 +229,7 @@ void GPUGenie::inv_list::invert_subsequence(vector<vector<int> > & vin)
 	return;
 }
 
-void GPUGenie::inv_list::invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num)
+void genie::table::inv_list::invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num)
 {
 	_size = row_num;
 	if (item_num == 0)
@@ -287,12 +287,12 @@ void GPUGenie::inv_list::invert_subsequence(int *data, unsigned int item_num, un
 	return;
 }
 
-unsigned int GPUGenie::inv_list::_shift_bits_subsequence()
+unsigned int genie::table::inv_list::_shift_bits_subsequence()
 {
      return shift_bits_subsequence;
 }
 
-void GPUGenie::inv_list::invert(vector<int>& vin)
+void genie::table::inv_list::invert(vector<int>& vin)
 {
 	_size = vin.size();
 	if (vin.empty())
@@ -319,22 +319,22 @@ void GPUGenie::inv_list::invert(vector<int>& vin)
 	return;
 }
 
-void GPUGenie::inv_list::invert(vector<int>* vin)
+void genie::table::inv_list::invert(vector<int>* vin)
 {
 	invert(*vin);
 }
 
-void GPUGenie::inv_list::invert(vector<string>& vin)
+void genie::table::inv_list::invert(vector<string>& vin)
 {
 	invert(vin, &cv);
 }
 
-void GPUGenie::inv_list::invert(vector<string>* vin)
+void genie::table::inv_list::invert(vector<string>* vin)
 {
 	invert(*vin);
 }
 
-void GPUGenie::inv_list::invert(vector<string>& vin,
+void genie::table::inv_list::invert(vector<string>& vin,
 		int (*stoi)(string&))
 {
 	_size = vin.size();
@@ -364,13 +364,13 @@ void GPUGenie::inv_list::invert(vector<string>& vin,
 	return;
 }
 
-void GPUGenie::inv_list::invert(vector<string>* vin,
+void genie::table::inv_list::invert(vector<string>* vin,
 		int (*stoi)(string&))
 {
 	invert(*vin, stoi);
 }
 
-bool GPUGenie::inv_list::contains(int value)
+bool genie::table::inv_list::contains(int value)
 {
 	if (value > _bound.second || value < _bound.first)
 		return false;
@@ -378,7 +378,7 @@ bool GPUGenie::inv_list::contains(int value)
 }
 
 vector<int>*
-GPUGenie::inv_list::index(int value)
+genie::table::inv_list::index(int value)
 {
 	if (!contains(value))
 		return NULL;
@@ -386,7 +386,7 @@ GPUGenie::inv_list::index(int value)
 }
 
 int
-GPUGenie::inv_list::value_range()
+genie::table::inv_list::value_range()
 {
     return _inv.size();
 }

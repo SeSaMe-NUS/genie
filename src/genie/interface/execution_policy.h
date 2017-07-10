@@ -27,26 +27,26 @@ class ExecutionPolicy {
 		/*!
 		 * \brief Builds the inverted index with the given data.
 		 */
-		virtual std::shared_ptr<GPUGenie::inv_table> BuildTable(
+		virtual std::shared_ptr<genie::table::inv_table> BuildTable(
 			const genie::TableData& table_data) = 0;
 		/*!
 		 * \brief Builds the queries with the given query data.
 		 */
-		virtual std::vector<GPUGenie::query> BuildQuery(
-			const std::shared_ptr<const GPUGenie::inv_table>& table,
+		virtual std::vector<genie::query::Query> BuildQuery(
+			const std::shared_ptr<const genie::table::inv_table>& table,
 			const genie::QueryData& query_data) = 0;
 		/*!
 		 * \brief Match the given queries on the table.
 		 */
 		virtual genie::SearchResult Match(
-			const std::shared_ptr<const GPUGenie::inv_table>& table,
-			const std::vector<GPUGenie::query>& queries) = 0;
+			const std::shared_ptr<const genie::table::inv_table>& table,
+			const std::vector<genie::query::Query>& queries) = 0;
 		/*!
 		 * \brief Batched matching with multiple tables and queries for those tables.
 		 */
 		virtual genie::SearchResult Match(
-			const std::vector<std::shared_ptr<const GPUGenie::inv_table> >& tables,
-			const std::vector<std::vector<GPUGenie::query> >& queries) = 0;
+			const std::vector<std::shared_ptr<const genie::table::inv_table> >& tables,
+			const std::vector<std::vector<genie::query::Query> >& queries) = 0;
 		/*!
 		 * \brief Checks whether the given search parameters are in valid range
 		 */

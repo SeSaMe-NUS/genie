@@ -26,18 +26,22 @@
 #include "match_device_utils.h"
 
 using namespace genie::matching;
-using namespace genie::util;
+using namespace genie::query;
+using namespace genie::table;
+using namespace genie::utility;
 using namespace std;
 using namespace thrust;
 
-namespace GPUGenie
+namespace genie
+{
+namespace matching
 {
 
 
 //for AT: for adaptiveThreshold match function for adaptiveThreshold
 __global__
 void match_AT(int m_size, int i_size, int hash_table_size,
-		int* d_inv, query::dim* d_dims,
+		int* d_inv, Query::dim* d_dims,
 		T_HASHTABLE* hash_table_list, u32 * bitmap_list, int bitmap_bits,
 		u32* d_topks, u32* d_threshold, //initialized as 1, and increase gradually
 		u32* d_passCount, //initialized as 0, count the number of items passing one d_threshold
@@ -45,7 +49,7 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 {
 	if (m_size == 0 || i_size == 0)
 		return;
-	query::dim& q = d_dims[blockIdx.x];
+	Query::dim& q = d_dims[blockIdx.x];
 	int query_index = q.query;
 	u32* my_noiih = &noiih[query_index];
 	u32* my_threshold = &d_threshold[query_index];
@@ -153,8 +157,8 @@ void match_AT(int m_size, int i_size, int hash_table_size,
 }
 //end for AT
 
-int build_queries(vector<query>& queries, inv_table& table,
-		vector<query::dim>& dims, int max_load)
+int build_queries(vector<Query>& queries, inv_table& table,
+		vector<Query::dim>& dims, int max_load)
 {
     try{
         u64 query_build_start, query_build_stop;
@@ -164,7 +168,7 @@ int build_queries(vector<query>& queries, inv_table& table,
 		for (unsigned int i = 0; i < queries.size(); ++i)
 		{
 			if (queries[i].ref_table() != &table)
-				throw GPUGenie::cpu_runtime_error("Can't build queries. Queries constructed for different table!");
+				throw genie::exception::cpu_runtime_error("Can't build queries. Queries constructed for different table!");
 			if (table.build_status() == inv_table::builded)
 			{
 				if(table.shift_bits_sequence != 0)
@@ -196,18 +200,18 @@ int build_queries(vector<query>& queries, inv_table& table,
 		return max_count;
 
 	} catch(std::bad_alloc &e){
-		throw GPUGenie::cpu_bad_alloc(e.what());
-	} catch(GPUGenie::cpu_runtime_error &e){
+		throw genie::exception::cpu_bad_alloc(e.what());
+	} catch(genie::exception::cpu_runtime_error &e){
 		throw e;
 	} catch(std::exception &e){
-		throw GPUGenie::cpu_runtime_error(e.what());
+		throw genie::exception::cpu_runtime_error(e.what());
 	}
 }
 
-int cal_max_topk(vector<query>& queries)
+int cal_max_topk(vector<Query>& queries)
 {
 	int max_topk = 0;
-	for(vector<query>::iterator it = queries.begin(); it != queries.end(); ++it)
+	for(vector<Query>::iterator it = queries.begin(); it != queries.end(); ++it)
 	{
 		if(it->topk() > max_topk) max_topk = it->topk();
 	}
@@ -216,7 +220,7 @@ int cal_max_topk(vector<query>& queries)
 
 
 
-void match(inv_table& table, vector<query>& queries,
+void match(inv_table& table, vector<Query>& queries,
 		device_vector<data_t>& d_data, device_vector<u32>& d_bitmap,
 		int hash_table_size, int max_load, int bitmap_bits,	//or for AT: for adaptiveThreshold, if bitmap_bits<0, use adaptive threshold, the absolute value of bitmap_bits is count value stored in the bitmap
 		device_vector<u32>& d_noiih, device_vector<u32>& d_threshold, device_vector<u32>& d_passCount)
@@ -225,7 +229,7 @@ void match(inv_table& table, vector<query>& queries,
         u32 shift_bits_subsequence = table._shift_bits_subsequence();
 
         if (table.build_status() == inv_table::not_builded)
-            throw GPUGenie::cpu_runtime_error("table not built!");
+            throw genie::exception::cpu_runtime_error("table not built!");
         
         // Time measuring events
         cudaEvent_t kernel_start, kernel_stop;
@@ -241,7 +245,7 @@ void match(inv_table& table, vector<query>& queries,
 		d_noiih.resize(queries.size(), 0);
 		u32 * d_noiih_p = thrust::raw_pointer_cast(d_noiih.data());
 
-		vector<query::dim> dims;
+		vector<Query::dim> dims;
 
 		Logger::log(Logger::DEBUG, "hash table size: %d.", hash_table_size);
 		u64 match_query_start, match_query_end;
@@ -302,8 +306,8 @@ void match(inv_table& table, vector<query>& queries,
         cout << "query_transfer time = " ; 
         u64 query_start = getTime();
 
-		device_vector<query::dim> d_dims(dims);
-		query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
+		device_vector<Query::dim> d_dims(dims);
+		Query::dim* d_dims_p = raw_pointer_cast(d_dims.data());
 
         u64 query_end = getTime();
         cout << getInterval(query_start, query_end) << "ms." << endl;
@@ -444,7 +448,7 @@ void match(inv_table& table, vector<query>& queries,
             .DataTransferTime(getInterval(dataTransferStart, dataTransferEnd))
             .MatchingTime(kernel_elapsed)
             .InvSize(sizeof(int) * table.inv()->size())
-            .DimsSize(dims.size() * sizeof(query::dim))
+            .DimsSize(dims.size() * sizeof(Query::dim))
             .HashTableCapacityPerQuery(hash_table_size)
             .ThresholdSize(queries.size() * sizeof(u32))
             .PasscountSize(queries.size() * num_of_max_count * sizeof(u32))
@@ -454,13 +458,13 @@ void match(inv_table& table, vector<query>& queries,
             .HashTableSize(queries.size() * hash_table_size * sizeof(data_t));
 
 	} catch(std::bad_alloc &e){
-		throw GPUGenie::gpu_bad_alloc(e.what());
+		throw genie::exception::gpu_bad_alloc(e.what());
 	}
 }
 
 
 // debug use
-static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_table &table, vector<GPUGenie::query::dim> &dims)
+static int build_queries_direct(vector<genie::query::Query> &queries, genie::table::inv_table &table, vector<genie::query::Query::dim> &dims)
 {
 	try
 	{
@@ -468,9 +472,9 @@ static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_
 		for (size_t i = 0; i < queries.size(); ++i)
 		{
 			if (queries[i].ref_table() != &table)
-				throw GPUGenie::cpu_runtime_error("table not built");
+				throw genie::exception::cpu_runtime_error("table not built");
 			int prev_size = dims.size();
-			if (table.build_status() == GPUGenie::inv_table::builded)
+			if (table.build_status() == genie::table::inv_table::builded)
 				queries[i].build(dims); // overloaded
 			int count = dims.size() - prev_size;
 			if (count > max_count)
@@ -481,20 +485,20 @@ static int build_queries_direct(vector<GPUGenie::query> &queries, GPUGenie::inv_
 	}
 	catch (std::bad_alloc &e)
 	{
-		throw GPUGenie::cpu_bad_alloc(e.what());
+		throw genie::exception::cpu_bad_alloc(e.what());
 	}
-	catch (GPUGenie::cpu_runtime_error &e)
+	catch (genie::exception::cpu_runtime_error &e)
 	{
 		throw e;
 	}
 	catch (std::exception &e)
 	{
-		throw GPUGenie::cpu_runtime_error(e.what());
+		throw genie::exception::cpu_runtime_error(e.what());
 	}
 }
 
 void
-match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
+match_MT(vector<inv_table*>& table, vector<vector<Query> >& queries,
 		vector<device_vector<data_t> >& d_data, vector<device_vector<u32> >& d_bitmap,
 		vector<int>& hash_table_size, vector<int>& max_load, int bitmap_bits,
 		vector<device_vector<u32> >& d_noiih, vector<device_vector<u32> >& d_threshold,
@@ -513,9 +517,9 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 
 		/* variable declaration */
 		u32 shift_bits_subsequence = table.at(0)->_shift_bits_subsequence();
-		vector<vector<query::dim> > dims(table.size()); /* query::dim on CPU */
-		vector<device_vector<query::dim> > d_dims(table.size()); /* query::dim on GPU */
-		vector<query::dim*> d_dims_p(table.size()); /* query::dim pointers */
+		vector<vector<Query::dim> > dims(table.size()); /* Query::dim on CPU */
+		vector<device_vector<Query::dim> > d_dims(table.size()); /* Query::dim on GPU */
+		vector<Query::dim*> d_dims_p(table.size()); /* Query::dim pointers */
 		vector<u32*> d_noiih_p(table.size());
 		vector<u32> num_of_max_count(table.size(), 0);
 		vector<u32> max_topk(table.size(), 0);
@@ -546,7 +550,7 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 			if (queries.at(i).empty())
 				continue;
 			if (table.at(i)->build_status() == inv_table::not_builded)
-				throw GPUGenie::cpu_runtime_error("table not built!");
+				throw genie::exception::cpu_runtime_error("table not built!");
 
 			/* bitmap */
 			bitmap_bits = bitmap_bits_copy;
@@ -683,7 +687,7 @@ match_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
 				getInterval(match_start, match_stop));
 		Logger::log(Logger::VERBOSE, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 	} catch(std::bad_alloc &e){
-		throw GPUGenie::gpu_bad_alloc(e.what());
+		throw genie::exception::gpu_bad_alloc(e.what());
 	}
 }
 

@@ -7,7 +7,10 @@
 #include <stdexcept>
 #include <vector>
 
-namespace GPUGenie {
+namespace genie
+{
+namespace compression
+{
 
 template <class CODEC> __global__ void
 g_decodeArrayParallel(
@@ -201,6 +204,7 @@ public:
     __device__ __host__ int decodeArrayParallel_threadLoad() { return 4; }
 };
 
-}
+} // namespace compression
+} // namespace genie
 
 #endif

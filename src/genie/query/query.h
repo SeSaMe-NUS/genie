@@ -8,14 +8,17 @@
 #ifndef GPUGenie_query_h
 #define GPUGenie_query_h
 
-#include <genie/table/inv_table.h>
 #include <genie/table/inv_list.h>
+#include <genie/table/inv_table.h>
 #include <genie/configure.h>
 
 #include <vector>
 
-namespace GPUGenie
+namespace genie
 {
+namespace query
+{
+
 /*! \typedef unsigned int u32
  */
 typedef unsigned int u32;
@@ -28,7 +31,7 @@ typedef unsigned long long u64;
  *  \brief Query class includes the functions for processing queries based on user's input.
  *
  */
-class query
+class Query
 {
 public:
     /*! \struct range
@@ -69,7 +72,7 @@ private:
 	 *
      *   The query can only be used to query the refrenced table.
 	 */
-	inv_table* _ref_table;
+	genie::table::inv_table* _ref_table;
 
 	/*! \var std::map<int, vector<range>*> _attr_map
 	 *  \brief The saved ranges.
@@ -132,7 +135,7 @@ public:
 	 *  \param ref The refrence to the inv_table.
 	 *  \param index The index for this query.
      */
-	query(inv_table* ref, int index);
+	Query(genie::table::inv_table* ref, int index);
 
 	/*! \fn query(inv_table& ref, int index)
 	 *  \brief Create a query based on an inv_table.
@@ -140,18 +143,18 @@ public:
 	 *  \param ref The pointer to the inv_table.
 	 *  \param index The index for this query.
      */
-	query(inv_table& ref, int index);
+	Query(genie::table::inv_table& ref, int index);
 
     /*! \fn query()
      *  \brief Default empty constructor.
      */
-	query();
+	Query();
 
 	/*! \fn inv_table* ref_table()
 	 *  \brief The refrenced table's pointer.
 	 *  \return The pointer points to the refrenced table.
 	 */
-	inv_table*
+	genie::table::inv_table*
 	ref_table();
 
 	/*! \fn void attr(int index, int low, int up, float weight, int order )
@@ -309,6 +312,8 @@ public:
     void
     build_sequence();
 };
-}
+
+} // namespace query
+} // namespace genie
 
 #endif
