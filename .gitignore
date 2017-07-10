@@ -69,3 +69,5 @@ Doxyfile
 *.swp
 
 src/GPUGenie/configure.h
+*.inv
+*.cinv
