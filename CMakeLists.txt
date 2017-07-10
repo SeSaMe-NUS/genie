@@ -54,11 +54,7 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 ### Boost
 
 set(Boost_USE_STATIC_LIBS ON)
-if (GENIE_COMPR)
-  set(Boost_COMPONETNS iostreams serialization program_options)
-else()
-  set(Boost_COMPONETNS iostreams serialization)
-endif()
+set(Boost_COMPONETNS iostreams serialization program_options)
 # WARNING: CMake may issue a warning: Imported targets not available for Boost version 106400
 # This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
 # 1.64, but CMake 3.8 already does. The warning causes missing Boost components dependencies, but may be ignored.
