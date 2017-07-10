@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include <GPUGenie/interface/genie.h>
 
@@ -18,9 +19,9 @@ int main(int argc, char* argv[])
 	uint32_t k, query_range, num_of_query, gpu_id;
 	string table_file, query_file;
 
-	po::options_description descriptions("Allowed options");
-	descriptions.add_options()
-		("help", "produce help message")
+	// this is for both CLI & file
+	po::options_description generic;
+	generic.add_options()
 		("k,k", po::value<uint32_t>(&k), "k")
 		("query-range,r", po::value<uint32_t>(&query_range), "query range")
 		("num-of-query,n", po::value<uint32_t>(&num_of_query), "number of query")
@@ -29,23 +30,30 @@ int main(int argc, char* argv[])
 		("query,q", po::value<string>(&query_file), "query file")
 	;
 
+	// generic + extra options for CLI only
+	po::options_description cmdline_options("Allowed options");
+	cmdline_options.add(generic).add_options()
+		("help", "produce help message")
+	;
+
 	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, descriptions), vm);
+	po::store(po::parse_command_line(argc, argv, cmdline_options), vm);
+	ifstream ifs("genie.cfg");
+	po::store(po::parse_config_file(ifs, generic), vm);
 	po::notify(vm);
 
 	if (vm.count("help"))
 	{
-		cout << descriptions << endl;
+		cout << cmdline_options << endl;
 		return EXIT_SUCCESS;
 	}
 
 	if (!vm.count("table") || !vm.count("query"))
 	{
-		cout << "Table file or query file not specified" << endl;
+		cout << "Table file or query file not specified." << endl;
 		return EXIT_FAILURE;
 	}
 
-	// configure GENIE and get the execution policy
 	Config config = Config();
 	if (vm.count("k"))
 		config.SetK(k);
@@ -55,11 +63,19 @@ int main(int argc, char* argv[])
 		config.SetQueryRange(query_range);
 	if (vm.count("gpu"))
 		config.SetGpuId(gpu_id);
-	shared_ptr<ExecutionPolicy> policy = MakePolicy(config);
-	config.DisplayConfiguration();
 
-	// search with GENIE using the execution policy
-	SearchResult result = Search(policy, table_file, query_file);
+	// use try catch to display the errors nicely
+	try
+	{
+		shared_ptr<ExecutionPolicy> policy = MakePolicy(config);
+		config.DisplayConfiguration();
+		SearchResult result = Search(policy, table_file, query_file);
+	}
+	catch (exception &e)
+	{
+		cout << e.what() << endl;
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
