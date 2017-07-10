@@ -15,9 +15,9 @@ uint32_t genie::Config::GetQueryRange() const
 	return query_range_;
 }
 
-uint32_t genie::Config::GetNumOfQuery() const
+uint32_t genie::Config::GetNumOfQueries() const
 {
-	return num_of_query_;
+	return num_of_queries_;
 }
 
 bool genie::Config::GetSaveToGpu() const
@@ -44,10 +44,10 @@ Config& genie::Config::SetQueryRange(const uint32_t query_range)
 	return *this;
 }
 
-Config& genie::Config::SetNumOfQuery(const uint32_t num_of_query)
+Config& genie::Config::SetNumOfQueries(const uint32_t num_of_queries)
 {
-	num_of_query_ = num_of_query;
-	num_of_query_initialized_ = true;
+	num_of_queries_ = num_of_queries;
+	num_of_queries_initialized_ = true;
 	return *this;
 }
 
@@ -78,16 +78,16 @@ bool genie::Config::IsQueryRangeSet() const
 	return query_range_initialized_;
 }
 
-bool genie::Config::IsNumOfQuerySet() const
+bool genie::Config::IsNumOfQueriesSet() const
 {
-	return num_of_query_initialized_;
+	return num_of_queries_initialized_;
 }
 
 void genie::Config::Validate() const
 {
 	if (!k_initialized_)
 		throw exception::InvalidConfigurationException("K is not set.");
-	if (!num_of_query_initialized_)
+	if (!num_of_queries_initialized_)
 		throw exception::InvalidConfigurationException("Number of query is not set.");
 }
 
@@ -95,7 +95,7 @@ void genie::Config::DisplayConfiguration()
 {
 	Logger::log(Logger::INFO, "GENIE configuration:");
 	Logger::log(Logger::INFO, "K: %d", k_);
-	Logger::log(Logger::INFO, "Number of query: %d", num_of_query_);
+	Logger::log(Logger::INFO, "Number of queries: %d", num_of_queries_);
 	if (IsQueryRangeSet())
 		Logger::log(Logger::INFO, "Query range: %d", query_range_);
 	Logger::log(Logger::INFO, "Save to GPU: %s", save_to_gpu_ ? "true" : "false");

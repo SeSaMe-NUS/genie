@@ -22,7 +22,7 @@ class ExecutionPolicy {
 	protected:
 		uint32_t k_;
 		uint32_t dim_;
-		uint32_t num_of_query_;
+		uint32_t num_of_queries_;
 	public:
 		/*!
 		 * \brief Builds the inverted index with the given data.
@@ -58,11 +58,11 @@ class ExecutionPolicy {
 		/*!
 		 * \brief Sets the number of query.
 		 */
-		void SetNumOfQuery(const uint32_t num_of_query);
+		void SetNumOfQueries(const uint32_t num_of_queries);
 		/*!
 		 * \brief Returns the number of query.
 		 */
-		uint32_t GetNumOfQuery() const;
+		uint32_t GetNumOfQueries() const;
 };
 
 /*!

@@ -27,7 +27,7 @@ void genie::SaveTableToBinary(const string& filename, const shared_ptr<const GPU
 QueryData genie::LoadQueryDataFromCsv(const string& filename, const shared_ptr<const ExecutionPolicy>& policy)
 {
 	QueryData query_data;
-	GPUGenie::read_file(query_data, filename.c_str(), policy->GetNumOfQuery());
+	GPUGenie::read_file(query_data, filename.c_str(), policy->GetNumOfQueries());
 
 	return query_data;
 }

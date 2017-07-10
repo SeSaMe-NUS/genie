@@ -21,7 +21,7 @@ int main()
 	// configure GENIE and get the execution policy
 	Config config = Config()
 		.SetK(5)
-		.SetNumOfQuery(5);
+		.SetNumOfQueries(5);
 	shared_ptr<ExecutionPolicy> policy = MakePolicy(config);
 	config.DisplayConfiguration();
 

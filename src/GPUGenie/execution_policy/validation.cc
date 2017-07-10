@@ -9,9 +9,9 @@ void genie::execution_policy::validation::ValidateK(uint32_t k)
 		throw exception::InvalidConfigurationException("K should be larger than 0.");
 }
 
-void genie::execution_policy::validation::ValidateNumOfQuery(uint32_t num_of_query)
+void genie::execution_policy::validation::ValidateNumOfQueries(uint32_t num_of_queries)
 {
-	if (num_of_query <= 0)
+	if (num_of_queries <= 0)
 		throw exception::InvalidConfigurationException("Number of query should be larger than 0.");
 }
 

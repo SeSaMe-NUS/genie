@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
 
-	uint32_t k, query_range, num_of_query, gpu_id;
+	uint32_t k, query_range, num_of_queries, gpu_id;
 	string table_file, query_file;
 
 	// this is for both CLI & file
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	generic.add_options()
 		("k,k", po::value<uint32_t>(&k), "k")
 		("query-range,r", po::value<uint32_t>(&query_range), "query range")
-		("num-of-query,n", po::value<uint32_t>(&num_of_query), "number of query")
+		("num-of-queries,n", po::value<uint32_t>(&num_of_queries), "number of queries")
 		("gpu", po::value<uint32_t>(&gpu_id), "GPU to use")
 		("table,t", po::value<string>(&table_file), "table file")
 		("query,q", po::value<string>(&query_file), "query file")
@@ -57,8 +57,8 @@ int main(int argc, char* argv[])
 	Config config = Config();
 	if (vm.count("k"))
 		config.SetK(k);
-	if (vm.count("num-of-query"))
-		config.SetNumOfQuery(num_of_query);
+	if (vm.count("num-of-queries"))
+		config.SetNumOfQueries(num_of_queries);
 	if (vm.count("query_range"))
 		config.SetQueryRange(query_range);
 	if (vm.count("gpu"))
