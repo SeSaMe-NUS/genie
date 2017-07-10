@@ -7,6 +7,7 @@
 #include "DeviceCodecFactory.h"
 
 using namespace GPUGenie;
+using namespace std;
 
 const COMPRESSION_TYPE GPUGenie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
 const COMPRESSION_TYPE GPUGenie::LIGHTWEIGHT_COMPRESSION_TYPE = BP32;
@@ -14,9 +15,9 @@ const COMPRESSION_TYPE GPUGenie::MIDDLEWEIGHT_COMPRESSION_TYPE = SERIAL_DELTA_BP
 const COMPRESSION_TYPE GPUGenie::HEAVYWEIGHT_COMPRESSION_TYPE = SERIAL_DELTA_COMP_BP32_VARINT;
 
 
-std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> initCodecInstancesMap()
+map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> initCodecInstancesMap()
 {
-    std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> map;
+    map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> map;
 
     map[NO_COMPRESSION] = shared_ptr<DeviceIntegerCODEC>(nullptr);
     map[COPY] = shared_ptr<DeviceIntegerCODEC>(new DeviceCopyCodec());
@@ -36,16 +37,16 @@ std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> initCodecInstancesMap
     return map;
 }
 
-const std::map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> DeviceCodecFactory::codecInstancesMap = initCodecInstancesMap();
+const map<COMPRESSION_TYPE, shared_ptr<DeviceIntegerCODEC>> DeviceCodecFactory::codecInstancesMap = initCodecInstancesMap();
 
 // NOTE: Template instantiation of match_integrated is in match_integrated.cu
 //
 // TODO: Figure out a way how to separate match_integrated instances into multiple files, similar to how Codecs
 // templates are instantiated in their respective .cu files
 
-std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> initIntegratedKernelsMap()
+map<COMPRESSION_TYPE, MatchIntegratedFunPtr> initIntegratedKernelsMap()
 {
-    std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> map;
+    map<COMPRESSION_TYPE, MatchIntegratedFunPtr> map;
 
     map[NO_COMPRESSION] = nullptr;
     map[COPY] = match_integrated<DeviceCopyCodec>;
@@ -65,51 +66,51 @@ std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> initIntegratedKernelsMap()
     return map;
 }
 
-const std::map<COMPRESSION_TYPE, MatchIntegratedFunPtr> DeviceCodecFactory::integratedKernelsMap = initIntegratedKernelsMap();
+const map<COMPRESSION_TYPE, MatchIntegratedFunPtr> DeviceCodecFactory::integratedKernelsMap = initIntegratedKernelsMap();
 
-std::map<COMPRESSION_TYPE, std::string> initCompressionNamesMap()
+map<COMPRESSION_TYPE, string> initCompressionNamesMap()
 {
-    std::map<COMPRESSION_TYPE, std::string> map;    
+    map<COMPRESSION_TYPE, string> map;    
     for (auto it = DeviceCodecFactory::codecInstancesMap.begin(); it != DeviceCodecFactory::codecInstancesMap.end(); it++)
     {
         if (it->second.get())
             map[it->first] = it->second->name();
     }
-    map[NO_COMPRESSION] = std::string("no");
+    map[NO_COMPRESSION] = string("no");
     return map;
 }
 
-const std::map<COMPRESSION_TYPE, std::string> DeviceCodecFactory::compressionNamesMap = initCompressionNamesMap();
+const map<COMPRESSION_TYPE, string> DeviceCodecFactory::compressionNamesMap = initCompressionNamesMap();
 
-std::map<std::string, COMPRESSION_TYPE> initCompressionTypesMap()
+map<string, COMPRESSION_TYPE> initCompressionTypesMap()
 {
-    std::map<std::string, COMPRESSION_TYPE> map;    
+    map<string, COMPRESSION_TYPE> map;    
     for (auto it = DeviceCodecFactory::compressionNamesMap.begin(); it != DeviceCodecFactory::compressionNamesMap.end(); it++)
         map[it->second] = it->first;
     return map;
 }
 
-const std::map<std::string, COMPRESSION_TYPE> DeviceCodecFactory::compressionTypesMap = initCompressionTypesMap();
+const map<string, COMPRESSION_TYPE> DeviceCodecFactory::compressionTypesMap = initCompressionTypesMap();
 
-std::vector<std::string> initAllCompressionNames()
+vector<string> initAllCompressionNames()
 {
-    std::vector<std::string> names;
+    vector<string> names;
     for (auto i = DeviceCodecFactory::compressionNamesMap.begin(); i != DeviceCodecFactory::compressionNamesMap.end(); ++i)
         names.push_back(i->second);
     return names;
 }
 
-const std::vector<std::string> DeviceCodecFactory::allCompressionNames = initAllCompressionNames();
+const vector<string> DeviceCodecFactory::allCompressionNames = initAllCompressionNames();
 
-std::vector<COMPRESSION_TYPE> initAllCompressionTypes()
+vector<COMPRESSION_TYPE> initAllCompressionTypes()
 {
-    std::vector<COMPRESSION_TYPE> types;
+    vector<COMPRESSION_TYPE> types;
     for (auto i = DeviceCodecFactory::integratedKernelsMap.begin(); i != DeviceCodecFactory::integratedKernelsMap.end(); ++i)
         types.push_back(i->first);
     return types;
 }
 
-const std::vector<COMPRESSION_TYPE> DeviceCodecFactory::allCompressionTypes = initAllCompressionTypes();
+const vector<COMPRESSION_TYPE> DeviceCodecFactory::allCompressionTypes = initAllCompressionTypes();
 
 const shared_ptr<DeviceIntegerCODEC> DeviceCodecFactory::nullCodec = shared_ptr<DeviceIntegerCODEC>(nullptr);
 

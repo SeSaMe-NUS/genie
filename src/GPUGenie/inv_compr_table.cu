@@ -36,7 +36,7 @@ GPUGenie::inv_compr_table::build(size_t max_length, bool use_load_balance)
     uint64_t compressionStartTime = getTime();
 
     // Retrieve coded instance
-    shared_ptr<DeviceIntegerCODEC> codec = DeviceCodecFactory::getCodec(m_compression);
+    std::shared_ptr<DeviceIntegerCODEC> codec = DeviceCodecFactory::getCodec(m_compression);
     if(!codec.get()) {
         Logger::log(Logger::ALERT, "No matching function for %s compression!",
                 DeviceCodecFactory::getCompressionName(m_compression).c_str());

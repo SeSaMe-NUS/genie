@@ -52,7 +52,7 @@ genie::util::LoadTable(const std::string &filename)
 
     GPUGenie::inv_table *loaded_table = nullptr;
     ia >> loaded_table;
-    return shared_ptr<GPUGenie::inv_table>(loaded_table);
+    return std::shared_ptr<GPUGenie::inv_table>(loaded_table);
 }
 
 // Macro BOOST_CLASS_VERSION() only works for version < 256. Use the following for higher versions:

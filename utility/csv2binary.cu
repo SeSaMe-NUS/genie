@@ -10,6 +10,7 @@
 #include <GPUGenie/DeviceCodecFactory.h>
 
 using namespace GPUGenie;
+using namespace std;
 
 int main(int argc, char *argv[])
 {

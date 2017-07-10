@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <iostream>
 
+using namespace std;
+
 int cv(string& s)
 {
 	return atoi(s.c_str());

@@ -733,7 +733,7 @@ void convertTableToBinaryFormats(const std::string &dataFile, const std::string 
 void RunGENIE(const std::string &dataFile, const std::string &codec, int numRuns, int device)
 {
     std::string queryFile = dataFile;
-    vector<vector<int>> queryPoints;
+    std::vector<std::vector<int>> queryPoints;
 
     GPUGenie::GPUGenie_Config config;
     config.num_of_queries = 5;

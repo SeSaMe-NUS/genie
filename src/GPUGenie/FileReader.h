@@ -9,7 +9,7 @@
 #include "query.h"
 
 #include <vector>
-using namespace std;
+
 namespace GPUGenie
 {
 /*! \struct _GPUGenie_Query_Data
@@ -66,7 +66,7 @@ const unsigned int GPUGENIE_QUERY_NUM_OF_FIELDS = 5u;
  *  it means reading all the file. For non-multirange of query, we can use this way to read
  *  queries stored in csv files.
  */
-void read_file(vector<vector<int> >& dest, const char* fname, int num);
+void read_file(std::vector<std::vector<int> >& dest, const char* fname, int num);
 
 /*! \fn void read_query(inv_table& table, const char* fname, vector<query>& queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)
  *  \brief Process queries, read from file.
@@ -82,7 +82,7 @@ void read_file(vector<vector<int> >& dest, const char* fname, int num);
  */
 
 void read_query(inv_table& table, const char* fname,
-		vector<query>& queries, int num_of_queries, int num_of_query_dims,
+		std::vector<query>& queries, int num_of_queries, int num_of_query_dims,
 		int radius, int topk, float selectivity);
 
 /*! \fn void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num)
@@ -99,7 +99,7 @@ void read_query(inv_table& table, const char* fname,
  *  0   1   6      0.04        1
  *  \endverbatim
  */
-void read_query(vector<GPUGenie::attr_t>& data, const char* file_name, int num);
+void read_query(std::vector<attr_t>& data, const char* file_name, int num);
 
 } /* namespace GPUGenie */
 

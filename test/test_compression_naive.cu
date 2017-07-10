@@ -77,9 +77,9 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
 
 int main(int argc, char* argv[])
 {
-    string dataFile = DEFAULT_TEST_DATASET;
+    std::string dataFile = DEFAULT_TEST_DATASET;
     COMPRESSION_TYPE compression = DEFAULT_COMPRESSION;
-    string queryFile = DEFAULT_QUERY_DATASET;
+    std::string queryFile = DEFAULT_QUERY_DATASET;
     std::string binaryInvTableFile;
     std::string binaryComprInvTableFile;
     bool convertTableToBinary = false;
@@ -127,9 +127,9 @@ int main(int argc, char* argv[])
     binaryInvTableFile = invTableFileBase + invSuffix;
     binaryComprInvTableFile = invTableFileBase + cinvSuffix;
 
-    ifstream invBinFileStream(binaryInvTableFile.c_str());
+    std::ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
-    ifstream cinvBinFileStream(binaryComprInvTableFile.c_str());
+    std::ifstream cinvBinFileStream(binaryComprInvTableFile.c_str());
     bool cinvBinFileExists = cinvBinFileStream.good();
 
     if (invBinFileExists && !cinvBinFileExists || !invBinFileExists && cinvBinFileExists){
@@ -150,8 +150,8 @@ int main(int argc, char* argv[])
     }
 
 
-    vector<vector<int>> queryPoints;
-    vector<vector<int>> data;
+    std::vector<std::vector<int>> queryPoints;
+    std::vector<std::vector<int>> data;
     GPUGenie_Config config;
 
     config.dim = dimensions;
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 
     Logger::log(Logger::INFO, "Opening binary inv_compr_table from %s ...", binaryComprInvTableFile.c_str());
     std::shared_ptr<inv_compr_table> comprTable =
-            dynamic_pointer_cast<inv_compr_table>(genie::LoadTableFromBinary(binaryComprInvTableFile));
+            std::dynamic_pointer_cast<inv_compr_table>(genie::LoadTableFromBinary(binaryComprInvTableFile));
 
     std::cout << "Examining compressed index..." << std::endl;
 

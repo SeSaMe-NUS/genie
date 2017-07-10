@@ -143,7 +143,8 @@ public:
         std::vector<int> *invPos;
         std::vector<int> *compressedInvPos;
 
-        shared_ptr<GPUGenie::inv_compr_table> ctable = dynamic_pointer_cast<GPUGenie::inv_compr_table>(table);
+        std::shared_ptr<GPUGenie::inv_compr_table> ctable =
+                std::dynamic_pointer_cast<GPUGenie::inv_compr_table>(table);
         if (ctable)
         {
             compression = ctable->getCompression();

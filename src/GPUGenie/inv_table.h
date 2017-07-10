@@ -22,8 +22,6 @@
  */
 typedef unsigned long long u64;
 
-using namespace std;
-
 
 /*! \namespace GPUGenie
  *  \brief GPUGenie is the top namespace for the project
@@ -125,38 +123,38 @@ private:
     /*! \var vector<inv_list> _inv_lists;
      *  \brief Inverted lists of different dimensions.
      */
-    vector<inv_list> _inv_lists;
+    std::vector<inv_list> _inv_lists;
 
     /*! \var vector<vector<int> > distinct_value
      *  \brief distinct_value for each sequence;
      *
      */
     //vector<vector<int> > distinct_value;
-    vector<unordered_map<int, int> > _distinct_map;
+    std::vector<std::unordered_map<int, int> > _distinct_map;
 
 
     /*! \var vector<int> inv_list_upperbound
      *  \brief the maximum value for one inv_list. The id is implicitly expressed by the vector index.
      */
-    vector<int> inv_list_upperbound;
+    std::vector<int> inv_list_upperbound;
 
     /*! \var vector<int> inv_list_lowerbound
      *  \brief the minimum value for one inv_list. The id is implicitly expressed by the vector index.
      */
-    vector<int> inv_list_lowerbound;
+    std::vector<int> inv_list_lowerbound;
 
     /*! \var vector<vector<int> > posting_list_size
      *  \brief Every attribute and value would correspond a posting list in inverted index. This vector
      *  contains length of every posting list, referred by one attribute-value pair.
      */
-    vector<vector<int> > posting_list_size;
+    std::vector<std::vector<int> > posting_list_size;
 
 
 
     /*! \var vector<int> _ck
      *  \brief The composite keys' vector.
      */
-     vector<int> _ck;
+    std::vector<int> _ck;
 
     /*! \var vector<int> _inv
      *  \brief The inverted indexes' vector.
@@ -164,17 +162,17 @@ private:
      *  _inv contains the all the posting list which consist of ids of data points. The d_inv_p points to
      *  the corresponding memory on GPU.
      */
-     vector<int> _inv;
+    std::vector<int> _inv;
 
      /*! \var unordered_map<size_t,int> _inv_index_map
       *  \brief The first level index lists of posting lists
       */
-	unordered_map<size_t, int> _inv_index_map;
+	std::unordered_map<size_t, int> _inv_index_map;
 
      /*! \var vector<int> _inv_pos
       *  \brief The second level posting lists vector
       */
-      vector<int> _inv_pos;
+    std::vector<int> _inv_pos;
 
       /*! \var unsigned int shift_bits_subsequence
        *  \brief The number of shifted bits in subsequence search.
@@ -230,7 +228,7 @@ public:
      *  \param dim The specific dim of the expected distinct values
      *
      */
-    unordered_map<int, int>* get_distinct_map(int dim);
+    std::unordered_map<int, int>* get_distinct_map(int dim);
 
     /*! \fn void append_sequence(inv_list& inv)
      *  \brief append inv_list for sequence search
@@ -376,35 +374,35 @@ public:
 	 *
          *  \return The pointer points to _inv_lists vector.
 	 */
-	vector<inv_list>*
+	std::vector<inv_list>*
 	inv_lists();
 
 	/*! \fn vector<int>* ck()
 	 *
          *  \return The pointer points to _ck vector.
 	 */
-	virtual vector<int>*
+	virtual std::vector<int>*
 	ck();
 
 	/*! \fn vector<int>* inv()
 	 *
          *  \return The pointer points to _inv vector.
 	 */
-	virtual vector<int>*
+	virtual std::vector<int>*
 	inv();
 
 	/*! \fn unordered_map<size_t, int>* inv_index_map()
 	 *
          *  \return The pointer points to _inv_index_map map.
 	 */
-	unordered_map<size_t, int>*
+	std::unordered_map<size_t, int>*
 	inv_index_map();
 
         /*! \fn vector<int>* inv_pos()
 	 *
          *  \return The pointer points to _inv_pos vector.
 	 */
-	virtual vector<int>*
+	virtual std::vector<int>*
 	inv_pos();
 
 

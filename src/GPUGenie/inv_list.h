@@ -8,7 +8,6 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-using namespace std;
 
 namespace GPUGenie
 {
@@ -25,7 +24,7 @@ public:
     /* \var vector<int> distinct_value_sequence
      * \brief Used in sequence search. compact the range.
      */
-    unordered_map<int, int> _distinct;
+    std::unordered_map<int, int> _distinct;
 
 
 private:
@@ -45,7 +44,7 @@ private:
      *  This vector contains all the data points that have a value on the attribute. The inv_table contains many inv_list objects
      *  Thus, inv_list is the basis of inv_table.
 	 */
-	vector<vector<int> > _inv;
+	std::vector<std::vector<int> > _inv;
 
     /*! \var unsigned int shift_bits_subsequence
      *  \brief It will be used to shift rowid and then add the position offset of element in that row
@@ -67,14 +66,14 @@ public:
 	 *
 	 *  \param vin The vector which will be inverted.
 	 */
-	inv_list(vector<int>& vin);
+	inv_list(std::vector<int>& vin);
 
 	/*! \fn inv_list(vector<inv>* vin)
 	 *  \brief Create an inv_list from an int vector.
 	 *
 	 *  \param vin The vector which will be inverted.
 	 */
-	inv_list(vector<int>* vin);
+	inv_list(std::vector<int>* vin);
 
     /*! \fn unsigned int _shift_bits_subsequence()
      *
@@ -92,7 +91,7 @@ public:
      *  Data is from a csv file.
      */
 	void
-	invert_bijectMap(vector<vector<int> > & vin);
+	invert_bijectMap(std::vector<std::vector<int> > & vin);
 
 	/*! \fn void invert_bijectMap(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num)
 	 *  \brief Handle input from binary file
@@ -114,7 +113,7 @@ public:
      *  \param vin Sequence value of all rows
      */
     void
-    invert_subsequence(vector<vector<int> > & vin);
+    invert_subsequence(std::vector<std::vector<int>> & vin);
 
 
     /*! \fn void invert_subsequence(int *data, unsigned int item_num, unsigned int * index, unsigned int row_num)
@@ -135,7 +134,7 @@ public:
      *  \param shift_bits Number of bits to shift.
      */
     void
-    invert_sequence(vector<vector<int> > & vin, int shift_bits);
+    invert_sequence(std::vector<std::vector<int>> & vin, int shift_bits);
     //invert_sequence(vector<vector<int> > & vin, int & shift_bits, vector<int> & respective_id);
 
 
@@ -146,7 +145,7 @@ public:
      *
      *  The default converter atoi will be invoked to convert the string value to int value.
 	 */
-	inv_list(vector<string>& vin);
+	inv_list(std::vector<std::string>& vin);
 
 	/*! \fn inv_list(vector<string>* vin)
 	 *  \brief Create an inv_list from a string vector.
@@ -155,7 +154,7 @@ public:
      *
      *   The default converter atoi will be invoked to convert the string value to int value.
 	 */
-	inv_list(vector<string>* vin);
+	inv_list(std::vector<std::string>* vin);
 
 	/*! \fn int min()
 	 *  \brief Return the min value of the inverted vector.
@@ -187,7 +186,7 @@ public:
 	 *  \param vin The vector which will be inverted.
 	 */
 	void
-	invert(vector<int>& vin);
+	invert(std::vector<int>& vin);
 
 	/*! \fn void invert(vector<int>& vin)
 	 *  \brief Create an inverted list from an int vector.
@@ -195,7 +194,7 @@ public:
 	 *  \param vin The vector which will be inverted.
 	 */
 	void
-	invert(vector<int>* vin);
+	invert(std::vector<int>* vin);
 
 	/*! \fn void invert(vector<string>& vin)
 	 *  \brief Create an inverted list from a string vector.
@@ -205,7 +204,7 @@ public:
      *   The default converter atoi will be invoked to convert the string value to int value.
 	 */
 	void
-	invert(vector<string>& vin);
+	invert(std::vector<std::string>& vin);
 
 	/*! \fn void invert(vector<string>* vin)
 	 *  \brief Create an inverted list from a string vector.
@@ -215,7 +214,7 @@ public:
      *  The default converter atoi will be invoked to convert the string value to int value.
 	 */
 	void
-	invert(vector<string>* vin);
+	invert(std::vector<std::string>* vin);
 
 	/*! \fn void invert(vector<string>& vin, int (*stoi)(string&))
 	 *  \brief Create an inverted list from a string vector.
@@ -230,7 +229,7 @@ public:
 	 *   then in the converter function stoi, downcast the void pointer to the min max structure.
 	 */
 	void
-	invert(vector<string>& vin, int (*stoi)(string&));
+	invert(std::vector<std::string>& vin, int (*stoi)(std::string&));
 
 	/*! \fn void invert(vector<string>* vin, int (*stoi)(string&))
 	 *  \brief Create an inverted list from a string vector.
@@ -245,7 +244,7 @@ public:
 	 *
 	 */
 	void
-	invert(vector<string>* vin, int (*stoi)(string&));
+	invert(std::vector<std::string>* vin, int (*stoi)(std::string&));
 
 	/*! \fn bool contains(int value)
 	 *  \brief Check whether the vaule is in the inv_list.
@@ -269,7 +268,7 @@ public:
      *  \return Pointer points to the indexes vector. NULL if the value does not appear
 	 *         in the original vector.
 	 */
-	vector<int>*
+	std::vector<int>*
 	index(int value);
 
     /*! \fn int value_range()

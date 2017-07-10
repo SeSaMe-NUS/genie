@@ -110,7 +110,7 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         dataFile.c_str(), binaryInvTableFile.c_str(),
         !config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str());
 
-    ifstream invBinFileStream(binaryInvTableFile.c_str());
+    std::ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
 
     if (invBinFileExists)
@@ -176,11 +176,11 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 
 int main(int argc, char* argv[])
 {
-    string dataFile = DEFAULT_TEST_DATASET;
-    string queryFile = DEFAULT_QUERY_DATASET;
+    std::string dataFile = DEFAULT_TEST_DATASET;
+    std::string queryFile = DEFAULT_QUERY_DATASET;
     
-    vector<vector<int>> queryPoints;
-    vector<vector<int>> data;
+    std::vector<std::vector<int>> queryPoints;
+    std::vector<std::vector<int>> data;
 
     int dimensions = DEFAULT_DIMENSIONS;
     int numberOfQueries = DEFAULT_NUM_QUERIES;

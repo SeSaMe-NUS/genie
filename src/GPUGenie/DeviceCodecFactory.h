@@ -76,7 +76,7 @@ public:
         return compressionTypesMap.at(name);
     }
 
-    static shared_ptr<DeviceIntegerCODEC> getCodec(COMPRESSION_TYPE type)
+    static std::shared_ptr<DeviceIntegerCODEC> getCodec(COMPRESSION_TYPE type)
     {
         if (codecInstancesMap.find(type) == codecInstancesMap.end())
         {

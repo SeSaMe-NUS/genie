@@ -186,7 +186,7 @@ bool preprocess_for_knn_csv(GPUGenie_Config& config, inv_table * &_table);
  *  This function handle the rest procedure after preprocess finishes,
  *  Multiload is also handled in this function. The results need to be merged in multiload situation
  */
-void knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table, vector<int>& result, vector<int>& result_count);
+void knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table, std::vector<int>& result, std::vector<int>& result_count);
 
 /*! \fn knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
  *  \brief Simplest form for use.
@@ -197,7 +197,7 @@ void knn_search_after_preprocess(GPUGenie_Config& config, inv_table * &_table, v
  *
  *  This function can help users complete search job in one go.
  */
-void knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config);
+void knn_search(std::vector<int>& result, std::vector<int>& result_count, GPUGenie_Config& config);
 
 /*! \fn knn_search(vector<int>& result, GPUGenie_Config& config)
  *  \brief Simply call knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config).
@@ -207,7 +207,7 @@ void knn_search(vector<int>& result, vector<int>& result_count, GPUGenie_Config&
  *
  *  Result_count is left out.
  */
-void knn_search(vector<int>& result, GPUGenie_Config& config);
+void knn_search(std::vector<int>& result, GPUGenie_Config& config);
 
 /*! \fn knn_search(inv_table& table, vector<query>& queries, vector<int>& h_topk, vector<int>& h_topk_count, GPUGenie_Config config)
  *  \brief This is a basic function called by all knn search functions.
@@ -219,12 +219,12 @@ void knn_search(vector<int>& result, GPUGenie_Config& config);
  *
  *  This function is seldom called by users. It is relatively more basic.
  */
-void knn_search(inv_table& table, vector<query>& queries,
-		vector<int>& h_topk, vector<int>& h_topk_count, GPUGenie_Config& config);
+void knn_search(inv_table& table, std::vector<query>& queries,
+		std::vector<int>& h_topk, std::vector<int>& h_topk_count, GPUGenie_Config& config);
 
 /* Multi table search */
-void knn_search_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
-		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& config);
+void knn_search_MT(std::vector<inv_table*>& table, std::vector<std::vector<query> >& queries,
+		std::vector<std::vector<int> >& h_topk, std::vector<std::vector<int> >& h_topk_count, std::vector<GPUGenie_Config>& config);
 
 /*! \fn knn_search_for_csv_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config)
  *  \brief knn_search for data read from a csv file
@@ -236,7 +236,7 @@ void knn_search_MT(vector<inv_table*>& table, vector<vector<query> >& queries,
  *  If you already know the data is coming from a csv file you can call this function.
  *  This function contains all pre-process and post-process.
  */
-void knn_search_for_csv_data(vector<int>& result, vector<int>& result_count, GPUGenie_Config& config);
+void knn_search_for_csv_data(std::vector<int>& result, std::vector<int>& result_count, GPUGenie_Config& config);
 
 
 /*! \fn void load_table(inv_table& table, vector<std::vector<int> >& data_points, GPUGenie_Config& config)
@@ -246,7 +246,7 @@ void knn_search_for_csv_data(vector<int>& result, vector<int>& result_count, GPU
  *  \param data_points Vector storing all data points
  *  \param config Settings by users
  */
-void load_table(inv_table& table, vector<std::vector<int> >& data_points, GPUGenie_Config& config);
+void load_table(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 /*! \fn void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config)
  *  \brief This function constructs the corresponding query structure for a specific inv_table object
@@ -258,7 +258,7 @@ void load_table(inv_table& table, vector<std::vector<int> >& data_points, GPUGen
  *  This function would make a choice between load_query_singlerange and load_query_multirange. The
  *  actual constructing process is finished by one of these two functions.
  */
-void load_query(inv_table& table, vector<query>& queries, GPUGenie_Config& config);
+void load_query(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
 
 /*! \fn void load_query_singlerange(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config)
  *  \brief This function construct query structure for queries of non-multirange
@@ -287,7 +287,7 @@ void load_query_multirange(inv_table& table, std::vector<query>& queries, GPUGen
  *
  *  The input dataset can be short text sets.
  */
-void load_table_bijectMap(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config);
+void load_table_bijectMap(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 /*! \fn void load_table(inv_table& table, int *data, unsigned int item_num, unsigned int *index, unsigned int row_num, GPUGenie_Config& config)
  *  \brief This function constructs the inv_table for dataset from binary files
@@ -330,7 +330,7 @@ void load_table_bijectMap(inv_table& table, int *data, unsigned int item_num,
  *  \param data_points The data set to be searched.
  *  \param config The settings from User.
  */
-void load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config);
+void load_table_sequence(inv_table& table, std::vector<std::vector<int> >& data_points, GPUGenie_Config& config);
 
 
 /*! \fn void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Config& config)
@@ -341,7 +341,7 @@ void load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GP
  *  \param config User settings.
  *
  */
-void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Config& config);
+void load_query_sequence(inv_table& table, std::vector<query>& queries, GPUGenie_Config& config);
 
 /*! \fn void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gram_data, int max_value, int gram_length)
  *  \brief This function is used to convert initial sequence data to sequences represented by n-gram data
@@ -351,7 +351,7 @@ void load_query_sequence(inv_table& table, vector<query>& queries, GPUGenie_Conf
  *  \param max_value The range of value that can occur in the original sequences, should start at 0.
  *  \param gram_length The length of one n-gram.
  */
-void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gram_data, int max_value, int gram_length);
+void sequence_to_gram(std::vector<std::vector<int> >& sequences, std::vector<std::vector<int> >& gram_data, int max_value, int gram_length);
 
 /*! \fn void sequence_reduce_to_ground(vector<vector<int> >& data, vector<vector<int> >& converted_data, int& min_value, int& max_value)
  *  \brief Find the max value and min value of data, and subtract each element by min value.
@@ -361,7 +361,7 @@ void sequence_to_gram(vector<vector<int> >& sequences, vector<vector<int> >& gra
  *  \param min_value The min value returned.
  *  \param max_value The max value returned.
  */
-void sequence_reduce_to_ground(vector<vector<int> >& data, vector<vector<int> >& converted_data, int& min_value, int& max_value);
+void sequence_reduce_to_ground(std::vector<std::vector<int> >& data, std::vector<std::vector<int> >& converted_data, int& min_value, int& max_value);
 
 
 /*! \fn void reset_device()
@@ -385,7 +385,7 @@ void reset_device();
  *  In subsequence search, the RowID and Offset are combined according to shift_bits. This function helps to seperate
  *  rowID and  offset.
  */
-void get_rowID_offset(vector<int> &result, vector<int> &resultID, vector<int> &resultOffset, unsigned int shift_bits);
+void get_rowID_offset(std::vector<int> &result, std::vector<int> &resultID, std::vector<int> &resultOffset, unsigned int shift_bits);
 
 void init_genie(GPUGenie_Config &config);
 }

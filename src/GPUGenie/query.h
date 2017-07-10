@@ -15,8 +15,6 @@
 
 #include <vector>
 
-using namespace std;
-
 namespace GPUGenie
 {
 /*! \typedef unsigned int u32
@@ -81,7 +79,7 @@ private:
 	 *  different ranges setting, the attribute saves the
 	 *  raw range settings.
 	 */
-	std::map<int, vector<range> > _attr_map;
+	std::map<int, std::vector<range> > _attr_map;
 
 	/*! \var std::map<int, vector<dim>*> _dim_map
 	 *  \brief The queried ranges.
@@ -89,7 +87,7 @@ private:
      *   The queried ranges. In matching steps, this vector will
 	 *   be transferred to device.
 	 */
-	std::map<int, vector<dim> > _dim_map;
+	std::map<int, std::vector<dim> > _dim_map;
 
 	/*! \var int _topk
 	 *  \brief The top k matches required.
@@ -127,7 +125,7 @@ public:
     /*! \var vector<dim> _dims
      *  \brief Collection of dims of all queries
      */
-	vector<dim> _dims;
+	std::vector<dim> _dims;
 
 	/*! \fn query(inv_table* ref, int index)
 	 *  \brief Create a query based on an inv_table.
@@ -266,7 +264,7 @@ public:
 	build();
 
 	void
-	build(vector<dim> &);
+	build(std::vector<dim> &);
 
 
 	/*! \fn int dump(vector<dim>& vout)
@@ -279,10 +277,10 @@ public:
 	 *
 	 */
 	int
-	dump(vector<dim>& vout);
+	dump(std::vector<dim>& vout);
 
     int
-    dump(vector<range>& ranges);
+    dump(std::vector<range>& ranges);
 
     /*! \fn void print(int limit)
      *  \brief Print out the information of all dims.
