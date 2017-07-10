@@ -13,11 +13,11 @@ namespace genie {
 /*!
  * \brief Reads data from a CSV file and returns in TableData format.
  */
-TableData ReadTableFromCsv(const std::string& filename);
+TableData LoadTableDataFromCsv(const std::string& filename);
 /*!
  * \brief Reads data from a binary file and returns pre-built table.
  */
-std::shared_ptr<GPUGenie::inv_table> ReadTableFromBinary(const std::string& filename);
+std::shared_ptr<GPUGenie::inv_table> LoadTableFromBinary(const std::string& filename);
 /*!
  *  \brief Save inverted table to a binary file.
  */
@@ -25,7 +25,7 @@ void SaveTableToBinary(const std::string& filename, const std::shared_ptr<const 
 /*!
  * \brief Reads query from a CSV file and returns in QueryData format.
  */
-QueryData ReadQueryFromCsv(const std::string& filename, const std::shared_ptr<const ExecutionPolicy>& policy);
+QueryData LoadQueryDataFromCsv(const std::string& filename, const std::shared_ptr<const ExecutionPolicy>& policy);
 
 } // end of namespace genie
 

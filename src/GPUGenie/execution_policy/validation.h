@@ -8,7 +8,7 @@ namespace execution_policy {
 namespace validation {
 
 void ValidateK(uint32_t k);
-void ValidateNumOfQuery(uint32_t num_of_query);
+void ValidateNumOfQueries(uint32_t num_of_queries);
 void ValidateQueryRange(uint32_t query_range);
 
 }

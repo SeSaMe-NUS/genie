@@ -601,7 +601,7 @@ void runSingleGENIE(const std::string &binaryInvTableFile, const std::string &qu
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binaryInvTableFile);
+    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     GPUGenie::read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
@@ -842,7 +842,7 @@ void AnalyzeInvertedTable(const std::string &data_file, const std::string &codec
         Logger::log(Logger::INFO, "Analyzing table %s with compression %s...",
                 binary_table_file.c_str(), DeviceCodecFactory::getCompressionName(compr).c_str());
 
-        std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binary_table_file);
+        std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binary_table_file);
 
         perftoolkit::TableAnalyzer::Analyze(table, dest_dir);
     }

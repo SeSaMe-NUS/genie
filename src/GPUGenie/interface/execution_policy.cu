@@ -20,7 +20,7 @@ shared_ptr<ExecutionPolicy> genie::MakePolicy(const Config& config)
 	{
 		execution_policy::SingleRangeExecutionPolicy* policy = new execution_policy::SingleRangeExecutionPolicy();
 		policy->SetK(config.GetK());
-		policy->SetNumOfQuery(config.GetNumOfQuery());
+		policy->SetNumOfQueries(config.GetNumOfQueries());
 		policy->SetQueryRange(config.GetQueryRange());
 		generated_policy = shared_ptr<execution_policy::SingleRangeExecutionPolicy>(policy);
 	}
@@ -28,7 +28,7 @@ shared_ptr<ExecutionPolicy> genie::MakePolicy(const Config& config)
 	{
 		execution_policy::SingleValueExecutionPolicy* policy = new execution_policy::SingleValueExecutionPolicy();
 		policy->SetK(config.GetK());
-		policy->SetNumOfQuery(config.GetNumOfQuery());
+		policy->SetNumOfQueries(config.GetNumOfQueries());
 		generated_policy = shared_ptr<execution_policy::SingleValueExecutionPolicy>(policy);
 	}
 
@@ -48,18 +48,18 @@ void genie::ExecutionPolicy::SetK(const uint32_t k)
 	k_ = k;
 }
 
-void genie::ExecutionPolicy::SetNumOfQuery(const uint32_t num_of_query)
+void genie::ExecutionPolicy::SetNumOfQueries(const uint32_t num_of_queries)
 {
-	num_of_query_ = num_of_query;
+	num_of_queries_ = num_of_queries;
 }
 
-uint32_t genie::ExecutionPolicy::GetNumOfQuery() const
+uint32_t genie::ExecutionPolicy::GetNumOfQueries() const
 {
-	return num_of_query_;
+	return num_of_queries_;
 }
 
 void genie::ExecutionPolicy::Validate()
 {
 	execution_policy::validation::ValidateK(k_);
-	execution_policy::validation::ValidateNumOfQuery(num_of_query_);
+	execution_policy::validation::ValidateNumOfQueries(num_of_queries_);
 }

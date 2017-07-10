@@ -21,12 +21,12 @@ class Config {
 	private:
 		uint32_t k_;
 		uint32_t query_range_;
-		uint32_t num_of_query_;
+		uint32_t num_of_queries_;
 		bool save_to_gpu_ = false;
 		uint8_t gpu_id_ = 0;
 		bool k_initialized_ = false;
 		bool query_range_initialized_ = false;
-		bool num_of_query_initialized_ = false;
+		bool num_of_queries_initialized_ = false;
 	public:
 		/*!
 		 * \brief Return K.
@@ -39,7 +39,7 @@ class Config {
 		/*!
 		 * \brief Return the number of query to search.
 		 */
-		uint32_t GetNumOfQuery() const;
+		uint32_t GetNumOfQueries() const;
 		/*!
 		 * \brief Return whether table should be saved to GPU after search.
 		 */
@@ -59,7 +59,7 @@ class Config {
 		/*!
 		 * \brief Set the number of query to search.
 		 */
-		Config& SetNumOfQuery(const uint32_t num_of_query);
+		Config& SetNumOfQueries(const uint32_t num_of_queries);
 		/*!
 		 * \brief Set whether table should be saved to GPU after search.
 		 */
@@ -83,7 +83,7 @@ class Config {
 		/*!
 		 * \brief Return whether the number of query has been set.
 		 */
-		bool IsNumOfQuerySet() const;
+		bool IsNumOfQueriesSet() const;
 		/*!
 		 * \brief Validate that all required options are set.
 		 */

@@ -148,7 +148,7 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    std::shared_ptr<GPUGenie::inv_table> table = genie::ReadTableFromBinary(binaryInvTableFile);
+    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
