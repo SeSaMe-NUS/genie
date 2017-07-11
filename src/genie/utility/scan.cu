@@ -3,7 +3,7 @@
  */
 
 #include <assert.h>
-#include <genie/exception/genie_errors.h>
+#include <genie/utility/cuda_macros.h>
 
 #include "scan.h"
 

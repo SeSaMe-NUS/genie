@@ -35,7 +35,7 @@ set( GENIE_COMPILATION_UNITS
   genie/utility/init.cu
   genie/utility/Logger.cc
   genie/utility/scan.cu
-  genie/utility/serialization.cu
+  genie/utility/serialization.cc
   genie/utility/Timing.cc
 )
 
@@ -65,6 +65,7 @@ set( GENIE_HEADERS
   genie/table/interface.h
   genie/table/inv_list.h
   genie/table/inv_table.h
+  genie/utility/cuda_macros.h
   genie/utility/FileReader.h
   genie/utility/init.h
   genie/utility/Logger.h

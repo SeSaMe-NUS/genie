@@ -20,10 +20,10 @@
 #include <genie/compression/DeviceCompositeCodec.h>
 #include <genie/compression/DeviceSerialCodec.h>
 #include <genie/compression/DeviceVarintCodec.h>
-#include <genie/exception/genie_errors.h>
 #include <genie/original/interface.h>
 #include <genie/interface/io.h>
 #include <genie/query/query.h>
+#include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/PerfLogger.hpp>
 #include <genie/utility/scan.h>

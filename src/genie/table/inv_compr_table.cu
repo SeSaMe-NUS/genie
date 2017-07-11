@@ -3,8 +3,9 @@
 #include <map>
 #include <memory>
 
-#include <genie/utility/Logger.h>
 #include <genie/exception/genie_errors.h>
+#include <genie/utility/cuda_macros.h>
+#include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
 #include <genie/compression/DeviceCodecFactory.h>
 #include <genie/compression/DeviceCompositeCodec.h>

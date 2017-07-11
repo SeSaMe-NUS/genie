@@ -14,6 +14,7 @@
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
 
+#include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/PerfLogger.hpp>
 #include <genie/utility/Timing.h>

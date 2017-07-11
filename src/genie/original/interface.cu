@@ -28,6 +28,7 @@
     #include <genie/table/inv_compr_table.h>
 #endif
 #include <genie/matching/knn.h>
+#include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
 

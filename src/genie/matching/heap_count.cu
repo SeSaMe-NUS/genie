@@ -11,7 +11,7 @@
 #include <thrust/count.h>
 #include <genie/utility/Timing.h>
 #include <genie/matching/match.h>
-#include <genie/exception/genie_errors.h>
+#include <genie/utility/cuda_macros.h>
 #include <genie/matching/heap_count.h>
 
 #define THREADS_PER_BLOCK 256

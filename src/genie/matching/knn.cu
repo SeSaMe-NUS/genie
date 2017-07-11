@@ -11,6 +11,7 @@
 
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
+#include <genie/utility/cuda_macros.h>
 #include <genie/exception/genie_errors.h>
 
 #include <genie/configure.h>
