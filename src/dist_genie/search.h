@@ -1,7 +1,7 @@
 #ifndef __DISTGENIE_SEARCH_H__
 #define __DISTGENIE_SEARCH_H__
 
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include "config.h"
 #include "container.h"
 

@@ -18,7 +18,6 @@ set( GENIE_COMPILATION_UNITS
   genie/execution_policy/validation.cc
   genie/interface/config.cu
   genie/interface/execution_policy.cu
-  genie/interface/interface.cu
   genie/interface/io.cu
   genie/interface/search.cu
   genie/matching/heap_count.cu  
@@ -26,6 +25,7 @@ set( GENIE_COMPILATION_UNITS
   genie/matching/knn.cu
   genie/matching/match.cu
   genie/matching/match_common.cu
+  genie/original/interface.cu
   genie/query/interface.cu
   genie/query/query.cu
   genie/table/interface.cu
@@ -52,7 +52,6 @@ set( GENIE_HEADERS
   genie/interface/config.h
   genie/interface/execution_policy.h
   genie/interface/genie.h
-  genie/interface/interface.h
   genie/interface/io.h
   genie/interface/search.h
   genie/interface/types.h
@@ -61,6 +60,7 @@ set( GENIE_HEADERS
   genie/matching/knn.h
   genie/matching/match.h
   genie/matching/match_common.h
+  genie/original/interface.h
   genie/query/interface.h
   genie/query/query.h
   genie/table/interface.h

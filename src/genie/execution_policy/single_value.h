@@ -3,7 +3,7 @@
 
 #include <genie/interface/execution_policy.h>
 #include <genie/interface/types.h>
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 
 namespace genie {
 namespace execution_policy {

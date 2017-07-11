@@ -4,7 +4,7 @@ description: create a running example fo the library.
 2015.09.10
 */
 
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

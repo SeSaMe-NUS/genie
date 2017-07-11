@@ -13,7 +13,7 @@
 #include <fstream>
 #include <memory>
 
-#include <genie/interface/interface.h>
+#include <genie/original/interface.h>
 #include <genie/table/inv_table.h>
 #include <genie/table/inv_compr_table.h>
 #include <genie/interface/io.h>

@@ -13,7 +13,7 @@ typedef unsigned long long u64;
 #include <genie/matching/match.h>
 #include <genie/matching/heap_count.h>
 #include <genie/utility/FileReader.h>
-#include <genie/interface/interface.h>
+#include <genie/original/interface.h>
 #include <genie/matching/knn.h>
 
 

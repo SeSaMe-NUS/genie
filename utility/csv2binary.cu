@@ -5,7 +5,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include <genie/interface/io.h>
 #include <genie/compression/DeviceCodecFactory.h>
 

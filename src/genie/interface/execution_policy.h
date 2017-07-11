@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 #include <utility>
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include "types.h"
 #include "config.h"
 

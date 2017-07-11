@@ -1,4 +1,4 @@
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include <genie/utility/serialization.h>
 
 #include "io.h"

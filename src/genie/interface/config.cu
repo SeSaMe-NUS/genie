@@ -1,4 +1,4 @@
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include <genie/exception/exception.h>
 
 #include "config.h"

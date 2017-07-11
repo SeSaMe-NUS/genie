@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include "config.h"
 #include "container.h"
 

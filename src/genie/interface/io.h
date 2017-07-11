@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include <genie/interface/execution_policy.h>
 #include "types.h"
 

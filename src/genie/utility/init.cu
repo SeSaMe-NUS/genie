@@ -1,5 +1,5 @@
 #include "init.h"
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 
 using namespace genie;
 

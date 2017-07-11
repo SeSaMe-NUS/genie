@@ -10,7 +10,7 @@
 
 
 #undef NDEBUG
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 
 #include <assert.h>
 #include <vector>

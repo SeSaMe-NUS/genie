@@ -14,7 +14,7 @@
 #include <mutex>
 #include <chrono>
 
-#include <genie/GPUGenie.h>
+#include <genie/original/interface.h>
 #include "config.h"
 #include "parser.h"
 #include "container.h"

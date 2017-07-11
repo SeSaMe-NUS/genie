@@ -1,6 +1,6 @@
 #include <vector>
 
-#include <genie/interface/interface.h>
+#include <genie/original/interface.h>
 
 #include "interface.h"
 

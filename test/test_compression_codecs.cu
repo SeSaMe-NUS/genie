@@ -16,7 +16,7 @@
 #include <genie/compression/DeviceSerialCodec.h>
 #include <genie/compression/DeviceVarintCodec.h>
 #include <genie/exception/genie_errors.h>
-#include <genie/interface/interface.h>
+#include <genie/original/interface.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/scan.h> 
 #include <genie/utility/Timing.h>
