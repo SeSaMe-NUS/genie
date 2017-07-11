@@ -23,7 +23,7 @@ set( GENIE_COMPILATION_UNITS
   genie/matching/knn.cu
   genie/matching/match.cu
   genie/matching/match_common.cu
-  genie/original/interface.cu
+  genie/original/interface.cc
   genie/query/interface.cc
   genie/query/query.cc
   genie/table/interface.cc

@@ -29,6 +29,7 @@
 #endif
 #include <genie/matching/knn.h>
 #include <genie/utility/cuda_macros.h>
+#include <genie/utility/init.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
 
@@ -989,27 +990,9 @@ void genie::original::sequence_reduce_to_ground(vector<vector<int> > & data, vec
     }
 }
 
-void genie::original::init_genie(GPUGenie_Config &config)
+void genie::original::init_genie(GPUGenie_Config &old_config)
 {
-	int device_count;
-
-	cudaCheckErrors(cudaGetDeviceCount(&device_count));
-	if (device_count == 0)
-	{
-		throw genie::exception::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
-	}
-	else if (device_count <= config.use_device)
-	{
-		Logger::log(Logger::INFO,
-				"[Info] Device %d not found! Changing to %d...",
-				config.use_device, GPUGENIE_DEFAULT_DEVICE);
-		config.use_device = GPUGENIE_DEFAULT_DEVICE;
-	}
-	cudaCheckErrors(cudaSetDevice(config.use_device));
-    Logger::log(Logger::INFO, "Using device %d", config.use_device);
-
-    
-    cudaCheckErrors(cudaFree(0));
-	Logger::log(Logger::INFO, "Initialized CUDA context.");
+    genie::Config config = Config().SetGpuId(old_config.use_device);
+	genie::utility::Init(config);
 }
 
