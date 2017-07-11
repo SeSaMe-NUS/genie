@@ -111,9 +111,6 @@ target_link_libraries( ${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES})
 
-genie_add_simple_executable(cli_genie
-	genie/genie.cu)
-
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES
   VERSION ${PROJECT_VERSION}
