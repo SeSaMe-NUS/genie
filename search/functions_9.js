@@ -15,7 +15,6 @@ var searchData=
   ['integratedfastunpack',['integratedfastunpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#aca1fbfd744ee69cc844224541db8c863',1,'GPUGenie::DeviceBitPackingHelpers']]],
   ['inv',['inv',['../classGPUGenie_1_1inv__compr__table.html#a99c0cf1aa767829b1133475036da1562',1,'GPUGenie::inv_compr_table::inv()'],['../classGPUGenie_1_1inv__table.html#a1aba6e0694a832e3f947b8e1655dd972',1,'GPUGenie::inv_table::inv()']]],
   ['inv_5fcompr_5ftable',['inv_compr_table',['../classGPUGenie_1_1inv__compr__table.html#a062584cba3478b9d2ca9a1f70066dc49',1,'GPUGenie::inv_compr_table']]],
-  ['inv_5findex',['inv_index',['../classGPUGenie_1_1inv__table.html#a6ed01b0386108ae35c0b83a4faff114a',1,'GPUGenie::inv_table']]],
   ['inv_5findex_5fmap',['inv_index_map',['../classGPUGenie_1_1inv__table.html#af93107cbba94a7e32659861a2a9bdba2',1,'GPUGenie::inv_table']]],
   ['inv_5flist',['inv_list',['../classGPUGenie_1_1inv__list.html#aaca1ed3aa0f3c19e7b95ed0b19e3614f',1,'GPUGenie::inv_list::inv_list()'],['../classGPUGenie_1_1inv__list.html#a71ac0123f719eeaea8268ad6362a55ca',1,'GPUGenie::inv_list::inv_list(vector&lt; int &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#ac6f8633c4379cfdd59f929bd71c2d064',1,'GPUGenie::inv_list::inv_list(vector&lt; int &gt; *vin)'],['../classGPUGenie_1_1inv__list.html#a012d16504362f655fa95d5e0d2887f60',1,'GPUGenie::inv_list::inv_list(vector&lt; string &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#aa03d6f39248abaaa9d602bbd31a6b00e',1,'GPUGenie::inv_list::inv_list(vector&lt; string &gt; *vin)']]],
   ['inv_5flists',['inv_lists',['../classGPUGenie_1_1inv__table.html#ae50022b4adba553fcb023f81d85c3431',1,'GPUGenie::inv_table']]],
@@ -30,7 +29,7 @@ var searchData=
   ['invert_5fsubsequence',['invert_subsequence',['../classGPUGenie_1_1inv__list.html#a1d5754e7e1595439400069ff22ee833d',1,'GPUGenie::inv_list::invert_subsequence(vector&lt; vector&lt; int &gt; &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#a857a128b3308cd7c3d7679166aa453bb',1,'GPUGenie::inv_list::invert_subsequence(int *data, unsigned int item_num, unsigned int *index, unsigned int row_num)']]],
   ['ipackwithoutmask',['ipackwithoutmask',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a26e4450747576a818a81d983623dfcd6',1,'GPUGenie::DeviceBitPackingHelpers']]],
   ['iskset',['IsKSet',['../classgenie_1_1Config.html#a2171673533ab7c709e2b86c76b7998cd',1,'genie::Config']]],
-  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#a48b82b6666209338cf81d574b1da7bec',1,'genie::Config']]],
+  ['isnumofqueriesset',['IsNumOfQueriesSet',['../classgenie_1_1Config.html#ac12a8c3d8f4a73adcbfe0c96866c17c0',1,'genie::Config']]],
   ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#a246c3ca28fa2acb73d677e7b1cb4ced0',1,'genie::Config']]],
   ['iunpack',['iunpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#ab196f0634bc8356235060304f85e68a8',1,'GPUGenie::DeviceBitPackingHelpers']]]
 ];

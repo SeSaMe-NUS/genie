@@ -1,6 +1,7 @@
 var searchData=
 [
   ['bitmap_5fkernel_5fat',['bitmap_kernel_AT',['../namespacegenie_1_1matching.html#aefb583e1c0e6b879660d3ff338a8ccbb',1,'genie::matching']]],
+  ['boost_5fclass_5fversion',['BOOST_CLASS_VERSION',['../serialization_8cu.html#ab307179de1e012e1f4f2d0f6f94f86e8',1,'BOOST_CLASS_VERSION(GPUGenie::inv_table, 0):&#160;serialization.cu'],['../serialization_8cu.html#a5a1ce92d7257d1d784e0a6a8b73ebbc7',1,'BOOST_CLASS_VERSION(GPUGenie::inv_compr_table, 0):&#160;serialization.cu']]],
   ['build',['build',['../classGPUGenie_1_1inv__compr__table.html#ad6749dba77da654839842b31943746bc',1,'GPUGenie::inv_compr_table::build()'],['../classGPUGenie_1_1inv__table.html#a316124c640d6e61d6b21507f5e948530',1,'GPUGenie::inv_table::build()'],['../classGPUGenie_1_1query.html#a149622de746c2db2b86dde2ab3fd62fc',1,'GPUGenie::query::build()'],['../classGPUGenie_1_1query.html#a6bffb8dda9de738093c30c5b36f62a8d',1,'GPUGenie::query::build(vector&lt; dim &gt; &amp;)']]],
   ['build_5fand_5fapply_5fload_5fbalance',['build_and_apply_load_balance',['../classGPUGenie_1_1query.html#a5819cfa6e3063166a00920137036f2fe',1,'GPUGenie::query']]],
   ['build_5fcompressed',['build_compressed',['../classGPUGenie_1_1query.html#ae8c9217f038551380150d7008c3de499',1,'GPUGenie::query']]],

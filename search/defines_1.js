@@ -1,7 +1,6 @@
 var searchData=
 [
   ['genie_5fcompr',['GENIE_COMPR',['../configure_8h.html#ac1825bf8fd6af8528283af2f05856f30',1,'configure.h']]],
-  ['genie_5fdistributed',['GENIE_DISTRIBUTED',['../configure_8h.html#a3d115c24599b529761c561f14a7aff32',1,'configure.h']]],
   ['gpugenie_5fcodec_5fbpp_5fblock_5flength',['GPUGENIE_CODEC_BPP_BLOCK_LENGTH',['../DeviceBitPackingCodec_8h.html#a7c927034af97083fcc653fbd25173c8d',1,'DeviceBitPackingCodec.h']]],
   ['gpugenie_5fcodec_5fbpp_5fmax_5fbitsizes_5flength',['GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH',['../DeviceBitPackingCodec_8h.html#a56608215d4c5c617ded70f29bf63a43d',1,'DeviceBitPackingCodec.h']]],
   ['gpugenie_5fcodec_5fbpp_5fmax_5funcompressed_5flength',['GPUGENIE_CODEC_BPP_MAX_UNCOMPRESSED_LENGTH',['../DeviceBitPackingCodec_8h.html#a417a9ecd230c80d5af34f6902d61f46b',1,'DeviceBitPackingCodec.h']]],

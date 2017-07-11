@@ -550,20 +550,11 @@ Functions</h2></td></tr>
 <tr class="memitem:ad564f6399d8aed6c32ca9564cfcdf83c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ad564f6399d8aed6c32ca9564cfcdf83c">read_query</a> (vector&lt; <a class="el" href="namespaceGPUGenie.html#aeed4729ce1bce20c3cdc4c5076ff2a8a">GPUGenie::attr_t</a> &gt; &amp;data, const char *file_name, int num)</td></tr>
 <tr class="memdesc:ad564f6399d8aed6c32ca9564cfcdf83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read new format query in multirange mode.  <a href="#ad564f6399d8aed6c32ca9564cfcdf83c">More...</a><br /></td></tr>
 <tr class="separator:ad564f6399d8aed6c32ca9564cfcdf83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6815b26aacd6ad13261497981dc8538"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ad6815b26aacd6ad13261497981dc8538">csv2binary</a> (const char *csvfile, const char *binaryfile, bool app_write=false)</td></tr>
-<tr class="memdesc:ad6815b26aacd6ad13261497981dc8538"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function can convert a csv file to a binary file.  <a href="#ad6815b26aacd6ad13261497981dc8538">More...</a><br /></td></tr>
-<tr class="separator:ad6815b26aacd6ad13261497981dc8538"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afaecbda0d8b62d73b098ba7edc06665f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#afaecbda0d8b62d73b098ba7edc06665f">read_file</a> (const char *fname, int **_data, unsigned int &amp;item_num, unsigned int **_index, unsigned int &amp;row_num)</td></tr>
-<tr class="memdesc:afaecbda0d8b62d73b098ba7edc06665f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function provides a way to read data points from given dataset.  <a href="#afaecbda0d8b62d73b098ba7edc06665f">More...</a><br /></td></tr>
-<tr class="separator:afaecbda0d8b62d73b098ba7edc06665f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a139cea82d0c256e43dbbb1eecbf30fb6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a139cea82d0c256e43dbbb1eecbf30fb6">heap_count_topk</a> (thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_data, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_topk, thrust::device_vector&lt; <a class="el" href="namespaceGPUGenie.html#a51a2936ed84fd7b2a493862d7caf320b">u32</a> &gt; &amp;d_threshold, thrust::device_vector&lt; <a class="el" href="namespaceGPUGenie.html#a51a2936ed84fd7b2a493862d7caf320b">u32</a> &gt; &amp;d_passCount, int topk, int num_of_queries)</td></tr>
 <tr class="separator:a139cea82d0c256e43dbbb1eecbf30fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66d6907a36c73286996a29f4f1d528af"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a66d6907a36c73286996a29f4f1d528af">preprocess_for_knn_csv</a> (<a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;config, <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;_table)</td></tr>
 <tr class="memdesc:a66d6907a36c73286996a29f4f1d528af"><td class="mdescLeft">&#160;</td><td class="mdescRight">pre-process for knn search on data set read from a csv file  <a href="#a66d6907a36c73286996a29f4f1d528af">More...</a><br /></td></tr>
 <tr class="separator:a66d6907a36c73286996a29f4f1d528af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae761ebf87ebfe5585d99515f6ae025a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#aae761ebf87ebfe5585d99515f6ae025a">preprocess_for_knn_binary</a> (<a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;config, <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;_table)</td></tr>
-<tr class="memdesc:aae761ebf87ebfe5585d99515f6ae025a"><td class="mdescLeft">&#160;</td><td class="mdescRight">pre-process for knn search on data set read from a binary file  <a href="#aae761ebf87ebfe5585d99515f6ae025a">More...</a><br /></td></tr>
-<tr class="separator:aae761ebf87ebfe5585d99515f6ae025a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1d6f369ffe818ff7648f7dcfe5b8b09"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#af1d6f369ffe818ff7648f7dcfe5b8b09">knn_search_after_preprocess</a> (<a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;config, <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;_table, vector&lt; int &gt; &amp;result, vector&lt; int &gt; &amp;result_count)</td></tr>
 <tr class="memdesc:af1d6f369ffe818ff7648f7dcfe5b8b09"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function is called when preprocess is done,.  <a href="#af1d6f369ffe818ff7648f7dcfe5b8b09">More...</a><br /></td></tr>
 <tr class="separator:af1d6f369ffe818ff7648f7dcfe5b8b09"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -577,9 +568,6 @@ Functions</h2></td></tr>
 <tr class="separator:a5c5797b70748726e9e2199bddc66a0bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4969a3179cdc23af97a044ad3ff93a12"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a4969a3179cdc23af97a044ad3ff93a12">knn_search_MT</a> (vector&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&gt; &amp;table, vector&lt; vector&lt; <a class="el" href="classGPUGenie_1_1query.html">query</a> &gt; &gt; &amp;queries, vector&lt; vector&lt; int &gt; &gt; &amp;h_topk, vector&lt; vector&lt; int &gt; &gt; &amp;h_topk_count, vector&lt; <a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &gt; &amp;config)</td></tr>
 <tr class="separator:a4969a3179cdc23af97a044ad3ff93a12"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa526fab4d6a4865cca12bd29a31cf561"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#aa526fab4d6a4865cca12bd29a31cf561">knn_search_for_binary_data</a> (vector&lt; int &gt; &amp;result, vector&lt; int &gt; &amp;result_count, <a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;config)</td></tr>
-<tr class="memdesc:aa526fab4d6a4865cca12bd29a31cf561"><td class="mdescLeft">&#160;</td><td class="mdescRight">knn_search for data read from a binary file  <a href="#aa526fab4d6a4865cca12bd29a31cf561">More...</a><br /></td></tr>
-<tr class="separator:aa526fab4d6a4865cca12bd29a31cf561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0337acd88224ea021ecd431d2fbd766"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ac0337acd88224ea021ecd431d2fbd766">knn_search_for_csv_data</a> (vector&lt; int &gt; &amp;result, vector&lt; int &gt; &amp;result_count, <a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;config)</td></tr>
 <tr class="memdesc:ac0337acd88224ea021ecd431d2fbd766"><td class="mdescLeft">&#160;</td><td class="mdescRight">knn_search for data read from a csv file  <a href="#ac0337acd88224ea021ecd431d2fbd766">More...</a><br /></td></tr>
 <tr class="separator:ac0337acd88224ea021ecd431d2fbd766"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -6448,53 +6436,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ad6815b26aacd6ad13261497981dc8538"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad6815b26aacd6ad13261497981dc8538">&#9670;&nbsp;</a></span>csv2binary()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void GPUGenie::csv2binary </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>csvfile</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>binaryfile</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>app_write</em> = <code>false</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This function can convert a csv file to a binary file. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">csvfile</td><td>The name of the csv file </td></tr>
-    <tr><td class="paramname">binaryfile</td><td>The name of the binary file </td></tr>
-    <tr><td class="paramname">app_write</td><td>The writing mode. True for appending writing, false for trunc writing</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Reading csv files is time-comsuming. If you want to read a csv file for many times, we suggest you first convert the csv file to a binary file. Reading binary file can save a lot of time. You can build real-time app based on binary reading and searching </p>
-
-<p class="definition">Definition at line <a class="el" href="FileReader_8cu_source.html#l00176">176</a> of file <a class="el" href="FileReader_8cu_source.html">FileReader.cu</a>.</p>
-
-</div>
-</div>
 <a id="ab07fe12be8c53c619595c4836fa895c8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab07fe12be8c53c619595c4836fa895c8">&#9670;&nbsp;</a></span>d_pow2ceil_32()</h2>
 
@@ -7053,7 +6994,7 @@ template&lt;class CODEC &gt; </div>
 </dl>
 <p>In subsequence search, the RowID and Offset are combined according to shift_bits. This function helps to seperate rowID and offset. </p>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01066">1066</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00904">904</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -7189,7 +7130,7 @@ template&lt;class CODEC &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01145">1145</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00983">983</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -7486,7 +7427,7 @@ template&lt;class CODEC &gt; </div>
   </table>
   </dd>
 </dl>
-<p>This function can help users complete search job in one go. This function would call <a class="el" href="namespaceGPUGenie.html#aa526fab4d6a4865cca12bd29a31cf561" title="knn_search for data read from a binary file ">knn_search_for_binary_data()</a> or knn_search_for_csv_data depending on file tpye where dataset comes from. </p>
+<p>This function can help users complete search job in one go. </p>
 
 </div>
 </div>
@@ -7626,51 +7567,6 @@ template&lt;class CODEC &gt; </div>
 
 </div>
 </div>
-<a id="aa526fab4d6a4865cca12bd29a31cf561"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa526fab4d6a4865cca12bd29a31cf561">&#9670;&nbsp;</a></span>knn_search_for_binary_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">GPUGenie::knn_search_for_binary_data </td>
-          <td>(</td>
-          <td class="paramtype">vector&lt; int &gt; &amp;&#160;</td>
-          <td class="paramname"><em>result</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">vector&lt; int &gt; &amp;&#160;</td>
-          <td class="paramname"><em>result_count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;&#160;</td>
-          <td class="paramname"><em>config</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>knn_search for data read from a binary file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">result</td><td>Results for all queries </td></tr>
-    <tr><td class="paramname">result_count</td><td>Corresponding count numbers for all results in result vector </td></tr>
-    <tr><td class="paramname">config</td><td>Setting by users</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If you already know the data is coming from a binary file you can call this function. This function contains all pre-process and post-process. </p>
-
-</div>
-</div>
 <a id="ac0337acd88224ea021ecd431d2fbd766"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac0337acd88224ea021ecd431d2fbd766">&#9670;&nbsp;</a></span>knn_search_for_csv_data()</h2>
 
@@ -7760,7 +7656,7 @@ template&lt;class CODEC &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01008">1008</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00846">846</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -7840,7 +7736,7 @@ template&lt;class CODEC &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00561">561</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00414">414</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -7886,7 +7782,7 @@ template&lt;class CODEC &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00653">653</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00506">506</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -7932,7 +7828,7 @@ template&lt;class CODEC &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00607">607</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00460">460</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -8044,7 +7940,7 @@ template&lt;class CODEC &gt; </div>
 </dl>
 <p>This function is responsible for handling data set from binary files. All data is sift. </p>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00489">489</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00342">342</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -8157,7 +8053,7 @@ template&lt;class CODEC &gt; </div>
 </dl>
 <p>This function is responsible for handling data set from binary files. And the data is for short-text-like data set. </p>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00783">783</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00636">636</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -8203,7 +8099,7 @@ template&lt;class CODEC &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00814">814</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00667">667</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -9757,47 +9653,6 @@ template&lt;class Codec &gt; </div>
 
 </div>
 </div>
-<a id="aae761ebf87ebfe5585d99515f6ae025a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae761ebf87ebfe5585d99515f6ae025a">&#9670;&nbsp;</a></span>preprocess_for_knn_binary()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool GPUGenie::preprocess_for_knn_binary </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd">GPUGenie_Config</a> &amp;&#160;</td>
-          <td class="paramname"><em>config</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;&#160;</td>
-          <td class="paramname"><em>_table</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>pre-process for knn search on data set read from a binary file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">config</td><td>Settings by users </td></tr>
-    <tr><td class="paramname">_table</td><td>Pointer to <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> object array, which can be managed by users</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This function includes the process of transferring a data set read from a binary file to an <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>, if user turn on multiload feature , the second parameter will point to an array of <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects. The <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects contain all the information about corresponding inverted index structure for given data set</p>
-<dl class="section return"><dt>Returns</dt><dd>true only when no error occurs </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00269">269</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
-
-</div>
-</div>
 <a id="a66d6907a36c73286996a29f4f1d528af"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a66d6907a36c73286996a29f4f1d528af">&#9670;&nbsp;</a></span>preprocess_for_knn_csv()</h2>
 
@@ -9840,7 +9695,7 @@ template&lt;class Codec &gt; </div>
 </div>
 </div>
 <a id="a648e35dbe844f74a80f3f3ff7c6a940e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a648e35dbe844f74a80f3f3ff7c6a940e">&#9670;&nbsp;</a></span>read_file() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a648e35dbe844f74a80f3f3ff7c6a940e">&#9670;&nbsp;</a></span>read_file()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -9883,67 +9738,6 @@ template&lt;class Codec &gt; </div>
 <p>This function can only read data from csv file. If the third parameter is set to -1, it means reading all the file. For non-multirange of query, we can use this way to read queries stored in csv files. </p>
 
 <p class="definition">Definition at line <a class="el" href="FileReader_8cu_source.html#l00052">52</a> of file <a class="el" href="FileReader_8cu_source.html">FileReader.cu</a>.</p>
-
-</div>
-</div>
-<a id="afaecbda0d8b62d73b098ba7edc06665f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afaecbda0d8b62d73b098ba7edc06665f">&#9670;&nbsp;</a></span>read_file() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void GPUGenie::read_file </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>fname</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int **&#160;</td>
-          <td class="paramname"><em>_data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int &amp;&#160;</td>
-          <td class="paramname"><em>item_num</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int **&#160;</td>
-          <td class="paramname"><em>_index</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int &amp;&#160;</td>
-          <td class="paramname"><em>row_num</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This function provides a way to read data points from given dataset. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fname</td><td>The file name </td></tr>
-    <tr><td class="paramname">_data</td><td>All elements of all data. </td></tr>
-    <tr><td class="paramname">item_num</td><td>The number of elements in data array </td></tr>
-    <tr><td class="paramname">_index</td><td>points to the address of a one-dimension array, storing starting position of each row in data array </td></tr>
-    <tr><td class="paramname">row_num</td><td>Equal to the size of index array</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Binary reading is recommended for reading large size of dataset or need to do search many times on a same dataset. It can save you a lot of time. </p>
-
-<p class="definition">Definition at line <a class="el" href="FileReader_8cu_source.html#l00244">244</a> of file <a class="el" href="FileReader_8cu_source.html">FileReader.cu</a>.</p>
 
 </div>
 </div>
@@ -10094,7 +9888,7 @@ template&lt;class Codec &gt; </div>
 <p>clear gpu memory </p>
 <p>Every time a kernel finishes, there would be some information remained on GPU. It can cause the same problem as memory leakage. So we have to clear GPU, if we want to launch multiple queries in one host process </p>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01061">1061</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00899">899</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -10249,7 +10043,7 @@ template&lt;class Codec &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01124">1124</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00962">962</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>
@@ -10302,7 +10096,7 @@ template&lt;class Codec &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l01079">1079</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="interface_8cu_source.html#l00917">917</a> of file <a class="el" href="interface_8cu_source.html">interface.cu</a>.</p>
 
 </div>
 </div>

@@ -29,6 +29,7 @@ var dir_ca06b39efc5497340cedbb398ca1fe8b =
     [ "DeviceVarintCodec.h", "DeviceVarintCodec_8h.html", "DeviceVarintCodec_8h" ],
     [ "FileReader.cu", "FileReader_8cu.html", "FileReader_8cu" ],
     [ "FileReader.h", "FileReader_8h.html", "FileReader_8h" ],
+    [ "genie.cu", "genie_8cu.html", "genie_8cu" ],
     [ "genie_errors.cu", "genie__errors_8cu.html", null ],
     [ "genie_errors.h", "genie__errors_8h.html", "genie__errors_8h" ],
     [ "heap_count.cu", "heap__count_8cu.html", "heap__count_8cu" ],
@@ -60,5 +61,7 @@ var dir_ca06b39efc5497340cedbb398ca1fe8b =
     [ "query.h", "query_8h.html", "query_8h" ],
     [ "scan.cu", "scan_8cu.html", "scan_8cu" ],
     [ "scan.h", "scan_8h.html", "scan_8h" ],
+    [ "serialization.cu", "serialization_8cu.html", "serialization_8cu" ],
+    [ "serialization.h", "serialization_8h.html", "serialization_8h" ],
     [ "Timing.h", "Timing_8h.html", "Timing_8h" ]
 ];

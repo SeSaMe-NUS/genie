@@ -1,6 +1,9 @@
 var searchData=
 [
+  ['save',['save',['../classGPUGenie_1_1inv__compr__table.html#a848beb0441e43f2e3dc9f8c50fdd27d5',1,'GPUGenie::inv_compr_table::save()'],['../classGPUGenie_1_1inv__table.html#a5b718c146eb8f0d0314c4123b94bd3be',1,'GPUGenie::inv_table::save()']]],
   ['save_5fto_5fgpu',['save_to_gpu',['../structGPUGenie_1_1__GPUGenie__Config.html#a82882e7c28b1d7f1784fb792c78cc8f6',1,'GPUGenie::_GPUGenie_Config']]],
+  ['savetable',['SaveTable',['../namespacegenie_1_1util.html#aeb6734d01bdcb5957ef9850c3e6b5768',1,'genie::util']]],
+  ['savetabletobinary',['SaveTableToBinary',['../namespacegenie.html#a2641ecdc749be961d3ebaa8c0637c903',1,'genie']]],
   ['scan_2ecu',['scan.cu',['../scan_8cu.html',1,'']]],
   ['scan_2eh',['scan.h',['../scan_8h.html',1,'']]],
   ['scan1exclusive',['scan1Exclusive',['../scan_8cu.html#adc2354cabf25a08c7ac66d7a4aa42da5',1,'scan.cu']]],
@@ -32,6 +35,8 @@ var searchData=
   ['serial_5fdelta_5fcopy',['SERIAL_DELTA_COPY',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a4b975201a4a70c3fcae5b6e2813b106a',1,'GPUGenie']]],
   ['serial_5fdelta_5fdelta',['SERIAL_DELTA_DELTA',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9ad8f4da6b14a6691c19540778646dd77f',1,'GPUGenie']]],
   ['serial_5fdelta_5fvarint',['SERIAL_DELTA_VARINT',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a0ed9d071c3ba85bf4d1cd52f712f3fe1',1,'GPUGenie']]],
+  ['serialization_2ecu',['serialization.cu',['../serialization_8cu.html',1,'']]],
+  ['serialization_2eh',['serialization.h',['../serialization_8h.html',1,'']]],
   ['set_5fgram_5flength_5fsequence',['set_gram_length_sequence',['../classGPUGenie_1_1inv__table.html#a1c5209f2a23f981784fdf95b0dab8def',1,'GPUGenie::inv_table']]],
   ['set_5flevel',['set_level',['../classLogger.html#ac031a3aeaa9d8664baaf918a0b680cf1',1,'Logger']]],
   ['set_5flogfile_5fname',['set_logfile_name',['../classLogger.html#aa7ec4a77f56dd9f245b25c86e8817139',1,'Logger']]],
@@ -42,7 +47,7 @@ var searchData=
   ['setcompression',['setCompression',['../classGPUGenie_1_1inv__compr__table.html#a644203da7f24fb1e82fda0e280cf6b00',1,'GPUGenie::inv_compr_table']]],
   ['setgpuid',['SetGpuId',['../classgenie_1_1Config.html#a36f3d2b51a3951723cbab9713e12e00b',1,'genie::Config']]],
   ['setk',['SetK',['../classgenie_1_1Config.html#ae2f8432643c1f1ebc88287336bc753f7',1,'genie::Config::SetK()'],['../classgenie_1_1ExecutionPolicy.html#a7985f05fc72e310156963cc470b0f701',1,'genie::ExecutionPolicy::SetK()']]],
-  ['setnumofquery',['SetNumOfQuery',['../classgenie_1_1Config.html#ab71a1ca6cd72bdee370976ba37ae4e9d',1,'genie::Config::SetNumOfQuery()'],['../classgenie_1_1ExecutionPolicy.html#abeab928d6721a9e67ed313346c903f7d',1,'genie::ExecutionPolicy::SetNumOfQuery()']]],
+  ['setnumofqueries',['SetNumOfQueries',['../classgenie_1_1Config.html#a9f6fa6160936c3a5c4c51f842d41b718',1,'genie::Config::SetNumOfQueries()'],['../classgenie_1_1ExecutionPolicy.html#a46b69454cf95a4549f88012b2bab9d79',1,'genie::ExecutionPolicy::SetNumOfQueries()']]],
   ['setqueryrange',['SetQueryRange',['../classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a29e36c3879de46ac5b08b26625655b7a',1,'genie::execution_policy::SingleRangeExecutionPolicy::SetQueryRange()'],['../classgenie_1_1Config.html#a021ec541e717b27dff96ba215256fb6e',1,'genie::Config::SetQueryRange()']]],
   ['setsavetogpu',['SetSaveToGpu',['../classgenie_1_1Config.html#ac58a3e5c75a214d3cab0e4ea2feed5d7',1,'genie::Config']]],
   ['setuncompressedpostinglistmaxlength',['setUncompressedPostingListMaxLength',['../classGPUGenie_1_1inv__compr__table.html#a4f04a10a5ad10cd9a5ab068ebfac3059',1,'GPUGenie::inv_compr_table']]],

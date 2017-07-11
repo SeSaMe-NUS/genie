@@ -2,7 +2,7 @@ var searchData=
 [
   ['validate',['Validate',['../classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html#a9d86a2956cb5dde74e50c682bb2143b9',1,'genie::execution_policy::SingleRangeExecutionPolicy::Validate()'],['../classgenie_1_1Config.html#ab1f5f2f55a0b569a169ceedc90379140',1,'genie::Config::Validate()'],['../classgenie_1_1ExecutionPolicy.html#a3440a4d55d76026011eec62ddf55fd36',1,'genie::ExecutionPolicy::Validate()']]],
   ['validatek',['ValidateK',['../namespacegenie_1_1execution__policy_1_1validation.html#ab14372a2cdeb5ddd9550a8ea9feb33b8',1,'genie::execution_policy::validation']]],
-  ['validatenumofquery',['ValidateNumOfQuery',['../namespacegenie_1_1execution__policy_1_1validation.html#a353bb793cc4bf91028cab87e120e980d',1,'genie::execution_policy::validation']]],
+  ['validatenumofqueries',['ValidateNumOfQueries',['../namespacegenie_1_1execution__policy_1_1validation.html#afefd3f629ded00bce4cca5ee5f932eee',1,'genie::execution_policy::validation']]],
   ['validatequeryrange',['ValidateQueryRange',['../namespacegenie_1_1execution__policy_1_1validation.html#a225e675170dea52982501c5e4432d737',1,'genie::execution_policy::validation']]],
   ['validation_2ecc',['validation.cc',['../validation_8cc.html',1,'']]],
   ['validation_2eh',['validation.h',['../validation_8h.html',1,'']]],

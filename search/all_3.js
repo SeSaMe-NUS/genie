@@ -31,7 +31,6 @@ var searchData=
   ['cpu_5fbad_5falloc',['cpu_bad_alloc',['../classGPUGenie_1_1cpu__bad__alloc.html',1,'GPUGenie::cpu_bad_alloc'],['../classGPUGenie_1_1cpu__bad__alloc.html#a0483cb403445ff4417683956d1ef4f17',1,'GPUGenie::cpu_bad_alloc::cpu_bad_alloc()']]],
   ['cpu_5fruntime_5ferror',['cpu_runtime_error',['../classGPUGenie_1_1cpu__runtime__error.html',1,'GPUGenie::cpu_runtime_error'],['../classGPUGenie_1_1cpu__runtime__error.html#aa678efd3be94fba24520c754ef21795e',1,'GPUGenie::cpu_runtime_error::cpu_runtime_error()']]],
   ['cpy_5fdata_5fto_5fgpu',['cpy_data_to_gpu',['../classGPUGenie_1_1inv__compr__table.html#a0c29258322a3f8a535760d96f2bfd53c',1,'GPUGenie::inv_compr_table::cpy_data_to_gpu()'],['../classGPUGenie_1_1inv__table.html#ade6ba9f6879e4a8a2f6e36f29b51ffee',1,'GPUGenie::inv_table::cpy_data_to_gpu()']]],
-  ['csv2binary',['csv2binary',['../namespaceGPUGenie.html#ad6815b26aacd6ad13261497981dc8538',1,'GPUGenie']]],
   ['cuda_5fcheck_5ferror',['CUDA_CHECK_ERROR',['../genie__errors_8h.html#a6e60499e9937c6e404c17566ddf9be68',1,'genie_errors.h']]],
   ['cuda_5flast_5ferror',['CUDA_LAST_ERROR',['../genie__errors_8h.html#a7bd8c785e625ae6bfc68976815f74938',1,'genie_errors.h']]],
   ['cudacheckerrors',['cudaCheckErrors',['../genie__errors_8h.html#a1fc68f2b821901d344e60da5b7274d6f',1,'genie_errors.h']]],

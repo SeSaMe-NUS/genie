@@ -9,7 +9,6 @@ var searchData=
   ['packwithoutmask',['packwithoutmask',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a2ee5162157df4c56825539a28b4702dc',1,'GPUGenie::DeviceBitPackingHelpers']]],
   ['packwithoutmaskwithoutdelta',['packwithoutmaskWithoutDelta',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a91b85f1fd9adffc63beba06eec732f26',1,'GPUGenie::DeviceBitPackingHelpers']]],
   ['partition',['partition',['../interface_8cu.html#a9c47fcdbf8d40a611e90c644b8c4b4e5',1,'interface.cu']]],
-  ['preprocess_5ffor_5fknn_5fbinary',['preprocess_for_knn_binary',['../namespaceGPUGenie.html#aae761ebf87ebfe5585d99515f6ae025a',1,'GPUGenie']]],
   ['preprocess_5ffor_5fknn_5fcsv',['preprocess_for_knn_csv',['../namespaceGPUGenie.html#a66d6907a36c73286996a29f4f1d528af',1,'GPUGenie']]],
   ['print',['print',['../classGPUGenie_1_1query.html#ad2a0742c25c052aef6c948050fb90099',1,'GPUGenie::query']]],
   ['print1dvector',['print1DVector',['../interface_8cu.html#a58cfc1efa60511367750f4e7457f9fc6',1,'interface.cu']]],

@@ -1,6 +1,7 @@
 var searchData=
 [
   ['list_5fcontain',['list_contain',['../classGPUGenie_1_1inv__table.html#a91d7a1259320cfeed5cc210709de1e7f',1,'GPUGenie::inv_table']]],
+  ['load',['load',['../classGPUGenie_1_1inv__compr__table.html#a2a52d656d9491b24dafc66fdffc10cbe',1,'GPUGenie::inv_compr_table::load()'],['../classGPUGenie_1_1inv__table.html#ace91dcbc5fd28eb99b13be0f20ff3440',1,'GPUGenie::inv_table::load()']]],
   ['load_5fquery',['load_query',['../namespaceGPUGenie.html#a6c11ad40aa9c736a2b675df906c6001d',1,'GPUGenie']]],
   ['load_5fquery_5fmultirange',['load_query_multirange',['../namespaceGPUGenie.html#ac013be7a750d926d27d358c9f9142081',1,'GPUGenie']]],
   ['load_5fquery_5fsequence',['load_query_sequence',['../namespaceGPUGenie.html#acf98fabe8237857ded9846b3055bb1eb',1,'GPUGenie']]],
@@ -10,6 +11,10 @@ var searchData=
   ['load_5ftable_5fsequence',['load_table_sequence',['../namespaceGPUGenie.html#a651a3d48f54ee106c5561bc713256252',1,'GPUGenie']]],
   ['loadfromfile',['LoadFromFile',['../classgenie_1_1Config.html#a0e827e3346bad32b1026a491bad85b11',1,'genie::Config']]],
   ['loadquery',['LoadQuery',['../namespacegenie_1_1query.html#a9b8d8cf3fa0d5ed25cc1ea99c435582c',1,'genie::query']]],
+  ['loadquerydatafromcsv',['LoadQueryDataFromCsv',['../namespacegenie.html#ac769113ed9c2f30356ede7adb924f73d',1,'genie']]],
+  ['loadtable',['LoadTable',['../namespacegenie_1_1util.html#a83d5288162266f8b2763debb367983cd',1,'genie::util']]],
+  ['loadtabledatafromcsv',['LoadTableDataFromCsv',['../namespacegenie.html#af4ad29882c1ec339b3dc35378471cc09',1,'genie']]],
+  ['loadtablefrombinary',['LoadTableFromBinary',['../namespacegenie.html#a03337956992446df09d5e8a2dab411e6',1,'genie']]],
   ['log',['log',['../classLogger.html#a232f44cb6b4255b09b976f07e90b1cb2',1,'Logger']]],
   ['loginvlists',['logInvLists',['../classLogger.html#a8a003522918b80da31c11d98c2a73613',1,'Logger']]],
   ['logqueries',['logQueries',['../classLogger.html#a7f16a13e8791e8be712634ca8ae8b6f2',1,'Logger']]],

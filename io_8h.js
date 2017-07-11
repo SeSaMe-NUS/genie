@@ -1,6 +1,7 @@
 var io_8h =
 [
-    [ "ReadQueryFromCsv", "io_8h.html#afb3c6a43ce29cebbe983448f91b5f490", null ],
-    [ "ReadTableFromBinary", "io_8h.html#adeda6d8fdda1b628970bf3f0f5e0ed42", null ],
-    [ "ReadTableFromCsv", "io_8h.html#a7ea2205aacd7f28505daa165fdf64913", null ]
+    [ "LoadQueryDataFromCsv", "io_8h.html#ac769113ed9c2f30356ede7adb924f73d", null ],
+    [ "LoadTableDataFromCsv", "io_8h.html#af4ad29882c1ec339b3dc35378471cc09", null ],
+    [ "LoadTableFromBinary", "io_8h.html#a03337956992446df09d5e8a2dab411e6", null ],
+    [ "SaveTableToBinary", "io_8h.html#a2641ecdc749be961d3ebaa8c0637c903", null ]
 ];

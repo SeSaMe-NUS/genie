@@ -83,9 +83,9 @@ $(document).ready(function(){initNavTree('classGPUGenie_1_1inv__table.html','');
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classGPUGenie_1_1inv__table-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">GPUGenie::inv_table Class Reference</div>  </div>
@@ -133,12 +133,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab990f12be052717ec9635293063e70c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ab990f12be052717ec9635293063e70c7">set_total_num_of_table</a> (int num)</td></tr>
 <tr class="memdesc:ab990f12be052717ec9635293063e70c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the total_num_of_table to 'num'.  <a href="#ab990f12be052717ec9635293063e70c7">More...</a><br /></td></tr>
 <tr class="separator:ab990f12be052717ec9635293063e70c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addf2ff89849e087615a1500364ae3431"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#addf2ff89849e087615a1500364ae3431">get_table_index</a> ()</td></tr>
-<tr class="memdesc:addf2ff89849e087615a1500364ae3431"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the index of this <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>.  <a href="#addf2ff89849e087615a1500364ae3431">More...</a><br /></td></tr>
-<tr class="separator:addf2ff89849e087615a1500364ae3431"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef487be7cd9afbc3e34cc354f68e4117"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#aef487be7cd9afbc3e34cc354f68e4117">get_total_num_of_table</a> ()</td></tr>
-<tr class="memdesc:aef487be7cd9afbc3e34cc354f68e4117"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the total_num_of_table.  <a href="#aef487be7cd9afbc3e34cc354f68e4117">More...</a><br /></td></tr>
-<tr class="separator:aef487be7cd9afbc3e34cc354f68e4117"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72da798f2b74366ac98393ac3a405023"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a72da798f2b74366ac98393ac3a405023">get_table_index</a> () const</td></tr>
+<tr class="memdesc:a72da798f2b74366ac98393ac3a405023"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the index of this <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>.  <a href="#a72da798f2b74366ac98393ac3a405023">More...</a><br /></td></tr>
+<tr class="separator:a72da798f2b74366ac98393ac3a405023"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f1d7b0f462c8f58e1649f064bf27bb5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a5f1d7b0f462c8f58e1649f064bf27bb5">get_total_num_of_table</a> () const</td></tr>
+<tr class="memdesc:a5f1d7b0f462c8f58e1649f064bf27bb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the total_num_of_table.  <a href="#a5f1d7b0f462c8f58e1649f064bf27bb5">More...</a><br /></td></tr>
+<tr class="separator:a5f1d7b0f462c8f58e1649f064bf27bb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade6ba9f6879e4a8a2f6e36f29b51ffee"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ade6ba9f6879e4a8a2f6e36f29b51ffee">cpy_data_to_gpu</a> ()</td></tr>
 <tr class="memdesc:ade6ba9f6879e4a8a2f6e36f29b51ffee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy vector _inv to gpu memory which is referenced by d_inv_p.  <a href="#ade6ba9f6879e4a8a2f6e36f29b51ffee">More...</a><br /></td></tr>
 <tr class="separator:ade6ba9f6879e4a8a2f6e36f29b51ffee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -173,8 +173,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac839039f4d927ba9a179f018ab05a089"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1aba6e0694a832e3f947b8e1655dd972"><td class="memItemLeft" align="right" valign="top">virtual vector&lt; int &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a1aba6e0694a832e3f947b8e1655dd972">inv</a> ()</td></tr>
 <tr class="separator:a1aba6e0694a832e3f947b8e1655dd972"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ed01b0386108ae35c0b83a4faff114a"><td class="memItemLeft" align="right" valign="top">virtual vector&lt; int &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a6ed01b0386108ae35c0b83a4faff114a">inv_index</a> ()</td></tr>
-<tr class="separator:a6ed01b0386108ae35c0b83a4faff114a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af93107cbba94a7e32659861a2a9bdba2"><td class="memItemLeft" align="right" valign="top">unordered_map&lt; size_t, int &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#af93107cbba94a7e32659861a2a9bdba2">inv_index_map</a> ()</td></tr>
 <tr class="separator:af93107cbba94a7e32659861a2a9bdba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab33975c4ab51ac64299e0a99cdf60b14"><td class="memItemLeft" align="right" valign="top">virtual vector&lt; int &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ab33975c4ab51ac64299e0a99cdf60b14">inv_pos</a> ()</td></tr>
@@ -191,12 +189,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a91d7a1259320cfeed5cc210709de1e7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a91d7a1259320cfeed5cc210709de1e7f">list_contain</a> (int attr_index, int value)</td></tr>
 <tr class="memdesc:a91d7a1259320cfeed5cc210709de1e7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test whether a value is possible for an specific attribute.  <a href="#a91d7a1259320cfeed5cc210709de1e7f">More...</a><br /></td></tr>
 <tr class="separator:a91d7a1259320cfeed5cc210709de1e7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6844075e0778753268de0fa9e41c8c5c"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a6844075e0778753268de0fa9e41c8c5c">write_to_file</a> (ofstream &amp;ofs)</td></tr>
-<tr class="memdesc:a6844075e0778753268de0fa9e41c8c5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one table object to a binary file.  <a href="#a6844075e0778753268de0fa9e41c8c5c">More...</a><br /></td></tr>
-<tr class="separator:a6844075e0778753268de0fa9e41c8c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6e11192ce1c61ef2641f5a7c4fbca72"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ac6e11192ce1c61ef2641f5a7c4fbca72">read_from_file</a> (ifstream &amp;ifs)</td></tr>
-<tr class="memdesc:ac6e11192ce1c61ef2641f5a7c4fbca72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one table from a binary file.  <a href="#ac6e11192ce1c61ef2641f5a7c4fbca72">More...</a><br /></td></tr>
-<tr class="separator:ac6e11192ce1c61ef2641f5a7c4fbca72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe601c30a466e45c9e82dc6d86d3dbbc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#afe601c30a466e45c9e82dc6d86d3dbbc">set_min_value_sequence</a> (int min_value)</td></tr>
 <tr class="memdesc:afe601c30a466e45c9e82dc6d86d3dbbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used in sequence search. To set the min_value for all sequences' element.  <a href="#afe601c30a466e45c9e82dc6d86d3dbbc">More...</a><br /></td></tr>
 <tr class="separator:afe601c30a466e45c9e82dc6d86d3dbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,15 +207,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abb1b8af56301155e2876a2dde5c2d3ae"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#abb1b8af56301155e2876a2dde5c2d3ae">get_gram_length_sequence</a> ()</td></tr>
 <tr class="memdesc:abb1b8af56301155e2876a2dde5c2d3ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the gram length.  <a href="#abb1b8af56301155e2876a2dde5c2d3ae">More...</a><br /></td></tr>
 <tr class="separator:abb1b8af56301155e2876a2dde5c2d3ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa590d295eb96aeaface1cd0fdbccc0c0"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#aa590d295eb96aeaface1cd0fdbccc0c0">write</a> (const char *filename, <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;table)</td></tr>
-<tr class="memdesc:aa590d295eb96aeaface1cd0fdbccc0c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">static member function responsible for serialize <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects to a binary file  <a href="#aa590d295eb96aeaface1cd0fdbccc0c0">More...</a><br /></td></tr>
-<tr class="separator:aa590d295eb96aeaface1cd0fdbccc0c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a17420e33e3b178d98248005258676297"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a17420e33e3b178d98248005258676297">read</a> (const char *filename, <a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;table)</td></tr>
-<tr class="memdesc:a17420e33e3b178d98248005258676297"><td class="mdescLeft">&#160;</td><td class="mdescRight">static member function responsible for deserialize <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects from a binary file  <a href="#a17420e33e3b178d98248005258676297">More...</a><br /></td></tr>
-<tr class="separator:a17420e33e3b178d98248005258676297"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace91dcbc5fd28eb99b13be0f20ff3440"><td class="memTemplParams" colspan="2">template&lt;class Archive &gt; </td></tr>
+<tr class="memitem:ace91dcbc5fd28eb99b13be0f20ff3440"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ace91dcbc5fd28eb99b13be0f20ff3440">load</a> (Archive &amp;ar, const unsigned int version)</td></tr>
+<tr class="separator:ace91dcbc5fd28eb99b13be0f20ff3440"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b718c146eb8f0d0314c4123b94bd3be"><td class="memTemplParams" colspan="2">template&lt;class Archive &gt; </td></tr>
+<tr class="memitem:a5b718c146eb8f0d0314c4123b94bd3be"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#a5b718c146eb8f0d0314c4123b94bd3be">save</a> (Archive &amp;ar, const unsigned int version) const</td></tr>
+<tr class="separator:a5b718c146eb8f0d0314c4123b94bd3be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -241,12 +230,17 @@ Public Attributes</h2></td></tr>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:ad457b56694c196eee5db0d0f84f5533c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ad457b56694c196eee5db0d0f84f5533c">max_inv_size</a> = 0</td></tr>
 <tr class="separator:ad457b56694c196eee5db0d0f84f5533c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ac98d07dd8f7b70e16ccb9a01abf56b9c"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1inv__table.html#ac98d07dd8f7b70e16ccb9a01abf56b9c">boost::serialization::access</a></td></tr>
+<tr class="separator:ac98d07dd8f7b70e16ccb9a01abf56b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The declaration for class <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>. </p>
 <p>The <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> class includes the inverted index structure for a specific dataset to be searched. Also this class contains information for constructing query on this set. In one word, this class manages all information about the inverted index. </p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00039">39</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00044">44</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="abda6f3d5efbe66775d4b198190d71c64"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abda6f3d5efbe66775d4b198190d71c64">&#9670;&nbsp;</a></span>status</h2>
@@ -266,7 +260,7 @@ Static Public Attributes</h2></td></tr>
 <tr><td class="fieldname"><a id="abda6f3d5efbe66775d4b198190d71c64ae63697b2512d640b179de90be9dabd2f"></a>builded&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00046">46</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00051">51</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -297,7 +291,7 @@ Static Public Attributes</h2></td></tr>
 <p>Default constructor of the <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>. </p>
 <p>It sets is_store_in_gpu to false, _shifter 16, _size -1, table_index 0, total_num_of_table 1 and _dim_size 0. </p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00209">209</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00213">213</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -482,7 +476,7 @@ Static Public Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="classGPUGenie_1_1inv__compr__table.html#ad6749dba77da654839842b31943746bc">GPUGenie::inv_compr_table</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00270">270</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00265">265</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -660,7 +654,7 @@ Static Public Attributes</h2></td></tr>
 <p>Get the gram length. </p>
 <dl class="section return"><dt>Returns</dt><dd>The gram length used in this <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00603">603</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00382">382</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -709,7 +703,7 @@ Static Public Attributes</h2></td></tr>
 <p>Get the max value. </p>
 <dl class="section return"><dt>Returns</dt><dd>The max value. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00589">589</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00368">368</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -731,7 +725,7 @@ Static Public Attributes</h2></td></tr>
 <p>Get the min value for sequences' elements in this <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a>. </p>
 <dl class="section return"><dt>Returns</dt><dd>The min value. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00577">577</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00356">356</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -774,8 +768,8 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="addf2ff89849e087615a1500364ae3431"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addf2ff89849e087615a1500364ae3431">&#9670;&nbsp;</a></span>get_table_index()</h2>
+<a id="a72da798f2b74366ac98393ac3a405023"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72da798f2b74366ac98393ac3a405023">&#9670;&nbsp;</a></span>get_table_index()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -784,7 +778,7 @@ Static Public Attributes</h2></td></tr>
           <td class="memname">int GPUGenie::inv_table::get_table_index </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -796,8 +790,8 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="aef487be7cd9afbc3e34cc354f68e4117"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef487be7cd9afbc3e34cc354f68e4117">&#9670;&nbsp;</a></span>get_total_num_of_table()</h2>
+<a id="a5f1d7b0f462c8f58e1649f064bf27bb5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f1d7b0f462c8f58e1649f064bf27bb5">&#9670;&nbsp;</a></span>get_total_num_of_table()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -806,7 +800,7 @@ Static Public Attributes</h2></td></tr>
           <td class="memname">int GPUGenie::inv_table::get_total_num_of_table </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -895,34 +889,6 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a6ed01b0386108ae35c0b83a4faff114a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6ed01b0386108ae35c0b83a4faff114a">&#9670;&nbsp;</a></span>inv_index()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">vector&lt; int &gt; * GPUGenie::inv_table::inv_index </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>The pointer points to _inv_index vector. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00251">251</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
-
-</div>
-</div>
 <a id="af93107cbba94a7e32659861a2a9bdba2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af93107cbba94a7e32659861a2a9bdba2">&#9670;&nbsp;</a></span>inv_index_map()</h2>
 
@@ -937,8 +903,9 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The pointer points to _inv_index_map map. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00257">257</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00252">252</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -988,7 +955,7 @@ Static Public Attributes</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="classGPUGenie_1_1inv__compr__table.html#ae292663f61713c8cb5ea4e036e86de4a">GPUGenie::inv_compr_table</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00263">263</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00258">258</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -1032,6 +999,38 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="ace91dcbc5fd28eb99b13be0f20ff3440"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace91dcbc5fd28eb99b13be0f20ff3440">&#9670;&nbsp;</a></span>load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Archive &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void GPUGenie::inv_table::load </td>
+          <td>(</td>
+          <td class="paramtype">Archive &amp;&#160;</td>
+          <td class="paramname"><em>ar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="serialization_8cu_source.html#l00067">67</a> of file <a class="el" href="serialization_8cu_source.html">serialization.cu</a>.</p>
+
+</div>
+</div>
 <a id="a6b7bf0b47aa1bd477ab84331d4b7f9e3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6b7bf0b47aa1bd477ab84331d4b7f9e3">&#9670;&nbsp;</a></span>m_size()</h2>
 
@@ -1052,90 +1051,35 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a17420e33e3b178d98248005258676297"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a17420e33e3b178d98248005258676297">&#9670;&nbsp;</a></span>read()</h2>
+<a id="a5b718c146eb8f0d0314c4123b94bd3be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b718c146eb8f0d0314c4123b94bd3be">&#9670;&nbsp;</a></span>save()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
+<div class="memtemplate">
+template&lt;class Archive &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">static bool GPUGenie::inv_table::read </td>
+          <td class="memname">void GPUGenie::inv_table::save </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
+          <td class="paramtype">Archive &amp;&#160;</td>
+          <td class="paramname"><em>ar</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;&#160;</td>
-          <td class="paramname"><em>table</em>&#160;</td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>static member function responsible for deserialize <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects from a binary file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>The file to read. </td></tr>
-    <tr><td class="paramname">table</td><td>The table pointer. If the function finishes successfully, the 'table' would points to the table recorded by the binary file.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True for successful operations, false for unsuccessful. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00542">542</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
-
-</div>
-</div>
-<a id="ac6e11192ce1c61ef2641f5a7c4fbca72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6e11192ce1c61ef2641f5a7c4fbca72">&#9670;&nbsp;</a></span>read_from_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool GPUGenie::inv_table::read_from_file </td>
-          <td>(</td>
-          <td class="paramtype">ifstream &amp;&#160;</td>
-          <td class="paramname"><em>ifs</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Read one table from a binary file. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ifs</td><td>An ifstream object</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This function is always called by static read function, which is a static member of <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> class. </p>
-
-<p>Reimplemented in <a class="el" href="classGPUGenie_1_1inv__compr__table.html#a97db3fdc8cbea10079df6cf5fd607dee">GPUGenie::inv_compr_table</a>.</p>
-
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00435">435</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="serialization_8cu_source.html#l00093">93</a> of file <a class="el" href="serialization_8cu_source.html">serialization.cu</a>.</p>
 
 </div>
 </div>
@@ -1163,7 +1107,7 @@ Static Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00596">596</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00375">375</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -1191,7 +1135,7 @@ Static Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00583">583</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00362">362</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -1219,7 +1163,7 @@ Static Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00571">571</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00350">350</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
 
 </div>
 </div>
@@ -1301,8 +1245,9 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="aa590d295eb96aeaface1cd0fdbccc0c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa590d295eb96aeaface1cd0fdbccc0c0">&#9670;&nbsp;</a></span>write()</h2>
+<h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a id="ac98d07dd8f7b70e16ccb9a01abf56b9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac98d07dd8f7b70e16ccb9a01abf56b9c">&#9670;&nbsp;</a></span>boost::serialization::access</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1311,80 +1256,17 @@ Static Public Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool GPUGenie::inv_table::write </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classGPUGenie_1_1inv__table.html">inv_table</a> *&amp;&#160;</td>
-          <td class="paramname"><em>table</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">friend class boost::serialization::access</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>static member function responsible for serialize <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> objects to a binary file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>The file to write. </td></tr>
-    <tr><td class="paramname">table</td><td>The table to be serialized. It should be the first table, if there are more than one table.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True for successful operations, false for unsuccessful. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00521">521</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
-
-</div>
-</div>
-<a id="a6844075e0778753268de0fa9e41c8c5c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6844075e0778753268de0fa9e41c8c5c">&#9670;&nbsp;</a></span>write_to_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool GPUGenie::inv_table::write_to_file </td>
-          <td>(</td>
-          <td class="paramtype">ofstream &amp;&#160;</td>
-          <td class="paramname"><em>ofs</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Write one table object to a binary file. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ofs</td><td>An ofstream object</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This function is always called by static write function, which is a static member of <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> class. </p>
-
-<p>Reimplemented in <a class="el" href="classGPUGenie_1_1inv__compr__table.html#a09e9eb843f3c001855c13a197c7e15be">GPUGenie::inv_compr_table</a>.</p>
-
-<p class="definition">Definition at line <a class="el" href="inv__table_8cu_source.html#l00357">357</a> of file <a class="el" href="inv__table_8cu_source.html">inv_table.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00537">537</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -1403,7 +1285,7 @@ Static Public Attributes</h2></td></tr>
 
 <p>d_inv_p points to the start location for posting list array in GPU memory. </p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00053">53</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00058">58</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -1422,7 +1304,7 @@ Static Public Attributes</h2></td></tr>
 <p>is_stored_in_gpu tell whether inverted index structure is pre-stored inside gpu memory </p>
 <p>If true, data is pre-stored inside gpu so that you can launch queries multiple times. only need to transfer data to device once. If false, you have to transfer data to device every time you launch a query. (Here, one query means one execution of search) </p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00068">68</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00073">73</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -1446,7 +1328,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00059">59</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00064">64</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
@@ -1464,13 +1346,14 @@ Static Public Attributes</h2></td></tr>
 
 <p>This variable is used to tell the number of bits shifted for recording gram in different position. </p>
 
-<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00073">73</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="inv__table_8h_source.html#l00078">78</a> of file <a class="el" href="inv__table_8h_source.html">inv_table.h</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/<a class="el" href="inv__table_8h_source.html">inv_table.h</a></li>
 <li>/home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/<a class="el" href="inv__table_8cu_source.html">inv_table.cu</a></li>
+<li>/home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/<a class="el" href="serialization_8cu_source.html">serialization.cu</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

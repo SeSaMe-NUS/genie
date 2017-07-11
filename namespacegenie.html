@@ -105,6 +105,8 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespacegenie_1_1table"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1table.html">table</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1util"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1util.html">util</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespacegenie_1_1utility"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html">utility</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -134,15 +136,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a65a8a0a253fab2bc932af6d0c54c0183"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a65a8a0a253fab2bc932af6d0c54c0183">MakePolicy</a> (const <a class="el" href="classgenie_1_1Config.html">Config</a> &amp;config)</td></tr>
 <tr class="memdesc:a65a8a0a253fab2bc932af6d0c54c0183"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds and returns a policy according to the configurations.  <a href="#a65a8a0a253fab2bc932af6d0c54c0183">More...</a><br /></td></tr>
 <tr class="separator:a65a8a0a253fab2bc932af6d0c54c0183"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ea2205aacd7f28505daa165fdf64913"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a7ea2205aacd7f28505daa165fdf64913">ReadTableFromCsv</a> (const std::string &amp;filename)</td></tr>
-<tr class="memdesc:a7ea2205aacd7f28505daa165fdf64913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a CSV file and returns in TableData format.  <a href="#a7ea2205aacd7f28505daa165fdf64913">More...</a><br /></td></tr>
-<tr class="separator:a7ea2205aacd7f28505daa165fdf64913"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#adeda6d8fdda1b628970bf3f0f5e0ed42">ReadTableFromBinary</a> (const std::string &amp;filename)</td></tr>
-<tr class="memdesc:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a binary file and returns pre-built table.  <a href="#adeda6d8fdda1b628970bf3f0f5e0ed42">More...</a><br /></td></tr>
-<tr class="separator:adeda6d8fdda1b628970bf3f0f5e0ed42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb3c6a43ce29cebbe983448f91b5f490"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#afb3c6a43ce29cebbe983448f91b5f490">ReadQueryFromCsv</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; &amp;policy)</td></tr>
-<tr class="memdesc:afb3c6a43ce29cebbe983448f91b5f490"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads query from a CSV file and returns in QueryData format.  <a href="#afb3c6a43ce29cebbe983448f91b5f490">More...</a><br /></td></tr>
-<tr class="separator:afb3c6a43ce29cebbe983448f91b5f490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4ad29882c1ec339b3dc35378471cc09"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#af4ad29882c1ec339b3dc35378471cc09">LoadTableDataFromCsv</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:af4ad29882c1ec339b3dc35378471cc09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a CSV file and returns in TableData format.  <a href="#af4ad29882c1ec339b3dc35378471cc09">More...</a><br /></td></tr>
+<tr class="separator:af4ad29882c1ec339b3dc35378471cc09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03337956992446df09d5e8a2dab411e6"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a03337956992446df09d5e8a2dab411e6">LoadTableFromBinary</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a03337956992446df09d5e8a2dab411e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a binary file and returns pre-built table.  <a href="#a03337956992446df09d5e8a2dab411e6">More...</a><br /></td></tr>
+<tr class="separator:a03337956992446df09d5e8a2dab411e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2641ecdc749be961d3ebaa8c0637c903"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a2641ecdc749be961d3ebaa8c0637c903">SaveTableToBinary</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table)</td></tr>
+<tr class="memdesc:a2641ecdc749be961d3ebaa8c0637c903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save inverted table to a binary file.  <a href="#a2641ecdc749be961d3ebaa8c0637c903">More...</a><br /></td></tr>
+<tr class="separator:a2641ecdc749be961d3ebaa8c0637c903"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac769113ed9c2f30356ede7adb924f73d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#ac769113ed9c2f30356ede7adb924f73d">LoadQueryDataFromCsv</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; &amp;policy)</td></tr>
+<tr class="memdesc:ac769113ed9c2f30356ede7adb924f73d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads query from a CSV file and returns in QueryData format.  <a href="#ac769113ed9c2f30356ede7adb924f73d">More...</a><br /></td></tr>
+<tr class="separator:ac769113ed9c2f30356ede7adb924f73d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a474230dd19d21b51f6e5dac6535d9364"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacegenie.html#a6f616d3208c7b49dc2662842b5aaf95d">SearchResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a474230dd19d21b51f6e5dac6535d9364">Search</a> (std::shared_ptr&lt; <a class="el" href="classgenie_1_1ExecutionPolicy.html">genie::ExecutionPolicy</a> &gt; &amp;policy, const std::string &amp;table_filename, const std::string &amp;query_filename)</td></tr>
 <tr class="memdesc:a474230dd19d21b51f6e5dac6535d9364"><td class="mdescLeft">&#160;</td><td class="mdescRight">1st-level interface for end-to-end matching with given table and query CSV file paths.  <a href="#a474230dd19d21b51f6e5dac6535d9364">More...</a><br /></td></tr>
 <tr class="separator:a474230dd19d21b51f6e5dac6535d9364"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -280,6 +285,76 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ac769113ed9c2f30356ede7adb924f73d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac769113ed9c2f30356ede7adb924f73d">&#9670;&nbsp;</a></span>LoadQueryDataFromCsv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a> genie::LoadQueryDataFromCsv </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>policy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads query from a CSV file and returns in QueryData format. </p>
+
+</div>
+</div>
+<a id="af4ad29882c1ec339b3dc35378471cc09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4ad29882c1ec339b3dc35378471cc09">&#9670;&nbsp;</a></span>LoadTableDataFromCsv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a> genie::LoadTableDataFromCsv </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads data from a CSV file and returns in TableData format. </p>
+
+</div>
+</div>
+<a id="a03337956992446df09d5e8a2dab411e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03337956992446df09d5e8a2dab411e6">&#9670;&nbsp;</a></span>LoadTableFromBinary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt;<a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a>&gt; genie::LoadTableFromBinary </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads data from a binary file and returns pre-built table. </p>
+
+</div>
+</div>
 <a id="a65a8a0a253fab2bc932af6d0c54c0183"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a65a8a0a253fab2bc932af6d0c54c0183">&#9670;&nbsp;</a></span>MakePolicy()</h2>
 
@@ -338,14 +413,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="afb3c6a43ce29cebbe983448f91b5f490"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb3c6a43ce29cebbe983448f91b5f490">&#9670;&nbsp;</a></span>ReadQueryFromCsv()</h2>
+<a id="a2641ecdc749be961d3ebaa8c0637c903"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2641ecdc749be961d3ebaa8c0637c903">&#9670;&nbsp;</a></span>SaveTableToBinary()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacegenie.html#a61e3b00607bdf98ce264a1cea53c2014">QueryData</a> genie::ReadQueryFromCsv </td>
+          <td class="memname">void genie::SaveTableToBinary </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>filename</em>, </td>
@@ -353,8 +428,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1ExecutionPolicy.html">ExecutionPolicy</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>policy</em>&#160;</td>
+          <td class="paramtype">const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>table</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -364,47 +439,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reads query from a CSV file and returns in QueryData format. </p>
-
-</div>
-</div>
-<a id="adeda6d8fdda1b628970bf3f0f5e0ed42"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adeda6d8fdda1b628970bf3f0f5e0ed42">&#9670;&nbsp;</a></span>ReadTableFromBinary()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::shared_ptr&lt;<a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a>&gt; genie::ReadTableFromBinary </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Reads data from a binary file and returns pre-built table. </p>
-
-</div>
-</div>
-<a id="a7ea2205aacd7f28505daa165fdf64913"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ea2205aacd7f28505daa165fdf64913">&#9670;&nbsp;</a></span>ReadTableFromCsv()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacegenie.html#aee69bc565f0eef0063aec62f97f680d7">TableData</a> genie::ReadTableFromCsv </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Reads data from a CSV file and returns in TableData format. </p>
+<p>Save inverted table to a binary file. </p>
 
 </div>
 </div>

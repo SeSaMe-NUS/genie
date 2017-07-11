@@ -24,7 +24,6 @@ var searchData=
   ['inv_5fcompr_5ftable',['inv_compr_table',['../classGPUGenie_1_1inv__compr__table.html',1,'GPUGenie::inv_compr_table'],['../classGPUGenie_1_1inv__compr__table.html#a062584cba3478b9d2ca9a1f70066dc49',1,'GPUGenie::inv_compr_table::inv_compr_table()']]],
   ['inv_5fcompr_5ftable_2ecu',['inv_compr_table.cu',['../inv__compr__table_8cu.html',1,'']]],
   ['inv_5fcompr_5ftable_2eh',['inv_compr_table.h',['../inv__compr__table_8h.html',1,'']]],
-  ['inv_5findex',['inv_index',['../classGPUGenie_1_1inv__table.html#a6ed01b0386108ae35c0b83a4faff114a',1,'GPUGenie::inv_table']]],
   ['inv_5findex_5fmap',['inv_index_map',['../classGPUGenie_1_1inv__table.html#af93107cbba94a7e32659861a2a9bdba2',1,'GPUGenie::inv_table']]],
   ['inv_5flist',['inv_list',['../classGPUGenie_1_1inv__list.html',1,'GPUGenie::inv_list'],['../classGPUGenie_1_1inv__list.html#aaca1ed3aa0f3c19e7b95ed0b19e3614f',1,'GPUGenie::inv_list::inv_list()'],['../classGPUGenie_1_1inv__list.html#a71ac0123f719eeaea8268ad6362a55ca',1,'GPUGenie::inv_list::inv_list(vector&lt; int &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#ac6f8633c4379cfdd59f929bd71c2d064',1,'GPUGenie::inv_list::inv_list(vector&lt; int &gt; *vin)'],['../classGPUGenie_1_1inv__list.html#a012d16504362f655fa95d5e0d2887f60',1,'GPUGenie::inv_list::inv_list(vector&lt; string &gt; &amp;vin)'],['../classGPUGenie_1_1inv__list.html#aa03d6f39248abaaa9d602bbd31a6b00e',1,'GPUGenie::inv_list::inv_list(vector&lt; string &gt; *vin)']]],
   ['inv_5flist_2ecu',['inv_list.cu',['../inv__list_8cu.html',1,'']]],
@@ -47,7 +46,7 @@ var searchData=
   ['is_5fload_5fbalanced',['is_load_balanced',['../classGPUGenie_1_1query.html#a1920caa76df3331c9a6155bd3b663797',1,'GPUGenie::query']]],
   ['is_5fstored_5fin_5fgpu',['is_stored_in_gpu',['../classGPUGenie_1_1inv__table.html#aeeb4b1f8e23d404a27f3286033ec978a',1,'GPUGenie::inv_table']]],
   ['iskset',['IsKSet',['../classgenie_1_1Config.html#a2171673533ab7c709e2b86c76b7998cd',1,'genie::Config']]],
-  ['isnumofqueryset',['IsNumOfQuerySet',['../classgenie_1_1Config.html#a48b82b6666209338cf81d574b1da7bec',1,'genie::Config']]],
+  ['isnumofqueriesset',['IsNumOfQueriesSet',['../classgenie_1_1Config.html#ac12a8c3d8f4a73adcbfe0c96866c17c0',1,'genie::Config']]],
   ['isqueryrangeset',['IsQueryRangeSet',['../classgenie_1_1Config.html#a246c3ca28fa2acb73d677e7b1cb4ced0',1,'genie::Config']]],
   ['item_5fnum',['item_num',['../structGPUGenie_1_1__GPUGenie__Config.html#aeeb1847188ed2853479d7eb5ee59f294',1,'GPUGenie::_GPUGenie_Config']]],
   ['iunpack',['iunpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#ab196f0634bc8356235060304f85e68a8',1,'GPUGenie::DeviceBitPackingHelpers']]]
