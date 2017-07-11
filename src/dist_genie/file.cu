@@ -6,7 +6,7 @@
 #include "global.h"
 #include <genie/utility/serialization.h>
 
-using namespace genie;
+using namespace genie::original;
 using namespace genie::table;
 using namespace genie::utility;
 using namespace std;

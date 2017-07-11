@@ -29,9 +29,9 @@
 
 #include "interface.h"
 
-using namespace genie;
 using namespace genie::compression;
 using namespace genie::table;
+using namespace genie::original;
 using namespace genie::query;
 using namespace genie::utility;
 using namespace std;
@@ -138,7 +138,7 @@ void merge_knn_results_from_multiload(std::vector<std::vector<int> >& _result,
     u64 end_merge = getTime();
     cout << "Merge time = " << getInterval(start_merge, end_merge) << "ms. "<<endl;
 }
-bool genie::preprocess_for_knn_csv(GPUGenie_Config& config,
+bool genie::original::preprocess_for_knn_csv(GPUGenie_Config& config,
 		inv_table * &_table)
 {
 	unsigned int cycle = 0;
@@ -270,7 +270,7 @@ bool genie::preprocess_for_knn_csv(GPUGenie_Config& config,
 	return true;
 }
 
-void genie::knn_search_after_preprocess(GPUGenie_Config& config,
+void genie::original::knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count)
 {
@@ -304,7 +304,7 @@ void genie::knn_search_after_preprocess(GPUGenie_Config& config,
 
 
 }
-void genie::load_table(inv_table& table,
+void genie::original::load_table(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
 {
 	inv_list list;
@@ -343,7 +343,7 @@ void genie::load_table(inv_table& table,
 
 }
 
-void genie::load_table(inv_table& table, int *data, unsigned int item_num,
+void genie::original::load_table(inv_table& table, int *data, unsigned int item_num,
 		unsigned int *index, unsigned int row_num, GPUGenie_Config& config)
 {
 	inv_list list;
@@ -391,7 +391,7 @@ void genie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 }
 
-void genie::load_query(inv_table& table, std::vector<Query>& queries,
+void genie::original::load_query(inv_table& table, std::vector<Query>& queries,
 		GPUGenie_Config& config)
 {
     if(config.search_type == 2)
@@ -415,7 +415,7 @@ void genie::load_query(inv_table& table, std::vector<Query>& queries,
 // 0   0   15     0.04        1
 // 0   1   6      0.04        1
 // ....
-void genie::load_query_multirange(inv_table& table,
+void genie::original::load_query_multirange(inv_table& table,
 		std::vector<Query>& queries, GPUGenie_Config& config)
 {
 	queries.clear();
@@ -461,7 +461,7 @@ void genie::load_query_multirange(inv_table& table,
 	Logger::log(Logger::DEBUG, "%d queries are loaded.", queries.size());
 
 }
-void genie::load_query_singlerange(inv_table& table,
+void genie::original::load_query_singlerange(inv_table& table,
 		std::vector<Query>& queries, GPUGenie_Config& config)
 {
 
@@ -507,7 +507,7 @@ void genie::load_query_singlerange(inv_table& table,
 			timeInterval);
 }
 
-void genie::load_query_sequence(inv_table& table,
+void genie::original::load_query_sequence(inv_table& table,
 		vector<Query>& queries, GPUGenie_Config& config)
 {
 
@@ -609,7 +609,7 @@ void genie::load_query_sequence(inv_table& table,
 
 
 
-void genie::load_table_bijectMap(inv_table& table,
+void genie::original::load_table_bijectMap(inv_table& table,
 		std::vector<std::vector<int> >& data_points, GPUGenie_Config& config)
 {
 	u64 starttime = getTime();
@@ -637,7 +637,7 @@ void genie::load_table_bijectMap(inv_table& table,
 
 }
 
-void genie::load_table_bijectMap(inv_table& table, int *data,
+void genie::original::load_table_bijectMap(inv_table& table, int *data,
 		unsigned int item_num, unsigned int *index, unsigned int row_num,
 		GPUGenie_Config& config)
 {
@@ -668,7 +668,7 @@ void genie::load_table_bijectMap(inv_table& table, int *data,
 
 }
 
-void genie::load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
+void genie::original::load_table_sequence(inv_table& table, vector<vector<int> >& data_points, GPUGenie_Config& config)
 {
     u64 starttime = getTime();
     int min_value, max_value;
@@ -746,7 +746,7 @@ void genie::load_table_sequence(inv_table& table, vector<vector<int> >& data_poi
     
 }
 
-void genie::knn_search_for_csv_data(std::vector<int>& result,
+void genie::original::knn_search_for_csv_data(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	inv_table *_table = NULL;
@@ -761,13 +761,13 @@ void genie::knn_search_for_csv_data(std::vector<int>& result,
 	delete[] _table;
 }
 
-void genie::knn_search(std::vector<int>& result, GPUGenie_Config& config)
+void genie::original::knn_search(std::vector<int>& result, GPUGenie_Config& config)
 {
 	std::vector<int> result_count;
 	knn_search(result, result_count, config);
 }
 
-void genie::knn_search(std::vector<int>& result,
+void genie::original::knn_search(std::vector<int>& result,
 		std::vector<int>& result_count, GPUGenie_Config& config)
 {
 	try{
@@ -814,7 +814,7 @@ void genie::knn_search(std::vector<int>& result,
 	}
 }
 
-void genie::knn_search(inv_table& table, std::vector<Query>& queries,
+void genie::original::knn_search(inv_table& table, std::vector<Query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count,
 		GPUGenie_Config& config)
 {
@@ -847,7 +847,7 @@ void genie::knn_search(inv_table& table, std::vector<Query>& queries,
 			h_topk_count.begin());
 }
 
-void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<Query> >& queries,
+void genie::original::knn_search_MT(vector<inv_table*>& tables, vector<vector<Query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
 {
 	/* hashtable size */
@@ -900,12 +900,12 @@ void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<Query> >& qu
 }
 
 
-void genie::reset_device()
+void genie::original::reset_device()
 {
     cudaDeviceReset();
 }
 
-void genie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
+void genie::original::get_rowID_offset(vector<int> &result, vector<int> &resultID,
                     vector<int> &resultOffset, unsigned int shift_bits)
 {
     for(unsigned int i = 0 ; i < result.size() ; ++i)
@@ -918,7 +918,7 @@ void genie::get_rowID_offset(vector<int> &result, vector<int> &resultID,
     }
 }
 
-void genie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int> >& gram_data,
+void genie::original::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int> >& gram_data,
         int max_value, int gram_length)
 {
     int num_of_value = max_value + 1;
@@ -963,7 +963,7 @@ void genie::sequence_to_gram(vector<vector<int> > & sequences, vector<vector<int
     }
 }
 
-void genie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
+void genie::original::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector<int> > & converted_data ,int& min_value ,int &max_value)
 {
     min_value = data[0][0];
     max_value = min_value;
@@ -984,7 +984,7 @@ void genie::sequence_reduce_to_ground(vector<vector<int> > & data, vector<vector
     }
 }
 
-void genie::init_genie(GPUGenie_Config &config)
+void genie::original::init_genie(GPUGenie_Config &config)
 {
 	int device_count;
 

@@ -12,7 +12,7 @@ description: create a running example fo the library.
 #include <string>
 
 using namespace std;
-using namespace genie;
+using namespace genie::original;
 using namespace genie::table;
 using namespace genie::utility;
 

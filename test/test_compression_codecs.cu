@@ -16,11 +16,12 @@
 #include <genie/compression/DeviceSerialCodec.h>
 #include <genie/compression/DeviceVarintCodec.h>
 #include <genie/exception/genie_errors.h>
+#include <genie/interface/interface.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/scan.h> 
 #include <genie/utility/Timing.h>
 
-using namespace genie;
+using namespace genie::original;
 using namespace genie::compression;
 using namespace genie::utility;
 

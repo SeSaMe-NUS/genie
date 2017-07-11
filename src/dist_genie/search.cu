@@ -6,7 +6,7 @@
 #include "sorting.h"
 #include "global.h"
 
-using namespace genie;
+using namespace genie::original;
 using namespace genie::table;
 using namespace genie::query;
 using namespace std;

@@ -17,7 +17,7 @@
 #include <sstream>
 #include <vector>
 
-using namespace genie;
+using namespace genie::original;
 using namespace genie::compression;
 using namespace genie::table;
 using namespace genie::query;

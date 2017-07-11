@@ -37,7 +37,7 @@ shared_ptr<ExecutionPolicy> genie::MakePolicy(const Config& config)
 	if (generated_policy)
 	{
 		generated_policy->Validate(); // will throw exception if the configuration is invalid
-		utility::Init(const_cast<Config&>(config));
+		genie::utility::Init(const_cast<Config&>(config));
 		return generated_policy;
 	}
 	else

@@ -9,7 +9,7 @@
 
 const int LOCAL_RANK = atoi(getenv("OMPI_COMM_WORLD_LOCAL_RANK"));
 
-using namespace genie;
+using namespace genie::original;
 using namespace rapidjson;
 using namespace std;
 

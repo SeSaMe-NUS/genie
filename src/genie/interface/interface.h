@@ -56,6 +56,8 @@
 
 namespace genie
 {
+namespace original
+{
 
 /*! \struct _GPUGenie_Config
  *  \brief Definitions about configurations that can be set by users.
@@ -388,6 +390,8 @@ void reset_device();
 void get_rowID_offset(std::vector<int> &result, std::vector<int> &resultID, std::vector<int> &resultOffset, unsigned int shift_bits);
 
 void init_genie(GPUGenie_Config &config);
-}
+
+} // namespace orig
+} // namespace genie
 
 #endif /* INTERFACE_H_ */

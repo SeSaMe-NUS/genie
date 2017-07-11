@@ -23,7 +23,7 @@ using namespace genie::table;
 using namespace genie::utility;
 using namespace std;
 
-void testSerialization(genie::GPUGenie_Config &config, const std::string inv_filename)
+void testSerialization(genie::original::GPUGenie_Config &config, const std::string inv_filename)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
     inv_table * table = nullptr;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     Logger::set_level(Logger::DEBUG);
     Logger::log(Logger::INFO, "Reading csv data file %s ...", dataFile.c_str());
     std::vector<std::vector<int>> data;
-    genie::GPUGenie_Config config;
+    genie::original::GPUGenie_Config config;
     config.data_points = &data;
     config.data_type = 0;
     config.posting_list_max_length = 1024;
