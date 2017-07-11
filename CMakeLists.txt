@@ -51,6 +51,8 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 
 ## DEPENDENCIES
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 ### Boost
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -59,6 +61,11 @@ set(Boost_COMPONETNS iostreams serialization program_options)
 # This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
 # 1.64, but CMake 3.8 already does. The warning causes missing Boost components dependencies, but may be ignored.
 find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
+
+### Thrust
+
+find_package(Thrust REQUIRED)
+include_directories(${THRUST_INCLUDE_DIR})
 
 ### MPI & OpenMP
 

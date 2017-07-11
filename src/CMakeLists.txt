@@ -16,7 +16,7 @@ set( GENIE_COMPILATION_UNITS
   genie/execution_policy/single_range.cu
   genie/execution_policy/single_value.cu
   genie/execution_policy/validation.cc
-  genie/interface/config.cu
+  genie/interface/config.cc
   genie/interface/execution_policy.cu
   genie/interface/io.cu
   genie/interface/search.cu
