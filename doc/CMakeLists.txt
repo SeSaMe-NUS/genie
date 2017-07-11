@@ -12,5 +12,5 @@ if(DOXYGEN_FOUND)
 		VERBATIM)
 
     # Trailing / in ${CMAKE_CURRENT_BINARY_DIR}/html/ gets rid of the extra html dir in install/doc
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ DESTINATION doc)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ DESTINATION doc OPTIONAL)
 endif()
