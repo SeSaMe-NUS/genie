@@ -12,7 +12,7 @@
 
 #include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
-#include <genie/utility/PerfLogger.hpp>
+#include <genie/utility/PerfLogger.h>
 #include <genie/utility/Timing.h>
 #include <genie/exception/exception.h>
 #include <genie/compression/DeviceCodecFactory.h>

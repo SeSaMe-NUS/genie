@@ -66,7 +66,7 @@ set( GENIE_HEADERS
   genie/utility/FileReader.h
   genie/utility/init.h
   genie/utility/Logger.h
-  genie/utility/PerfLogger.hpp
+  genie/utility/PerfLogger.h
   genie/utility/scan.h
   genie/utility/serialization.h
   genie/utility/Timing.h
