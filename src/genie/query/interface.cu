@@ -1,3 +1,5 @@
+#include <genie/interface/interface.h>
+
 #include "interface.h"
 
 using namespace std;

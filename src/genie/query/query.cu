@@ -10,17 +10,19 @@
 #include <unordered_map>
 #include <iostream>
 
-using namespace std;
-
 #include <genie/table/inv_compr_table.h>
 #include <genie/utility/Logger.h>
+
+using namespace std;
+using namespace genie::table;
+using namespace genie::utility;
 
 #include "query.h"
 
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-genie::query::Query::query()
+genie::query::Query::Query()
 {
 	_ref_table = NULL;
 	_attr_map.clear();
@@ -33,7 +35,7 @@ genie::query::Query::query()
 	use_load_balance = false;
 }
 
-genie::query::Query::query(inv_table* ref, int index)
+genie::query::Query::Query(inv_table* ref, int index)
 {
 	_ref_table = ref;
 	_attr_map.clear();
@@ -46,7 +48,7 @@ genie::query::Query::query(inv_table* ref, int index)
 	use_load_balance = false;
 }
 
-genie::query::Query::query(inv_table& ref, int index)
+genie::query::Query::Query(inv_table& ref, int index)
 {
 	_ref_table = &ref;
 	_attr_map.clear();
@@ -66,7 +68,7 @@ genie::query::Query::dim::dim(int query, int order, int start_pos, int end_pos, 
 	  end_pos(end_pos),
 	  weight(weight) {}
 
-genie::query::inv_table* genie::query::Query::ref_table()
+genie::table::inv_table* genie::query::Query::ref_table()
 {
 	return _ref_table;
 }

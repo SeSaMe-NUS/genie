@@ -6,22 +6,24 @@
 
 #include "DeviceSerialCodec.h"
 
+using namespace genie::compression;
+
 // Explicit template instances for Serial Codecs
 
 template class
-genie::compression::DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>;
+DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>;
 template class
-genie::compression::DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
+DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>;
 
 // Explicit template instances for decoding wrapper function for Serial Codecs
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate

@@ -13,10 +13,14 @@
 #include <iostream>
 
 #include <genie/utility/Logger.h>
+#include <genie/query/query.h>
+#include <genie/table/inv_table.h>
 
 #include "FileReader.h"
 
 using namespace std;
+using namespace genie::query;
+using namespace genie::table;
 
 
 vector<string> split(string& str, const char* c)
@@ -145,7 +149,7 @@ void genie::utility::read_query(genie::table::inv_table& table, const char* fnam
 
 			vector<string> nstring = split(line, ", ");
 			unsigned int i;
-			query q(table, j);
+			Query q(table, j);
 			for (i = 0; i < nstring.size() && i < (unsigned int) num_of_query_dims; ++i)
 			{
 				string myString = eraseSpace(nstring[i]);

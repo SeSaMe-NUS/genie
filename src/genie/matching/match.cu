@@ -692,3 +692,4 @@ match_MT(vector<inv_table*>& table, vector<vector<Query> >& queries,
 }
 
 }
+}

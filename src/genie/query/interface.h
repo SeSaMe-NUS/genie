@@ -1,6 +1,7 @@
 #ifndef GENIE_QUERY_INTERFACE_H_
 #define GENIE_QUERY_INTERFACE_H_
 
+#include <memory>
 #include <vector>
 #include <genie/query/query.h>
 #include <genie/table/inv_table.h>

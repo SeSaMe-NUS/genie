@@ -18,8 +18,10 @@
 
 #include "serialization.h"
 
+using namespace genie::utility;
+
 void
-genie::util::SaveTable(const std::string &filename, const std::shared_ptr<const genie::table::inv_table> &table)
+genie::utility::SaveTable(const std::string &filename, const std::shared_ptr<const genie::table::inv_table> &table)
 {
     // Cannot save more than one table using this function
     if (table->get_table_index() != 0 || table->get_total_num_of_table() != 1)
@@ -37,7 +39,7 @@ genie::util::SaveTable(const std::string &filename, const std::shared_ptr<const 
 }
 
 std::shared_ptr<genie::table::inv_table>
-genie::util::LoadTable(const std::string &filename)
+genie::utility::LoadTable(const std::string &filename)
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
     if (!ifs.good())

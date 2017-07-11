@@ -24,9 +24,6 @@ namespace genie
 namespace table
 {
 
-    struct DeviceIntegerCODEC;
-
-
 class inv_compr_table : public genie::table::inv_table
 {
 protected:

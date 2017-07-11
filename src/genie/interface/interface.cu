@@ -31,6 +31,8 @@
 
 using namespace genie;
 using namespace genie::compression;
+using namespace genie::table;
+using namespace genie::query;
 using namespace genie::utility;
 using namespace std;
 
@@ -272,7 +274,7 @@ void genie::knn_search_after_preprocess(GPUGenie_Config& config,
 		inv_table * &_table, std::vector<int>& result,
 		std::vector<int>& result_count)
 {
-    std::vector<query> queries;
+    std::vector<Query> queries;
     vector<vector<int> > _result;
     vector<vector<int> > _result_count;
     unsigned int table_num = _table[0].get_total_num_of_table();
@@ -389,7 +391,7 @@ void genie::load_table(inv_table& table, int *data, unsigned int item_num,
 
 }
 
-void genie::load_query(inv_table& table, std::vector<query>& queries,
+void genie::load_query(inv_table& table, std::vector<Query>& queries,
 		GPUGenie_Config& config)
 {
     if(config.search_type == 2)
@@ -414,10 +416,10 @@ void genie::load_query(inv_table& table, std::vector<query>& queries,
 // 0   1   6      0.04        1
 // ....
 void genie::load_query_multirange(inv_table& table,
-		std::vector<query>& queries, GPUGenie_Config& config)
+		std::vector<Query>& queries, GPUGenie_Config& config)
 {
 	queries.clear();
-	map<int, query> query_map;
+	map<int, Query> query_map;
 	int qid, dim, val;
 	float sel, weight;
 	for (unsigned int iq = 0; iq < config.multirange_query_points->size(); ++iq)
@@ -431,7 +433,7 @@ void genie::load_query_multirange(inv_table& table,
 		sel = attr.sel;
 		if (query_map.find(qid) == query_map.end())
 		{
-			query q(table, qid);
+			Query q(table, qid);
 			q.topk(config.num_of_topk);
 			if (config.selectivity > 0.0f)
 			{
@@ -446,11 +448,11 @@ void genie::load_query_multirange(inv_table& table,
 		}
 		query_map[qid].attr(dim, val, weight, sel, query_map[qid].count_ranges());
 	}
-	for (std::map<int, query>::iterator it = query_map.begin();
+	for (std::map<int, Query>::iterator it = query_map.begin();
 			it != query_map.end() && queries.size() < (unsigned int) config.num_of_queries;
 			++it)
 	{
-		query& q = it->second;
+		Query& q = it->second;
 		q.apply_adaptive_query_range();
 		queries.push_back(q);
 	}
@@ -460,7 +462,7 @@ void genie::load_query_multirange(inv_table& table,
 
 }
 void genie::load_query_singlerange(inv_table& table,
-		std::vector<query>& queries, GPUGenie_Config& config)
+		std::vector<Query>& queries, GPUGenie_Config& config)
 {
 
 	Logger::log(Logger::DEBUG, "Table dim: %d.", table.m_size());
@@ -472,7 +474,7 @@ void genie::load_query_singlerange(inv_table& table,
 	std::vector<std::vector<int> >& query_points = *config.query_points;
 	for (i = 0; i < query_points.size(); ++i)
 	{
-		query q(table, i);
+		Query q(table, i);
 
 		for (j = 0; j < query_points[i].size() && (config.search_type == 1 || j < (unsigned int) config.dim); ++j)
 		{
@@ -506,7 +508,7 @@ void genie::load_query_singlerange(inv_table& table,
 }
 
 void genie::load_query_sequence(inv_table& table,
-		vector<query>& queries, GPUGenie_Config& config)
+		vector<Query>& queries, GPUGenie_Config& config)
 {
 
 	Logger::log(Logger::DEBUG, "Table dim: %d.", table.m_size());
@@ -564,7 +566,7 @@ void genie::load_query_sequence(inv_table& table,
 
     for (i = 0; i < gram_query.size(); ++i)
 	{
-		query q(table, i);
+		Query q(table, i);
 
         /*
         int min_bound,max_bound;
@@ -812,7 +814,7 @@ void genie::knn_search(std::vector<int>& result,
 	}
 }
 
-void genie::knn_search(inv_table& table, std::vector<query>& queries,
+void genie::knn_search(inv_table& table, std::vector<Query>& queries,
 		std::vector<int>& h_topk, std::vector<int>& h_topk_count,
 		GPUGenie_Config& config)
 {
@@ -832,7 +834,7 @@ void genie::knn_search(inv_table& table, std::vector<query>& queries,
 
 	Logger::log(Logger::DEBUG, "max_load is %d", max_load);
 
-    knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
+    genie::matching::knn(table, queries, d_topk, d_topk_count, hashtable_size, max_load, config.count_threshold);
 
 	Logger::log(Logger::INFO, "knn search is done!");
 	Logger::log(Logger::DEBUG, "Topk obtained: %d in total.", d_topk.size());
@@ -845,7 +847,7 @@ void genie::knn_search(inv_table& table, std::vector<query>& queries,
 			h_topk_count.begin());
 }
 
-void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& queries,
+void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<Query> >& queries,
 		vector<vector<int> >& h_topk, vector<vector<int> >& h_topk_count, vector<GPUGenie_Config>& configs)
 {
 	/* hashtable size */
@@ -869,7 +871,7 @@ void genie::knn_search_MT(vector<inv_table*>& tables, vector<vector<query> >& qu
 	}
 
 	vector<thrust::device_vector<int> > d_topk(configs.size()), d_topk_count(configs.size());
-	genie::knn_bijectMap_MT(
+	genie::matching::knn_bijectMap_MT(
 			tables, //basic API, since encode dimension and value is also finally transformed as a bijection map
 			queries, d_topk, d_topk_count, hashtable_sizes, max_loads,
 			configs.at(0).count_threshold); // threshold is the same

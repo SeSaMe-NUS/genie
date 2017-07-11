@@ -7,6 +7,8 @@
 
 #include "DeviceCodecTemplatesImpl.hpp"
 
+using namespace genie::compression;
+
 // Explicit template instances for Composite Codecs
 
 template class

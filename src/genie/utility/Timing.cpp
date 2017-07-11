@@ -7,7 +7,7 @@
 #include "Timing.h"
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-std::string currentDateTime() {
+std::string genie::utility::currentDateTime() {
     time_t     now = time(0);
     struct tm  tstruct;
     char       buf[80];
@@ -19,7 +19,7 @@ std::string currentDateTime() {
     return buf;
 }
 
-unsigned long long getTime()
+unsigned long long genie::utility::getTime()
 {
 	struct timeval tv;
 
@@ -33,7 +33,7 @@ unsigned long long getTime()
 	return ret;
 }
 
-double getInterval(unsigned long long start, unsigned long long stop)
+double genie::utility::getInterval(unsigned long long start, unsigned long long stop)
 {
 	return (double) (stop - start) / 1000.0;
 }

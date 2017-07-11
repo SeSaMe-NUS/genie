@@ -21,6 +21,9 @@
 #include "Logger.h"
 
 using namespace std;
+using namespace genie::utility;
+
+
 const char * const Logger::LEVEL_NAMES[] =
 { "NONE   ", "ALERT  ", "INFO   ", "VERBOSE", "DEBUG  " };
 

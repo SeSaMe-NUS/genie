@@ -7,6 +7,7 @@
 #include "DeviceCodecFactory.h"
 
 using namespace genie::compression;
+using namespace genie::matching;
 using namespace std;
 
 const COMPRESSION_TYPE genie::compression::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;

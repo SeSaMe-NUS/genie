@@ -8,7 +8,8 @@
 // NOTE: This is intentionally separated into mutliple codec implementation files in order to facilitiate separate
 // compilation units, as opposed to defining all these templates in one place.
 template void
-genie::compression::decodeArrayParallel<DeviceVarintCodec>(int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
+genie::compression::decodeArrayParallel<genie::compression::DeviceVarintCodec>(
+        int, int, uint32_t*, size_t, uint32_t*, size_t, size_t*);
 
 void
 genie::compression::DeviceVarintCodec::encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue)

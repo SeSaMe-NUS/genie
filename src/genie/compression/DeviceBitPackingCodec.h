@@ -213,7 +213,7 @@ public:
         {
             // TODO, if length is short, there is no need to do full scan of lenth
             // GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH, instead only scan #block bit sizes 
-            d_scanExclusiveShared( 
+            genie::utility::d_scanExclusiveShared( 
                     (uint4 *)s_bitSizes,
                     (uint4 *)s_bitSizesSummed,
                     GPUGENIE_CODEC_BPP_MAX_BITSIZES_LENGTH / 4,

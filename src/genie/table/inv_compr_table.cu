@@ -13,6 +13,9 @@
 
 #include "inv_compr_table.h"
 
+using namespace genie::compression;
+using namespace genie::utility;
+
 BOOST_CLASS_EXPORT_IMPLEMENT(genie::table::inv_compr_table)
 
 void
@@ -204,7 +207,7 @@ bool genie::table::inv_compr_table::cpy_data_to_gpu()
         cudaCheckErrors(cudaMemcpy(m_d_compr_inv_p, &m_comprInv[0], sizeof(uint32_t) * m_comprInv.size(),
                 cudaMemcpyHostToDevice));
     } catch(std::bad_alloc &e){
-        throw(genie::table::gpu_bad_alloc(e.what()));
+        throw(genie::exception::gpu_bad_alloc(e.what()));
     }
 
     return true;

@@ -21,9 +21,10 @@
 #include "inv_table.h"
 
 using namespace std;
+using namespace genie::utility;
 
 //int*  inv_table::d_inv_p = NULL;
-int inv_table::max_inv_size = 0;
+int genie::table::inv_table::max_inv_size = 0;
 
 bool genie::table::inv_table::cpy_data_to_gpu()
 {
@@ -36,7 +37,7 @@ bool genie::table::inv_table::cpy_data_to_gpu()
 	}
 	catch(std::bad_alloc &e)
 	{
-		throw(genie::table::gpu_bad_alloc(e.what()));
+		throw(genie::exception::gpu_bad_alloc(e.what()));
 	}
 
 	return true;
@@ -230,7 +231,7 @@ genie::table::inv_table::status genie::table::inv_table::build_status()
 	return _build_status;
 }
 
-vector<inv_list>*
+std::vector<genie::table::inv_list>*
 genie::table::inv_table::inv_lists()
 {
 	return &_inv_lists;

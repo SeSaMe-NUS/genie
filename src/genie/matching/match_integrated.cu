@@ -33,8 +33,11 @@
  */
 #define GPUGENIE_INTEGRATED_KERNEL_SM_SIZE (1024)
 
+using namespace genie::compression;
 using namespace genie::matching;
-using namespace genie::util;
+using namespace genie::table;
+using namespace genie::utility;
+using namespace genie::query;
 using namespace std;
 using namespace thrust;
 
@@ -47,55 +50,55 @@ namespace matching
 // TODO: Split this into multiple compilation units
 
 template void match_integrated<DeviceCopyCodec>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceDeltaCodec>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceBitPackingCodec>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceVarintCodec>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceCopyCodec,DeviceCopyCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceCopyCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceDeltaCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceVarintCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceBitPackingCodec>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceCopyCodec>>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 template void match_integrated<DeviceSerialCodec<DeviceDeltaCodec,DeviceCompositeCodec<DeviceBitPackingCodec,DeviceVarintCodec>>>(
-    inv_compr_table&, std::vector<query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
+    inv_compr_table&, std::vector<Query>&, thrust::device_vector<data_t>&, thrust::device_vector<u32>&,
         int, int, thrust::device_vector<u32>&, thrust::device_vector<u32>&, thrust::device_vector<u32>&);
 
 
@@ -135,7 +138,7 @@ int getBitmapSize(int &in_out_bitmap_bits, u32 in_shift_bits_subsequence, int in
 }
 
 
-int build_compressed_queries(vector<query>& queries, inv_compr_table *ctable, vector<query::dim>& dims, int max_load)
+int build_compressed_queries(vector<Query>& queries, inv_compr_table *ctable, vector<Query::dim>& dims, int max_load)
 {
     assert(ctable->build_status() == inv_table::builded);
     assert(ctable->shift_bits_sequence == 0);
@@ -167,7 +170,7 @@ match_adaptiveThreshold_integrated(
         int i_size, // number of instances, i.e. inv_table::m_size() * (1u<<shift_bits_subsequence)
         int hash_table_size, // hash table size
         uint32_t* d_compr_inv, // d_uncompr_inv_p points to the start location of uncompr posting list array in GPU memory
-        query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
+        Query::dim* d_dims, // compiled queries (dim structure) with locations into d_uncompr_inv
         T_HASHTABLE* hash_table_list, // data_t struct (id, aggregation) array of size queries.size() * hash_table_size
         u32 * bitmap_list, // of bitmap_size
         int bitmap_bits,
@@ -183,7 +186,7 @@ match_adaptiveThreshold_integrated(
 
     assert(m_size != 0 && i_size != 0);
 
-    query::dim& myb_query = d_dims[blockIdx.x];
+    Query::dim& myb_query = d_dims[blockIdx.x];
     int query_index = myb_query.query;
     u32* my_noiih = &noiih[query_index];
     u32* my_threshold = &d_threshold[query_index];
@@ -320,10 +323,13 @@ match_adaptiveThreshold_integrated(
     }
 }
 
+} // namespace matching 
+} // namespace genie
+
 template <class Codec> void
-match_integrated(
+genie::matching::match_integrated(
         inv_compr_table& table,
-        std::vector<query>& queries,
+        std::vector<Query>& queries,
         thrust::device_vector<data_t>& d_hash_table,
         thrust::device_vector<u32>& d_bitmap,
         int hash_table_size,
@@ -375,7 +381,7 @@ match_integrated(
     Logger::log(Logger::INFO, "    Compiling queries...");
     queryCompilationStart = getTime();
 
-    vector<query::dim> dims;        
+    vector<Query::dim> dims;        
     //number of maximum count per query
     u32 num_of_max_count = build_compressed_queries(
         queries, &table, dims, table.getUncompressedPostingListMaxLength());
@@ -387,7 +393,7 @@ match_integrated(
     Logger::log(Logger::INFO, "    Transferring queries to device...");
     queryTransferStart = getTime();
 
-    thrust::device_vector<query::dim> d_dims(dims);
+    thrust::device_vector<Query::dim> d_dims(dims);
 
     queryTransferEnd  = getTime();
     
@@ -546,7 +552,7 @@ match_integrated(
         .MatchingTime(matchingTime)
         .ConvertTime(convertTime)
         .InvSize(sizeof(uint32_t) * table.compressedInv()->size())
-        .DimsSize(dims.size() * sizeof(query::dim))
+        .DimsSize(dims.size() * sizeof(Query::dim))
         .HashTableCapacityPerQuery(hash_table_size)
         .ThresholdSize(queries.size() * sizeof(u32))
         .PasscountSize(queries.size() * num_of_max_count * sizeof(u32))
@@ -556,4 +562,3 @@ match_integrated(
         .HashTableSize(queries.size() * hash_table_size * sizeof(data_t));
 }
 
-}

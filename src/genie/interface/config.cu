@@ -4,6 +4,7 @@
 #include "config.h"
 
 using namespace genie;
+using namespace genie::utility;
 using namespace std;
 
 uint32_t genie::Config::GetK() const
