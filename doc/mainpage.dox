@@ -97,6 +97,21 @@
  *
  * \subsection usage_executable_sec Using the GENIE executable
  *
- * To be added.
- * 
+ * For convenience, we have provided an executable for interfacing with GENIE. Once GENIE gets compiled, an executable named
+ * `genie-cli` will appear in the `bin` folder. `./genie --help` shows you all the allowed options
+ *
+ * ```
+ * Allowed options:
+ *   --help                       produce help message
+ *
+ *   -k [ --k ] arg               k
+ *   -r [ --query-range ] arg     query range
+ *   -n [ --num-of-queries ] arg  number of queries
+ *   --gpu arg                    GPU to use
+ *   -t [ --table ] arg           table file
+ *   -q [ --query ] arg           query file
+ * ```
+ *
+ * For example, you could run `./genie-cli -k 10 -n 5 --gpu 2 -t ../static/sift_20.csv -q ../static/sift_20.csv` to match 5 queries
+ * with k set to 10 using gpu 2. Table and query are loaded from `../static/sift_20.csv`.
  */
