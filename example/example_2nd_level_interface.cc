@@ -32,8 +32,8 @@ int main()
 	TableData table_data = LoadTableDataFromCsv("../static/sift_20.csv");
 	QueryData query_data = LoadQueryDataFromCsv("../static/sift_20.csv", policy);
 
-	shared_ptr<GPUGenie::inv_table> table = BuildTable(policy, table_data);
-	vector<GPUGenie::query> queries = BuildQuery(policy, table, query_data);
+	shared_ptr<genie::table::inv_table> table = BuildTable(policy, table_data);
+	vector<genie::query::Query> queries = BuildQuery(policy, table, query_data);
 	SearchResult results = Match(policy, table, queries);
 	
 

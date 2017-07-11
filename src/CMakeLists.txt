@@ -13,30 +13,30 @@ configure_file(
 set( GENIE_COMPILATION_UNITS
   genie/exception/exception.cc
   genie/exception/genie_errors.cu
-  genie/execution_policy/single_range.cu
-  genie/execution_policy/single_value.cu
+  genie/execution_policy/single_range.cc
+  genie/execution_policy/single_value.cc
   genie/execution_policy/validation.cc
   genie/interface/config.cc
-  genie/interface/execution_policy.cu
-  genie/interface/io.cu
-  genie/interface/search.cu
+  genie/interface/execution_policy.cc
+  genie/interface/io.cc
+  genie/interface/search.cc
   genie/matching/heap_count.cu  
-  genie/matching/interface.cu
+  genie/matching/interface.cc
   genie/matching/knn.cu
   genie/matching/match.cu
   genie/matching/match_common.cu
   genie/original/interface.cu
-  genie/query/interface.cu
-  genie/query/query.cu
-  genie/table/interface.cu
-  genie/table/inv_list.cu
+  genie/query/interface.cc
+  genie/query/query.cc
+  genie/table/interface.cc
+  genie/table/inv_list.cc
   genie/table/inv_table.cu
-  genie/utility/FileReader.cu
+  genie/utility/FileReader.cc
   genie/utility/init.cu
-  genie/utility/Logger.cu
+  genie/utility/Logger.cc
   genie/utility/scan.cu
   genie/utility/serialization.cu
-  genie/utility/Timing.cpp
+  genie/utility/Timing.cc
 )
 
 set( GENIE_TOP_LEVEL_HEADER
