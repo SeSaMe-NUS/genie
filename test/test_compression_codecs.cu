@@ -11,16 +11,19 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#include <GPUGenie/genie_errors.h>
-#include <GPUGenie/Timing.h>
-#include <GPUGenie/Logger.h>
-#include <GPUGenie/DeviceCompositeCodec.h>
-#include <GPUGenie/DeviceSerialCodec.h>
-#include <GPUGenie/DeviceBitPackingCodec.h>
-#include <GPUGenie/DeviceVarintCodec.h>
-#include <GPUGenie/scan.h> 
+#include <genie/compression/DeviceBitPackingCodec.h>
+#include <genie/compression/DeviceCompositeCodec.h>
+#include <genie/compression/DeviceSerialCodec.h>
+#include <genie/compression/DeviceVarintCodec.h>
+#include <genie/exception/genie_errors.h>
+#include <genie/original/interface.h>
+#include <genie/utility/Logger.h>
+#include <genie/utility/scan.h> 
+#include <genie/utility/Timing.h>
 
-using namespace GPUGenie;
+using namespace genie::original;
+using namespace genie::compression;
+using namespace genie::utility;
 
 bool testScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output, size_t arrayLength)
 {

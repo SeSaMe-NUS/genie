@@ -5,11 +5,15 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include "GPUGenie.h"
-#include <GPUGenie/interface/io.h>
-#include <GPUGenie/DeviceCodecFactory.h>
+#include <genie/original/interface.h>
+#include <genie/interface/io.h>
+#include <genie/compression/DeviceCodecFactory.h>
 
-using namespace GPUGenie;
+using namespace genie::original;
+using namespace genie::compression;
+using namespace genie::table;
+using namespace genie::utility;
+using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -86,7 +90,7 @@ int main(int argc, char *argv[])
 
 	read_file(data, input_file.c_str(), -1);
 	preprocess_for_knn_csv(config, table);
-	std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+	std::shared_ptr<const inv_table> sp_table(table, [](inv_table* ptr){delete[] ptr;});
 	genie::SaveTableToBinary(output_file, sp_table);
 
 	return EXIT_SUCCESS;

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
-project("GPUGenie"
+project("genie"
   VERSION 0.1
   LANGUAGES C CXX CUDA)
 enable_testing()
@@ -145,7 +145,7 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 function(genie_add_simple_executable TARGET)
     add_executable(${TARGET} ${ARGN})
     add_dependencies(${TARGET} ${PROJECT_NAME})
-    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libgenie.a)  
     target_link_libraries(${TARGET}
         ${PROJECT_NAME}
         ${CUDA_cudadevrt_LIBRARY})
@@ -168,9 +168,10 @@ if (GENIE_EXAMPLES)
 endif()
 add_subdirectory(src)
 if (GENIE_DISTRIBUTED)
-  add_subdirectory(src/DistGenie)
+  add_subdirectory(src/dist_genie)
 endif()
-add_subdirectory(src/perftoolkit)
+add_subdirectory(src/genie_cli)
+add_subdirectory(src/perf_toolkit)
 add_subdirectory(static)
 add_subdirectory(test)
 add_subdirectory(utility)

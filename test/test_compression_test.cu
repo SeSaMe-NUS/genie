@@ -6,7 +6,8 @@
 
 #undef NDEBUG
  
-#include <GPUGenie.h>
+#include <genie/original/interface.h>
+#include <genie/utility/Timing.h>
 
 #include <algorithm>
 #include <assert.h>
@@ -19,8 +20,13 @@
 #include "codecfactory.h"
 #include "intersection.h"
 
-using namespace GPUGenie;
+
+using namespace genie::original;
+using namespace genie::compression;
+using namespace genie::table;
+using namespace genie::utility;
 using namespace SIMDCompressionLib;
+using namespace std;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 
@@ -78,11 +84,11 @@ int main(int argc, char* argv[])
     assert(table != NULL);
     assert(table->get_total_num_of_table() == 1);
 
-    std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
+    std::vector<inv_list> *inv_lists = table->inv_lists();
     // check inverted index of the tables using inv_list class
     for (size_t attr_index = 0; attr_index < inv_lists->size(); attr_index++)
     {
-        GPUGenie::inv_list invertedList = (*inv_lists)[attr_index];
+        inv_list invertedList = (*inv_lists)[attr_index];
         int posting_list_length = invertedList.size();
         int posting_list_min = invertedList.min();
         int posting_list_max = invertedList.max();

@@ -1,7 +1,7 @@
 function(genie_add_test_case TARGET)
    add_executable(${TARGET} ${ARGN})
    add_dependencies(${TARGET} ${PROJECT_NAME})
-   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libgenie.a)  
    target_link_libraries(${TARGET}
                          ${PROJECT_NAME}
                          ${MPI_LIBRARIES}

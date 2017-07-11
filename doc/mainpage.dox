@@ -56,8 +56,8 @@
  * 
  * - `genie::Config` for configuring GENIE
  * - `genie::ExecutionPolicy` for providing implementation for building table, building query, and matching
- * - `GPUGenie::inv_table` for the constructed tables
- * - `GPUGenie::query` for the constructed queries
+ * - `genie::table::inv_table` for the constructed tables
+ * - `genie::query::Query` for the constructed queries
  *
  * The interface also has several [functions](namespacegenie.html#func-members). The `genie::Search()`
  * function is the 1st-level interface function for using GENIE. It accepts file paths to table and query CSV files and
@@ -75,7 +75,7 @@
  *
  * ```cpp
  * #include <memory>
- * #include <GPUGenie/interface/genie.h>
+ * #include <genie/genie.h>
  * 
  * using namespace std;
  * using namespace genie;

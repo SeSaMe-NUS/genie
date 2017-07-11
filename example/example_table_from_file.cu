@@ -7,8 +7,9 @@
  * description: This program is to demonstrate the search on string-like data by the GPU. More description of the parameter configuration please refer to example.cu file
  */
 
-#include "GPUGenie.h" //for ide: change from "GPUGenie.h" to "../src/GPUGenie.h"
-#include <GPUGenie/interface/io.h>
+#include <genie/original/interface.h>
+#include <genie/interface/io.h>
+#include <genie/utility/Timing.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,9 +17,10 @@
 #include <fstream>
 #include <string>
 
-using namespace GPUGenie;
 using namespace std;
-
+using namespace genie::original;
+using namespace genie::table;
+using namespace genie::utility;
 
 int main(int argc, char * argv[])//for ide: from main to main4
 {
@@ -27,7 +29,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<std::vector<int> > data;
 	std::vector<attr_t> multirange_queries;
 	//std::vector<std::vector<int> > data;
-    GPUGenie::GPUGenie_Config config;
+    GPUGenie_Config config;
 
 	string  dataFile = "../static/tweets_4k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
     string  queryFile= "../static/tweets_4k.csv";
@@ -110,7 +112,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
     preprocess_for_knn_csv(config, __table);
 
     u64 s1 = getTime();
-    std::shared_ptr<const GPUGenie::inv_table> sp_table(__table, [](inv_table* ptr){delete[] ptr;});
+    std::shared_ptr<const inv_table> sp_table(__table, [](inv_table* ptr){delete[] ptr;});
     genie::SaveTableToBinary("../static/table.dat", sp_table);
     u64 e1 = getTime();
 
@@ -119,7 +121,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
   
   //  unsigned int table_num = 1;
     u64 s2 = getTime();
-    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary("../static/table.dat");
+    std::shared_ptr<inv_table> table = genie::LoadTableFromBinary("../static/table.dat");
     u64 e2 = getTime();
 
     double time2 = getInterval(s2, e2);
@@ -129,7 +131,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
 
 	u64 start = getTime();
-	//GPUGenie::knn_search(result, result_count, config);
+	//knn_search(result, result_count, config);
     inv_table * rawptr_table = table.get();
     knn_search_after_preprocess(config, rawptr_table, result, result_count);
 	u64 end = getTime();
@@ -137,7 +139,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 
-    GPUGenie::reset_device();
+    reset_device();
 	for(int i = 0; i < 5; ++i)
 
 	{

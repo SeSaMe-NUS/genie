@@ -6,8 +6,9 @@
 
 #undef NDEBUG
  
-#include <GPUGenie.h>
-#include <GPUGenie/interface/io.h>
+#include <genie/original/interface.h>
+#include <genie/table/inv_compr_table.h>
+#include <genie/interface/io.h>
 
 #include <algorithm>
 #include <cassert>
@@ -17,8 +18,11 @@
 #include <sstream>
 #include <vector>
 
-
-using namespace GPUGenie;
+using namespace genie::original;
+using namespace genie::compression;
+using namespace genie::table;
+using namespace genie::query;
+using namespace genie::utility;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
 const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
@@ -31,7 +35,7 @@ const int         DEFAULT_NUM_QUERIES = 3;
  *  and if (top-k > number of resutls with match count greater than 0), then remaining docIds in the result vector are
  *  set to 0, thus the result and count vectors cannot be sorted conventionally. 
  */
-void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
+void sortGenieResults(GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
                             std::vector<int> &gpuResultCounts)
 {
     std::vector<int> gpuResultHelper(config.num_of_topk),
@@ -93,7 +97,7 @@ void checkDataFileIsNotBinary(const std::string &dataFile)
 }
 
 
-std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie_Config &config)
+std::string convertTableToBinary(const std::string &dataFile, GPUGenie_Config &config)
 {
     std::string invSuffix(".inv");
     std::string cinvSuffix(".cinv");
@@ -110,7 +114,7 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         dataFile.c_str(), binaryInvTableFile.c_str(),
         !config.compression ? "no" : DeviceCodecFactory::getCompressionName(config.compression).c_str());
 
-    ifstream invBinFileStream(binaryInvTableFile.c_str());
+    std::ifstream invBinFileStream(binaryInvTableFile.c_str());
     bool invBinFileExists = invBinFileStream.good();
 
     if (invBinFileExists)
@@ -136,25 +140,25 @@ std::string convertTableToBinary(const std::string &dataFile, GPUGenie::GPUGenie
         assert(config.compression == comprTable->getCompression());
     }
 
-    std::shared_ptr<const GPUGenie::inv_table> sp_table(table, [](GPUGenie::inv_table* ptr){delete[] ptr;});
+    std::shared_ptr<const inv_table> sp_table(table, [](inv_table* ptr){delete[] ptr;});
     genie::SaveTableToBinary(binaryInvTableFile, sp_table);
 
     Logger::log(Logger::INFO, "Sucessfully written inverted table to binary file %s.", binaryInvTableFile.c_str());
     return binaryInvTableFile;
 }
 
-void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFile, GPUGenie::GPUGenie_Config &config,
+void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFile, GPUGenie_Config &config,
         std::vector<int> &refResultIdxs, std::vector<int> &refResultCounts)
 {
     Logger::log(Logger::INFO, "Opening binary inv_table from %s ...", binaryInvTableFile.c_str());
 
-    std::shared_ptr<GPUGenie::inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
+    std::shared_ptr<inv_table> table = genie::LoadTableFromBinary(binaryInvTableFile);
 
     Logger::log(Logger::INFO, "Loading queries from %s ...", queryFile.c_str());
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
 
     Logger::log(Logger::INFO, "Loading queries into table...");
-    std::vector<query> refQueries;
+    std::vector<Query> refQueries;
     load_query(*table, refQueries, config);
 
     Logger::log(Logger::INFO, "Running KNN on GPU...");
@@ -176,11 +180,11 @@ void runGENIE(const std::string &binaryInvTableFile, const std::string &queryFil
 
 int main(int argc, char* argv[])
 {
-    string dataFile = DEFAULT_TEST_DATASET;
-    string queryFile = DEFAULT_QUERY_DATASET;
+    std::string dataFile = DEFAULT_TEST_DATASET;
+    std::string queryFile = DEFAULT_QUERY_DATASET;
     
-    vector<vector<int>> queryPoints;
-    vector<vector<int>> data;
+    std::vector<std::vector<int>> queryPoints;
+    std::vector<std::vector<int>> data;
 
     int dimensions = DEFAULT_DIMENSIONS;
     int numberOfQueries = DEFAULT_NUM_QUERIES;

@@ -13,20 +13,21 @@
 #include <fstream>
 #include <memory>
 
-#include <GPUGenie/interface.h>
-#include <GPUGenie/inv_table.h>
-#include <GPUGenie/inv_compr_table.h>
-#include <GPUGenie/interface/io.h>
+#include <genie/original/interface.h>
+#include <genie/table/inv_table.h>
+#include <genie/table/inv_compr_table.h>
+#include <genie/interface/io.h>
 
+using namespace genie::compression;
+using namespace genie::table;
+using namespace genie::utility;
 using namespace std;
-using namespace GPUGenie;
 
-
-void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_filename)
+void testSerialization(genie::original::GPUGenie_Config &config, const std::string inv_filename)
 {
     Logger::log(Logger::INFO, "Preprocessing inverted table...");
-    GPUGenie::inv_table * table = nullptr;
-    GPUGenie::preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
+    inv_table * table = nullptr;
+    preprocess_for_knn_csv(config, table); // this returns inv_compr_table if config.compression is set
     assert(table != nullptr);
     assert(table->build_status() == inv_table::builded);
     shared_ptr<inv_table> sp_table(table, std::default_delete<inv_table[]>());
@@ -35,7 +36,7 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
     genie::SaveTableToBinary(inv_filename, sp_table);
 
     Logger::log(Logger::INFO, "Loading inverted table from file...");
-    std::shared_ptr<GPUGenie::inv_table> loaded_table = genie::LoadTableFromBinary(inv_filename);
+    std::shared_ptr<inv_table> loaded_table = genie::LoadTableFromBinary(inv_filename);
 
     Logger::log(Logger::INFO, "Checking loaded table correctness...");
 
@@ -65,8 +66,8 @@ void testSerialization(GPUGenie::GPUGenie_Config &config, const std::string inv_
 
     if (config.compression)
     {
-        GPUGenie::inv_compr_table *ctable = dynamic_cast<GPUGenie::inv_compr_table*>(table);
-        GPUGenie::inv_compr_table *c_loaded_table = dynamic_cast<GPUGenie::inv_compr_table*>(loaded_table.get());
+        inv_compr_table *ctable = dynamic_cast<inv_compr_table*>(table);
+        inv_compr_table *c_loaded_table = dynamic_cast<inv_compr_table*>(loaded_table.get());
         assert(ctable);
         assert(c_loaded_table);
         assert(*ctable->compressedInv() == *c_loaded_table->compressedInv());
@@ -86,11 +87,11 @@ int main(int argc, char* argv[])
     Logger::set_level(Logger::DEBUG);
     Logger::log(Logger::INFO, "Reading csv data file %s ...", dataFile.c_str());
     std::vector<std::vector<int>> data;
-    GPUGenie::GPUGenie_Config config;
+    genie::original::GPUGenie_Config config;
     config.data_points = &data;
     config.data_type = 0;
     config.posting_list_max_length = 1024;
-    GPUGenie::read_file(data, dataFile.c_str(), -1);
+    read_file(data, dataFile.c_str(), -1);
 
     // Test inv_table
     config.compression = NO_COMPRESSION;

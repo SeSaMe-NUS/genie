@@ -1,10 +1,10 @@
-# GPUGenie
+# GENIE
 
-GPUGenie is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then
-GPUGenie will consturct the inverted list table and transfer it to the device. GPUGenie provides a simple way to
+GENIE is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then
+GENIE will consturct the inverted list table and transfer it to the device. GENIE provides a simple way to
 perform the similarity queries. User may define queries and their matching ranges, then directly call the matching
 funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k
-search can also be simply perfromed. GPUGenie uses parallel searching to determine the top k values in a vector. It is
+search can also be simply perfromed. GENIE uses parallel searching to determine the top k values in a vector. It is
 much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not
 required to configure the device function call. Please refer to the following documents:
 
@@ -23,7 +23,7 @@ You are required to install G++, CMake, CUDA, OpenMPI and Boost. The minimum req
 - OpenMPI 1.7 (for `GENIE_DISTRIBUTED` only)
 - Boost 1.63: serialization, iostreams, program_options (for `GENIE_COMPR` only)
 
-To create an "out-of-source" build of GPUGenie containing both the GPUGenie library, tests and tools, you can use the
+To create an "out-of-source" build of GENIE containing both the GENIE library, tests and tools, you can use the
 standard CMake procedure:
 
 ```bash
@@ -53,7 +53,7 @@ $ cmake -DGENIE_SIMDCAI=ON -DCMAKE_BUILD_TYPE=Release -DGENIE_DISTRIBUTED=ON -DG
 
 ## Running GENIE
 
-There are several main parts of GENIE project. The core is a library `/lib/libGPUGenie.a` with the main functionality.
+There are several main parts of GENIE project. The core is a library `/lib/libgenie.a` with the main functionality.
 To see how to use the library, you can check source code in either `/example` or `/test`. Tests are the simplest
 applications built on top of GENIE library. Other utilities include a compression performance toolkit in `/perf` and
 miscellaneous utilities in `/utility`. All of these tools are compiled into `/bin` directory.
@@ -210,5 +210,5 @@ $ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
 
 ## Documentation
 
-Code documentation for GPUGenie can be generated with `cmake` and `make`. After you configure CMake following steps in
+Code documentation for GENIE can be generated with `cmake` and `make`. After you configure CMake following steps in
 [Compilation and Development](#compilation-and-development), just run `$ make doc`.

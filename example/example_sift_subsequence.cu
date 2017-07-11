@@ -9,15 +9,19 @@
  */
 
 
-#include "GPUGenie.h"
+#include <genie/original/interface.h>
+#include <genie/utility/Timing.h>
 
 #include <assert.h>
 #include <vector>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+
 using namespace std;
-using namespace GPUGenie;
+using namespace genie::original;
+using namespace genie::table;
+using namespace genie::utility;
 
 int main(int argc, char* argv[])
 {
