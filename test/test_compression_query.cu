@@ -19,7 +19,10 @@
 #include "codecfactory.h"
 #include "intersection.h"
 
-using namespace GPUGenie;
+using namespace genie;
+using namespace genie::table;
+using namespace genie::query;
+using namespace genie::utility;
 using namespace SIMDCompressionLib;
 
 const std::string DEFAULT_TEST_DATASET = "../static/sift_20.csv";
@@ -30,7 +33,7 @@ const std::string DEFAULT_QUERY_DATASET = "../static/sift_20.csv";
  *  and if (top-k > number of resutls with match count greater than 0), then remaining docIds in the result vector are
  *  set to 0, thus the result and count vectors cannot be soreted conventionally. 
  */
-void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
+void sortGenieResults(GPUGenie_Config &config, std::vector<int> &gpuResultIdxs,
                             std::vector<int> &gpuResultCounts)
 {
     std::vector<int> gpuResultHelper(config.num_of_topk),
@@ -75,7 +78,7 @@ void sortGenieResults(GPUGenie::GPUGenie_Config &config, std::vector<int> &gpuRe
 
 void getRawInvListSizes(inv_table &table, std::vector<size_t> &rawInvertedListsSizes)
 {
-    assert(table.build_status() == GPUGenie::inv_table::status::builded);
+    assert(table.build_status() == inv_table::status::builded);
     std::vector<int> *inv_pos = table.inv_pos();
 
     rawInvertedListsSizes.clear();
@@ -123,14 +126,14 @@ void compressInvertedLists(
 void knn_search_cpu(
             inv_table &table,
             std::vector<std::vector<uint32_t>> &comprInvertedLists, // TODO make part of compressed inv_table
-            std::vector<query> &queries,
+            std::vector<Query> &queries,
             std::vector<int> &resultIdxs,
             std::vector<int> &resultCounts,
             GPUGenie_Config &config,
             const std::string &compression_name, // TODO make string name of compression part of config 
             bool manualDelta)
 {
-    assert(table.build_status() == GPUGenie::inv_table::status::builded);
+    assert(table.build_status() == inv_table::status::builded);
 
     std::vector<int> tmpResultIdxs(config.data_points->size());
     std::vector<int> tmpResultCounts(config.data_points->size());
@@ -158,10 +161,10 @@ void knn_search_cpu(
 
     time_overall_start = getTime();
 
-    for (query &q : queries)
+    for (Query &q : queries)
     {
         std::vector<int> invListsTocount;
-        std::vector<query::range> ranges;
+        std::vector<Query::range> ranges;
         int queryIndex = q.index();
 
         q.dump(ranges);
@@ -175,7 +178,7 @@ void knn_search_cpu(
 
         time_queryPreprocessing_start = getTime();
 
-        for (query::range &r : ranges)
+        for (Query::range &r : ranges)
         {
             int low = r.low;
             int up = r.up;
@@ -341,11 +344,11 @@ int main(int argc, char* argv[])
 
 
     std::cout << "Examining inverted lists...";
-    std::vector<GPUGenie::inv_list> *inv_lists = table->inv_lists();
+    std::vector<inv_list> *inv_lists = table->inv_lists();
     // check inverted index of the tables using inv_list class
     for (size_t attr_index = 0; attr_index < inv_lists->size(); attr_index++)
     {
-        GPUGenie::inv_list invertedList = (*inv_lists)[attr_index];
+        inv_list invertedList = (*inv_lists)[attr_index];
         int posting_list_length = invertedList.size();
         int posting_list_min = invertedList.min();
         int posting_list_max = invertedList.max();
@@ -394,7 +397,7 @@ int main(int argc, char* argv[])
     std::cout << "Loading queries..." << std::endl;
 
     read_file(*config.query_points, queryFile.c_str(), config.num_of_queries);
-    std::vector<query> queries;
+    std::vector<Query> queries;
     load_query(*table, queries, config);
 
     std::cout << "Done loading queries..." << std::endl;

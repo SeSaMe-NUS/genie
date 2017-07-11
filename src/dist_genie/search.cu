@@ -7,13 +7,15 @@
 #include "global.h"
 
 using namespace genie;
+using namespace genie::table;
+using namespace genie::query;
 using namespace std;
 
 /*
  * Load queries for different tables.
  */
 static void LoadQueries(GPUGenie_Config &config, vector<shared_ptr<inv_table>> &tables,
-	vector<distgenie::Cluster> &clusters, vector<vector<query> > &queries)
+	vector<distgenie::Cluster> &clusters, vector<vector<Query> > &queries)
 {
 	for (vector<distgenie::Cluster>::size_type i = 0; i < clusters.size(); ++i)
 	{
@@ -33,7 +35,7 @@ void distgenie::search::ExecuteMultitableQuery(GPUGenie_Config &config, DistGeni
 		vector<shared_ptr<genie::table::inv_table>> &tables, vector<Cluster> &clusters, vector<Result> &results,
 		vector<int> &id_offset)
 {
-	vector<vector<query> > queries(clusters.size());
+	vector<vector<Query> > queries(clusters.size());
 	LoadQueries(config, tables, clusters, queries);
 
 	vector<vector<int> > h_topk(clusters.size());

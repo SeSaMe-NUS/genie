@@ -20,7 +20,9 @@
 #include <genie/utility/scan.h> 
 #include <genie/utility/Timing.h>
 
-using namespace GPUGenie;
+using namespace genie;
+using namespace genie::compression;
+using namespace genie::utility;
 
 bool testScan(uint *h_Input, uint *h_OutputGPU, uint *h_OutputCPU, uint *d_Input, uint *d_Output, size_t arrayLength)
 {

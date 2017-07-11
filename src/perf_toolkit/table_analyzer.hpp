@@ -164,11 +164,11 @@ public:
         std::string dirsep("/");
         std::string fname(dest_directory+dirsep+"table_"
             +genie::compression::DeviceCodecFactory::getCompressionName(compression)+"_lists.csv");
-        genie::util::PerfLogger<InvertedListData>::Instance().New(fname);
+        genie::utility::PerfLogger<InvertedListData>::Instance().New(fname);
 
         for (int pos = 0; pos < (int)invPos->size()-1; pos++)
         {
-            genie::util::PerfLogger<InvertedListData>::Instance().Log()
+            genie::utility::PerfLogger<InvertedListData>::Instance().Log()
                 .Compr(compression)
                 .Length((*invPos)[pos+1]-(*invPos)[pos])
                 .RawSize(((*invPos)[pos+1]-(*invPos)[pos]) * sizeof(int))
@@ -176,7 +176,7 @@ public:
                 .FirstValue((*inv)[((*invPos)[pos])])
                 .LastValue((*inv)[((*invPos)[pos+1]-1)]);
 
-            genie::util::PerfLogger<InvertedListData>::Instance().Next();
+            genie::utility::PerfLogger<InvertedListData>::Instance().Next();
         }
     }
 };

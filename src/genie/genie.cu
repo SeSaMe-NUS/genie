@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		config.DisplayConfiguration();
 		SearchResult result = Search(policy, table_file, query_file);
 	}
-	catch (exception &e)
+	catch (std::exception &e)
 	{
 		cout << e.what() << endl;
 		return EXIT_FAILURE;

@@ -25,6 +25,7 @@
 #include "global.h"
 
 using namespace genie;
+using namespace genie::table;
 using namespace distgenie;
 using namespace std;
 

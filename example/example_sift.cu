@@ -11,9 +11,10 @@ description: create a running example fo the library.
 #include <fstream>
 #include <string>
 
-using namespace GPUGenie;
 using namespace std;
-
+using namespace genie;
+using namespace genie::table;
+using namespace genie::utility;
 
 int main(int argc, char * argv[])
 {
@@ -38,7 +39,7 @@ int main(int argc, char * argv[])
 	string queryFile = "../static/sift_1k_query.csv";
 	
 	/*** Configuration of KNN Search ***/
-	GPUGenie::GPUGenie_Config config;
+	GPUGenie_Config config;
 
 	config.num_of_queries = 500;
 
@@ -160,11 +161,11 @@ int main(int argc, char * argv[])
 	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
 
 	u64 start = getTime();
-	GPUGenie::knn_search(result,result_count, config);
+	knn_search(result,result_count, config);
 	u64 end = getTime();
-    GPUGenie::reset_device();
+    reset_device();
 	double elapsed = getInterval(start, end);
-    GPUGenie::reset_device();
+    reset_device();
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
 	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
 	{

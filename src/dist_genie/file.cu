@@ -7,6 +7,8 @@
 #include <genie/utility/serialization.h>
 
 using namespace genie;
+using namespace genie::table;
+using namespace genie::utility;
 using namespace std;
 
 void distgenie::file::ReadData(GPUGenie_Config &config, DistGenieConfig &extra_config, vector<vector<int> > &data, vector<shared_ptr<inv_table>> &tables)
@@ -29,7 +31,7 @@ void distgenie::file::ReadData(GPUGenie_Config &config, DistGenieConfig &extra_c
 		{
 			//clog << "load binary file " << to_string(i) << endl;
 			data_file = extra_config.data_file + "_" + to_string(i) + "_" + to_string(g_mpi_rank) + ".dat";
-    		tables.at(i) = genie::util::LoadTable(data_file);
+    		tables.at(i) = LoadTable(data_file);
 			if (config.save_to_gpu && tables.at(i)->d_inv_p == NULL)
 				tables.at(i)->cpy_data_to_gpu();
 			tables.at(i)->is_stored_in_gpu = config.save_to_gpu;

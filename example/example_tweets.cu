@@ -14,9 +14,10 @@
 #include <fstream>
 #include <string>
 
-using namespace GPUGenie;
 using namespace std;
-
+using namespace genie;
+using namespace genie::table;
+using namespace genie::utility;
 
 int main(int argc, char * argv[])//for ide: from main to main4
 {
@@ -25,7 +26,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	std::vector<attr_t> multirange_queries;
 	std::vector<std::vector<int> > data;
 	inv_table table;
-    GPUGenie::GPUGenie_Config config;
+    GPUGenie_Config config;
 
 	string  dataFile = "../static/tweets_4k.csv";//for ide: from "sift_1k.csv" to "example/sift_1k.csv"
     string  queryFile= "../static/tweets_4k.csv";
@@ -110,7 +111,7 @@ int main(int argc, char * argv[])//for ide: from main to main4
 	Logger::log(Logger::INFO, " example_sift Launching knn functions...");
 
 	u64 start = getTime();
-	GPUGenie::knn_search(result, result_count, config);
+	knn_search(result, result_count, config);
 	u64 end = getTime();
 	
     double elapsed = getInterval(start, end);

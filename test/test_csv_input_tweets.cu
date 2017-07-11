@@ -16,8 +16,11 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+
+using namespace genie;
+using namespace genie::table;
+using namespace genie::utility;
 using namespace std;
-using namespace GPUGenie;
 
 int main(int argc, char* argv[])
 {
