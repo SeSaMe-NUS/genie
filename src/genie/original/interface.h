@@ -1,6 +1,5 @@
 /*! \file interface.h
- *  \brief This file makes it easier for users to call GPUGenie. Thus, users
- *  can focus on this file.
+ *  \brief Deprecated interface of GENIE. Please use <genie/genie.h> instead.
  */
 
 #ifndef INTERFACE_H_
