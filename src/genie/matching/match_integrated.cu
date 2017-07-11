@@ -14,7 +14,7 @@
 #include <genie/utility/Logger.h>
 #include <genie/utility/PerfLogger.hpp>
 #include <genie/utility/Timing.h>
-#include <genie/exception/genie_errors.h>
+#include <genie/exception/exception.h>
 #include <genie/compression/DeviceCodecFactory.h>
 #include <genie/compression/DeviceCompositeCodec.h>
 #include <genie/compression/DeviceSerialCodec.h>

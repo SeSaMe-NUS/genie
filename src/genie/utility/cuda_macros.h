@@ -7,7 +7,7 @@
 #define GENIE_UTILITY_CUDAMACROS_H_
 
 #include <stdio.h>
-#include <genie/exception/genie_errors.h>
+#include <genie/exception/exception.h>
 #include <genie/utility/Logger.h>
 
 /*! \fn cudaCheckErrors( err )

@@ -11,8 +11,6 @@ configure_file(
 )
 
 set( GENIE_COMPILATION_UNITS
-  genie/exception/exception.cc
-  genie/exception/genie_errors.cu
   genie/execution_policy/single_range.cc
   genie/execution_policy/single_value.cc
   genie/execution_policy/validation.cc
@@ -45,7 +43,6 @@ set( GENIE_TOP_LEVEL_HEADER
 
 set( GENIE_HEADERS
   genie/exception/exception.h
-  genie/exception/genie_errors.h
   genie/execution_policy/single_range.h
   genie/execution_policy/single_value.h
   genie/execution_policy/validation.h

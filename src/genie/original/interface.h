@@ -10,7 +10,7 @@
 
 #include <genie/compression/DeviceCodecFactory.h>
 #include <genie/configure.h>
-#include <genie/exception/genie_errors.h>
+#include <genie/exception/exception.h>
 #include <genie/query/query.h>
 #include <genie/table/inv_table.h>
 #include <genie/utility/FileReader.h>

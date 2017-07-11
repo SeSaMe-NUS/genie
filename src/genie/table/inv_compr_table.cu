@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 
-#include <genie/exception/genie_errors.h>
+#include <genie/exception/exception.h>
 #include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
