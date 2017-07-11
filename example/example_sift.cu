@@ -5,6 +5,8 @@ description: create a running example fo the library.
 */
 
 #include <genie/original/interface.h>
+#include <genie/utility/Timing.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

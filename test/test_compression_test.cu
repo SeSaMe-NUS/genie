@@ -7,6 +7,7 @@
 #undef NDEBUG
  
 #include <genie/original/interface.h>
+#include <genie/utility/Timing.h>
 
 #include <algorithm>
 #include <assert.h>

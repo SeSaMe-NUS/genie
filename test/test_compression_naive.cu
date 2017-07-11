@@ -7,6 +7,7 @@
 #undef NDEBUG
  
 #include <genie/original/interface.h>
+#include <genie/table/inv_compr_table.h>
 #include <genie/compression/DeviceCodecFactory.h>
 #include <genie/interface/io.h>
 

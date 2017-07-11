@@ -9,9 +9,12 @@
 #include <vector>
 #include <string>
 
-#include <genie/GPUGenie.h>
 #include <genie/compression/DeviceCodecFactory.h>
 #include <genie/configure.h>
+#include <genie/exception/genie_errors.h>
+#include <genie/query/query.h>
+#include <genie/table/inv_table.h>
+#include <genie/utility/FileReader.h>
 
 /*! \def GPUGENIE_DEFAULT_TOPK 10
  */

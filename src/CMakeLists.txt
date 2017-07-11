@@ -40,7 +40,7 @@ set( GENIE_COMPILATION_UNITS
 )
 
 set( GENIE_TOP_LEVEL_HEADER
-  GPUGenie.h
+  genie/genie.h
 )
 
 set( GENIE_HEADERS
@@ -51,7 +51,6 @@ set( GENIE_HEADERS
   genie/execution_policy/validation.h
   genie/interface/config.h
   genie/interface/execution_policy.h
-  genie/interface/genie.h
   genie/interface/io.h
   genie/interface/search.h
   genie/interface/types.h

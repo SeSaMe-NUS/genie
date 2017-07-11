@@ -5,10 +5,10 @@
  *  \brief This is the top-level namespace of the project
  */
 
-#include "config.h"
-#include "execution_policy.h"
-#include "io.h"
-#include "search.h"
-#include "types.h"
+#include "interface/config.h"
+#include "interface/execution_policy.h"
+#include "interface/io.h"
+#include "interface/search.h"
+#include "interface/types.h"
 
 #endif

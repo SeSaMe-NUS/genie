@@ -7,7 +7,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include <genie/interface/genie.h>
+#include <genie/genie.h>
 
 using namespace std;
 using namespace genie;

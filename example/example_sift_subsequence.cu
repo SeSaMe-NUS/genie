@@ -10,6 +10,7 @@
 
 
 #include <genie/original/interface.h>
+#include <genie/utility/Timing.h>
 
 #include <assert.h>
 #include <vector>

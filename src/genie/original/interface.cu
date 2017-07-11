@@ -24,6 +24,10 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
+#ifdef COMPR
+    #include <genie/table/inv_compr_table.h>
+#endif
+#include <genie/matching/knn.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
 
