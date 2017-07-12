@@ -77,8 +77,8 @@
  * execution policy will be generated using `genie::MakePolicy()`.
  * Then use the 1st or 2nd level interface functions to perform the search.
  *
- * In general, everything in namespace `genie::` is a stable, public interface, while subnamespaces, such as
- * `genie::utility::` refer to internal components of GENIE, which may change or be removed over time. 
+ * In general, everything in namespace [`genie`](namespacegenie.html) is a stable, public interface, while subnamespaces, such as
+ * `genie::utility` refer to internal components of GENIE, which may change or be removed over time. 
  *
  * Below is an example program demonstrating the usage of GENIE.
  *
@@ -107,7 +107,7 @@
  * \subsection usage_executable_sec Using the GENIE executable
  *
  * For convenience, we have provided an executable `genie-cli` (compiled to /bin directory) for interfacing with GENIE.
- * `./genie --help` shows you all the allowed options
+ * `./genie-cli --help` shows you all the allowed options
  *
  * ```plain
  * Allowed options:

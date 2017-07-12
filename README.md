@@ -214,5 +214,7 @@ $ pid=$(pgrep odgenie | sed -n 2p); gdb -q --pid "${pid}"
 
 ## Documentation
 
+The documentation is available online at http://sesame-nus.github.io/genie.
+
 Code documentation for GENIE can be generated with `cmake` and `make`. After you configure CMake following steps in
 [Compilation and Development](#compilation-and-development), just run `$ make doc`.
