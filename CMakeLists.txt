@@ -81,18 +81,24 @@ if (GENIE_DISTRIBUTED)
   endforeach()
   
   find_package(MPI REQUIRED) # Use MPI_HOME or env(MPI_HOME) to define root directory of MPI installation
-  unset(MPI_HOME CACHE)
   message(STATUS "Found mpiexec: ${MPIEXEC}")
 
   # Check for correct OpenMPI and version 
   if (NOT MPIEXEC OR NOT MPI_C_FOUND OR NOT MPI_CXX_FOUND)
     message(FATAL_ERROR "OpenMPI not found!")
   endif()
-  execute_process(COMMAND ${MPI_C_COMPILER} --showme:version OUTPUT_VARIABLE MPI_VERSION)
-  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*" OR
-      NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
-    message(FATAL_ERROR "MPI not OpenMPI, or OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  execute_process(COMMAND ${MPI_C_COMPILER} "--showme:version" OUTPUT_VARIABLE MPI_VERSION ERROR_VARIABLE MPI_VERSION_ERR)
+  if (MPI_VERSION STREQUAL "")
+    set(MPI_VERSION ${MPI_VERSION_ERR})
   endif()
+  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*")
+    message(FATAL_ERROR "MPI not OpenMPI!")
+  endif()
+  if(NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
+    message(FATAL_ERROR "OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  endif()
+
+
 
   find_package(OpenMP REQUIRED)
 
