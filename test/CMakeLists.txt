@@ -1,7 +1,7 @@
 function(genie_add_test_case TARGET)
    add_executable(${TARGET} ${ARGN})
    add_dependencies(${TARGET} ${PROJECT_NAME})
-   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+   set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libgenie.a)  
    target_link_libraries(${TARGET}
                          ${PROJECT_NAME}
                          ${MPI_LIBRARIES}
@@ -10,49 +10,35 @@ function(genie_add_test_case TARGET)
 endfunction()
 
 genie_add_test_case(test_csv_input_sift_data
-    test_csv_input_sift_data.cu)
-
-genie_add_test_case(test_binary_input_sift_data
-    test_binary_input_sift_data.cu)
+    test_csv_input_sift_data.cc)
 
 genie_add_test_case(test_csv_input_multiload
-    test_csv_input_multiload.cu)
-
-genie_add_test_case(test_binary_input_multiload
-    test_binary_input_multiload.cu)
+    test_csv_input_multiload.cc)
 
 genie_add_test_case(test_save2gpu_sift
-    test_save2gpu_sift.cu)
-
-genie_add_test_case(test_serialization_for_table
-    test_serialization_for_table.cu)
+    test_save2gpu_sift.cc)
 
 genie_add_test_case(test_csv_input_tweets
-    test_csv_input_tweets.cu)
-
-genie_add_test_case(test_binary_input_tweets
-    test_binary_input_tweets.cu)
+    test_csv_input_tweets.cc)
 
 genie_add_test_case(test_csv_multiload_tweets
-    test_csv_multiload_tweets.cu)
-
-genie_add_test_case(test_binary_multiload_tweets
-    test_binary_multiload_tweets.cu)
+    test_csv_multiload_tweets.cc)
 
 genie_add_test_case(test_subsequence_search_csv_input
-    test_subsequence_search_csv_input.cu)
-
-genie_add_test_case(test_subsequence_search_binary_input
-    test_subsequence_search_binary_input.cu)
+    test_subsequence_search_csv_input.cc)
 
 genie_add_test_case(test_hashtable_overflow
-    test_hashtable_overflow.cu)
+    test_hashtable_overflow.cc)
 
 genie_add_test_case(test_multiple_search
-    test_multiple_search.cu)
+    test_multiple_search.cc)
 
 genie_add_test_case(test_refactoring_new_interface
-	test_refactoring_new_interface.cu)
+	test_refactoring_new_interface.cc)
+
+genie_add_test_case(test_serialization
+    test_serialization.cc)
+
 
 if (GENIE_COMPR)
     genie_add_test_case(test_compression_naive

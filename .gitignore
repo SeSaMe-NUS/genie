@@ -68,4 +68,6 @@ Doxyfile
 #vim swap files
 *.swp
 
-src/GPUGenie/configure.h
+src/genie/configure.h
+*.inv
+*.cinv

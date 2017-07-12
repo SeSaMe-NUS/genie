@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
-project("GPUGenie"
+project("genie"
   VERSION 0.1
   LANGUAGES C CXX CUDA)
 enable_testing()
@@ -35,6 +35,13 @@ set(CMAKE_C_FLAGS "${genie_warnings}")
 set(CMAKE_CXX_FLAGS "${genie_warnings}")
 
 set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call")
+# Disable cudafe warning: "type qualifier is meaningless on cast type" occuring in boost::archive
+# https://stackoverflow.com/questions/14831051/how-to-disable-compiler-warnings-with-nvcc
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} \
+  -Xcudafe --diag_suppress=cast_to_qualified_type,--diag_suppress=integer_sign_change,--diag_suppress=set_but_not_used")
+# Boost 1.64 has a bug with Cuda 7.5 and 8.0, where compilation fails on static assert from g++ standard library 
+# https://svn.boost.org/trac10/ticket/13049
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DBOOST_NO_CXX11_NOEXCEPT")
 set(CMAKE_CUDA_FLAGS_DEBUG  "--debug --device-debug --generate-line-info")
 set(CMAKE_CUDA_FLAGS_RELEASE "--optimize 3 --generate-line-info -DNDEBUG")
 # set(CUDA_NVCC_FLAGS_RELWITHDEBUGINFO "--optimize 2 --generate-line-info")
@@ -45,18 +52,21 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 
 ## DEPENDENCIES
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 ### Boost
 
 set(Boost_USE_STATIC_LIBS ON)
-if (GENIE_COMPR)
-  set(Boost_COMPONETNS serialization program_options)
-else()
-  set(Boost_COMPONETNS serialization)
-endif()
+set(Boost_COMPONETNS iostreams serialization program_options)
 # WARNING: CMake may issue a warning: Imported targets not available for Boost version 106400
 # This happens when CMake doesn't recognize too new version of Boost, for example CMake 3.7 doesn't recognize Boost
 # 1.64, but CMake 3.8 already does. The warning causes missing Boost components dependencies, but may be ignored.
 find_package(Boost 1.63.0 REQUIRED COMPONENTS ${Boost_COMPONETNS})
+
+### Thrust
+
+find_package(Thrust REQUIRED)
+include_directories(${THRUST_INCLUDE_DIR})
 
 ### MPI & OpenMP
 
@@ -71,18 +81,24 @@ if (GENIE_DISTRIBUTED)
   endforeach()
   
   find_package(MPI REQUIRED) # Use MPI_HOME or env(MPI_HOME) to define root directory of MPI installation
-  unset(MPI_HOME CACHE)
   message(STATUS "Found mpiexec: ${MPIEXEC}")
 
   # Check for correct OpenMPI and version 
   if (NOT MPIEXEC OR NOT MPI_C_FOUND OR NOT MPI_CXX_FOUND)
     message(FATAL_ERROR "OpenMPI not found!")
   endif()
-  execute_process(COMMAND ${MPI_C_COMPILER} --showme:version OUTPUT_VARIABLE MPI_VERSION)
-  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*" OR
-      NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
-    message(FATAL_ERROR "MPI not OpenMPI, or OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  execute_process(COMMAND ${MPI_C_COMPILER} "--showme:version" OUTPUT_VARIABLE MPI_VERSION ERROR_VARIABLE MPI_VERSION_ERR)
+  if (MPI_VERSION STREQUAL "")
+    set(MPI_VERSION ${MPI_VERSION_ERR})
   endif()
+  if (NOT ${MPI_VERSION} MATCHES ".*Open MPI.*")
+    message(FATAL_ERROR "MPI not OpenMPI!")
+  endif()
+  if(NOT ${MPI_VERSION} MATCHES ".* 1\\.[7-9]\\..*| .*1\\.10\\..*| .* 2\\.[0-9]+\\..*")
+    message(FATAL_ERROR "OpenMPI has unknown or too low version! Required OpenMPI 1.7 or higher.")
+  endif()
+
+
 
   find_package(OpenMP REQUIRED)
 
@@ -91,6 +107,9 @@ if (GENIE_DISTRIBUTED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+## Bzip2
+
+find_package(BZip2 REQUIRED)
 
 ## COMPRESSION MODULE
 
@@ -140,7 +159,7 @@ link_directories(${PROJECT_BINARY_DIR}/lib ${Boost_LIBRARY_DIR})
 function(genie_add_simple_executable TARGET)
     add_executable(${TARGET} ${ARGN})
     add_dependencies(${TARGET} ${PROJECT_NAME})
-    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libGPUGenie.a)  
+    set_property(TARGET ${TARGET} PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/lib/libgenie.a)  
     target_link_libraries(${TARGET}
         ${PROJECT_NAME}
         ${CUDA_cudadevrt_LIBRARY})
@@ -163,9 +182,12 @@ if (GENIE_EXAMPLES)
 endif()
 add_subdirectory(src)
 if (GENIE_DISTRIBUTED)
-  add_subdirectory(src/DistGenie)
+  add_subdirectory(src/dist_genie)
 endif()
-add_subdirectory(src/perftoolkit)
+add_subdirectory(src/genie_cli)
+if (GENIE_COMPR)
+  add_subdirectory(src/perf_toolkit)
+endif()
 add_subdirectory(static)
 add_subdirectory(test)
 add_subdirectory(utility)

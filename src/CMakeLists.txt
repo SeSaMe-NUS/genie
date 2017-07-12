@@ -1,80 +1,102 @@
+macro(install_headers HEADERS)
+  foreach ( file ${${HEADERS}} )
+    get_filename_component( dir ${file} DIRECTORY )
+    install( FILES ${file} DESTINATION include/${dir} )
+  endforeach()
+endmacro()
+
 configure_file(
-	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h.in
-	${PROJECT_SOURCE_DIR}/src/GPUGenie/configure.h
+  ${PROJECT_SOURCE_DIR}/src/genie/configure.h.in
+  ${PROJECT_SOURCE_DIR}/src/genie/configure.h
 )
 
 set( GENIE_COMPILATION_UNITS
-  GPUGenie/genie_errors.cu
-  GPUGenie/inv_list.cu
-  GPUGenie/inv_table.cu
-  GPUGenie/query.cu
-  GPUGenie/match.cu
-  GPUGenie/match_common.cu
-  GPUGenie/interface.cu
-  GPUGenie/knn.cu
-  GPUGenie/heap_count.cu  
-  GPUGenie/FileReader.cu
-  GPUGenie/scan.cu
-  GPUGenie/Logger.cu
-  GPUGenie/Timing.cpp
-  GPUGenie/interface/config.cc
-  GPUGenie/interface/execution_policy.cu
-  GPUGenie/interface/search.cu
-  GPUGenie/interface/io.cu
-  GPUGenie/execution_policy/single_value.cu
-  GPUGenie/execution_policy/single_range.cu
-  GPUGenie/exception/exception.cc
-  GPUGenie/table/interface.cu
-  GPUGenie/query/interface.cu
-  GPUGenie/matching/interface.cu
+  genie/execution_policy/single_range.cc
+  genie/execution_policy/single_value.cc
+  genie/execution_policy/validation.cc
+  genie/interface/config.cc
+  genie/interface/execution_policy.cc
+  genie/interface/io.cc
+  genie/interface/search.cc
+  genie/matching/heap_count.cu  
+  genie/matching/interface.cc
+  genie/matching/knn.cu
+  genie/matching/match.cu
+  genie/matching/match_common.cu
+  genie/original/interface.cc
+  genie/query/interface.cc
+  genie/query/query.cc
+  genie/table/interface.cc
+  genie/table/inv_compr_table.cu
+  genie/table/inv_list.cc
+  genie/table/inv_table.cu
+  genie/utility/FileReader.cc
+  genie/utility/init.cu
+  genie/utility/Logger.cc
+  genie/utility/scan.cu
+  genie/utility/serialization.cc
+  genie/utility/Timing.cc
 )
 
 set( GENIE_TOP_LEVEL_HEADER
-  GPUGenie.h
+  genie/genie.h
 )
 
 set( GENIE_HEADERS
-  GPUGenie/genie_errors.h
-  GPUGenie/inv_list.h
-  GPUGenie/inv_table.h
-  GPUGenie/query.h
-  GPUGenie/match.h
-  GPUGenie/match_common.h
-  GPUGenie/interface.h
-  GPUGenie/knn.h
-  GPUGenie/heap_count.h
-  GPUGenie/FileReader.h
-  GPUGenie/scan.h
-  GPUGenie/PerfLogger.hpp
-  GPUGenie/Logger.h
-  GPUGenie/Timing.h
+  genie/exception/exception.h
+  genie/execution_policy/single_range.h
+  genie/execution_policy/single_value.h
+  genie/execution_policy/validation.h
+  genie/interface/config.h
+  genie/interface/execution_policy.h
+  genie/interface/io.h
+  genie/interface/search.h
+  genie/interface/types.h
+  genie/matching/heap_count.h
+  genie/matching/interface.h
+  genie/matching/knn.h
+  genie/matching/match.h
+  genie/matching/match_common.h
+  genie/original/interface.h
+  genie/query/interface.h
+  genie/query/query.h
+  genie/table/interface.h
+  genie/table/inv_list.h
+  genie/table/inv_table.h
+  genie/utility/cuda_macros.h
+  genie/utility/FileReader.h
+  genie/utility/init.h
+  genie/utility/Logger.h
+  genie/utility/PerfLogger.h
+  genie/utility/scan.h
+  genie/utility/serialization.h
+  genie/utility/Timing.h
 )
 
 
 if( GENIE_COMPR )
   set( GENIE_COMPRESSION_COMPILATION_UNITS
-    GPUGenie/inv_compr_table.cu
-    GPUGenie/match_integrated.cu
-    GPUGenie/DeviceCodecs.cu
-    GPUGenie/DeviceCodecFactory.cu
-    GPUGenie/DeviceCompositeCodec.cu
-    GPUGenie/DeviceSerialCodec.cu
-    GPUGenie/DeviceBitPackingCodec.cu
-    GPUGenie/DeviceBitPackingHelpers.cu
-    GPUGenie/DeviceVarintCodec.cu
+    genie/matching/match_integrated.cu
+    genie/compression/DeviceCodecs.cu
+    genie/compression/DeviceCodecFactory.cu
+    genie/compression/DeviceCompositeCodec.cu
+    genie/compression/DeviceSerialCodec.cu
+    genie/compression/DeviceBitPackingCodec.cu
+    genie/compression/DeviceBitPackingHelpers.cu
+    genie/compression/DeviceVarintCodec.cu
   )
   
   set( GENIE_COMPRESSION_HEADERS
-    GPUGenie/inv_compr_table.h
-    GPUGenie/match_integrated.h
-    GPUGenie/DeviceCodecs.h
-    GPUGenie/DeviceCodecFactory.h
-    GPUGenie/DeviceCompositeCodec.h
-    GPUGenie/DeviceSerialCodec.h
-    GPUGenie/DeviceDeltaHelper.h
-    GPUGenie/DeviceBitPackingCodec.h
-    GPUGenie/DeviceBitPackingHelpers.h
-    GPUGenie/DeviceVarintCodec.h
+    genie/table/inv_compr_table.h
+    genie/matching/match_integrated.h
+    genie/compression/DeviceCodecs.h
+    genie/compression/DeviceCodecFactory.h
+    genie/compression/DeviceCompositeCodec.h
+    genie/compression/DeviceSerialCodec.h
+    genie/compression/DeviceDeltaHelper.h
+    genie/compression/DeviceBitPackingCodec.h
+    genie/compression/DeviceBitPackingHelpers.h
+    genie/compression/DeviceVarintCodec.h
   )
 endif()
 
@@ -84,7 +106,8 @@ add_library( ${PROJECT_NAME}
   ${GENIE_COMPILATION_UNITS} ${GENIE_COMPRESSION_COMPILATION_UNITS})
 
 target_link_libraries( ${PROJECT_NAME}
-  ${Boost_LIBRARIES})
+  ${Boost_LIBRARIES}
+  ${BZIP2_LIBRARIES})
 
 set_target_properties( ${PROJECT_NAME}
   PROPERTIES
@@ -93,9 +116,9 @@ set_target_properties( ${PROJECT_NAME}
 
 
 install(TARGETS ${PROJECT_NAME} 
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
-install(FILES ${GENIE_TOP_LEVEL_HEADER} DESTINATION include)
-install(FILES ${GENIE_HEADERS} DESTINATION include/GPUGenie)
-install(FILES ${GENIE_COMPRESSION_HEADERS} DESTINATION include/GPUGenie)
+install_headers(GENIE_TOP_LEVEL_HEADER)
+install_headers(GENIE_HEADERS)
+install_headers(GENIE_COMPRESSION_HEADERS)
