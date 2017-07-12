@@ -169,7 +169,7 @@ int main(int argc, char * argv[])
 	double elapsed = getInterval(start, end);
     reset_device();
 	Logger::log(Logger::VERBOSE, ">>>>>>> [time profiling]: Total Time Elapsed: %fms. <<<<<<<", elapsed);
-	for(int i = 0; i < config.num_of_queries & i < 5; ++i)
+	for(int i = 0; i < config.num_of_queries && i < 5; ++i)
 	{
 		printf("Query %d result is: \n\t", i);
 		for (int j = 0; j < config.num_of_topk && j < 10; ++j)
