@@ -11,7 +11,7 @@
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <genie/exception/genie_errors.h>
+#include <genie/exception/exception.h>
 #include <genie/table/inv_compr_table.h>
 #include <genie/table/inv_table.h>
 #include <genie/utility/Logger.h>
@@ -25,7 +25,7 @@ genie::utility::SaveTable(const std::string &filename, const std::shared_ptr<con
 {
     // Cannot save more than one table using this function
     if (table->get_table_index() != 0 || table->get_total_num_of_table() != 1)
-        throw genie::exception::genie_error("Saving multiple tables not supported");
+        throw genie::exception::cpu_runtime_error("Saving multiple tables not supported");
 
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -43,7 +43,7 @@ genie::utility::LoadTable(const std::string &filename)
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
     if (!ifs.good())
-        throw genie::exception::genie_error("Loading from file failed (fstream not good)");
+        throw genie::exception::cpu_runtime_error("Loading from file failed (fstream not good)");
 
     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
     in.push(boost::iostreams::bzip2_decompressor());
@@ -97,7 +97,7 @@ void genie::table::inv_table::save(Archive &ar, const unsigned int version) cons
     ar.register_type(static_cast<genie::table::inv_compr_table*>(nullptr));
     Logger::log(Logger::DEBUG, "Saving inv_table archive of version %d", version);
     if (_build_status != builded)
-        throw genie::exception::genie_error("Cannot serialize inv::table that has not yet been built.");
+        throw genie::exception::cpu_runtime_error("Cannot serialize inv::table that has not yet been built.");
     // General structure
     ar << _size;
     ar << _dim_size;

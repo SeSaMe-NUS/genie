@@ -12,7 +12,7 @@
 #include <genie/table/inv_table.h>
 #include <genie/table/inv_compr_table.h>
 #include <genie/compression/DeviceCodecFactory.h>
-#include <genie/utility/PerfLogger.hpp>
+#include <genie/utility/PerfLogger.h>
 
 namespace perftoolkit
 {

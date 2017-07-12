@@ -24,10 +24,13 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
-#ifdef COMPR
+#include <genie/configure.h>
+#ifdef GENIE_COMPR
     #include <genie/table/inv_compr_table.h>
 #endif
 #include <genie/matching/knn.h>
+#include <genie/utility/cuda_macros.h>
+#include <genie/utility/init.h>
 #include <genie/utility/Logger.h>
 #include <genie/utility/Timing.h>
 
@@ -41,7 +44,9 @@ using namespace genie::utility;
 using namespace std;
 
 #ifndef GENIE_COMPR
-    const COMPRESSION_TYPE genie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+    namespace genie { namespace compression {
+        const COMPRESSION_TYPE DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+    }}
 #endif
 
 void swap(int * position, int offset1, int offset2)
@@ -937,7 +942,7 @@ void genie::original::sequence_to_gram(vector<vector<int> > & sequences, vector<
             vector<int> temp_line;
             for(unsigned int p = 0; p < (unsigned int)gram_length; ++p)
             {
-                if(p<sequences[i].size() <= 0) break;
+                if(p < sequences[i].size() && sequences[i].size() <= 0) break;
                 if(p < sequences[i].size())
                     line_null.push_back(sequences[i][p]);
                 else
@@ -988,27 +993,9 @@ void genie::original::sequence_reduce_to_ground(vector<vector<int> > & data, vec
     }
 }
 
-void genie::original::init_genie(GPUGenie_Config &config)
+void genie::original::init_genie(GPUGenie_Config &old_config)
 {
-	int device_count;
-
-	cudaCheckErrors(cudaGetDeviceCount(&device_count));
-	if (device_count == 0)
-	{
-		throw genie::exception::cpu_runtime_error("NVIDIA CUDA-SUPPORTED GPU NOT FOUND! Program aborted..");
-	}
-	else if (device_count <= config.use_device)
-	{
-		Logger::log(Logger::INFO,
-				"[Info] Device %d not found! Changing to %d...",
-				config.use_device, GPUGENIE_DEFAULT_DEVICE);
-		config.use_device = GPUGENIE_DEFAULT_DEVICE;
-	}
-	cudaCheckErrors(cudaSetDevice(config.use_device));
-    Logger::log(Logger::INFO, "Using device %d", config.use_device);
-
-    
-    cudaCheckErrors(cudaFree(0));
-	Logger::log(Logger::INFO, "Initialized CUDA context.");
+    genie::Config config = Config().SetGpuId(old_config.use_device);
+	genie::utility::Init(config);
 }
 

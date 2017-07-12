@@ -11,6 +11,7 @@
 
 #undef NDEBUG
 #include <genie/original/interface.h>
+#include <genie/utility/cuda_macros.h>
 
 #include <assert.h>
 #include <vector>

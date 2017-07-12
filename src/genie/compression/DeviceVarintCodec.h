@@ -42,9 +42,6 @@ public:
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t /* comprLength */, uint32_t *d_out, size_t &capacity);
 
-    __device__ __host__
-    ~DeviceVarintCodec() {}
-
     std::string
     name() const { return "Varint"; }
 

@@ -11,32 +11,31 @@ configure_file(
 )
 
 set( GENIE_COMPILATION_UNITS
-  genie/exception/exception.cc
-  genie/exception/genie_errors.cu
-  genie/execution_policy/single_range.cu
-  genie/execution_policy/single_value.cu
+  genie/execution_policy/single_range.cc
+  genie/execution_policy/single_value.cc
   genie/execution_policy/validation.cc
-  genie/interface/config.cu
-  genie/interface/execution_policy.cu
-  genie/interface/io.cu
-  genie/interface/search.cu
+  genie/interface/config.cc
+  genie/interface/execution_policy.cc
+  genie/interface/io.cc
+  genie/interface/search.cc
   genie/matching/heap_count.cu  
-  genie/matching/interface.cu
+  genie/matching/interface.cc
   genie/matching/knn.cu
   genie/matching/match.cu
   genie/matching/match_common.cu
-  genie/original/interface.cu
-  genie/query/interface.cu
-  genie/query/query.cu
-  genie/table/interface.cu
-  genie/table/inv_list.cu
+  genie/original/interface.cc
+  genie/query/interface.cc
+  genie/query/query.cc
+  genie/table/interface.cc
+  genie/table/inv_compr_table.cu
+  genie/table/inv_list.cc
   genie/table/inv_table.cu
-  genie/utility/FileReader.cu
+  genie/utility/FileReader.cc
   genie/utility/init.cu
-  genie/utility/Logger.cu
+  genie/utility/Logger.cc
   genie/utility/scan.cu
-  genie/utility/serialization.cu
-  genie/utility/Timing.cpp
+  genie/utility/serialization.cc
+  genie/utility/Timing.cc
 )
 
 set( GENIE_TOP_LEVEL_HEADER
@@ -45,7 +44,6 @@ set( GENIE_TOP_LEVEL_HEADER
 
 set( GENIE_HEADERS
   genie/exception/exception.h
-  genie/exception/genie_errors.h
   genie/execution_policy/single_range.h
   genie/execution_policy/single_value.h
   genie/execution_policy/validation.h
@@ -65,10 +63,11 @@ set( GENIE_HEADERS
   genie/table/interface.h
   genie/table/inv_list.h
   genie/table/inv_table.h
+  genie/utility/cuda_macros.h
   genie/utility/FileReader.h
   genie/utility/init.h
   genie/utility/Logger.h
-  genie/utility/PerfLogger.hpp
+  genie/utility/PerfLogger.h
   genie/utility/scan.h
   genie/utility/serialization.h
   genie/utility/Timing.h
@@ -77,7 +76,6 @@ set( GENIE_HEADERS
 
 if( GENIE_COMPR )
   set( GENIE_COMPRESSION_COMPILATION_UNITS
-    genie/table/inv_compr_table.cu
     genie/matching/match_integrated.cu
     genie/compression/DeviceCodecs.cu
     genie/compression/DeviceCodecFactory.cu

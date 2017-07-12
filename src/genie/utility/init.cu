@@ -1,5 +1,6 @@
 #include "init.h"
 #include <genie/original/interface.h>
+#include <genie/utility/cuda_macros.h>
 
 using namespace genie;
 
