@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 
+#include <genie/configure.h>
 #include <genie/exception/exception.h>
 #include <genie/utility/cuda_macros.h>
 #include <genie/utility/Logger.h>
@@ -18,6 +19,13 @@ using namespace genie::compression;
 using namespace genie::utility;
 
 BOOST_CLASS_EXPORT_IMPLEMENT(genie::table::inv_compr_table)
+
+#ifndef GENIE_COMPR
+genie::table::inv_compr_table::~inv_compr_table() {}
+std::vector<int>* genie::table::inv_compr_table::inv() {return nullptr;}
+std::vector<int>* genie::table::inv_compr_table::inv_pos() {return nullptr;}
+void genie::table::inv_compr_table::build(size_t max_length, bool use_load_balance) {}
+#else
 
 void
 genie::table::inv_compr_table::build(size_t max_length, bool use_load_balance)
@@ -235,3 +243,5 @@ void genie::table::inv_compr_table::clear_gpu_mem()
     std::cout << getInterval(t1, t2) << " ms."<< std::endl;
 
 }
+
+#endif

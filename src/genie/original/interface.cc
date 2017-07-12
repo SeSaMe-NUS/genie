@@ -24,7 +24,8 @@
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
-#ifdef COMPR
+#include <genie/configure.h>
+#ifdef GENIE_COMPR
     #include <genie/table/inv_compr_table.h>
 #endif
 #include <genie/matching/knn.h>
@@ -43,7 +44,9 @@ using namespace genie::utility;
 using namespace std;
 
 #ifndef GENIE_COMPR
-    const COMPRESSION_TYPE genie::DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+    namespace genie { namespace compression {
+        const COMPRESSION_TYPE DEFAULT_COMPRESSION_TYPE = NO_COMPRESSION;
+    }}
 #endif
 
 void swap(int * position, int offset1, int offset2)

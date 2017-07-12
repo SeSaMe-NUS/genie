@@ -27,6 +27,7 @@ set( GENIE_COMPILATION_UNITS
   genie/query/interface.cc
   genie/query/query.cc
   genie/table/interface.cc
+  genie/table/inv_compr_table.cu
   genie/table/inv_list.cc
   genie/table/inv_table.cu
   genie/utility/FileReader.cc
@@ -75,7 +76,6 @@ set( GENIE_HEADERS
 
 if( GENIE_COMPR )
   set( GENIE_COMPRESSION_COMPILATION_UNITS
-    genie/table/inv_compr_table.cu
     genie/matching/match_integrated.cu
     genie/compression/DeviceCodecs.cu
     genie/compression/DeviceCodecFactory.cu

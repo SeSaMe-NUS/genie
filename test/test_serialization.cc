@@ -11,6 +11,7 @@
 #include <fstream>
 #include <memory>
 
+#include <genie/configure.h>
 #include <genie/original/interface.h>
 #include <genie/table/inv_table.h>
 #include <genie/table/inv_compr_table.h>
@@ -62,6 +63,7 @@ void testSerialization(genie::original::GPUGenie_Config &config, const std::stri
     //     inv_list_upperbound
     //     posting_list_size
 
+    #ifdef GENIE_COMPR
     if (config.compression)
     {
         inv_compr_table *ctable = dynamic_cast<inv_compr_table*>(table);
@@ -75,6 +77,7 @@ void testSerialization(genie::original::GPUGenie_Config &config, const std::stri
         assert(ctable->getUncompressedPostingListMaxLength() == c_loaded_table->getUncompressedPostingListMaxLength());
         assert(ctable->getCompression() == c_loaded_table->getCompression());
     }
+    #endif
 }
 
 
@@ -95,9 +98,11 @@ int main(int argc, char* argv[])
     config.compression = NO_COMPRESSION;
     testSerialization(config,"/tmp/genie_test_serialization.invtable");
 
+    #ifdef GENIE_COMPR
     // Test inv_compr_table
     config.compression = HEAVYWEIGHT_COMPRESSION_TYPE;
     testSerialization(config,"/tmp/genie_test_serialization.cinvtable");
+    #endif
 
     return 0;
 }
