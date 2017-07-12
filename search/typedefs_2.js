@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['matchintegratedfunptr',['MatchIntegratedFunPtr',['../namespaceGPUGenie.html#a8e091893598c623b48f44a9ff096e3a1',1,'GPUGenie']]]
+  ['matchintegratedfunptr',['MatchIntegratedFunPtr',['../DeviceCodecFactory_8h.html#a713126a5210965a06b88f91eda2fdcb1',1,'DeviceCodecFactory.h']]]
 ];

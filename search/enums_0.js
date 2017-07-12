@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['compression_5ftype',['COMPRESSION_TYPE',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9',1,'GPUGenie']]]
+  ['compression_5ftype',['COMPRESSION_TYPE',['../namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae',1,'genie::compression']]]
 ];

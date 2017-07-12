@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['up',['up',['../structGPUGenie_1_1query_1_1range.html#ab3d14cec309a2df24ab55890d3980a16',1,'GPUGenie::query::range']]],
-  ['up_5foffset',['up_offset',['../structGPUGenie_1_1query_1_1range.html#a45edba867639869a7e32b7c083af5c9f',1,'GPUGenie::query::range']]],
-  ['use_5fadaptive_5frange',['use_adaptive_range',['../structGPUGenie_1_1__GPUGenie__Config.html#abd2f5186da00b3703ba7056b908014c5',1,'GPUGenie::_GPUGenie_Config']]],
-  ['use_5fdevice',['use_device',['../structGPUGenie_1_1__GPUGenie__Config.html#a497525f3ba36ee4dc7a23de85f2cbfd4',1,'GPUGenie::_GPUGenie_Config']]],
-  ['use_5fload_5fbalance',['use_load_balance',['../structGPUGenie_1_1__GPUGenie__Config.html#a82baf9d0ce7fa13e6a54f65294924f8e',1,'GPUGenie::_GPUGenie_Config::use_load_balance()'],['../classGPUGenie_1_1query.html#add5e779db79559ea9fba651f31bfaeeb',1,'GPUGenie::query::use_load_balance()']]],
-  ['use_5fmultirange',['use_multirange',['../structGPUGenie_1_1__GPUGenie__Config.html#a0aa6d01811332da97b106240a232e8f4',1,'GPUGenie::_GPUGenie_Config']]],
-  ['use_5fsubsequence_5fsearch',['use_subsequence_search',['../structGPUGenie_1_1__GPUGenie__Config.html#abe5632c5e2d15fbb909fea868e34537a',1,'GPUGenie::_GPUGenie_Config']]]
+  ['threadblock_5fsize',['THREADBLOCK_SIZE',['../scan_8cu.html#ad01f122f1c95341c15a3ef2703a05d54',1,'scan.cu']]],
+  ['threshold_5fsize_5f',['threshold_size_',['../classgenie_1_1utility_1_1MatchingPerfData.html#a01487ed2f86c7619aaae856c2538ce86',1,'genie::utility::MatchingPerfData']]],
+  ['throughput_5f',['throughput_',['../classgenie_1_1utility_1_1ScanPerfData.html#a00bfcd8d67316fd98f913ea650135631',1,'genie::utility::ScanPerfData::throughput_()'],['../classgenie_1_1utility_1_1CodecPerfData.html#a829a72fd2119f6d96583dd7ef9227db7',1,'genie::utility::CodecPerfData::throughput_()']]],
+  ['time_5f',['time_',['../classgenie_1_1utility_1_1ScanPerfData.html#a464a746498cf799949ce644b7c966caa',1,'genie::utility::ScanPerfData::time_()'],['../classgenie_1_1utility_1_1CodecPerfData.html#ac19151ab59a635c27c903b8099f85886',1,'genie::utility::CodecPerfData::time_()']]],
+  ['topks_5fsize_5f',['topks_size_',['../classgenie_1_1utility_1_1MatchingPerfData.html#ac423178ae0121e41f1dd96934f9ffaf2',1,'genie::utility::MatchingPerfData']]]
 ];

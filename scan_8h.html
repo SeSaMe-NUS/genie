@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/scan.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/utility/scan.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -95,8 +95,10 @@ $(document).ready(function(){initNavTree('scan_8h.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceGPUGenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html">GPUGenie</a></td></tr>
-<tr class="memdesc:namespaceGPUGenie"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceGPUGenie.html" title="GPUGenie is the top namespace for the project. ">GPUGenie</a> is the top namespace for the project. <br /></td></tr>
+<tr class="memitem:namespacegenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html">genie</a></td></tr>
+<tr class="memdesc:namespacegenie"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the top-level namespace of the project. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1utility"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html">genie::utility</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -114,45 +116,45 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a26ce126e9afa33a42adcb9086284f04b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a26ce126e9afa33a42adcb9086284f04b">GPUGenie::initScan</a> (void)</td></tr>
-<tr class="separator:a26ce126e9afa33a42adcb9086284f04b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4a41012f1cc9cd271e11ea8476a0054"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#af4a41012f1cc9cd271e11ea8476a0054">GPUGenie::closeScan</a> (void)</td></tr>
-<tr class="separator:af4a41012f1cc9cd271e11ea8476a0054"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab07fe12be8c53c619595c4836fa895c8"><td class="memItemLeft" align="right" valign="top">__device__ uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ab07fe12be8c53c619595c4836fa895c8">GPUGenie::d_pow2ceil_32</a> (uint x)</td></tr>
-<tr class="separator:ab07fe12be8c53c619595c4836fa895c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4b76ea597319dea332bf2a737d5f0ed"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ab4b76ea597319dea332bf2a737d5f0ed">GPUGenie::h_pow2ceil_32</a> (uint x)</td></tr>
-<tr class="separator:ab4b76ea597319dea332bf2a737d5f0ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba1f7de5734acb9cf3d096714e4c8a39"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#aba1f7de5734acb9cf3d096714e4c8a39">GPUGenie::g_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:aba1f7de5734acb9cf3d096714e4c8a39"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8740af9d62c36f0a4dc55ab2411bfbe"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ac8740af9d62c36f0a4dc55ab2411bfbe">GPUGenie::d_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:ac8740af9d62c36f0a4dc55ab2411bfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43ccb948dee80d9bdf629f0d3fe20c56"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a43ccb948dee80d9bdf629f0d3fe20c56">GPUGenie::d_scanExclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:a43ccb948dee80d9bdf629f0d3fe20c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a232ee9b4bd439ebd1f83b6bb9a674872"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a232ee9b4bd439ebd1f83b6bb9a674872">GPUGenie::g_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:a232ee9b4bd439ebd1f83b6bb9a674872"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac39ff4770483aa5349d30112f893955"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#aac39ff4770483aa5349d30112f893955">GPUGenie::d_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:aac39ff4770483aa5349d30112f893955"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c2d57739a50f6dc0b718a735586f09d"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a5c2d57739a50f6dc0b718a735586f09d">GPUGenie::d_scanInclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
-<tr class="separator:a5c2d57739a50f6dc0b718a735586f09d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab82b9a5c0677f07392e12789a1e079d0"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ab82b9a5c0677f07392e12789a1e079d0">GPUGenie::scanExclusiveShort</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
-<tr class="separator:ab82b9a5c0677f07392e12789a1e079d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a281a332d90c854f58b372cb918f0ceca"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a281a332d90c854f58b372cb918f0ceca">GPUGenie::scanExclusiveLarge</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
-<tr class="separator:a281a332d90c854f58b372cb918f0ceca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8a7e3ec1de164ce3fcc2526370c5093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ab8a7e3ec1de164ce3fcc2526370c5093">GPUGenie::scanExclusiveHost</a> (unsigned int *dst, unsigned int *src, unsigned int arrayLength)</td></tr>
-<tr class="separator:ab8a7e3ec1de164ce3fcc2526370c5093"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61b4b1acf4db7712e5984801a57dfd48"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a61b4b1acf4db7712e5984801a57dfd48">genie::utility::initScan</a> (void)</td></tr>
+<tr class="separator:a61b4b1acf4db7712e5984801a57dfd48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5413dfbb7160d0ed0b2317e830be43f7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a5413dfbb7160d0ed0b2317e830be43f7">genie::utility::closeScan</a> (void)</td></tr>
+<tr class="separator:a5413dfbb7160d0ed0b2317e830be43f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4347592ee0dbc211a183cde62a6d42ef"><td class="memItemLeft" align="right" valign="top">__device__ uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a4347592ee0dbc211a183cde62a6d42ef">genie::utility::d_pow2ceil_32</a> (uint x)</td></tr>
+<tr class="separator:a4347592ee0dbc211a183cde62a6d42ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a824bd34c05b44a8e3f902ec10b080d5c"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a824bd34c05b44a8e3f902ec10b080d5c">genie::utility::h_pow2ceil_32</a> (uint x)</td></tr>
+<tr class="separator:a824bd34c05b44a8e3f902ec10b080d5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d6823875abc0cf798204f6052c4c72f"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a2d6823875abc0cf798204f6052c4c72f">genie::utility::g_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a2d6823875abc0cf798204f6052c4c72f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af82caadf256be20602103eeff428883e"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#af82caadf256be20602103eeff428883e">genie::utility::d_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:af82caadf256be20602103eeff428883e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afad79ae12ba2e782562176a6d71e4c7b"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#afad79ae12ba2e782562176a6d71e4c7b">genie::utility::d_scanExclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:afad79ae12ba2e782562176a6d71e4c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a318e25466f3b39ce439eae8cf25f8e4c"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a318e25466f3b39ce439eae8cf25f8e4c">genie::utility::g_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a318e25466f3b39ce439eae8cf25f8e4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7afa152e9c8a5523c33c816927c83de0"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a7afa152e9c8a5523c33c816927c83de0">genie::utility::d_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a7afa152e9c8a5523c33c816927c83de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bd8eef44fd8637161e30e116c3a53bf"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a0bd8eef44fd8637161e30e116c3a53bf">genie::utility::d_scanInclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a0bd8eef44fd8637161e30e116c3a53bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5189cf908d030ff76fbc15fdd1d976b7"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a5189cf908d030ff76fbc15fdd1d976b7">genie::utility::scanExclusiveShort</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
+<tr class="separator:a5189cf908d030ff76fbc15fdd1d976b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab64bb5b4f891cebff83e1a9a9ad512f8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ab64bb5b4f891cebff83e1a9a9ad512f8">genie::utility::scanExclusiveLarge</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
+<tr class="separator:ab64bb5b4f891cebff83e1a9a9ad512f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae18e5cc31340a5712f8be5603ba2f7c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ae18e5cc31340a5712f8be5603ba2f7c4">genie::utility::scanExclusiveHost</a> (unsigned int *dst, unsigned int *src, unsigned int arrayLength)</td></tr>
+<tr class="separator:ae18e5cc31340a5712f8be5603ba2f7c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:afd536485ccc9c124cbbd91af8dd3e9a2"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#afd536485ccc9c124cbbd91af8dd3e9a2">GPUGenie::SCAN_THREADBLOCK_SIZE</a> = <a class="el" href="scan_8h.html#a7364ee4235076d33509ab1b6994c354d">GPUGENIE_SCAN_THREADBLOCK_SIZE</a></td></tr>
-<tr class="separator:afd536485ccc9c124cbbd91af8dd3e9a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53408e75563ec115997619fcf75d7495"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a53408e75563ec115997619fcf75d7495">GPUGenie::SCAN_MIN_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#ab4ab42a06d1ee64616ce24bbc1c73c41">GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE</a></td></tr>
-<tr class="separator:a53408e75563ec115997619fcf75d7495"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d6a30b8182b5c626afc9db9f94e600b"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a8d6a30b8182b5c626afc9db9f94e600b">GPUGenie::SCAN_MAX_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#a9cc1dee503acc8edff0aa0f48bcbfa9a">GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE</a></td></tr>
-<tr class="separator:a8d6a30b8182b5c626afc9db9f94e600b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87a27315fa03afd1c11b435d553d051a"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a87a27315fa03afd1c11b435d553d051a">GPUGenie::SCAN_MIN_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afb69618257704da8fc698b50a0d2db4d">GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE</a></td></tr>
-<tr class="separator:a87a27315fa03afd1c11b435d553d051a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addeac599178ee8398c2d75bb1ef13b79"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#addeac599178ee8398c2d75bb1ef13b79">GPUGenie::SCAN_MAX_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afa8f0954972885f548fcc2a4fb94a5ba">GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE</a></td></tr>
-<tr class="separator:addeac599178ee8398c2d75bb1ef13b79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1539566da4f311c71b40b4896c5af4d4"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a1539566da4f311c71b40b4896c5af4d4">genie::utility::SCAN_THREADBLOCK_SIZE</a> = <a class="el" href="scan_8h.html#a7364ee4235076d33509ab1b6994c354d">GPUGENIE_SCAN_THREADBLOCK_SIZE</a></td></tr>
+<tr class="separator:a1539566da4f311c71b40b4896c5af4d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f9132af0fe7d28d91043443bd8c8f7f"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a8f9132af0fe7d28d91043443bd8c8f7f">genie::utility::SCAN_MIN_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#ab4ab42a06d1ee64616ce24bbc1c73c41">GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE</a></td></tr>
+<tr class="separator:a8f9132af0fe7d28d91043443bd8c8f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64860c279ba6256e19d467be9b8e86e8"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a64860c279ba6256e19d467be9b8e86e8">genie::utility::SCAN_MAX_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#a9cc1dee503acc8edff0aa0f48bcbfa9a">GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE</a></td></tr>
+<tr class="separator:a64860c279ba6256e19d467be9b8e86e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acde2d3ad549dc3925105fd872c7e33a5"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#acde2d3ad549dc3925105fd872c7e33a5">genie::utility::SCAN_MIN_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afb69618257704da8fc698b50a0d2db4d">GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE</a></td></tr>
+<tr class="separator:acde2d3ad549dc3925105fd872c7e33a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac19ed658af9e37ce07eb951120eaec40"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ac19ed658af9e37ce07eb951120eaec40">genie::utility::SCAN_MAX_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afa8f0954972885f548fcc2a4fb94a5ba">GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE</a></td></tr>
+<tr class="separator:ac19ed658af9e37ce07eb951120eaec40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="afa8f0954972885f548fcc2a4fb94a5ba"></a>
@@ -240,7 +242,7 @@ Variables</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="scan_8h.html">scan.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_2f306cb38f2eaa0b478d314f52bd881f.html">utility</a></li><li class="navelem"><a class="el" href="scan_8h.html">scan.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

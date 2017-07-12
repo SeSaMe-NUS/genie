@@ -1,14 +1,14 @@
 var FileReader_8h =
 [
-    [ "_GPUGenie_Query_Data", "structGPUGenie_1_1__GPUGenie__Query__Data.html", "structGPUGenie_1_1__GPUGenie__Query__Data" ],
-    [ "attr_t", "FileReader_8h.html#aeed4729ce1bce20c3cdc4c5076ff2a8a", null ],
-    [ "read_file", "FileReader_8h.html#a648e35dbe844f74a80f3f3ff7c6a940e", null ],
-    [ "read_query", "FileReader_8h.html#a3995e639e1d3a65b8b7c84b3bfc88f18", null ],
-    [ "read_query", "FileReader_8h.html#ad564f6399d8aed6c32ca9564cfcdf83c", null ],
-    [ "GPUGENIE_QUERY_DIM_INDEX", "FileReader_8h.html#a59e21ea0a227c12f682febf71c557b9c", null ],
-    [ "GPUGENIE_QUERY_NUM_OF_FIELDS", "FileReader_8h.html#ae8e71fba34ac548f2b0b95c25581a2a1", null ],
-    [ "GPUGENIE_QUERY_QID_INDEX", "FileReader_8h.html#a73f132591df2e956b388057365c04a95", null ],
-    [ "GPUGENIE_QUERY_SELECTIVITY_INDEX", "FileReader_8h.html#aa10ed1171237e54ce6eb8db06b4be807", null ],
-    [ "GPUGENIE_QUERY_VALUE_INDEX", "FileReader_8h.html#a23f63ee12b9383c7cb3a231a317e6f83", null ],
-    [ "GPUGENIE_QUERY_WEIGHT_INDEX", "FileReader_8h.html#a8f08a6b23eb8a8ead6b742cc4e6e30c3", null ]
+    [ "_GPUGenie_Query_Data", "structgenie_1_1utility_1_1__GPUGenie__Query__Data.html", "structgenie_1_1utility_1_1__GPUGenie__Query__Data" ],
+    [ "attr_t", "FileReader_8h.html#abfeb34f498bca4a2f45194cc68c24379", null ],
+    [ "read_file", "FileReader_8h.html#a6c67cda2d8aac63fa14595885dc22c2b", null ],
+    [ "read_query", "FileReader_8h.html#a031837916d23bdca53b7bb5bf7daed32", null ],
+    [ "read_query", "FileReader_8h.html#abbaa0752e6fc2c7abbcd92a902588994", null ],
+    [ "GPUGENIE_QUERY_DIM_INDEX", "FileReader_8h.html#a349efafe1b5b2ad5c0f56d6a563c95c0", null ],
+    [ "GPUGENIE_QUERY_NUM_OF_FIELDS", "FileReader_8h.html#a9e32ece4405f1cc60af2787fde5744e8", null ],
+    [ "GPUGENIE_QUERY_QID_INDEX", "FileReader_8h.html#ab74da470491a173c0f4d2547b3630e91", null ],
+    [ "GPUGENIE_QUERY_SELECTIVITY_INDEX", "FileReader_8h.html#add13e1fabe6e0f91140c6bbfbb582fc9", null ],
+    [ "GPUGENIE_QUERY_VALUE_INDEX", "FileReader_8h.html#a424595eda6dd67037bc3be3b6c1e2308", null ],
+    [ "GPUGENIE_QUERY_WEIGHT_INDEX", "FileReader_8h.html#aa669345f53cc9959cb492b7959195a1b", null ]
 ];

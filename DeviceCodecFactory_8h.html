@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/DeviceCodecFactory.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/compression/DeviceCodecFactory.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -95,69 +95,95 @@ $(document).ready(function(){initNavTree('DeviceCodecFactory_8h.html','');});
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;thrust/device_vector.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="match__common_8h_source.html">genie/matching/match_common.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="Logger_8h_source.html">genie/utility/Logger.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="DeviceCodecs_8h_source.html">DeviceCodecs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="match_8h_source.html">match.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="Logger_8h_source.html">Logger.h</a>&quot;</code><br />
 </div>
 <p><a href="DeviceCodecFactory_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1DeviceCodecFactory.html">GPUGenie::DeviceCodecFactory</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1compression_1_1DeviceCodecFactory.html">genie::compression::DeviceCodecFactory</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceGPUGenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html">GPUGenie</a></td></tr>
-<tr class="memdesc:namespaceGPUGenie"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceGPUGenie.html" title="GPUGenie is the top namespace for the project. ">GPUGenie</a> is the top namespace for the project. <br /></td></tr>
+<tr class="memitem:namespacegenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html">genie</a></td></tr>
+<tr class="memdesc:namespacegenie"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the top-level namespace of the project. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1table"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1table.html">genie::table</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1query"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1query.html">genie::query</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1matching"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html">genie::matching</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1compression"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html">genie::compression</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a8e091893598c623b48f44a9ff096e3a1"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a8e091893598c623b48f44a9ff096e3a1">GPUGenie::MatchIntegratedFunPtr</a>) (inv_compr_table &amp;, std::vector&lt; query &gt; &amp;, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;, int, int, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;)</td></tr>
-<tr class="separator:a8e091893598c623b48f44a9ff096e3a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a713126a5210965a06b88f91eda2fdcb1"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="DeviceCodecFactory_8h.html#a713126a5210965a06b88f91eda2fdcb1">MatchIntegratedFunPtr</a>) (<a class="el" href="classgenie_1_1table_1_1inv__compr__table.html">genie::table::inv_compr_table</a> &amp;, std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, int, int, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;)</td></tr>
+<tr class="separator:a713126a5210965a06b88f91eda2fdcb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ae79859f20c40eebd3420751508a2a0a9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9">GPUGenie::COMPRESSION_TYPE</a> { <br />
-&#160;&#160;<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a21a9a0aa7c460da9cb5046cea3a85e4f">GPUGenie::NO_COMPRESSION</a> = 0, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a376e26e3c63576e64930b2d37f5f8d5b">GPUGenie::COPY</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9abe2446c67f20927674751470bcee0f19">GPUGenie::DELTA</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a1a5346266b5c6d6f0b7d8350e0ef92ae">GPUGenie::BP32</a>, 
+<tr class="memitem:a2e37919342435742bc8ff0e630c32eae"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae">genie::compression::COMPRESSION_TYPE</a> { <br />
+&#160;&#160;<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea20d9c8990f880130693e9b3771a22bc7">genie::compression::NO_COMPRESSION</a> = 0, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeab0303ae92c769139a7fa7e34303d7773">genie::compression::COPY</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeab87399a2ea5e0b78ef4e0b171a583afb">genie::compression::DELTA</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea7f77f98d470398b46df9487c171b7439">genie::compression::BP32</a>, 
 <br />
-&#160;&#160;<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9ac397859ca10d1a7cbc1f12c955843bfe">GPUGenie::VARINT</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9add3a41588fcff5ad4853b07db05e3675">GPUGenie::COMP_BP32_COPY</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a8178742de2d0451908ff959313a2cf6d">GPUGenie::COMP_BP32_VARINT</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9aee30a5a8a6093bc2fa6f33b8b68d1cab">GPUGenie::SERIAL_COPY_COPY</a>, 
+&#160;&#160;<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea9e357a2b4aa7b4aa31587f51160d1940">genie::compression::VARINT</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea864af546ca8cc3af54d59e11849d89ad">genie::compression::COMP_BP32_COPY</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeaa932fea34c1e091c0ebbe14f97cbe95d">genie::compression::COMP_BP32_VARINT</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea25448bd7757fbec50fa1e05fb89e1b82">genie::compression::SERIAL_COPY_COPY</a>, 
 <br />
-&#160;&#160;<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a4b975201a4a70c3fcae5b6e2813b106a">GPUGenie::SERIAL_DELTA_COPY</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9ad8f4da6b14a6691c19540778646dd77f">GPUGenie::SERIAL_DELTA_DELTA</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a0ed9d071c3ba85bf4d1cd52f712f3fe1">GPUGenie::SERIAL_DELTA_VARINT</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9aebd3338efedfc5f905ade1bd824074c3">GPUGenie::SERIAL_DELTA_BP32</a>, 
+&#160;&#160;<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeac0ab5bae2c17541db1520acc35493d99">genie::compression::SERIAL_DELTA_COPY</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeadf69348c657c5a2664e123ad60eb8043">genie::compression::SERIAL_DELTA_DELTA</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea8bee46484ceeab64147fe6a2141e6159">genie::compression::SERIAL_DELTA_VARINT</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea779ce4d9c0d98f5bfd7404fd29e43bdc">genie::compression::SERIAL_DELTA_BP32</a>, 
 <br />
-&#160;&#160;<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a239e134b6374a9e39efd9ca7874dcb3c">GPUGenie::SERIAL_DELTA_COMP_BP32_COPY</a>, 
-<a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9a252d143babf433802f74211bea53424b">GPUGenie::SERIAL_DELTA_COMP_BP32_VARINT</a>
+&#160;&#160;<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeaad917f45a551f45dfcdaadc153ed6d3c">genie::compression::SERIAL_DELTA_COMP_BP32_COPY</a>, 
+<a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea723ec95707d11c1051e8de04eee50f58">genie::compression::SERIAL_DELTA_COMP_BP32_VARINT</a>
 <br />
  }</td></tr>
-<tr class="separator:ae79859f20c40eebd3420751508a2a0a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a2e37919342435742bc8ff0e630c32eae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a57f9d25cc5035af9ebdd2a05ce1dc578"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a57f9d25cc5035af9ebdd2a05ce1dc578">GPUGenie::DEFAULT_COMPRESSION_TYPE</a> = NO_COMPRESSION</td></tr>
-<tr class="separator:a57f9d25cc5035af9ebdd2a05ce1dc578"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9af7627362841b8fdc538f2aa5e1d16"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ac9af7627362841b8fdc538f2aa5e1d16">GPUGenie::LIGHTWEIGHT_COMPRESSION_TYPE</a> = BP32</td></tr>
-<tr class="separator:ac9af7627362841b8fdc538f2aa5e1d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a30fbb681525946060bbe798b2d22f91f"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a30fbb681525946060bbe798b2d22f91f">GPUGenie::MIDDLEWEIGHT_COMPRESSION_TYPE</a> = SERIAL_DELTA_BP32</td></tr>
-<tr class="separator:a30fbb681525946060bbe798b2d22f91f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4759c6d27dfab12715075b5f3748ec1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ad4759c6d27dfab12715075b5f3748ec1">GPUGenie::HEAVYWEIGHT_COMPRESSION_TYPE</a> = SERIAL_DELTA_COMP_BP32_VARINT</td></tr>
-<tr class="separator:ad4759c6d27dfab12715075b5f3748ec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e49e0f2be155057ebf45a7e7c962250"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#a5e49e0f2be155057ebf45a7e7c962250">genie::compression::DEFAULT_COMPRESSION_TYPE</a> = NO_COMPRESSION</td></tr>
+<tr class="separator:a5e49e0f2be155057ebf45a7e7c962250"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1cc8486a8494c467378a0fe84cf5461"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#af1cc8486a8494c467378a0fe84cf5461">genie::compression::LIGHTWEIGHT_COMPRESSION_TYPE</a> = BP32</td></tr>
+<tr class="separator:af1cc8486a8494c467378a0fe84cf5461"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d15547cd592d5a3a17c8b78dbdf2b37"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#a8d15547cd592d5a3a17c8b78dbdf2b37">genie::compression::MIDDLEWEIGHT_COMPRESSION_TYPE</a> = SERIAL_DELTA_BP32</td></tr>
+<tr class="separator:a8d15547cd592d5a3a17c8b78dbdf2b37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fd6d0766494906041c2d06044658ef6"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eae">COMPRESSION_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#a1fd6d0766494906041c2d06044658ef6">genie::compression::HEAVYWEIGHT_COMPRESSION_TYPE</a> = SERIAL_DELTA_COMP_BP32_VARINT</td></tr>
+<tr class="separator:a1fd6d0766494906041c2d06044658ef6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a713126a5210965a06b88f91eda2fdcb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a713126a5210965a06b88f91eda2fdcb1">&#9670;&nbsp;</a></span>MatchIntegratedFunPtr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* MatchIntegratedFunPtr) (<a class="el" href="classgenie_1_1table_1_1inv__compr__table.html">genie::table::inv_compr_table</a> &amp;, std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, int, int, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Typedef IntegratedKernelPtr as a function pointer to instanced template of match_integrated </p>
+
+<p class="definition">Definition at line <a class="el" href="DeviceCodecFactory_8h_source.html#l00023">23</a> of file <a class="el" href="DeviceCodecFactory_8h_source.html">DeviceCodecFactory.h</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="DeviceCodecFactory_8h.html">DeviceCodecFactory.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_797b52c3cfbc7cfe6e87074398742c19.html">compression</a></li><li class="navelem"><a class="el" href="DeviceCodecFactory_8h.html">DeviceCodecFactory.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

@@ -1,9 +1,9 @@
 var DeviceCodecFactory_8cu =
 [
-    [ "initAllCompressionNames", "DeviceCodecFactory_8cu.html#a361b2ccd9509a182d053dd50b556861a", null ],
-    [ "initAllCompressionTypes", "DeviceCodecFactory_8cu.html#a02bbf8f9abd2606c6a9a7cc5f01d2498", null ],
-    [ "initCodecInstancesMap", "DeviceCodecFactory_8cu.html#ad3f575f7716397a385c0c4147540bf44", null ],
-    [ "initCompressionNamesMap", "DeviceCodecFactory_8cu.html#aecbddfae14aabacac0e6186ee227b6e0", null ],
-    [ "initCompressionTypesMap", "DeviceCodecFactory_8cu.html#aba1a582660bf497072e93535bb773f29", null ],
-    [ "initIntegratedKernelsMap", "DeviceCodecFactory_8cu.html#ac9b3d97353510d15cf8d1708b307f4a3", null ]
+    [ "initAllCompressionNames", "DeviceCodecFactory_8cu.html#a469fe0226f476f7e54973272ca134976", null ],
+    [ "initAllCompressionTypes", "DeviceCodecFactory_8cu.html#abcb919a97497dd41c765acf8bfd18899", null ],
+    [ "initCodecInstancesMap", "DeviceCodecFactory_8cu.html#abbbf7834e2365c940e97cb8dce748446", null ],
+    [ "initCompressionNamesMap", "DeviceCodecFactory_8cu.html#a9674e78092ef58a87c593640a05e7cec", null ],
+    [ "initCompressionTypesMap", "DeviceCodecFactory_8cu.html#a842949c0eee025696207baa2985f0771", null ],
+    [ "initIntegratedKernelsMap", "DeviceCodecFactory_8cu.html#a30f286461dc933400883cd05e395b965", null ]
 ];

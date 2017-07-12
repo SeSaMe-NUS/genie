@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['read_5ffile',['read_file',['../namespaceGPUGenie.html#a648e35dbe844f74a80f3f3ff7c6a940e',1,'GPUGenie']]],
-  ['read_5fquery',['read_query',['../namespaceGPUGenie.html#a3995e639e1d3a65b8b7c84b3bfc88f18',1,'GPUGenie::read_query(inv_table &amp;table, const char *fname, vector&lt; query &gt; &amp;queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)'],['../namespaceGPUGenie.html#ad564f6399d8aed6c32ca9564cfcdf83c',1,'GPUGenie::read_query(vector&lt; GPUGenie::attr_t &gt; &amp;data, const char *file_name, int num)']]],
-  ['ref_5ftable',['ref_table',['../classGPUGenie_1_1query.html#a5dac726b1b8cd8e94a5ff4e0dab2dc92',1,'GPUGenie::query']]],
-  ['reset_5fdevice',['reset_device',['../namespaceGPUGenie.html#ad035ab602b4f63edae3084de0dbeee9f',1,'GPUGenie']]]
+  ['query',['Query',['../classgenie_1_1query_1_1Query.html#a84c21130e80ca202d1651f42f4a426d6',1,'genie::query::Query::Query(genie::table::inv_table *ref, int index)'],['../classgenie_1_1query_1_1Query.html#a5687e4c263ef6e592f0bf7e3c9eee82f',1,'genie::query::Query::Query(genie::table::inv_table &amp;ref, int index)'],['../classgenie_1_1query_1_1Query.html#ac486952a987fc54a628bed76158e19ad',1,'genie::query::Query::Query()']]],
+  ['querycompilationtime',['QueryCompilationTime',['../classgenie_1_1utility_1_1MatchingPerfData.html#a644eefd1e4dde92ceeeb54616f4fd596',1,'genie::utility::MatchingPerfData']]],
+  ['querytransfertime',['QueryTransferTime',['../classgenie_1_1utility_1_1MatchingPerfData.html#a92f4d81def6247ba63a2fa06da47a53e',1,'genie::utility::MatchingPerfData']]],
+  ['quicksortidcount',['quicksortIdCount',['../original_2interface_8cc.html#add21e0f641e9cabc26a0cfae1f02e573',1,'interface.cc']]]
 ];

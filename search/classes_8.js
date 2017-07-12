@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['query',['query',['../classGPUGenie_1_1query.html',1,'GPUGenie']]]
+  ['notimplementedexception',['NotImplementedException',['../classgenie_1_1exception_1_1NotImplementedException.html',1,'genie::exception']]]
 ];

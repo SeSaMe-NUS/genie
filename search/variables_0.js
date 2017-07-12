@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['_5fdims',['_dims',['../classGPUGenie_1_1query.html#a22e7f977696d32707ca5893a5025c891',1,'GPUGenie::query']]],
-  ['_5fdistinct',['_distinct',['../classGPUGenie_1_1inv__list.html#ad7f9b18a0b31d6b48ed76250f1c992ff',1,'GPUGenie::inv_list']]]
+  ['_5fdims',['_dims',['../classgenie_1_1query_1_1Query.html#a4ae9e8809c06468cb66f8120b9c8b019',1,'genie::query::Query']]],
+  ['_5fdistinct',['_distinct',['../classgenie_1_1table_1_1inv__list.html#a053d7585dca07a9c7693fe633d4d4aed',1,'genie::table::inv_list']]]
 ];

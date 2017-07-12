@@ -6,8 +6,8 @@ var searchData=
   ['validatequeryrange',['ValidateQueryRange',['../namespacegenie_1_1execution__policy_1_1validation.html#a225e675170dea52982501c5e4432d737',1,'genie::execution_policy::validation']]],
   ['validation_2ecc',['validation.cc',['../validation_8cc.html',1,'']]],
   ['validation_2eh',['validation.h',['../validation_8h.html',1,'']]],
-  ['value',['value',['../structGPUGenie_1_1__GPUGenie__Query__Data.html#afa046eff81e8eb497d71f95198cd18eb',1,'GPUGenie::_GPUGenie_Query_Data']]],
-  ['value_5frange',['value_range',['../classGPUGenie_1_1inv__list.html#a939707d15df625f4573db4f9b86eb2b7',1,'GPUGenie::inv_list']]],
-  ['varint',['VARINT',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9ac397859ca10d1a7cbc1f12c955843bfe',1,'GPUGenie']]],
-  ['verbose',['VERBOSE',['../classLogger.html#a611f062b6b9ae0e43e30492c43d3a3ad',1,'Logger']]]
+  ['value',['value',['../structgenie_1_1utility_1_1__GPUGenie__Query__Data.html#a0bb057881d9696ef6ffdff490c4a6e24',1,'genie::utility::_GPUGenie_Query_Data']]],
+  ['value_5frange',['value_range',['../classgenie_1_1table_1_1inv__list.html#a2bbcf0dfda70d76b131b2b2e03d83337',1,'genie::table::inv_list']]],
+  ['varint',['VARINT',['../namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaea9e357a2b4aa7b4aa31587f51160d1940',1,'genie::compression']]],
+  ['verbose',['VERBOSE',['../classgenie_1_1utility_1_1Logger.html#a0be69569568902a45b0dbb7cf2627cfd',1,'genie::utility::Logger']]]
 ];

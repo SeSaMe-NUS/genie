@@ -1,9 +1,9 @@
 var DeviceCodecs_8h =
 [
-    [ "DeviceIntegerCODEC", "classGPUGenie_1_1DeviceIntegerCODEC.html", "classGPUGenie_1_1DeviceIntegerCODEC" ],
-    [ "DeviceCopyMultiblockCodec", "classGPUGenie_1_1DeviceCopyMultiblockCodec.html", "classGPUGenie_1_1DeviceCopyMultiblockCodec" ],
-    [ "DeviceCopyCodec", "classGPUGenie_1_1DeviceCopyCodec.html", "classGPUGenie_1_1DeviceCopyCodec" ],
-    [ "DeviceDeltaCodec", "classGPUGenie_1_1DeviceDeltaCodec.html", "classGPUGenie_1_1DeviceDeltaCodec" ],
-    [ "decodeArrayParallel", "DeviceCodecs_8h.html#a911ae47fe2c7230263a5c639b664f665", null ],
-    [ "g_decodeArrayParallel", "DeviceCodecs_8h.html#ab0f9dda112dc2c05bdf8f04539b175aa", null ]
+    [ "DeviceIntegerCODEC", "classgenie_1_1compression_1_1DeviceIntegerCODEC.html", "classgenie_1_1compression_1_1DeviceIntegerCODEC" ],
+    [ "DeviceCopyMultiblockCodec", "classgenie_1_1compression_1_1DeviceCopyMultiblockCodec.html", "classgenie_1_1compression_1_1DeviceCopyMultiblockCodec" ],
+    [ "DeviceCopyCodec", "classgenie_1_1compression_1_1DeviceCopyCodec.html", "classgenie_1_1compression_1_1DeviceCopyCodec" ],
+    [ "DeviceDeltaCodec", "classgenie_1_1compression_1_1DeviceDeltaCodec.html", "classgenie_1_1compression_1_1DeviceDeltaCodec" ],
+    [ "decodeArrayParallel", "DeviceCodecs_8h.html#a34e091da834d3286ab4c6898887c8c9b", null ],
+    [ "g_decodeArrayParallel", "DeviceCodecs_8h.html#aeb7fc0f80f0efa67f093f6e84912e834", null ]
 ];

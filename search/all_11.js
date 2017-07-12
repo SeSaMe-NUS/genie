@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['range',['range',['../structGPUGenie_1_1query_1_1range.html',1,'GPUGenie::query']]],
-  ['read_5ffile',['read_file',['../namespaceGPUGenie.html#a648e35dbe844f74a80f3f3ff7c6a940e',1,'GPUGenie']]],
-  ['read_5fquery',['read_query',['../namespaceGPUGenie.html#a3995e639e1d3a65b8b7c84b3bfc88f18',1,'GPUGenie::read_query(inv_table &amp;table, const char *fname, vector&lt; query &gt; &amp;queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)'],['../namespaceGPUGenie.html#ad564f6399d8aed6c32ca9564cfcdf83c',1,'GPUGenie::read_query(vector&lt; GPUGenie::attr_t &gt; &amp;data, const char *file_name, int num)']]],
-  ['ref_5ftable',['ref_table',['../classGPUGenie_1_1query.html#a5dac726b1b8cd8e94a5ff4e0dab2dc92',1,'GPUGenie::query']]],
-  ['reset_5fdevice',['reset_device',['../namespaceGPUGenie.html#ad035ab602b4f63edae3084de0dbeee9f',1,'GPUGenie']]],
-  ['row_5fnum',['row_num',['../structGPUGenie_1_1__GPUGenie__Config.html#a88b65479c071f384c28a87d4b3588907',1,'GPUGenie::_GPUGenie_Config']]]
+  ['range',['range',['../structgenie_1_1query_1_1Query_1_1range.html',1,'genie::query::Query']]],
+  ['read_5ffile',['read_file',['../namespacegenie_1_1utility.html#a6c67cda2d8aac63fa14595885dc22c2b',1,'genie::utility']]],
+  ['read_5fquery',['read_query',['../namespacegenie_1_1utility.html#a031837916d23bdca53b7bb5bf7daed32',1,'genie::utility::read_query(genie::table::inv_table &amp;table, const char *fname, std::vector&lt; genie::query::Query &gt; &amp;queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)'],['../namespacegenie_1_1utility.html#abbaa0752e6fc2c7abbcd92a902588994',1,'genie::utility::read_query(std::vector&lt; attr_t &gt; &amp;data, const char *file_name, int num)']]],
+  ['ref_5ftable',['ref_table',['../classgenie_1_1query_1_1Query.html#a24feb2bbafc44fa65bee80998bb3bd52',1,'genie::query::Query']]],
+  ['reset',['Reset',['../classgenie_1_1utility_1_1PerfLogger.html#a8247ce75d32097c8cf5baaaaa53b9221',1,'genie::utility::PerfLogger']]],
+  ['reset_5fdevice',['reset_device',['../namespacegenie_1_1original.html#a93becc235f5297ceb5721d251e9a933f',1,'genie::original']]],
+  ['row_5fnum',['row_num',['../structgenie_1_1original_1_1__GPUGenie__Config.html#a8fa0f341d23518ee35ac2ee74ee37f5f',1,'genie::original::_GPUGenie_Config']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/DeviceCodecs.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/compression/DeviceCodecs.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -98,36 +98,38 @@ $(document).ready(function(){initNavTree('DeviceCodecs_8h.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1DeviceIntegerCODEC.html">GPUGenie::DeviceIntegerCODEC</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1compression_1_1DeviceIntegerCODEC.html">genie::compression::DeviceIntegerCODEC</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1DeviceCopyMultiblockCodec.html">GPUGenie::DeviceCopyMultiblockCodec</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1compression_1_1DeviceCopyMultiblockCodec.html">genie::compression::DeviceCopyMultiblockCodec</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1DeviceCopyCodec.html">GPUGenie::DeviceCopyCodec</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1compression_1_1DeviceCopyCodec.html">genie::compression::DeviceCopyCodec</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGPUGenie_1_1DeviceDeltaCodec.html">GPUGenie::DeviceDeltaCodec</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1compression_1_1DeviceDeltaCodec.html">genie::compression::DeviceDeltaCodec</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceGPUGenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html">GPUGenie</a></td></tr>
-<tr class="memdesc:namespaceGPUGenie"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceGPUGenie.html" title="GPUGenie is the top namespace for the project. ">GPUGenie</a> is the top namespace for the project. <br /></td></tr>
+<tr class="memitem:namespacegenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html">genie</a></td></tr>
+<tr class="memdesc:namespacegenie"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the top-level namespace of the project. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1compression"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html">genie::compression</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab0f9dda112dc2c05bdf8f04539b175aa"><td class="memTemplParams" colspan="2">template&lt;class CODEC &gt; </td></tr>
-<tr class="memitem:ab0f9dda112dc2c05bdf8f04539b175aa"><td class="memTemplItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#ab0f9dda112dc2c05bdf8f04539b175aa">GPUGenie::g_decodeArrayParallel</a> (uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)</td></tr>
-<tr class="separator:ab0f9dda112dc2c05bdf8f04539b175aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a911ae47fe2c7230263a5c639b664f665"><td class="memTemplParams" colspan="2">template&lt;class CODEC &gt; </td></tr>
-<tr class="memitem:a911ae47fe2c7230263a5c639b664f665"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a911ae47fe2c7230263a5c639b664f665">GPUGenie::decodeArrayParallel</a> (int blocks, int threads, uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)</td></tr>
-<tr class="separator:a911ae47fe2c7230263a5c639b664f665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb7fc0f80f0efa67f093f6e84912e834"><td class="memTemplParams" colspan="2">template&lt;class CODEC &gt; </td></tr>
+<tr class="memitem:aeb7fc0f80f0efa67f093f6e84912e834"><td class="memTemplItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#aeb7fc0f80f0efa67f093f6e84912e834">genie::compression::g_decodeArrayParallel</a> (uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)</td></tr>
+<tr class="separator:aeb7fc0f80f0efa67f093f6e84912e834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34e091da834d3286ab4c6898887c8c9b"><td class="memTemplParams" colspan="2">template&lt;class CODEC &gt; </td></tr>
+<tr class="memitem:a34e091da834d3286ab4c6898887c8c9b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1compression.html#a34e091da834d3286ab4c6898887c8c9b">genie::compression::decodeArrayParallel</a> (int blocks, int threads, uint32_t *d_Input, size_t arrayLength, uint32_t *d_Output, size_t capacity, size_t *d_decomprLength)</td></tr>
+<tr class="separator:a34e091da834d3286ab4c6898887c8c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="DeviceCodecs_8h.html">DeviceCodecs.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_797b52c3cfbc7cfe6e87074398742c19.html">compression</a></li><li class="navelem"><a class="el" href="DeviceCodecs_8h.html">DeviceCodecs.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

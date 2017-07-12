@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/heap_count.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/matching/heap_count.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -91,20 +91,22 @@ $(document).ready(function(){initNavTree('heap__count_8h.html','');});
 <p>This file implements the function for topk selection in the final hashtable.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;thrust/device_vector.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="match_8h_source.html">match.h</a>&quot;</code><br />
+<code>#include &lt;<a class="el" href="match_8h_source.html">genie/matching/match.h</a>&gt;</code><br />
 </div>
 <p><a href="heap__count_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceGPUGenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html">GPUGenie</a></td></tr>
-<tr class="memdesc:namespaceGPUGenie"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceGPUGenie.html" title="GPUGenie is the top namespace for the project. ">GPUGenie</a> is the top namespace for the project. <br /></td></tr>
+<tr class="memitem:namespacegenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html">genie</a></td></tr>
+<tr class="memdesc:namespacegenie"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the top-level namespace of the project. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1matching"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html">genie::matching</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a139cea82d0c256e43dbbb1eecbf30fb6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a139cea82d0c256e43dbbb1eecbf30fb6">GPUGenie::heap_count_topk</a> (thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_data, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_topk, thrust::device_vector&lt; <a class="el" href="namespacegenie_1_1matching.html#a70920dfa1c663fff3ffcab10a4a37dcd">u32</a> &gt; &amp;d_threshold, thrust::device_vector&lt; <a class="el" href="namespacegenie_1_1matching.html#a70920dfa1c663fff3ffcab10a4a37dcd">u32</a> &gt; &amp;d_passCount, int topk, int num_of_queries)</td></tr>
-<tr class="separator:a139cea82d0c256e43dbbb1eecbf30fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebf76c2237b69f8bc514e6b3a6fcef7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html#aebf76c2237b69f8bc514e6b3a6fcef7d">genie::matching::heap_count_topk</a> (thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_data, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_topk, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_threshold, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_passCount, int topk, int num_of_queries)</td></tr>
+<tr class="separator:aebf76c2237b69f8bc514e6b3a6fcef7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This file implements the function for topk selection in the final hashtable. </p>
@@ -115,7 +117,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="heap__count_8h.html">heap_count.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_72fa21306aacabc60d2037c32b04b303.html">matching</a></li><li class="navelem"><a class="el" href="heap__count_8h.html">heap_count.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/interface/io.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/interface/io.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,8 +90,8 @@ $(document).ready(function(){initNavTree('io_8h.html','');});
 <div class="textblock"><code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
-<code>#include &lt;GPUGenie.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="execution__policy_8h_source.html">GPUGenie/interface/execution_policy.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="original_2interface_8h_source.html">genie/original/interface.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="execution__policy_8h_source.html">genie/interface/execution_policy.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="types_8h_source.html">types.h</a>&quot;</code><br />
 </div>
 <p><a href="io_8h_source.html">Go to the source code of this file.</a></p>
@@ -107,12 +107,12 @@ Functions</h2></td></tr>
 <tr class="memitem:af4ad29882c1ec339b3dc35378471cc09"><td class="memItemLeft" align="right" valign="top">TableData&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#af4ad29882c1ec339b3dc35378471cc09">genie::LoadTableDataFromCsv</a> (const std::string &amp;filename)</td></tr>
 <tr class="memdesc:af4ad29882c1ec339b3dc35378471cc09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a CSV file and returns in TableData format.  <a href="namespacegenie.html#af4ad29882c1ec339b3dc35378471cc09">More...</a><br /></td></tr>
 <tr class="separator:af4ad29882c1ec339b3dc35378471cc09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03337956992446df09d5e8a2dab411e6"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a03337956992446df09d5e8a2dab411e6">genie::LoadTableFromBinary</a> (const std::string &amp;filename)</td></tr>
-<tr class="memdesc:a03337956992446df09d5e8a2dab411e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a binary file and returns pre-built table.  <a href="namespacegenie.html#a03337956992446df09d5e8a2dab411e6">More...</a><br /></td></tr>
-<tr class="separator:a03337956992446df09d5e8a2dab411e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2641ecdc749be961d3ebaa8c0637c903"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a2641ecdc749be961d3ebaa8c0637c903">genie::SaveTableToBinary</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classGPUGenie_1_1inv__table.html">GPUGenie::inv_table</a> &gt; &amp;table)</td></tr>
-<tr class="memdesc:a2641ecdc749be961d3ebaa8c0637c903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save inverted table to a binary file.  <a href="namespacegenie.html#a2641ecdc749be961d3ebaa8c0637c903">More...</a><br /></td></tr>
-<tr class="separator:a2641ecdc749be961d3ebaa8c0637c903"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33f36a3eb84cbcb0b7d0b1b1441682ec"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a33f36a3eb84cbcb0b7d0b1b1441682ec">genie::LoadTableFromBinary</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a33f36a3eb84cbcb0b7d0b1b1441682ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads data from a binary file and returns pre-built table.  <a href="namespacegenie.html#a33f36a3eb84cbcb0b7d0b1b1441682ec">More...</a><br /></td></tr>
+<tr class="separator:a33f36a3eb84cbcb0b7d0b1b1441682ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49dabf6a8f040db1f7c9ddb400b87f66"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#a49dabf6a8f040db1f7c9ddb400b87f66">genie::SaveTableToBinary</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt; &amp;table)</td></tr>
+<tr class="memdesc:a49dabf6a8f040db1f7c9ddb400b87f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save inverted table to a binary file.  <a href="namespacegenie.html#a49dabf6a8f040db1f7c9ddb400b87f66">More...</a><br /></td></tr>
+<tr class="separator:a49dabf6a8f040db1f7c9ddb400b87f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac769113ed9c2f30356ede7adb924f73d"><td class="memItemLeft" align="right" valign="top">QueryData&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html#ac769113ed9c2f30356ede7adb924f73d">genie::LoadQueryDataFromCsv</a> (const std::string &amp;filename, const std::shared_ptr&lt; const ExecutionPolicy &gt; &amp;policy)</td></tr>
 <tr class="memdesc:ac769113ed9c2f30356ede7adb924f73d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads query from a CSV file and returns in QueryData format.  <a href="namespacegenie.html#ac769113ed9c2f30356ede7adb924f73d">More...</a><br /></td></tr>
 <tr class="separator:ac769113ed9c2f30356ede7adb924f73d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -122,7 +122,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="dir_a284e24806990e010dc02df07566edbb.html">interface</a></li><li class="navelem"><a class="el" href="io_8h.html">io.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_b4cfa18ca61e30ca88ceab0c13343141.html">interface</a></li><li class="navelem"><a class="el" href="io_8h.html">io.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

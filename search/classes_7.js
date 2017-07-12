@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['notimplementedexception',['NotImplementedException',['../classgenie_1_1exception_1_1NotImplementedException.html',1,'genie::exception']]]
+  ['matchingperfdata',['MatchingPerfData',['../classgenie_1_1utility_1_1MatchingPerfData.html',1,'genie::utility']]]
 ];

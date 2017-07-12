@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['level_5fnames',['LEVEL_NAMES',['../classLogger.html#a459bb387021c59b3b7d99eb2375d2cb5',1,'Logger']]],
-  ['lightweight_5fcompression_5ftype',['LIGHTWEIGHT_COMPRESSION_TYPE',['../namespaceGPUGenie.html#ac9af7627362841b8fdc538f2aa5e1d16',1,'GPUGenie']]],
-  ['low',['low',['../structGPUGenie_1_1query_1_1range.html#ab2ae8a8ca8833086d06ed411bd02184d',1,'GPUGenie::query::range']]],
-  ['low_5foffset',['low_offset',['../structGPUGenie_1_1query_1_1range.html#a16ff795429d0a1f85a36fd4e5a23f6d7',1,'GPUGenie::query::range']]]
+  ['k_5f',['k_',['../classgenie_1_1ExecutionPolicy.html#a41a5e9dfb6c00c33335b0f483390f051',1,'genie::ExecutionPolicy']]],
+  ['key_5ftype_5fbits',['KEY_TYPE_BITS',['../namespacegenie_1_1matching.html#aeef7828cd88124a59c170c2bd4274f01',1,'genie::matching']]],
+  ['key_5ftype_5finit_5fage',['KEY_TYPE_INIT_AGE',['../namespacegenie_1_1matching.html#a6be00f53cb530726b83963edf2548226',1,'genie::matching']]],
+  ['key_5ftype_5fmask',['KEY_TYPE_MASK',['../namespacegenie_1_1matching.html#aa7b9c728f3a31933e987f4bdfaeb8691',1,'genie::matching']]],
+  ['key_5ftype_5fnull_5fage',['KEY_TYPE_NULL_AGE',['../namespacegenie_1_1matching.html#a07cc2205e72a470d5370abd09e71caca',1,'genie::matching']]]
 ];

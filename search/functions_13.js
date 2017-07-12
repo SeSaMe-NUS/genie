@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['uncompressedinv',['uncompressedInv',['../classGPUGenie_1_1inv__compr__table.html#a5fee1edc4d133a7ffc4753c890825ab9',1,'GPUGenie::inv_compr_table']]],
-  ['uncompressedinvpos',['uncompressedInvPos',['../classGPUGenie_1_1inv__compr__table.html#a747a4da18eea8f22e03ca82b47505be7',1,'GPUGenie::inv_compr_table']]],
-  ['uniformupdate',['uniformUpdate',['../scan_8cu.html#a3c4dd9d7882ec1ff009931c4bd54c0ff',1,'scan.cu']]],
-  ['unpack',['unpack',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#ac0fc9df2b5ac5925083f36ad6c293532',1,'GPUGenie::DeviceBitPackingHelpers']]],
-  ['unpackblock',['unpackblock',['../structGPUGenie_1_1DeviceBitPackingCodec_1_1DeviceIntegratedBlockPacker.html#abfcb88159591687b0ce350908c44a880',1,'GPUGenie::DeviceBitPackingCodec::DeviceIntegratedBlockPacker::unpackblock()'],['../structGPUGenie_1_1DeviceBitPackingCodec_1_1DeviceNoDeltaBlockPacker.html#a7095eb7d0cb535730f51dc799ecbcbb3',1,'GPUGenie::DeviceBitPackingCodec::DeviceNoDeltaBlockPacker::unpackblock()'],['../classGPUGenie_1_1DeviceBitPackingPrefixedCodec.html#a2821e3e52e558b8239b66b8f8c390a0c',1,'GPUGenie::DeviceBitPackingPrefixedCodec::unpackblock()']]],
-  ['unpackwithoutdelta',['unpackWithoutDelta',['../structGPUGenie_1_1DeviceBitPackingHelpers.html#a0d807c8363ae1233c6e25de86c8ff839',1,'GPUGenie::DeviceBitPackingHelpers']]],
-  ['updatethreshold',['updateThreshold',['../namespacegenie_1_1matching.html#aeba33fb86884bef6e233885ca0c24ef7',1,'genie::matching']]]
+  ['thresholdsize',['ThresholdSize',['../classgenie_1_1utility_1_1MatchingPerfData.html#a4adeb6d93366a0a4e72f2706229297b9',1,'genie::utility::MatchingPerfData']]],
+  ['throughput',['Throughput',['../classgenie_1_1utility_1_1ScanPerfData.html#ab80a69f1a5a4cae0792d033b901d769e',1,'genie::utility::ScanPerfData::Throughput()'],['../classgenie_1_1utility_1_1CodecPerfData.html#a59f95975c0ca4e7f979d92aa32c0ec30',1,'genie::utility::CodecPerfData::Throughput()']]],
+  ['time',['Time',['../classgenie_1_1utility_1_1ScanPerfData.html#ac9868e522f96e3369e600ad18a2a6370',1,'genie::utility::ScanPerfData::Time()'],['../classgenie_1_1utility_1_1CodecPerfData.html#ac283263dfb3663f89d144dc8aa3d3456',1,'genie::utility::CodecPerfData::Time()']]],
+  ['topk',['topk',['../classgenie_1_1query_1_1Query.html#a61d609a9e31706ef6fc1ea24ef765dae',1,'genie::query::Query::topk(int k)'],['../classgenie_1_1query_1_1Query.html#aa9acba7f6f94591182936a169aee141a',1,'genie::query::Query::topk()']]],
+  ['topkssize',['TopksSize',['../classgenie_1_1utility_1_1MatchingPerfData.html#aadf7e8e100440bb8db8f1d29cc393603',1,'genie::utility::MatchingPerfData']]],
+  ['transform_5fthreshold',['transform_threshold',['../heap__count_8cu.html#a9f0a11447153861d7a02e81d4ff2230a',1,'heap_count.cu']]]
 ];

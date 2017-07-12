@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>GENIE: /home/liusiyuan/Workspace/GPUGenie/src/GPUGenie/match.h File Reference</title>
+<title>GENIE: /home/lubos/genie-dev/src/genie/matching/match.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,29 +92,31 @@ $(document).ready(function(){initNavTree('match_8h.html','');});
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;thrust/device_vector.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="query_8h_source.html">query.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="inv__table_8h_source.html">inv_table.h</a>&quot;</code><br />
+<code>#include &lt;<a class="el" href="query_8h_source.html">genie/query/query.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="inv__table_8h_source.html">genie/table/inv_table.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="match__common_8h_source.html">match_common.h</a>&quot;</code><br />
 </div>
 <p><a href="match_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:namespaceGPUGenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html">GPUGenie</a></td></tr>
-<tr class="memdesc:namespaceGPUGenie"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceGPUGenie.html" title="GPUGenie is the top namespace for the project. ">GPUGenie</a> is the top namespace for the project. <br /></td></tr>
+<tr class="memitem:namespacegenie"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie.html">genie</a></td></tr>
+<tr class="memdesc:namespacegenie"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the top-level namespace of the project. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacegenie_1_1matching"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html">genie::matching</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aabe40435644e96bab1cd5b3e09269190"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#aabe40435644e96bab1cd5b3e09269190">GPUGenie::cal_max_topk</a> (std::vector&lt; query &gt; &amp;queries)</td></tr>
-<tr class="separator:aabe40435644e96bab1cd5b3e09269190"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5fe5679bc2ae16a9bcb0faf5d72dd827"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a5fe5679bc2ae16a9bcb0faf5d72dd827">GPUGenie::match</a> (inv_table &amp;table, std::vector&lt; query &gt; &amp;queries, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_data, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;d_bitmap, int hash_table_size, int max_load, int bitmap_bits, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;d_noiih, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;d_threshold, thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &amp;d_passCount)</td></tr>
-<tr class="memdesc:a5fe5679bc2ae16a9bcb0faf5d72dd827"><td class="mdescLeft">&#160;</td><td class="mdescRight">Search the <a class="el" href="classGPUGenie_1_1inv__table.html" title="The declaration for class inv_table. ">inv_table</a> and save the match result into d_count and d_aggregation.  <a href="namespaceGPUGenie.html#a5fe5679bc2ae16a9bcb0faf5d72dd827">More...</a><br /></td></tr>
-<tr class="separator:a5fe5679bc2ae16a9bcb0faf5d72dd827"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af84641b98673bce7f870d7011d470104"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#af84641b98673bce7f870d7011d470104">GPUGenie::match_MT</a> (std::vector&lt; inv_table *&gt; &amp;table, std::vector&lt; std::vector&lt; query &gt; &gt; &amp;queries, std::vector&lt; thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &gt; &amp;d_data, std::vector&lt; thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &gt; &amp;d_bitmap, std::vector&lt; int &gt; &amp;hash_table_size, std::vector&lt; int &gt; &amp;max_load, int bitmap_bits, std::vector&lt; thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &gt; &amp;d_noiih, std::vector&lt; thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &gt; &amp;d_threshold, std::vector&lt; thrust::device_vector&lt; <a class="el" href="query_8cu.html#a10e94b422ef0c20dcdec20d31a1f5049">u32</a> &gt; &gt; &amp;d_passCount, size_t start, size_t finish)</td></tr>
-<tr class="separator:af84641b98673bce7f870d7011d470104"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a808c14bfd2c8226c92edf9e6c5acfb6a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceGPUGenie.html#a808c14bfd2c8226c92edf9e6c5acfb6a">GPUGenie::build_queries</a> (std::vector&lt; query &gt; &amp;queries, inv_table &amp;table, std::vector&lt; query::dim &gt; &amp;dims, int max_load)</td></tr>
-<tr class="separator:a808c14bfd2c8226c92edf9e6c5acfb6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a365d0dc0e0e847fae7e8bb54f59e1626"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html#a365d0dc0e0e847fae7e8bb54f59e1626">genie::matching::cal_max_topk</a> (std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;queries)</td></tr>
+<tr class="separator:a365d0dc0e0e847fae7e8bb54f59e1626"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80ee330a384a7b88cf7774ee8c1feeb9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html#a80ee330a384a7b88cf7774ee8c1feeb9">genie::matching::match</a> (<a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &amp;table, std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;queries, thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &amp;d_data, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_bitmap, int hash_table_size, int max_load, int bitmap_bits, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_noiih, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_threshold, thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &amp;d_passCount)</td></tr>
+<tr class="memdesc:a80ee330a384a7b88cf7774ee8c1feeb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Search the inv_table and save the match result into d_count and d_aggregation.  <a href="namespacegenie_1_1matching.html#a80ee330a384a7b88cf7774ee8c1feeb9">More...</a><br /></td></tr>
+<tr class="separator:a80ee330a384a7b88cf7774ee8c1feeb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f9519c87f8bcc444e30888fabe0ace7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html#a3f9519c87f8bcc444e30888fabe0ace7">genie::matching::match_MT</a> (std::vector&lt; <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> *&gt; &amp;table, std::vector&lt; std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &gt; &amp;queries, std::vector&lt; thrust::device_vector&lt; <a class="el" href="structgenie_1_1matching_1_1data__t.html">genie::matching::data_t</a> &gt; &gt; &amp;d_data, std::vector&lt; thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &gt; &amp;d_bitmap, std::vector&lt; int &gt; &amp;hash_table_size, std::vector&lt; int &gt; &amp;max_load, int bitmap_bits, std::vector&lt; thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &gt; &amp;d_noiih, std::vector&lt; thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &gt; &amp;d_threshold, std::vector&lt; thrust::device_vector&lt; <a class="el" href="match__common_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> &gt; &gt; &amp;d_passCount, size_t start, size_t finish)</td></tr>
+<tr class="separator:a3f9519c87f8bcc444e30888fabe0ace7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14cf54b595dacf9b31b858bc839a9863"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1matching.html#a14cf54b595dacf9b31b858bc839a9863">genie::matching::build_queries</a> (std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;queries, <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &amp;table, std::vector&lt; <a class="el" href="structgenie_1_1query_1_1Query_1_1dim.html">genie::query::Query::dim</a> &gt; &amp;dims, int max_load)</td></tr>
+<tr class="separator:a14cf54b595dacf9b31b858bc839a9863"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This file includes interfaces of original GENIE match functions. </p>
@@ -125,7 +127,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ca06b39efc5497340cedbb398ca1fe8b.html">GPUGenie</a></li><li class="navelem"><a class="el" href="match_8h.html">match.h</a></li>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d399e0e503363093c44cc0cfca6100f8.html">genie</a></li><li class="navelem"><a class="el" href="dir_72fa21306aacabc60d2037c32b04b303.html">matching</a></li><li class="navelem"><a class="el" href="match_8h.html">match.h</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['singlerangeexecutionpolicy',['SingleRangeExecutionPolicy',['../classgenie_1_1execution__policy_1_1SingleRangeExecutionPolicy.html',1,'genie::execution_policy']]],
-  ['singlevalueexecutionpolicy',['SingleValueExecutionPolicy',['../classgenie_1_1execution__policy_1_1SingleValueExecutionPolicy.html',1,'genie::execution_policy']]]
+  ['query',['query',['../classquery.html',1,'query'],['../classgenie_1_1query_1_1Query.html',1,'genie::query::Query']]]
 ];

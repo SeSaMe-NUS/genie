@@ -81,18 +81,524 @@ $(document).ready(function(){initNavTree('namespacegenie_1_1utility.html','');})
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">genie::utility Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgenie_1_1utility_1_1__GPUGenie__Query__Data.html">_GPUGenie_Query_Data</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This struct is used to construct query in multirange mode.  <a href="structgenie_1_1utility_1_1__GPUGenie__Query__Data.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1utility_1_1CodecPerfData.html">CodecPerfData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1utility_1_1Logger.html">Logger</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A utility class to record logs into disk files.  <a href="classgenie_1_1utility_1_1Logger.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1utility_1_1MatchingPerfData.html">MatchingPerfData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1utility_1_1PerfLogger.html">PerfLogger</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgenie_1_1utility_1_1ScanPerfData.html">ScanPerfData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:abfeb34f498bca4a2f45194cc68c24379"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structgenie_1_1utility_1_1__GPUGenie__Query__Data.html">genie::utility::_GPUGenie_Query_Data</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#abfeb34f498bca4a2f45194cc68c24379">attr_t</a></td></tr>
+<tr class="separator:abfeb34f498bca4a2f45194cc68c24379"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a6c67cda2d8aac63fa14595885dc22c2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a6c67cda2d8aac63fa14595885dc22c2b">read_file</a> (std::vector&lt; std::vector&lt; int &gt; &gt; &amp;dest, const char *fname, int num)</td></tr>
+<tr class="separator:a6c67cda2d8aac63fa14595885dc22c2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a031837916d23bdca53b7bb5bf7daed32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a031837916d23bdca53b7bb5bf7daed32">read_query</a> (<a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &amp;table, const char *fname, std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;queries, int num_of_queries, int num_of_query_dims, int radius, int topk, float selectivity)</td></tr>
+<tr class="separator:a031837916d23bdca53b7bb5bf7daed32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbaa0752e6fc2c7abbcd92a902588994"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#abbaa0752e6fc2c7abbcd92a902588994">read_query</a> (std::vector&lt; <a class="el" href="namespacegenie_1_1utility.html#abfeb34f498bca4a2f45194cc68c24379">attr_t</a> &gt; &amp;data, const char *file_name, int num)</td></tr>
+<tr class="separator:abbaa0752e6fc2c7abbcd92a902588994"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a943bc13a826b33ac16f73e40e11b567e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a943bc13a826b33ac16f73e40e11b567e">Init</a> (<a class="el" href="classgenie_1_1Config.html">genie::Config</a> &amp;config)</td></tr>
 <tr class="separator:a943bc13a826b33ac16f73e40e11b567e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61b4b1acf4db7712e5984801a57dfd48"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a61b4b1acf4db7712e5984801a57dfd48">initScan</a> (void)</td></tr>
+<tr class="separator:a61b4b1acf4db7712e5984801a57dfd48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5413dfbb7160d0ed0b2317e830be43f7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a5413dfbb7160d0ed0b2317e830be43f7">closeScan</a> (void)</td></tr>
+<tr class="separator:a5413dfbb7160d0ed0b2317e830be43f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4347592ee0dbc211a183cde62a6d42ef"><td class="memItemLeft" align="right" valign="top">__device__ uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a4347592ee0dbc211a183cde62a6d42ef">d_pow2ceil_32</a> (uint x)</td></tr>
+<tr class="separator:a4347592ee0dbc211a183cde62a6d42ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a824bd34c05b44a8e3f902ec10b080d5c"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a824bd34c05b44a8e3f902ec10b080d5c">h_pow2ceil_32</a> (uint x)</td></tr>
+<tr class="separator:a824bd34c05b44a8e3f902ec10b080d5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d6823875abc0cf798204f6052c4c72f"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a2d6823875abc0cf798204f6052c4c72f">g_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a2d6823875abc0cf798204f6052c4c72f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af82caadf256be20602103eeff428883e"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#af82caadf256be20602103eeff428883e">d_scanExclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:af82caadf256be20602103eeff428883e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afad79ae12ba2e782562176a6d71e4c7b"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#afad79ae12ba2e782562176a6d71e4c7b">d_scanExclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:afad79ae12ba2e782562176a6d71e4c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a318e25466f3b39ce439eae8cf25f8e4c"><td class="memItemLeft" align="right" valign="top">__global__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a318e25466f3b39ce439eae8cf25f8e4c">g_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a318e25466f3b39ce439eae8cf25f8e4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7afa152e9c8a5523c33c816927c83de0"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a7afa152e9c8a5523c33c816927c83de0">d_scanInclusiveShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a7afa152e9c8a5523c33c816927c83de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bd8eef44fd8637161e30e116c3a53bf"><td class="memItemLeft" align="right" valign="top">__device__ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a0bd8eef44fd8637161e30e116c3a53bf">d_scanInclusivePerBlockShared</a> (uint4 *d_Dst, uint4 *d_Src, uint activeThreads, uint pow2size)</td></tr>
+<tr class="separator:a0bd8eef44fd8637161e30e116c3a53bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5189cf908d030ff76fbc15fdd1d976b7"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a5189cf908d030ff76fbc15fdd1d976b7">scanExclusiveShort</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
+<tr class="separator:a5189cf908d030ff76fbc15fdd1d976b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab64bb5b4f891cebff83e1a9a9ad512f8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ab64bb5b4f891cebff83e1a9a9ad512f8">scanExclusiveLarge</a> (unsigned int *d_Dst, unsigned int *d_Src, unsigned int arrayLength)</td></tr>
+<tr class="separator:ab64bb5b4f891cebff83e1a9a9ad512f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae18e5cc31340a5712f8be5603ba2f7c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ae18e5cc31340a5712f8be5603ba2f7c4">scanExclusiveHost</a> (unsigned int *dst, unsigned int *src, unsigned int arrayLength)</td></tr>
+<tr class="separator:ae18e5cc31340a5712f8be5603ba2f7c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1789198d535e6644d131093e3b3f62f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a1789198d535e6644d131093e3b3f62f8">SaveTable</a> (const std::string &amp;filename, const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt; &amp;table)</td></tr>
+<tr class="separator:a1789198d535e6644d131093e3b3f62f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ae1604dbe8763abfbeec118fab8e365"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a8ae1604dbe8763abfbeec118fab8e365">LoadTable</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a8ae1604dbe8763abfbeec118fab8e365"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad57c47b8d831828819c870de831d0c78"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ad57c47b8d831828819c870de831d0c78">currentDateTime</a> ()</td></tr>
+<tr class="memdesc:ad57c47b8d831828819c870de831d0c78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current data time.  <a href="#ad57c47b8d831828819c870de831d0c78">More...</a><br /></td></tr>
+<tr class="separator:ad57c47b8d831828819c870de831d0c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae02cc6ba8ea455d3ec014b791bd6cf1f"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ae02cc6ba8ea455d3ec014b791bd6cf1f">getTime</a> ()</td></tr>
+<tr class="memdesc:ae02cc6ba8ea455d3ec014b791bd6cf1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get system time.  <a href="#ae02cc6ba8ea455d3ec014b791bd6cf1f">More...</a><br /></td></tr>
+<tr class="separator:ae02cc6ba8ea455d3ec014b791bd6cf1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add0419ed1d3df2ae3350187bf7dbbc36"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#add0419ed1d3df2ae3350187bf7dbbc36">getInterval</a> (unsigned long long start, unsigned long long stop)</td></tr>
+<tr class="memdesc:add0419ed1d3df2ae3350187bf7dbbc36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate time interval from start to end.  <a href="#add0419ed1d3df2ae3350187bf7dbbc36">More...</a><br /></td></tr>
+<tr class="separator:add0419ed1d3df2ae3350187bf7dbbc36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ab74da470491a173c0f4d2547b3630e91"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ab74da470491a173c0f4d2547b3630e91">GPUGENIE_QUERY_QID_INDEX</a> = 0u</td></tr>
+<tr class="separator:ab74da470491a173c0f4d2547b3630e91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a349efafe1b5b2ad5c0f56d6a563c95c0"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a349efafe1b5b2ad5c0f56d6a563c95c0">GPUGENIE_QUERY_DIM_INDEX</a> = 1u</td></tr>
+<tr class="separator:a349efafe1b5b2ad5c0f56d6a563c95c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a424595eda6dd67037bc3be3b6c1e2308"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a424595eda6dd67037bc3be3b6c1e2308">GPUGENIE_QUERY_VALUE_INDEX</a> = 2u</td></tr>
+<tr class="separator:a424595eda6dd67037bc3be3b6c1e2308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add13e1fabe6e0f91140c6bbfbb582fc9"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#add13e1fabe6e0f91140c6bbfbb582fc9">GPUGENIE_QUERY_SELECTIVITY_INDEX</a> = 3u</td></tr>
+<tr class="separator:add13e1fabe6e0f91140c6bbfbb582fc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa669345f53cc9959cb492b7959195a1b"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#aa669345f53cc9959cb492b7959195a1b">GPUGENIE_QUERY_WEIGHT_INDEX</a> = 4u</td></tr>
+<tr class="separator:aa669345f53cc9959cb492b7959195a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e32ece4405f1cc60af2787fde5744e8"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a9e32ece4405f1cc60af2787fde5744e8">GPUGENIE_QUERY_NUM_OF_FIELDS</a> = 5u</td></tr>
+<tr class="separator:a9e32ece4405f1cc60af2787fde5744e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1539566da4f311c71b40b4896c5af4d4"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a1539566da4f311c71b40b4896c5af4d4">SCAN_THREADBLOCK_SIZE</a> = <a class="el" href="scan_8h.html#a7364ee4235076d33509ab1b6994c354d">GPUGENIE_SCAN_THREADBLOCK_SIZE</a></td></tr>
+<tr class="separator:a1539566da4f311c71b40b4896c5af4d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f9132af0fe7d28d91043443bd8c8f7f"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a8f9132af0fe7d28d91043443bd8c8f7f">SCAN_MIN_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#ab4ab42a06d1ee64616ce24bbc1c73c41">GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE</a></td></tr>
+<tr class="separator:a8f9132af0fe7d28d91043443bd8c8f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64860c279ba6256e19d467be9b8e86e8"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#a64860c279ba6256e19d467be9b8e86e8">SCAN_MAX_SHORT_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#a9cc1dee503acc8edff0aa0f48bcbfa9a">GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE</a></td></tr>
+<tr class="separator:a64860c279ba6256e19d467be9b8e86e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acde2d3ad549dc3925105fd872c7e33a5"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#acde2d3ad549dc3925105fd872c7e33a5">SCAN_MIN_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afb69618257704da8fc698b50a0d2db4d">GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE</a></td></tr>
+<tr class="separator:acde2d3ad549dc3925105fd872c7e33a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac19ed658af9e37ce07eb951120eaec40"><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegenie_1_1utility.html#ac19ed658af9e37ce07eb951120eaec40">SCAN_MAX_LARGE_ARRAY_SIZE</a> = <a class="el" href="scan_8h.html#afa8f0954972885f548fcc2a4fb94a5ba">GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE</a></td></tr>
+<tr class="separator:ac19ed658af9e37ce07eb951120eaec40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="abfeb34f498bca4a2f45194cc68c24379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfeb34f498bca4a2f45194cc68c24379">&#9670;&nbsp;</a></span>attr_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structgenie_1_1utility_1_1__GPUGenie__Query__Data.html">_GPUGenie_Query_Data</a> <a class="el" href="namespacegenie_1_1utility.html#abfeb34f498bca4a2f45194cc68c24379">genie::utility::attr_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a5413dfbb7160d0ed0b2317e830be43f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5413dfbb7160d0ed0b2317e830be43f7">&#9670;&nbsp;</a></span>closeScan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::closeScan </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00272">272</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="ad57c47b8d831828819c870de831d0c78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad57c47b8d831828819c870de831d0c78">&#9670;&nbsp;</a></span>currentDateTime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string genie::utility::currentDateTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get current data time. </p>
+<dl class="section return"><dt>Returns</dt><dd>Current date/time, format is YYYY-MM-DD.HH:mm:ss </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="Timing_8cc_source.html#l00010">10</a> of file <a class="el" href="Timing_8cc_source.html">Timing.cc</a>.</p>
+
+</div>
+</div>
+<a id="a4347592ee0dbc211a183cde62a6d42ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4347592ee0dbc211a183cde62a6d42ef">&#9670;&nbsp;</a></span>d_pow2ceil_32()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__device__ uint genie::utility::d_pow2ceil_32 </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00279">279</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="afad79ae12ba2e782562176a6d71e4c7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afad79ae12ba2e782562176a6d71e4c7b">&#9670;&nbsp;</a></span>d_scanExclusivePerBlockShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__device__ void genie::utility::d_scanExclusivePerBlockShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00095">95</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="af82caadf256be20602103eeff428883e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af82caadf256be20602103eeff428883e">&#9670;&nbsp;</a></span>d_scanExclusiveShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__device__ void genie::utility::d_scanExclusiveShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00116">116</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a0bd8eef44fd8637161e30e116c3a53bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bd8eef44fd8637161e30e116c3a53bf">&#9670;&nbsp;</a></span>d_scanInclusivePerBlockShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__device__ void genie::utility::d_scanInclusivePerBlockShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00158">158</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a7afa152e9c8a5523c33c816927c83de0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7afa152e9c8a5523c33c816927c83de0">&#9670;&nbsp;</a></span>d_scanInclusiveShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__device__ void genie::utility::d_scanInclusiveShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00179">179</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a2d6823875abc0cf798204f6052c4c72f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d6823875abc0cf798204f6052c4c72f">&#9670;&nbsp;</a></span>g_scanExclusiveShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__global__ void genie::utility::g_scanExclusiveShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00074">74</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a318e25466f3b39ce439eae8cf25f8e4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a318e25466f3b39ce439eae8cf25f8e4c">&#9670;&nbsp;</a></span>g_scanInclusiveShared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">__global__ void genie::utility::g_scanInclusiveShared </td>
+          <td>(</td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint4 *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>activeThreads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>pow2size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00137">137</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="add0419ed1d3df2ae3350187bf7dbbc36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add0419ed1d3df2ae3350187bf7dbbc36">&#9670;&nbsp;</a></span>getInterval()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double genie::utility::getInterval </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long long&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long long&#160;</td>
+          <td class="paramname"><em>stop</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate time interval from start to end. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">start</td><td>Start time </td></tr>
+    <tr><td class="paramname">stop</td><td>Stop time</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>time interval(millisecond) between start and stop </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="Timing_8cc_source.html#l00036">36</a> of file <a class="el" href="Timing_8cc_source.html">Timing.cc</a>.</p>
+
+</div>
+</div>
+<a id="ae02cc6ba8ea455d3ec014b791bd6cf1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae02cc6ba8ea455d3ec014b791bd6cf1f">&#9670;&nbsp;</a></span>getTime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long long genie::utility::getTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get system time. </p>
+<dl class="section return"><dt>Returns</dt><dd>system time </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="Timing_8cc_source.html#l00022">22</a> of file <a class="el" href="Timing_8cc_source.html">Timing.cc</a>.</p>
+
+</div>
+</div>
+<a id="a824bd34c05b44a8e3f902ec10b080d5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a824bd34c05b44a8e3f902ec10b080d5c">&#9670;&nbsp;</a></span>h_pow2ceil_32()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint genie::utility::h_pow2ceil_32 </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00293">293</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
 <a id="a943bc13a826b33ac16f73e40e11b567e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a943bc13a826b33ac16f73e40e11b567e">&#9670;&nbsp;</a></span>Init()</h2>
 
@@ -109,7 +615,488 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="init_8cu_source.html#l00006">6</a> of file <a class="el" href="init_8cu_source.html">init.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="init_8cu_source.html#l00007">7</a> of file <a class="el" href="init_8cu_source.html">init.cu</a>.</p>
+
+</div>
+</div>
+<a id="a61b4b1acf4db7712e5984801a57dfd48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61b4b1acf4db7712e5984801a57dfd48">&#9670;&nbsp;</a></span>initScan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::initScan </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00267">267</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a8ae1604dbe8763abfbeec118fab8e365"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ae1604dbe8763abfbeec118fab8e365">&#9670;&nbsp;</a></span>LoadTable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt; genie::utility::LoadTable </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="serialization_8cc_source.html#l00042">42</a> of file <a class="el" href="serialization_8cc_source.html">serialization.cc</a>.</p>
+
+</div>
+</div>
+<a id="a6c67cda2d8aac63fa14595885dc22c2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c67cda2d8aac63fa14595885dc22c2b">&#9670;&nbsp;</a></span>read_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::read_file </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; int &gt; &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>fname</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a031837916d23bdca53b7bb5bf7daed32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a031837916d23bdca53b7bb5bf7daed32">&#9670;&nbsp;</a></span>read_query() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::read_query </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &amp;&#160;</td>
+          <td class="paramname"><em>table</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>fname</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classgenie_1_1query_1_1Query.html">genie::query::Query</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>queries</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_of_queries</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num_of_query_dims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>topk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>selectivity</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abbaa0752e6fc2c7abbcd92a902588994"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbaa0752e6fc2c7abbcd92a902588994">&#9670;&nbsp;</a></span>read_query() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::read_query </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="namespacegenie_1_1utility.html#abfeb34f498bca4a2f45194cc68c24379">attr_t</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>num</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1789198d535e6644d131093e3b3f62f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1789198d535e6644d131093e3b3f62f8">&#9670;&nbsp;</a></span>SaveTable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::SaveTable </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; const <a class="el" href="classgenie_1_1table_1_1inv__table.html">genie::table::inv_table</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>table</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="serialization_8cc_source.html#l00024">24</a> of file <a class="el" href="serialization_8cc_source.html">serialization.cc</a>.</p>
+
+</div>
+</div>
+<a id="ae18e5cc31340a5712f8be5603ba2f7c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae18e5cc31340a5712f8be5603ba2f7c4">&#9670;&nbsp;</a></span>scanExclusiveHost()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void genie::utility::scanExclusiveHost </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>arrayLength</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab64bb5b4f891cebff83e1a9a9ad512f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab64bb5b4f891cebff83e1a9a9ad512f8">&#9670;&nbsp;</a></span>scanExclusiveLarge()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t genie::utility::scanExclusiveLarge </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>arrayLength</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5189cf908d030ff76fbc15fdd1d976b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5189cf908d030ff76fbc15fdd1d976b7">&#9670;&nbsp;</a></span>scanExclusiveShort()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t genie::utility::scanExclusiveShort </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>d_Dst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int *&#160;</td>
+          <td class="paramname"><em>d_Src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>arrayLength</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a349efafe1b5b2ad5c0f56d6a563c95c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a349efafe1b5b2ad5c0f56d6a563c95c0">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_DIM_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_DIM_INDEX = 1u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00044">44</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="a9e32ece4405f1cc60af2787fde5744e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e32ece4405f1cc60af2787fde5744e8">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_NUM_OF_FIELDS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_NUM_OF_FIELDS = 5u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00060">60</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="ab74da470491a173c0f4d2547b3630e91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab74da470491a173c0f4d2547b3630e91">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_QID_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_QID_INDEX = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00040">40</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="add13e1fabe6e0f91140c6bbfbb582fc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add13e1fabe6e0f91140c6bbfbb582fc9">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_SELECTIVITY_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_SELECTIVITY_INDEX = 3u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00052">52</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="a424595eda6dd67037bc3be3b6c1e2308"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a424595eda6dd67037bc3be3b6c1e2308">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_VALUE_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_VALUE_INDEX = 2u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00048">48</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="aa669345f53cc9959cb492b7959195a1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa669345f53cc9959cb492b7959195a1b">&#9670;&nbsp;</a></span>GPUGENIE_QUERY_WEIGHT_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int genie::utility::GPUGENIE_QUERY_WEIGHT_INDEX = 4u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="FileReader_8h_source.html#l00056">56</a> of file <a class="el" href="FileReader_8h_source.html">FileReader.h</a>.</p>
+
+</div>
+</div>
+<a id="ac19ed658af9e37ce07eb951120eaec40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac19ed658af9e37ce07eb951120eaec40">&#9670;&nbsp;</a></span>SCAN_MAX_LARGE_ARRAY_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint genie::utility::SCAN_MAX_LARGE_ARRAY_SIZE = <a class="el" href="scan_8h.html#afa8f0954972885f548fcc2a4fb94a5ba">GPUGENIE_SCAN_MAX_LARGE_ARRAY_SIZE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00016">16</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a64860c279ba6256e19d467be9b8e86e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64860c279ba6256e19d467be9b8e86e8">&#9670;&nbsp;</a></span>SCAN_MAX_SHORT_ARRAY_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint genie::utility::SCAN_MAX_SHORT_ARRAY_SIZE = <a class="el" href="scan_8h.html#a9cc1dee503acc8edff0aa0f48bcbfa9a">GPUGENIE_SCAN_MAX_SHORT_ARRAY_SIZE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00014">14</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="acde2d3ad549dc3925105fd872c7e33a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acde2d3ad549dc3925105fd872c7e33a5">&#9670;&nbsp;</a></span>SCAN_MIN_LARGE_ARRAY_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint genie::utility::SCAN_MIN_LARGE_ARRAY_SIZE = <a class="el" href="scan_8h.html#afb69618257704da8fc698b50a0d2db4d">GPUGENIE_SCAN_MIN_LARGE_ARRAY_SIZE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00015">15</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a8f9132af0fe7d28d91043443bd8c8f7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f9132af0fe7d28d91043443bd8c8f7f">&#9670;&nbsp;</a></span>SCAN_MIN_SHORT_ARRAY_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint genie::utility::SCAN_MIN_SHORT_ARRAY_SIZE = <a class="el" href="scan_8h.html#ab4ab42a06d1ee64616ce24bbc1c73c41">GPUGENIE_SCAN_MIN_SHORT_ARRAY_SIZE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00013">13</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
+
+</div>
+</div>
+<a id="a1539566da4f311c71b40b4896c5af4d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1539566da4f311c71b40b4896c5af4d4">&#9670;&nbsp;</a></span>SCAN_THREADBLOCK_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint genie::utility::SCAN_THREADBLOCK_SIZE = <a class="el" href="scan_8h.html#a7364ee4235076d33509ab1b6994c354d">GPUGENIE_SCAN_THREADBLOCK_SIZE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="scan_8cu_source.html#l00012">12</a> of file <a class="el" href="scan_8cu_source.html">scan.cu</a>.</p>
 
 </div>
 </div>

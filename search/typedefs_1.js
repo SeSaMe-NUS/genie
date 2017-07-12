@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gpugenie_5fconfig',['GPUGenie_Config',['../namespaceGPUGenie.html#ababe47c7ab2da7aade0d581d027c40dd',1,'GPUGenie']]]
+  ['gpugenie_5fconfig',['GPUGenie_Config',['../namespacegenie_1_1original.html#a8eb314a5e507ec134c6d1a6ab45f95c4',1,'genie::original']]]
 ];

@@ -1,8 +1,8 @@
 var query_8h =
 [
-    [ "query", "classGPUGenie_1_1query.html", "classGPUGenie_1_1query" ],
-    [ "range", "structGPUGenie_1_1query_1_1range.html", "structGPUGenie_1_1query_1_1range" ],
-    [ "dim", "structGPUGenie_1_1query_1_1dim.html", "structGPUGenie_1_1query_1_1dim" ],
-    [ "u32", "query_8h.html#a51a2936ed84fd7b2a493862d7caf320b", null ],
-    [ "u64", "query_8h.html#a6342ea11cd11f5a6e6d21313489f1d59", null ]
+    [ "Query", "classgenie_1_1query_1_1Query.html", "classgenie_1_1query_1_1Query" ],
+    [ "range", "structgenie_1_1query_1_1Query_1_1range.html", "structgenie_1_1query_1_1Query_1_1range" ],
+    [ "dim", "structgenie_1_1query_1_1Query_1_1dim.html", "structgenie_1_1query_1_1Query_1_1dim" ],
+    [ "u32", "query_8h.html#aa71db20da11e62a9a91118a4b8328675", null ],
+    [ "u64", "query_8h.html#a88396e28024c1c72163d5f9409fb7e4f", null ]
 ];

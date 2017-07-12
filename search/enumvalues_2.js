@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['delta',['DELTA',['../namespaceGPUGenie.html#ae79859f20c40eebd3420751508a2a0a9abe2446c67f20927674751470bcee0f19',1,'GPUGenie']]]
+  ['delta',['DELTA',['../namespacegenie_1_1compression.html#a2e37919342435742bc8ff0e630c32eaeab87399a2ea5e0b78ef4e0b171a583afb',1,'genie::compression']]]
 ];

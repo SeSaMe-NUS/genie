@@ -1,10 +1,10 @@
 var classgenie_1_1ExecutionPolicy =
 [
-    [ "BuildQuery", "classgenie_1_1ExecutionPolicy.html#a90dccd7d8ba2ff5c4c62b8a153667b5b", null ],
-    [ "BuildTable", "classgenie_1_1ExecutionPolicy.html#ae40d9de87711f9cea826bbc45f40fcbe", null ],
+    [ "BuildQuery", "classgenie_1_1ExecutionPolicy.html#a1d895fcaf2e913bf0edf39c7572eb177", null ],
+    [ "BuildTable", "classgenie_1_1ExecutionPolicy.html#a4917e1f708acd9a715aba16e5bcff78e", null ],
     [ "GetNumOfQueries", "classgenie_1_1ExecutionPolicy.html#a0dd7909dd150474939eadd5cd38cf46d", null ],
-    [ "Match", "classgenie_1_1ExecutionPolicy.html#a33521432a57a0baf2efb78bab7ff0c84", null ],
-    [ "Match", "classgenie_1_1ExecutionPolicy.html#a078e017eb0ad261b04069e9cf0adcec0", null ],
+    [ "Match", "classgenie_1_1ExecutionPolicy.html#a2206356d081a4996f36ac30e96bedeb5", null ],
+    [ "Match", "classgenie_1_1ExecutionPolicy.html#ac1d4528fc1d65acff6fe0c3b4141b056", null ],
     [ "SetK", "classgenie_1_1ExecutionPolicy.html#a7985f05fc72e310156963cc470b0f701", null ],
     [ "SetNumOfQueries", "classgenie_1_1ExecutionPolicy.html#a46b69454cf95a4549f88012b2bab9d79", null ],
     [ "Validate", "classgenie_1_1ExecutionPolicy.html#a3440a4d55d76026011eec62ddf55fd36", null ],

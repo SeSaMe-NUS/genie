@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['range',['range',['../structGPUGenie_1_1query_1_1range.html',1,'GPUGenie::query']]]
+  ['perflogger',['PerfLogger',['../classgenie_1_1utility_1_1PerfLogger.html',1,'genie::utility']]]
 ];
