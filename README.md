@@ -1,16 +1,19 @@
 # GENIE
 
-GENIE is a Generic Inverted Index on the GPU. It builds the database from a csv file or a vector of instances. Then
-GENIE will consturct the inverted list table and transfer it to the device. GENIE provides a simple way to
-perform the similarity queries. User may define queries and their matching ranges, then directly call the matching
-funtion. The library will parallel process all queries and save the matching result into a device_vector. A top k
-search can also be simply perfromed. GENIE uses parallel searching to determine the top k values in a vector. It is
-much faster than the CPU searching algorithm. All device methods are wrapped in host methods. Developers are not
-required to configure the device function call. Please refer to the following documents:
+GENIE is a Generic Inverted Index on GPU. It builds a database (inverted index) from high dimensional data, commonly
+preprocessed by either Locality Sensitive Hashing or Shotgun and Assembly schemes. GENIE provides a simple way to
+perform top-k similarity queries on top of such inverted index. The user may define queries as dimension and value
+pairs, and optionally value ranges and weights. GENIE processes all queries in parallel on GPU using a Match Count
+similarity model (number of dimensions with matching values in a query). For each query, top-k similar results and
+their corresponding counts are returned. GENIE is much faster than other CPU searching algorithms due to extensive
+parallelism on two levels: parallel query processing and multiple queries processed in parallel.
+
+Please refer to the following technical report:
 
 ```
-Generic Inverted Index on the GPU, Technical Report (TR 11/15), School of Computing, NUS. 
-Generic Inverted Index on the GPU, CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/~atung/publication/gpugenie.pdf
+Generic Inverted Index on the GPU, Technical Report (TR 11/15), School of Computing, NUS. <br>
+CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/~atung/publication/gpugenie.pdf
+
 ```
 
 
@@ -32,7 +35,8 @@ $ cd build
 $ cmake ..
 $ make -j8
 ```
-Use target `$ make test` to run GENIE tests, `$ make doc` to build html code documentation, `$ make install` to install GENIE.
+Use target `$ make test` to run GENIE tests, `$ make doc` to build html code documentation, `$ make install` to
+install GENIE.
 
 `CMake` build parameters can be further configured using the following options:
 - `CMAKE_BUILD_TYPE:STRING` -- build type, one of `Release`, `Debug` (default `Debug`)
@@ -53,10 +57,10 @@ $ cmake -DGENIE_SIMDCAI=ON -DCMAKE_BUILD_TYPE=Release -DGENIE_DISTRIBUTED=ON -DG
 
 ## Running GENIE
 
-There are several main parts of GENIE project. The core is a library `/lib/libgenie.a` with the main functionality.
-To see how to use the library, you can check source code in either `/example` or `/test`. Tests are the simplest
-applications built on top of GENIE library. Other utilities include a compression performance toolkit in `/perf` and
-miscellaneous utilities in `/utility`. All of these tools are compiled into `/bin` directory.
+There are several main parts of the GENIE project. The core is a library `/lib/libgenie.a` with the main functionality.
+To see how to use the library, you can check the source code in either `/example` or `/test` directories. Tests are
+the simplest  applications built on top of GENIE library. Other utilities include a compression performance toolkit
+in `/perf` and miscellaneous utilities in `/utility`. All of these tools are compiled into `/bin` directory.
 
 
 ### Compression performance toolkit
