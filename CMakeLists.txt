@@ -37,7 +37,8 @@ set(CMAKE_CXX_FLAGS "${genie_warnings}")
 set(CMAKE_CUDA_FLAGS "--std c++11 --generate-code arch=compute_35,code=sm_35 --generate-code arch=compute_52,code=sm_52 --relocatable-device-code true --Werror cross-execution-space-call")
 # Disable cudafe warning: "type qualifier is meaningless on cast type" occuring in boost::archive
 # https://stackoverflow.com/questions/14831051/how-to-disable-compiler-warnings-with-nvcc
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe \"--diag_suppress=cast_to_qualified_type\"")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} \
+  -Xcudafe --diag_suppress=cast_to_qualified_type,--diag_suppress=integer_sign_change,--diag_suppress=set_but_not_used")
 # Boost 1.64 has a bug with Cuda 7.5 and 8.0, where compilation fails on static assert from g++ standard library 
 # https://svn.boost.org/trac10/ticket/13049
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DBOOST_NO_CXX11_NOEXCEPT")

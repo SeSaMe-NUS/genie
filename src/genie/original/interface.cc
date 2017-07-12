@@ -939,7 +939,7 @@ void genie::original::sequence_to_gram(vector<vector<int> > & sequences, vector<
             vector<int> temp_line;
             for(unsigned int p = 0; p < (unsigned int)gram_length; ++p)
             {
-                if(p<sequences[i].size() <= 0) break;
+                if(p < sequences[i].size() && sequences[i].size() <= 0) break;
                 if(p < sequences[i].size())
                     line_null.push_back(sequences[i][p]);
                 else

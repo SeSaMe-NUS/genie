@@ -7,8 +7,6 @@
  *
  *
  */
-#pragma warning(disable:4099)
-
 #include <cassert>
 #include <fstream>
 #include <memory>
