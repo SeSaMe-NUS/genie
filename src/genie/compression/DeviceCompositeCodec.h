@@ -28,9 +28,6 @@ public:
     Codec1 codec1;
     Codec2 codec2;
 
-    __device__ __host__
-    ~DeviceCompositeCodec() {}
-
     void
     encodeArray(uint32_t *in, const size_t length, uint32_t *out, size_t &nvalue);
 

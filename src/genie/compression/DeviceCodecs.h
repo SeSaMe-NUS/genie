@@ -62,9 +62,6 @@ public:
     __device__ const uint32_t*
     decodeArrayParallel(const uint32_t *d_in, const size_t length, uint32_t *d_out, size_t &nvalue) {return NULL;}
 
-    virtual __device__ __host__
-    ~DeviceIntegerCODEC() {}
-
     virtual std::string
     name() const {return std::string();};
 
@@ -116,9 +113,6 @@ public:
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
 
-    __device__ __host__
-    ~DeviceCopyMultiblockCodec() {}
-
     std::string
     name() const { return "CopyMB"; }
 
@@ -158,9 +152,6 @@ public:
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
 
-    __device__ __host__
-    ~DeviceCopyCodec() {}
-
     std::string
     name() const { return "Copy"; }
 
@@ -190,9 +181,6 @@ public:
 
     __device__ uint32_t*
     decodeArrayParallel(uint32_t *d_in, size_t length, uint32_t *d_out, size_t &nvalue);
-
-    __device__ __host__
-    ~DeviceDeltaCodec() {}
 
     std::string
     name() const { return "Delta"; }
