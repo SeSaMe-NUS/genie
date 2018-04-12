@@ -11,7 +11,7 @@ parallelism on two levels: parallel query processing and multiple queries proces
 Please refer to the following papers:
 
 
-- ICDE2018 paper: Jingbo Zhou, Qi Guo, H. V. Jagadish, Lubos Krcaly, Siyuan Liu, Wenhao Luan, Anthony K. H. Tung, Yueji Yang, Yuxin Zheng; (**A Generic Inverted Index Framework for Similarity Search on the GPU**); IEEE International Conference on Data Engineering, 2018 (ICDE 2018). 
+- ICDE2018 paper: Jingbo Zhou, Qi Guo, H. V. Jagadish, Lubos Krcaly, Siyuan Liu, Wenhao Luan, Anthony K. H. Tung, Yueji Yang, Yuxin Zheng; **A Generic Inverted Index Framework for Similarity Search on the GPU**; IEEE International Conference on Data Engineering, 2018 (ICDE 2018). 
 
 - Technical Report: CoRR arXiv:1603.08390 at https://arxiv.org/abs/1603.08390
 
