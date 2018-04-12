@@ -8,11 +8,12 @@ similarity model (number of dimensions with matching values in a query). For eac
 their corresponding counts are returned. GENIE is much faster than other CPU searching algorithms due to extensive
 parallelism on two levels: parallel query processing and multiple queries processed in parallel.
 
-Please refer to the following technical report:
+Please refer to the following papers:
 
 ```
-Generic Inverted Index on the GPU, Technical Report (TR 11/15), School of Computing, NUS. <br>
-CoRR arXiv:1603.08390 at www.comp.nus.edu.sg/~atung/publication/gpugenie.pdf
+- ICDE2018 paper: Jingbo Zhou, Qi Guo, H. V. Jagadish, Lubos Krcaly, Siyuan Liu, Wenhao Luan, Anthony K. H. Tung, Yueji Yang, Yuxin Zheng; A Generic Inverted Index Framework for Similarity Search on the GPU; IEEE International Conference on Data Engineering, 2018 (ICDE 2018). 
+
+- Technical Report: CoRR arXiv:1603.08390 at https://arxiv.org/abs/1603.08390
 
 ```
 
